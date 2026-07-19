@@ -13,9 +13,9 @@ USE nest_ph_mvp;
 -- ---------------------------------------------------------
 CREATE TABLE users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    full_name VARCHAR(150) NOT NULL,
+    name VARCHAR(150) NOT NULL,                     -- matches Laravel Breeze default column
     email VARCHAR(150) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,                 -- matches Laravel Breeze default column
     role ENUM('admin', 'staff', 'tenant') NOT NULL DEFAULT 'tenant',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
