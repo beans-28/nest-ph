@@ -9,21 +9,55 @@ CREATE DATABASE IF NOT EXISTS nest_ph_mvp;
 USE nest_ph_mvp;
 
 -- ---------------------------------------------------------
--- 1. USERS (system accounts: admins, staff, tenants w/ login)
+-- 1. ROLES (only 2 for now: tenant, admin — "owner" is just an
+--    admin with full admin_privileges, not a separate role)
+-- ---------------------------------------------------------
+CREATE TABLE roles (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(50) NOT NULL UNIQUE            -- 'tenant', 'admin'
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------
+-- 2. USERS (system accounts: admins, tenants w/ login)
 -- ---------------------------------------------------------
 CREATE TABLE users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,                     -- matches Laravel Breeze default column
     email VARCHAR(150) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,                 -- matches Laravel Breeze default column
-    role ENUM('admin', 'staff', 'tenant') NOT NULL DEFAULT 'tenant',
+    role_id BIGINT UNSIGNED NOT NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_users_role
+        FOREIGN KEY (role_id) REFERENCES roles(id)
+        ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 2. TENANTS (dormer profile info, separate from login account)
+-- 3. ADMIN_PRIVILEGES (granular permissions per admin user;
+--    an "owner" test account = admin with ALL privileges granted)
+-- ---------------------------------------------------------
+CREATE TABLE admin_privileges (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    privilege_name ENUM(
+        'manage_tenants',
+        'manage_rooms',
+        'manage_contracts',
+        'manage_billing',
+        'manage_users',
+        'view_reports'
+    ) NOT NULL,
+    granted_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_privileges_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE,
+    UNIQUE KEY uq_user_privilege (user_id, privilege_name)
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------
+-- 4. TENANTS (dormer profile info, separate from login account)
 -- ---------------------------------------------------------
 CREATE TABLE tenants (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -42,7 +76,7 @@ CREATE TABLE tenants (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 3. ROOMS
+-- 5. ROOMS
 -- ---------------------------------------------------------
 CREATE TABLE rooms (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -56,7 +90,7 @@ CREATE TABLE rooms (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 4. BEDS
+-- 6. BEDS
 -- ---------------------------------------------------------
 CREATE TABLE beds (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -71,7 +105,37 @@ CREATE TABLE beds (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 5. INQUIRIES (public-facing entry point of the funnel)
+-- 7. MAINTENANCE_TICKETS (tenant-reported issues per bed/room)
+-- ---------------------------------------------------------
+CREATE TABLE maintenance_tickets (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT UNSIGNED NOT NULL,
+    bed_id BIGINT UNSIGNED NULL,                      -- nullable: issue might be room-wide, not bed-specific
+    title VARCHAR(150) NOT NULL,
+    category ENUM('electrical', 'plumbing', 'furniture', 'cleanliness', 'other') NOT NULL DEFAULT 'other',
+    description TEXT NULL,
+    attachment_url VARCHAR(255) NULL,
+    status ENUM('open', 'in_progress', 'resolved', 'closed') NOT NULL DEFAULT 'open',
+    assigned_to BIGINT UNSIGNED NULL,                 -- FK to users (staff/admin handling it)
+    submitted_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP NULL,
+    resolved_by BIGINT UNSIGNED NULL,
+    CONSTRAINT fk_tickets_tenant
+        FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_tickets_bed
+        FOREIGN KEY (bed_id) REFERENCES beds(id)
+        ON DELETE SET NULL,
+    CONSTRAINT fk_tickets_assigned
+        FOREIGN KEY (assigned_to) REFERENCES users(id)
+        ON DELETE SET NULL,
+    CONSTRAINT fk_tickets_resolved_by
+        FOREIGN KEY (resolved_by) REFERENCES users(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------
+-- 8. INQUIRIES (public-facing entry point of the funnel)
 -- ---------------------------------------------------------
 CREATE TABLE inquiries (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -86,7 +150,7 @@ CREATE TABLE inquiries (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 6. LEASE_CONTRACTS (application -> contract, simplified into one table for MVP)
+-- 9. LEASE_CONTRACTS (application -> contract, simplified into one table for MVP)
 -- ---------------------------------------------------------
 CREATE TABLE lease_contracts (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -111,7 +175,7 @@ CREATE TABLE lease_contracts (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 7. BILLING_STATEMENTS
+-- 10. BILLING_STATEMENTS
 -- ---------------------------------------------------------
 CREATE TABLE billing_statements (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -135,7 +199,7 @@ CREATE TABLE billing_statements (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 8. PAYMENTS
+-- 11. PAYMENTS
 -- ---------------------------------------------------------
 CREATE TABLE payments (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -158,14 +222,74 @@ CREATE TABLE payments (
         ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
+-- ---------------------------------------------------------
+-- 12. ESCALATION_LOGS (delinquency / issue escalation tracking,
+--     linked to a tenant and optionally a billing statement)
+-- ---------------------------------------------------------
+CREATE TABLE escalation_logs (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT UNSIGNED NOT NULL,
+    billing_id BIGINT UNSIGNED NULL,
+    stage TINYINT UNSIGNED NOT NULL DEFAULT 1,        -- 1st notice, 2nd notice, final notice, etc.
+    action_type VARCHAR(50) NULL,                      -- e.g. 'email_notice', 'sms_notice', 'account_lock'
+    message_content TEXT NULL,
+    status ENUM('pending', 'sent', 'resolved') NOT NULL DEFAULT 'pending',
+    performed_by BIGINT UNSIGNED NULL,                 -- admin who triggered it (nullable = system-triggered)
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_escalation_tenant
+        FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_escalation_billing
+        FOREIGN KEY (billing_id) REFERENCES billing_statements(id)
+        ON DELETE SET NULL,
+    CONSTRAINT fk_escalation_admin
+        FOREIGN KEY (performed_by) REFERENCES users(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- =========================================================
+-- SEED DATA — test accounts for Week 2 Monday task
+-- (1 tenant, 1 admin, 1 owner — owner = admin w/ ALL privileges)
+-- Note: passwords below are PLAIN TEXT placeholders only.
+-- Lopi should re-hash these using Laravel's Hash::make() in the
+-- actual seeder — never insert plain-text passwords in production.
+-- =========================================================
+
+INSERT INTO roles (role_name) VALUES ('tenant'), ('admin');
+
+-- Test user accounts (password placeholder: "password123")
+INSERT INTO users (name, email, password, role_id, is_active) VALUES
+('Test Tenant', 'tenant@nestph.test', 'password123', (SELECT id FROM roles WHERE role_name = 'tenant'), 1),
+('Test Admin', 'admin@nestph.test', 'password123', (SELECT id FROM roles WHERE role_name = 'admin'), 1),
+('Test Owner', 'owner@nestph.test', 'password123', (SELECT id FROM roles WHERE role_name = 'admin'), 1);
+
+-- Owner gets ALL privileges
+INSERT INTO admin_privileges (user_id, privilege_name)
+SELECT (SELECT id FROM users WHERE email = 'owner@nestph.test'), p.privilege_name
+FROM (
+    SELECT 'manage_tenants' AS privilege_name
+    UNION ALL SELECT 'manage_rooms'
+    UNION ALL SELECT 'manage_contracts'
+    UNION ALL SELECT 'manage_billing'
+    UNION ALL SELECT 'manage_users'
+    UNION ALL SELECT 'view_reports'
+) p;
+
+-- Regular admin gets a limited subset (no manage_users)
+INSERT INTO admin_privileges (user_id, privilege_name) VALUES
+((SELECT id FROM users WHERE email = 'admin@nestph.test'), 'manage_tenants'),
+((SELECT id FROM users WHERE email = 'admin@nestph.test'), 'manage_rooms'),
+((SELECT id FROM users WHERE email = 'admin@nestph.test'), 'manage_billing'),
+((SELECT id FROM users WHERE email = 'admin@nestph.test'), 'view_reports');
+
 -- =========================================================
 -- END OF MVP SCHEMA
 -- Deferred to later sprints (not created here):
---   - maintenance_tickets, ticket_messages
---   - escalation_logs / delinquency_escalations
+--   - ticket_messages (thread of replies per maintenance_ticket)
+--   - delinquency_escalations (merged into escalation_logs for now)
 --   - audit_logs
 --   - documents
---   - otp_tokens
 --   - dashboard_snapshots
+--   - otp_tokens (not needed for MVP scope)
 --   - dorms/clients table (only needed once B2B multi-tenant is implemented)
 -- =========================================================

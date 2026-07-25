@@ -9,15 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'staff', 'tenant'])->default('tenant')->after('password');
-            $table->boolean('is_active')->default(true)->after('role');
+            $table->foreignId('role_id')->nullable()->after('password')->constrained('roles')->restrictOnDelete();
+            $table->boolean('is_active')->default(true)->after('role_id');
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['role', 'is_active']);
+            $table->dropForeign(['role_id']);
+            $table->dropColumn(['role_id', 'is_active']);
         });
     }
 };
