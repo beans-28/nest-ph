@@ -26,4 +26,9 @@ class Room extends Model
     {
         return $this->hasMany(Bed::class);
     }
+    
+    public function floor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Floor::class);
+    }
 }
