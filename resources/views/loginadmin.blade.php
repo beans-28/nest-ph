@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login | NEST.PH</title>
    <style>
    
@@ -387,7 +388,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
     const password = document.getElementById('password').value;
 
     try {
-        const response = await fetch("/tenant/login", {
+        const response = await fetch("/admin/login", {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
