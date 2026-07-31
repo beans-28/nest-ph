@@ -16,6 +16,7 @@ class Room extends Model
         'room_type',
         'monthly_rate',
         'status',
+        'vr_asset_path'
     ];
 
     protected $casts = [

@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\UserManagementController;
 use App\Http\Controllers\Api\FloorController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\BedController;
+use App\Http\Controllers\Api\PublicRoomController;
+
+Route::get('/public/rooms', [PublicRoomController::class, 'index']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -39,4 +42,6 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/rooms/{room}/beds', [BedController::class, 'store']);
     Route::patch('/beds/{bed}', [BedController::class, 'update']);
     Route::delete('/beds/{bed}', [BedController::class, 'destroy']);
+
+    Route::post('/rooms/{room}/vr-image', [RoomController::class, 'uploadVrImage']);
 });
