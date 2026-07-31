@@ -7,6 +7,7 @@ use App\Models\Floor;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class RoomController extends Controller
 {
@@ -18,7 +19,12 @@ class RoomController extends Controller
     public function store(Request $request, Floor $floor)
     {
         $validated = $request->validate([
-            'room_no' => 'required|string|max:20',
+            'room_no' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('rooms', 'room_no')->where(fn ($query) => $query->where('floor_id', $floor->id)),
+            ],
             'room_type' => 'nullable|string|max:50',
             'monthly_rate' => 'required|numeric|min:0',
             'status' => 'nullable|in:available,full,maintenance',
@@ -37,7 +43,15 @@ class RoomController extends Controller
     public function update(Request $request, Room $room)
     {
         $validated = $request->validate([
-            'room_no' => 'sometimes|required|string|max:20',
+            'room_no' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('rooms', 'room_no')
+                    ->where(fn ($query) => $query->where('floor_id', $room->floor_id))
+                    ->ignore($room->id),
+            ],
             'room_type' => 'nullable|string|max:50',
             'monthly_rate' => 'sometimes|required|numeric|min:0',
             'status' => 'nullable|in:available,full,maintenance',

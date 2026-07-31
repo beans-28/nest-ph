@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Bed;
 use App\Models\Room;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class BedController extends Controller
 {
@@ -17,7 +18,12 @@ class BedController extends Controller
     public function store(Request $request, Room $room)
     {
         $validated = $request->validate([
-            'bed_label' => 'required|string|max:20',
+            'bed_label' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('beds', 'bed_label')->where(fn ($query) => $query->where('room_id', $room->id)),
+            ],
             'status' => 'nullable|in:vacant,occupied,maintenance',
         ]);
 
@@ -29,7 +35,15 @@ class BedController extends Controller
     public function update(Request $request, Bed $bed)
     {
         $validated = $request->validate([
-            'bed_label' => 'sometimes|required|string|max:20',
+            'bed_label' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('beds', 'bed_label')
+                    ->where(fn ($query) => $query->where('room_id', $bed->room_id))
+                    ->ignore($bed->id),
+            ],
             'status' => 'nullable|in:vacant,occupied,maintenance',
         ]);
 
