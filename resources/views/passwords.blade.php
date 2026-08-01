@@ -352,7 +352,7 @@
         <section class="panel-left">
             <button class="back-button" type="button" aria-label="Go back">←</button>
             <h1>Reset access quickly and safely for your NEST account.</h1>
-            <div class="brand-mark"><span>P</span></div>
+            <div class="brand-mark"><span>N</span></div>
         </section>
 
         <section class="panel-right">
@@ -364,7 +364,7 @@
             <div class="form-card active" id="forgot-tab">
                 <h3>Forgot Password</h3>
                 <form method="POST" action="{{ route('password.email') }}">
-                    @csrf
+                    
                     <div class="form-group">
                         <label for="forgot_email">Email</label>
                         <input id="forgot_email" name="email" type="email" placeholder="you@example.com" required />
@@ -380,8 +380,7 @@
             <div class="form-card" id="update-tab">
                 <h3>Update Password</h3>
                 <form method="POST" action="{{ route('password.update') }}">
-                    @csrf
-                    @method('put')
+                    
                     <div class="form-group">
                         <label for="current_password">Current Password</label>
                         <input id="current_password" name="current_password" type="password" placeholder="Enter current password" required />
