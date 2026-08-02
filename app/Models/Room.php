@@ -32,4 +32,14 @@ class Room extends Model
     {
         return $this->belongsTo(Floor::class);
     }
+
+    public function syncStatusFromBeds(): void
+    {
+        if ($this->status === 'maintenance') {
+            return;
+        }
+
+    $hasVacant = $this->beds()->where('status', 'vacant')->exists();
+    $this->update(['status' => $hasVacant ? 'available' : 'full']);
+    }
 }
