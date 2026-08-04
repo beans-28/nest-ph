@@ -166,7 +166,7 @@
     <div class="sidebar-logo"><span class="logo-mark"></span> NEST.PH</div>
     <div class="sidebar-section-label">Quick Access</div>
     <ul class="nav-list">
-      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>Dashboard</li>
+      <li class="nav-item" data-href="{{ route('dashboard') }}" onclick="window.location.href=this.dataset.href"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span>Dashboard</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h5l2-2h4l2 2h5v12H3z"/></svg></span>Tenant Manager</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span>Billing and Payments</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><path d="M12 7v6M8 21l4-8 4 8M6 12l6 1 6-1"/></svg></span>Delinquency</li>
@@ -286,6 +286,7 @@
   </div>
 </div>
 
+<script id="floor-groups-data" type="application/json">{!! json_encode($floorGroups) !!}</script>
 <script>
   const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
 
@@ -315,7 +316,9 @@
   }
 
   // Server-rendered initial data: rooms grouped by their `floor` column.
-  let floorGroups = @json($floorGroups);
+  // Read from a JSON <script> tag instead of inlining @json() directly, so the
+  // JS/TS language service doesn't misread Blade's leading "@" as a decorator.
+  let floorGroups = JSON.parse(document.getElementById('floor-groups-data').textContent);
 
   const container = document.getElementById('floors');
   let openFloorLabel = floorGroups.length ? String(floorGroups[0].label).trim() : null;

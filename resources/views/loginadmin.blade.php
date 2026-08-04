@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login | NEST.PH</title>
+    <title>Admin Login | NEST.PH</title>
    <style>
-   
+
 :root {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
@@ -356,11 +356,11 @@
 
         <section class="panel-right">
             <div class="tab-header">
-                <button type="button">TENANT</button>
+                <button type="button" data-href="{{ route('login.tenant') }}" onclick="window.location.href=this.dataset.href">TENANT</button>
                 <button type="button" class="active">ADMIN</button>
             </div>
             <h2>Admin Log In</h2>
-            <form id="login-form" action="/tenant/login" method="POST">
+            <form id="login-form" action="/admin/login" method="POST">
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input id="email" type="email" placeholder="you@example.com" />
@@ -380,7 +380,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
     const button = this.querySelector('.btn-login');
     if (button.disabled) return;
-    
+
     button.disabled = true;
     button.classList.add('loading');
 
@@ -390,7 +390,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
     try {
         const response = await fetch("/admin/login", {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 // Laravel requires this token for security:
@@ -401,7 +401,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
         if (response.ok) {
             alert("Login successful!");
-            window.location.href = "/dashboard"; 
+            window.location.href = "/dashboard";
         } else {
             const data = await response.json();
             alert(data.message || "Invalid credentials.");
@@ -416,7 +416,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
 });
 </script>
 
-            
+
             <div class="password-links">
                 <a href="{{ route('passwords', ['from' => 'admin']) }}">Forgot Password?</a>
                 <span class="divider">•</span>

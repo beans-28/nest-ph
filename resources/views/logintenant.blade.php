@@ -357,7 +357,7 @@
         <section class="panel-right">
             <div class="tab-header">
                 <button type="button" class="active">TENANT</button>
-                <button type="button">ADMIN</button>
+                <button type="button" data-href="{{ route('login.admin') }}" onclick="window.location.href=this.dataset.href">ADMIN</button>
             </div>
             <h2>Tenant Log In</h2>
             <form id="login-form" action="/tenant/login" method="POST">
@@ -380,7 +380,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
     const button = this.querySelector('.btn-login');
     if (button.disabled) return;
-    
+
     button.disabled = true;
     button.classList.add('loading');
 
@@ -390,7 +390,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
     try {
         const response = await fetch("/tenant/login", {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 // Laravel requires this token for security:
@@ -401,7 +401,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
         if (response.ok) {
             alert("Login successful!");
-            window.location.href = "/dashboard"; 
+            window.location.href = "/dashboard";
         } else {
             const data = await response.json();
             alert(data.message || "Invalid credentials.");
@@ -416,7 +416,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
 });
 </script>
 
-            
+
             <div class="password-links">
                 <a href="{{ route('passwords', ['from' => 'tenant']) }}">Forgot Password?</a>
                 <span class="divider">•</span>
