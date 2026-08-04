@@ -418,9 +418,9 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
             
             <div class="password-links">
-                <a href="{{ route('password.request') }}">Forgot Password?</a>
+                <a href="{{ route('passwords', ['from' => 'tenant']) }}">Forgot Password?</a>
                 <span class="divider">•</span>
-                <a href="{{ route('passwords') }}">Update Password</a>
+                <a href="{{ route('passwords', ['from' => 'tenant']) }}">Update Password</a>
             </div>
             <p class="help-text">Don't have an account? <a href="#">Signup Here</a></p>
         </section>

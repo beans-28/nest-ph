@@ -402,7 +402,9 @@
                 <p class="help-text">Must be logged in to update your password.</p>
             </div>
 
-            <p class="help-text"><a href="{{ route('login') }}">Back to Login</a></p>
+            <p class="help-text">
+                <a href="{{ request('from') === 'admin' ? route('login.admin') : route('login.tenant') }}">Back to Login</a>
+            </p>
         </section>
     </main>
 
