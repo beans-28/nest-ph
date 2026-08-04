@@ -299,6 +299,9 @@
     beds: {
       update: (id) => `{{ url('/vacancy/beds') }}/${id}`,
     },
+    floors: {
+      destroy: (label) => `{{ url('/vacancy/floors') }}/${label}`,
+    },
   };
 
   async function apiFetch(url, method, body){
@@ -316,8 +319,8 @@
   }
 
   // Server-rendered initial data: rooms grouped by their `floor` column.
-  // Read from a JSON <script> tag instead of inlining @json() directly, so the
-  // JS/TS language service doesn't misread Blade's leading "@" as a decorator.
+  // Read from a JSON script tag instead of inlining the Blade json helper
+  // directly, so the JS/TS language service doesn't misread the leading "@" as a decorator.
   let floorGroups = JSON.parse(document.getElementById('floor-groups-data').textContent);
 
   const container = document.getElementById('floors');
@@ -461,14 +464,16 @@
         const label = btn.dataset.floor;
         const group = findFloorGroup(label);
 
-        if(group.rooms.length > 0){
-          if(!confirm(`This deletes all ${group.rooms.length} room(s) on Floor ${label} permanently. Continue?`)) return;
-          try {
-            await Promise.all(group.rooms.map(r => apiFetch(routes.rooms.destroy(r.id), 'DELETE')));
-          } catch(err){
-            alert(err.message);
-            return;
-          }
+        const confirmMsg = group.rooms.length > 0
+          ? `This deletes Floor ${label} and all ${group.rooms.length} room(s) on it permanently. Continue?`
+          : `Delete Floor ${label}?`;
+        if(!confirm(confirmMsg)) return;
+
+        try {
+          await apiFetch(routes.floors.destroy(label), 'DELETE');
+        } catch(err){
+          alert(err.message);
+          return;
         }
 
         floorGroups = floorGroups.filter(g => g.label !== label);

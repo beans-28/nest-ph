@@ -38,6 +38,7 @@ Route::get('/login/admin', function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/add-floor', [VacancyController::class, 'index'])->name('admin.addfloor');
     Route::get('/vacancy-monitoring', [VacancyController::class, 'index'])->name('vacancy.index');
+    Route::delete('/vacancy/floors/{floorNumber}', [VacancyController::class, 'destroyFloor'])->name('vacancy.floors.destroy');
 
     Route::post('/vacancy/rooms', [VacancyController::class, 'storeRoom'])->name('vacancy.rooms.store');
     Route::put('/vacancy/rooms/{room}', [VacancyController::class, 'updateRoom'])->name('vacancy.rooms.update');

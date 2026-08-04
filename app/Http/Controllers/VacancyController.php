@@ -71,6 +71,19 @@ class VacancyController extends Controller
         return response()->json($this->transformRoom($room->fresh('beds'), $floor), 201);
     }
 
+    public function destroyFloor(string $floorNumber): JsonResponse
+    {
+        $floor = Floor::where('floor_number', (int) $floorNumber)->firstOrFail();
+
+        foreach ($floor->rooms as $room) {
+            $room->beds()->delete();
+        }
+        $floor->rooms()->delete();
+        $floor->delete();
+
+        return response()->json(['message' => 'Floor deleted successfully.'], 200);
+    }
+
     public function updateRoom(Request $request, Room $room): JsonResponse
     {
         $data = $request->validate([
