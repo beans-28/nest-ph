@@ -187,17 +187,51 @@ CREATE TABLE inquiries (
 CREATE INDEX idx_inquiries_status_date ON inquiries(status, created_at);
 
 -- ---------------------------------------------------------
--- 10. LEASE_CONTRACTS (application -> contract, simplified into one table for MVP)
+-- 10. APPLICATIONS (pending stage — before a contract is signed)
+-- ---------------------------------------------------------
+CREATE TABLE applications (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    inquiry_id BIGINT UNSIGNED NULL,                -- traceability back to originating inquiry
+    tenant_id BIGINT UNSIGNED NOT NULL,
+    bed_id BIGINT UNSIGNED NOT NULL,
+    preferred_start_date DATE NULL,
+    dpa_consent TINYINT(1) NOT NULL DEFAULT 0,       -- Data Privacy Act consent for this application
+    status ENUM('pending', 'approved', 'rejected', 'cancelled') NOT NULL DEFAULT 'pending',
+    created_by BIGINT UNSIGNED NULL,                 -- admin who processed/logged the application
+    approved_by BIGINT UNSIGNED NULL,                -- admin who approved/rejected it
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_applications_inquiry
+        FOREIGN KEY (inquiry_id) REFERENCES inquiries(id)
+        ON DELETE SET NULL,
+    CONSTRAINT fk_applications_tenant
+        FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_applications_bed
+        FOREIGN KEY (bed_id) REFERENCES beds(id)
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_applications_created_by
+        FOREIGN KEY (created_by) REFERENCES users(id)
+        ON DELETE SET NULL,
+    CONSTRAINT fk_applications_approved_by
+        FOREIGN KEY (approved_by) REFERENCES users(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Index for application lookups by status and date (Aug 6 task)
+CREATE INDEX idx_applications_status_date ON applications(status, created_at);
+
+-- ---------------------------------------------------------
+-- 11. LEASE_CONTRACTS (signed/active stage, created from an approved application)
 -- ---------------------------------------------------------
 CREATE TABLE lease_contracts (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    application_id BIGINT UNSIGNED NOT NULL,        -- the approved application this contract came from
     tenant_id BIGINT UNSIGNED NOT NULL,
     bed_id BIGINT UNSIGNED NOT NULL,
-    inquiry_id BIGINT UNSIGNED NULL,                -- traceability back to originating inquiry
     start_date DATE NOT NULL,
     end_date DATE NULL,
     monthly_rate DECIMAL(10,2) NOT NULL,
-    dpa_consent TINYINT(1) NOT NULL DEFAULT 0,       -- Data Privacy Act consent for this contract
     -- NOTE: signing method placeholder below — team decided to scan physical
     -- paper instead of true e-sign, but exact flow is still pending PM
     -- clarification. Adjust this block once confirmed (e.g. rename to
@@ -210,15 +244,15 @@ CREATE TABLE lease_contracts (
     approved_by BIGINT UNSIGNED NULL,                -- admin who approved it (may differ from created_by)
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_contracts_application
+        FOREIGN KEY (application_id) REFERENCES applications(id)
+        ON DELETE RESTRICT,
     CONSTRAINT fk_contracts_tenant
         FOREIGN KEY (tenant_id) REFERENCES tenants(id)
         ON DELETE CASCADE,
     CONSTRAINT fk_contracts_bed
         FOREIGN KEY (bed_id) REFERENCES beds(id)
         ON DELETE RESTRICT,
-    CONSTRAINT fk_contracts_inquiry
-        FOREIGN KEY (inquiry_id) REFERENCES inquiries(id)
-        ON DELETE SET NULL,
     CONSTRAINT fk_contracts_created_by
         FOREIGN KEY (created_by) REFERENCES users(id)
         ON DELETE SET NULL,
@@ -231,7 +265,7 @@ CREATE TABLE lease_contracts (
 CREATE INDEX idx_contracts_status_date ON lease_contracts(status, start_date);
 
 -- ---------------------------------------------------------
--- 11. BILLING_STATEMENTS
+-- 12. BILLING_STATEMENTS
 -- ---------------------------------------------------------
 CREATE TABLE billing_statements (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -255,7 +289,7 @@ CREATE TABLE billing_statements (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 12. PAYMENTS
+-- 13. PAYMENTS
 -- ---------------------------------------------------------
 CREATE TABLE payments (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -279,16 +313,29 @@ CREATE TABLE payments (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------
--- 13. ESCALATION_LOGS (delinquency / issue escalation tracking,
+-- 14. ESCALATION_STAGES (config/lookup table defining each stage's
+--     trigger rule — e.g. stage 1 = 7 days overdue, stage 2 = 15 days)
+-- ---------------------------------------------------------
+CREATE TABLE escalation_stages (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    stage_number TINYINT UNSIGNED NOT NULL UNIQUE,
+    trigger_condition VARCHAR(100) NOT NULL,        -- e.g. 'overdue_7_days', 'overdue_15_days'
+    description VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------
+-- 15. ESCALATION_LOGS (actual escalation events per tenant,
 --     linked to a tenant and optionally a billing statement)
 -- ---------------------------------------------------------
 CREATE TABLE escalation_logs (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     tenant_id BIGINT UNSIGNED NOT NULL,
     billing_id BIGINT UNSIGNED NULL,
-    stage TINYINT UNSIGNED NOT NULL DEFAULT 1,        -- 1st notice, 2nd notice, final notice, etc.
+    stage_id BIGINT UNSIGNED NOT NULL,
     action_type VARCHAR(50) NULL,                      -- e.g. 'email_notice', 'sms_notice', 'account_lock'
     message_content TEXT NULL,
+    notified TINYINT(1) NOT NULL DEFAULT 0,            -- whether the tenant has actually been notified
     status ENUM('pending', 'sent', 'resolved') NOT NULL DEFAULT 'pending',
     performed_by BIGINT UNSIGNED NULL,                 -- admin who triggered it (nullable = system-triggered)
     created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
@@ -298,16 +345,114 @@ CREATE TABLE escalation_logs (
     CONSTRAINT fk_escalation_billing
         FOREIGN KEY (billing_id) REFERENCES billing_statements(id)
         ON DELETE SET NULL,
+    CONSTRAINT fk_escalation_stage
+        FOREIGN KEY (stage_id) REFERENCES escalation_stages(id)
+        ON DELETE RESTRICT,
     CONSTRAINT fk_escalation_admin
         FOREIGN KEY (performed_by) REFERENCES users(id)
         ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+-- Indexes to support "all overdue tenants past X days" queries (Week 6)
+CREATE INDEX idx_billing_status_duedate ON billing_statements(status, due_date);
+CREATE INDEX idx_escalation_tenant_created ON escalation_logs(tenant_id, created_at);
+
+-- ---------------------------------------------------------
+-- 16. TICKET_MESSAGES (thread of replies per maintenance_ticket)
+-- ---------------------------------------------------------
+CREATE TABLE ticket_messages (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ticket_id BIGINT UNSIGNED NOT NULL,
+    sender_id BIGINT UNSIGNED NOT NULL,               -- FK to users (tenant or admin/staff replying)
+    message_body TEXT NOT NULL,
+    sent_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_ticket_messages_ticket
+        FOREIGN KEY (ticket_id) REFERENCES maintenance_tickets(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_ticket_messages_sender
+        FOREIGN KEY (sender_id) REFERENCES users(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Index for ticket status lookups (Week 7)
+CREATE INDEX idx_tickets_status ON maintenance_tickets(status);
+CREATE INDEX idx_ticket_messages_ticket ON ticket_messages(ticket_id);
+
+-- ---------------------------------------------------------
+-- 17. ANNOUNCEMENTS
+-- ---------------------------------------------------------
+CREATE TABLE announcements (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(150) NOT NULL,
+    content TEXT NOT NULL,
+    posted_by BIGINT UNSIGNED NULL,                    -- FK to users (admin who posted it)
+    restrict_comments TINYINT(1) NOT NULL DEFAULT 0,   -- if true, tenants can't comment on this announcement
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_announcements_posted_by
+        FOREIGN KEY (posted_by) REFERENCES users(id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_announcements_created ON announcements(created_at);
+
+-- ---------------------------------------------------------
+-- 18. ANNOUNCEMENT_COMMENTS
+-- ---------------------------------------------------------
+CREATE TABLE announcement_comments (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    announcement_id BIGINT UNSIGNED NOT NULL,
+    tenant_id BIGINT UNSIGNED NOT NULL,
+    comment_text TEXT NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_comments_announcement
+        FOREIGN KEY (announcement_id) REFERENCES announcements(id)
+        ON DELETE CASCADE,
+    CONSTRAINT fk_comments_tenant
+        FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_comments_announcement ON announcement_comments(announcement_id);
+
+-- ---------------------------------------------------------
+-- 19. REVIEWS
+-- ---------------------------------------------------------
+CREATE TABLE reviews (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    tenant_id BIGINT UNSIGNED NOT NULL,
+    rating TINYINT UNSIGNED NOT NULL,                  -- e.g. 1-5
+    comment TEXT NULL,
+    verified_tenant TINYINT(1) NOT NULL DEFAULT 0,     -- true if tenant had an actual lease_contract on file
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reviews_tenant
+        FOREIGN KEY (tenant_id) REFERENCES tenants(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_reviews_tenant ON reviews(tenant_id);
+
+-- ---------------------------------------------------------
+-- 20. DORMITORY_PROFILE (single-row table: public-facing info
+--     about the dorm itself — name, description, contact, etc.)
+-- ---------------------------------------------------------
+CREATE TABLE dormitory_profile (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    dorm_name VARCHAR(150) NOT NULL,
+    description TEXT NULL,
+    address VARCHAR(255) NULL,
+    contact_number VARCHAR(20) NULL,
+    contact_email VARCHAR(150) NULL,
+    logo_path VARCHAR(255) NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- =========================================================
 -- SEED DATA — test accounts for Week 2 Monday task
 -- (1 tenant, 1 admin, 1 owner — owner = admin w/ ALL privileges)
 -- Note: passwords below are PLAIN TEXT placeholders only.
--- should re-hash these using Laravel's Hash::make() in the
+-- Lopi should re-hash these using Laravel's Hash::make() in the
 -- actual seeder — never insert plain-text passwords in production.
 -- =========================================================
 
@@ -345,6 +490,8 @@ INSERT INTO floors (floor_name, description) VALUES
 -- =========================================================
 -- END OF MVP SCHEMA
 -- Deferred to later sprints (not created here):
+--   - penalties, damages (Week 5 — separate tables w/ auto billing-line-item FK, not yet built)
+--   - waive_audit_log (Week 5 — who/when/reason for waived penalties/damages)
 --   - ticket_messages (thread of replies per maintenance_ticket)
 --   - delinquency_escalations (merged into escalation_logs for now)
 --   - audit_logs
