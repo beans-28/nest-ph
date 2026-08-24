@@ -6,8 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Bed;
 use App\Models\Inquiry;
+use App\Models\LeaseContract;
+use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class ApplicationController extends Controller
@@ -92,7 +96,11 @@ class ApplicationController extends Controller
                 ->update(['status' => 'converted']);
         }
 
-        // TODO (Week 4): notify admin of new application (email/SMS stub).
+        $this->notify('application.submitted', [
+            'application_id' => $application->id,
+            'applicant' => $application->full_name,
+            'bed_id' => $bed->id,
+        ]);
 
         return response()->json([
             'message' => 'Application submitted successfully. It is now pending review.',
@@ -120,7 +128,15 @@ class ApplicationController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        return response()->json($query->get());
+        $applications = $query->get()->map(function ($application) {
+            // Surface the returning-applicant flag in the review queue so the
+            // admin sees who qualifies for a discount before opening each one.
+            $application->returning_tenant_match = $this->findReturningTenant($application)?->only(['id', 'full_name', 'email', 'contact_number']);
+
+            return $application;
+        });
+
+        return response()->json($applications);
     }
 
     /**
@@ -128,7 +144,7 @@ class ApplicationController extends Controller
      */
     public function show(Application $application): JsonResponse
     {
-        return response()->json($application->load([
+        $application->load([
             'bed:id,room_id,bed_label,status',
             'bed.room:id,room_no,room_type,monthly_rate',
             'inquiry',
@@ -136,7 +152,15 @@ class ApplicationController extends Controller
             'createdBy:id,name',
             'approvedBy:id,name',
             'leaseContract',
-        ]));
+        ]);
+
+        $returning = $this->findReturningTenant($application);
+
+        return response()->json([
+            'application' => $application,
+            'returning_tenant_match' => $returning?->only(['id', 'full_name', 'email', 'contact_number']),
+            'discount_eligible' => (bool) $returning,
+        ]);
     }
 
     /**
@@ -156,7 +180,7 @@ class ApplicationController extends Controller
                 $query->where('email', $data['contact'])
                     ->orWhere('contact_number', $data['contact']);
             })
-            ->with('bed.room:id,room_no,room_type,monthly_rate')
+            ->with('bed.room:id,room_no,room_type,monthly_rate', 'leaseContract:id,application_id,esign_status,status')
             ->first();
 
         if (! $application) {
@@ -171,14 +195,144 @@ class ApplicationController extends Controller
             'status' => $application->status,
             'preferred_start_date' => $application->preferred_start_date,
             'bed' => $application->bed,
+            'contract' => $application->leaseContract,
             'submitted_at' => $application->created_at,
         ]);
     }
 
     /**
+     * Admin: approve an application. This is the pivot point of onboarding —
+     * it creates (or re-links) the tenant record, creates the lease contract,
+     * and assigns the bed, all in one transaction so a partial failure can't
+     * leave the system half-onboarded.
+     */
+    public function approve(Request $request, Application $application): JsonResponse
+    {
+        $data = $request->validate([
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date', 'after:start_date'],
+            'monthly_rate' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        if ($application->status !== 'pending') {
+            return response()->json([
+                'message' => 'Only pending applications can be approved.',
+            ], 409);
+        }
+
+        $bed = Bed::with('room')->find($application->bed_id);
+
+        if (! $bed) {
+            return response()->json([
+                'message' => 'The bedspace on this application no longer exists.',
+            ], 409);
+        }
+
+        if ($bed->status !== 'vacant') {
+            return response()->json([
+                'message' => 'That bedspace is no longer vacant and cannot be assigned.',
+            ], 409);
+        }
+
+        $returningTenant = $this->findReturningTenant($application);
+
+        $result = DB::transaction(function () use ($application, $bed, $data, $returningTenant, $request) {
+            // Reuse the existing tenant record for a returning tenant, so their
+            // history stays intact. Otherwise create a fresh one from the
+            // details captured on the application.
+            $tenant = $returningTenant ?? Tenant::create([
+                'full_name' => $application->full_name,
+                'contact_number' => $application->contact_number,
+                'email' => $application->email,
+                'emergency_contact_name' => $application->emergency_contact_name,
+                'emergency_contact_number' => $application->emergency_contact_number,
+            ]);
+
+            $contract = LeaseContract::create([
+                'application_id' => $application->id,
+                'tenant_id' => $tenant->id,
+                'bed_id' => $bed->id,
+                'inquiry_id' => $application->inquiry_id,
+                'start_date' => $data['start_date']
+                    ?? $application->preferred_start_date
+                    ?? now()->toDateString(),
+                'end_date' => $data['end_date'] ?? null,
+                'monthly_rate' => $data['monthly_rate'] ?? $bed->room->monthly_rate ?? 0,
+                'esign_status' => 'pending',
+                'status' => 'pending', // becomes 'active' once the contract is signed
+                'created_by' => $request->user()?->id,
+                'approved_by' => $request->user()?->id,
+            ]);
+
+            $bed->update(['status' => 'occupied']);
+            $bed->room->syncStatusFromBeds();
+
+            $application->update([
+                'status' => 'approved',
+                'tenant_id' => $tenant->id,
+                'approved_by' => $request->user()?->id,
+            ]);
+
+            return ['tenant' => $tenant, 'contract' => $contract];
+        });
+
+        $this->notify('application.approved', [
+            'application_id' => $application->id,
+            'tenant_id' => $result['tenant']->id,
+            'contract_id' => $result['contract']->id,
+            'returning_tenant' => (bool) $returningTenant,
+            'approved_by' => $request->user()?->id,
+        ]);
+
+        return response()->json([
+            'message' => $returningTenant
+                ? 'Application approved. This is a returning tenant — they may qualify for a discount.'
+                : 'Application approved and lease contract created.',
+            'discount_eligible' => (bool) $returningTenant,
+            'application' => $application->fresh()->load('bed.room:id,room_no,room_type,monthly_rate'),
+            'tenant' => $result['tenant'],
+            'contract' => $result['contract'],
+        ]);
+    }
+
+    /**
+     * Admin: reject a pending application.
+     */
+    public function reject(Request $request, Application $application): JsonResponse
+    {
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if ($application->status !== 'pending') {
+            return response()->json([
+                'message' => 'Only pending applications can be rejected.',
+            ], 409);
+        }
+
+        $application->update([
+            'status' => 'rejected',
+            'approved_by' => $request->user()?->id, // records who actioned it
+        ]);
+
+        // NOTE: applications has no rejection_reason column, so the reason is
+        // only logged for now, not persisted on the record. Raise with PELEA
+        // if the reason needs to be stored and shown back to the applicant.
+        $this->notify('application.rejected', [
+            'application_id' => $application->id,
+            'applicant' => $application->full_name,
+            'reason' => $data['reason'] ?? null,
+            'rejected_by' => $request->user()?->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Application rejected.',
+            'application' => $application->fresh(),
+        ]);
+    }
+
+    /**
      * Admin: cancel a pending application (soft workflow action, not a delete).
-     * Approve/reject lives in the Wednesday/Thursday task, since it also
-     * creates the tenant + lease contract.
      */
     public function cancel(Application $application): JsonResponse
     {
@@ -194,5 +348,36 @@ class ApplicationController extends Controller
             'message' => 'Application cancelled.',
             'application' => $application->fresh(),
         ]);
+    }
+
+    /**
+     * Look for an existing tenant record matching this applicant, so returning
+     * tenants can be flagged for a discount and keep their history. Matches on
+     * email or contact number (exact), never on name alone — names are far too
+     * easy to collide on and a false match would merge two different people.
+     */
+    private function findReturningTenant(Application $application): ?Tenant
+    {
+        if (empty($application->email) && empty($application->contact_number)) {
+            return null;
+        }
+
+        return Tenant::where(function ($query) use ($application) {
+            if (! empty($application->email)) {
+                $query->orWhere('email', $application->email);
+            }
+            if (! empty($application->contact_number)) {
+                $query->orWhere('contact_number', $application->contact_number);
+            }
+        })->first();
+    }
+
+    /**
+     * Notification stub. Week 4 scope is the hook itself, not real delivery —
+     * swap the log call for a Mail/SMS notification when that's built.
+     */
+    private function notify(string $event, array $payload): void
+    {
+        Log::info("[notification stub] {$event}", $payload);
     }
 }
