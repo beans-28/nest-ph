@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 01, 2026 at 07:23 AM
+-- Generation Time: Aug 24, 2026 at 08:37 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -30,6 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `admin_privileges` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
+  `granted_by` bigint(20) UNSIGNED DEFAULT NULL,
   `privilege_name` enum('manage_tenants','manage_rooms','manage_contracts','manage_billing','manage_users','view_reports') NOT NULL,
   `granted_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -38,17 +39,42 @@ CREATE TABLE `admin_privileges` (
 -- Dumping data for table `admin_privileges`
 --
 
-INSERT INTO `admin_privileges` (`id`, `user_id`, `privilege_name`, `granted_at`) VALUES
-(1, 3, 'manage_tenants', '2026-07-25 06:12:00'),
-(2, 3, 'manage_rooms', '2026-07-25 06:12:00'),
-(3, 3, 'manage_contracts', '2026-07-25 06:12:00'),
-(4, 3, 'manage_billing', '2026-07-25 06:12:00'),
-(5, 3, 'manage_users', '2026-07-25 06:12:00'),
-(6, 3, 'view_reports', '2026-07-25 06:12:00'),
-(7, 2, 'manage_tenants', '2026-07-25 06:12:00'),
-(8, 2, 'manage_rooms', '2026-07-25 06:12:00'),
-(9, 2, 'manage_billing', '2026-07-25 06:12:00'),
-(10, 2, 'view_reports', '2026-07-25 06:12:00');
+INSERT INTO `admin_privileges` (`id`, `user_id`, `granted_by`, `privilege_name`, `granted_at`) VALUES
+(1, 3, NULL, 'manage_tenants', '2026-07-25 06:12:00'),
+(2, 3, NULL, 'manage_rooms', '2026-07-25 06:12:00'),
+(3, 3, NULL, 'manage_contracts', '2026-07-25 06:12:00'),
+(4, 3, NULL, 'manage_billing', '2026-07-25 06:12:00'),
+(5, 3, NULL, 'manage_users', '2026-07-25 06:12:00'),
+(6, 3, NULL, 'view_reports', '2026-07-25 06:12:00'),
+(7, 2, NULL, 'manage_tenants', '2026-07-25 06:12:00'),
+(8, 2, NULL, 'manage_rooms', '2026-07-25 06:12:00'),
+(9, 2, NULL, 'manage_billing', '2026-07-25 06:12:00'),
+(10, 2, NULL, 'view_reports', '2026-07-25 06:12:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `applications`
+--
+
+CREATE TABLE `applications` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `inquiry_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `tenant_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `full_name` varchar(150) NOT NULL,
+  `contact_number` varchar(20) DEFAULT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `emergency_contact_name` varchar(150) DEFAULT NULL,
+  `emergency_contact_number` varchar(20) DEFAULT NULL,
+  `bed_id` bigint(20) UNSIGNED NOT NULL,
+  `preferred_start_date` date DEFAULT NULL,
+  `dpa_consent` tinyint(1) NOT NULL DEFAULT 0,
+  `status` enum('pending','approved','rejected','cancelled') NOT NULL DEFAULT 'pending',
+  `created_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `approved_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -64,14 +90,6 @@ CREATE TABLE `beds` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `beds`
---
-
-INSERT INTO `beds` (`id`, `room_id`, `bed_label`, `status`, `created_at`, `updated_at`) VALUES
-(2, 3, 'Bed A', 'vacant', '2026-07-30 22:50:07', '2026-07-30 22:50:07'),
-(3, 4, 'Bed A', 'occupied', '2026-07-30 22:50:39', '2026-07-30 22:52:45');
 
 -- --------------------------------------------------------
 
@@ -172,8 +190,7 @@ CREATE TABLE `floors` (
 --
 
 INSERT INTO `floors` (`id`, `floor_name`, `floor_number`, `description`, `created_at`, `updated_at`) VALUES
-(3, 'Second Floor', 1, 'Shared rooms, east wing', '2026-07-29 22:22:25', '2026-07-29 22:22:25'),
-(4, 'Third Floor', 2, 'Shared rooms, east wing', '2026-07-30 22:42:36', '2026-07-30 22:42:36');
+(3, 'Second Floor', 1, 'Shared rooms, east wing', '2026-07-29 22:22:25', '2026-07-29 22:22:25');
 
 -- --------------------------------------------------------
 
@@ -236,13 +253,19 @@ CREATE TABLE `job_batches` (
 
 CREATE TABLE `lease_contracts` (
   `id` bigint(20) UNSIGNED NOT NULL,
+  `application_id` bigint(20) UNSIGNED DEFAULT NULL,
   `tenant_id` bigint(20) UNSIGNED NOT NULL,
   `bed_id` bigint(20) UNSIGNED NOT NULL,
   `inquiry_id` bigint(20) UNSIGNED DEFAULT NULL,
   `start_date` date NOT NULL,
   `end_date` date DEFAULT NULL,
   `monthly_rate` decimal(10,2) NOT NULL,
+  `esign_status` enum('pending','signed','not_applicable') NOT NULL DEFAULT 'pending',
+  `signed_document_url` varchar(255) DEFAULT NULL,
+  `signed_at` timestamp NULL DEFAULT NULL,
   `status` enum('pending','active','terminated','expired') NOT NULL DEFAULT 'pending',
+  `created_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `approved_by` bigint(20) UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -303,7 +326,11 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (16, '2026_07_15_181628_create_personal_access_tokens_table', 1),
 (17, '2026_07_30_055832_create_floors_table', 2),
 (18, '2026_07_30_060030_add_floor_id_to_rooms_table', 2),
-(19, '2026_07_31_054830_add_vr_asset_path_to_rooms_table', 3);
+(19, '2026_07_31_054830_add_vr_asset_path_to_rooms_table', 3),
+(20, '2026_08_01_053125_add_granted_by_to_admin_privileges_table', 4),
+(21, '2026_08_01_053150_add_status_index_to_rooms_table', 4),
+(22, '2026_08_25_000001_create_applications_table', 5),
+(23, '2026_08_25_000002_add_application_and_esign_fields_to_lease_contracts_table', 5);
 
 -- --------------------------------------------------------
 
@@ -391,15 +418,6 @@ CREATE TABLE `rooms` (
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `rooms`
---
-
-INSERT INTO `rooms` (`id`, `floor_id`, `room_no`, `room_type`, `monthly_rate`, `status`, `vr_asset_path`, `created_at`, `updated_at`) VALUES
-(2, 3, '2A', 'shared', 3500.00, 'maintenance', 'vr-assets/NdCZoOhFxYzx2NW8JkxdvlsSqKSc0dAn2EFpG5Wn.png', '2026-07-30 22:07:04', '2026-07-30 22:48:28'),
-(3, 3, '3A', 'shared', 4300.00, 'available', NULL, '2026-07-30 22:39:35', '2026-07-30 22:39:35'),
-(4, 4, '3A', 'shared', 4300.00, 'available', NULL, '2026-07-30 22:42:56', '2026-07-30 22:42:56');
-
 -- --------------------------------------------------------
 
 --
@@ -420,14 +438,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('2sN0UawYFmtaYjp4EznYJjYWvstdUVVVcXvwQfnv', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZFZjNFJra3BFcVlIWGtTaDhjM3Btc0ExZ0FGZWo3RDBjYm1QVGp2TiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1784959952),
-('44B2nW7x7JAC9Lw9m3bdu0A7htM4tBQLvrvY8sLW', NULL, '127.0.0.1', 'PostmanRuntime/7.54.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZTlnR2JQc1ZjSDc1WDcxMWtmS1BHZEExSUZnSEROb0xHMjJpMVJrNyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hcGkvdXNlciI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1784960289),
-('ClzZVlX7qOlEWbsP47ygKt4EwjYpsQly46DuwNls', 1, '127.0.0.1', 'PostmanRuntime/7.55.1', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiZVhtMFRwOVlKWXhucmdSRktvRXlhd2JXUTNsVXozTUY2NHpMYVF1VCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYW5jdHVtL2NzcmYtY29va2llIjtzOjU6InJvdXRlIjtzOjE5OiJzYW5jdHVtLmNzcmYtY29va2llIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTtzOjE3OiJwYXNzd29yZF9oYXNoX3dlYiI7czo2NDoiMGYxMzQ0ZDY1NWNhNTlkYjI1YjQ4NmMxMzU4YTUzNzEwM2RjMGIwMWJhMjhlMDM4OWUzMjJjNWJlZTdjNzBmOSI7fQ==', 1785480282),
-('dHsAPS5gbsHROVvaSepYBdW6LbdKobR33yMyDwDp', 3, '127.0.0.1', 'PostmanRuntime/7.55.1', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoidzNnbzFQbmJ4ODYyNnI1dkFFNEFsbjg4WFFvV2ZFWktxMUhOZ1Q4TSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hcGkvcm9vbXMvMS9iZWRzIjtzOjU6InJvdXRlIjtOO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO3M6MTc6InBhc3N3b3JkX2hhc2hfd2ViIjtzOjY0OiI0MTE0NzU3Yjg0ZDUyOTY4YTVjN2ViN2UyNzY0N2FhN2NlYmZlNzVjODNiNWQ3MjNiZWMzZjE2YmVmYWY2ZTUzIjt9', 1785393550),
-('gyASkVYr4mYcZ18BdtJfRCDCRYTm4tuhwvHPBCpv', NULL, '127.0.0.1', 'PostmanRuntime/7.54.0', 'YToyOntzOjY6Il90b2tlbiI7czo0MDoibTh4R2puWEdLSTRaa0ZBalRKOWhGTXByTWgzMlFyZnFaZWZHSGRHaCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1784961172),
-('K7DExDu1P7IjeGcV0asctlK38dR5fTTh4Q0HOaCK', 3, '127.0.0.1', 'PostmanRuntime/7.55.1', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoibjJCaU9FN0pEc3lFYWhBY3NMSHVEQWgwWFBGYjlEdGFFaTRIUkJQeCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9zYW5jdHVtL2NzcmYtY29va2llIjtzOjU6InJvdXRlIjtzOjE5OiJzYW5jdHVtLmNzcmYtY29va2llIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MztzOjE3OiJwYXNzd29yZF9oYXNoX3dlYiI7czo2NDoiNDExNDc1N2I4NGQ1Mjk2OGE1YzdlYjdlMjc2NDdhYTdjZWJmZTc1YzgzYjVkNzIzYmVjM2YxNmJlZmFmNmU1MyI7fQ==', 1785480765),
-('lrwGRoDC53axG43HE8hzycwG6T0rR4M1Ysdjd3gd', 7, '127.0.0.1', 'PostmanRuntime/7.54.0', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiUmgxZ3ExUGFVcUEwY1dmTUo2Ynl0VWJtanQ5emdvQXFiTURXcXFXZCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hcGkvdXNlciI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6NztzOjE3OiJwYXNzd29yZF9oYXNoX3dlYiI7czo2NDoiOTc3NzJkN2UyOTZhNWI2NTcyNDEzN2FlNzVjOTA2MzJkMGFjZTBhNjcxNzliY2E5NzQ1OWQ4NTZkNGYwYjYyNSI7fQ==', 1784961419),
-('u0Qou9Q8ahbRcp1tQcVlBrV4iRbhxabTJXg33dDn', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiNUM3cUQ2cnJxNGlnbG01ajN1R0dGUUZsQXZIMGNqcjB6Y0NEQ3Y3MiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1784964696);
+('5hhcZO8wMbcF6vgMxROSrIjX8zRL3A6DAIfsz69U', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.131.0 Chrome/148.0.7778.280 Electron/42.7.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicWwyWk9JN21iTEVVMkdXNnNWMFVZZGFxbUhxd2hWemhEOUxGMm9wNSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1787551348),
+('evk3cSX7vCyM9RGo2riV6pfpnM6j6xaaZmKSHaGW', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoidndBUmdrYWdTQ2FpQ2JrazVZcTRGSHBsODdBQ2pCa2tCMHJPMlprbSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC92YWNhbmN5LW1vbml0b3JpbmciO3M6NToicm91dGUiO3M6MTM6InZhY2FuY3kuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjM6InVybCI7YToxOntzOjg6ImludGVuZGVkIjtzOjQwOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvdmFjYW5jeS1tb25pdG9yaW5nIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzt9', 1787551610);
 
 -- --------------------------------------------------------
 
@@ -485,7 +497,20 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `ro
 --
 ALTER TABLE `admin_privileges`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_user_privilege` (`user_id`,`privilege_name`);
+  ADD UNIQUE KEY `uq_user_privilege` (`user_id`,`privilege_name`),
+  ADD KEY `admin_privileges_granted_by_foreign` (`granted_by`);
+
+--
+-- Indexes for table `applications`
+--
+ALTER TABLE `applications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `applications_inquiry_id_foreign` (`inquiry_id`),
+  ADD KEY `applications_tenant_id_foreign` (`tenant_id`),
+  ADD KEY `applications_bed_id_foreign` (`bed_id`),
+  ADD KEY `applications_created_by_foreign` (`created_by`),
+  ADD KEY `applications_approved_by_foreign` (`approved_by`),
+  ADD KEY `applications_status_created_at_index` (`status`,`created_at`);
 
 --
 -- Indexes for table `beds`
@@ -564,7 +589,10 @@ ALTER TABLE `lease_contracts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `lease_contracts_tenant_id_foreign` (`tenant_id`),
   ADD KEY `lease_contracts_bed_id_foreign` (`bed_id`),
-  ADD KEY `lease_contracts_inquiry_id_foreign` (`inquiry_id`);
+  ADD KEY `lease_contracts_inquiry_id_foreign` (`inquiry_id`),
+  ADD KEY `lease_contracts_application_id_foreign` (`application_id`),
+  ADD KEY `lease_contracts_created_by_foreign` (`created_by`),
+  ADD KEY `lease_contracts_approved_by_foreign` (`approved_by`);
 
 --
 -- Indexes for table `maintenance_tickets`
@@ -618,7 +646,8 @@ ALTER TABLE `roles`
 --
 ALTER TABLE `rooms`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `rooms_floor_id_foreign` (`floor_id`);
+  ADD KEY `rooms_floor_id_foreign` (`floor_id`),
+  ADD KEY `rooms_status_index` (`status`);
 
 --
 -- Indexes for table `sessions`
@@ -654,10 +683,16 @@ ALTER TABLE `admin_privileges`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT for table `applications`
+--
+ALTER TABLE `applications`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `beds`
 --
 ALTER TABLE `beds`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `billing_statements`
@@ -681,7 +716,7 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `floors`
 --
 ALTER TABLE `floors`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `inquiries`
@@ -711,7 +746,7 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -735,7 +770,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `tenants`
@@ -757,7 +792,18 @@ ALTER TABLE `users`
 -- Constraints for table `admin_privileges`
 --
 ALTER TABLE `admin_privileges`
+  ADD CONSTRAINT `admin_privileges_granted_by_foreign` FOREIGN KEY (`granted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `admin_privileges_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `applications`
+--
+ALTER TABLE `applications`
+  ADD CONSTRAINT `applications_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `applications_bed_id_foreign` FOREIGN KEY (`bed_id`) REFERENCES `beds` (`id`),
+  ADD CONSTRAINT `applications_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `applications_inquiry_id_foreign` FOREIGN KEY (`inquiry_id`) REFERENCES `inquiries` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `applications_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `beds`
@@ -784,7 +830,10 @@ ALTER TABLE `escalation_logs`
 -- Constraints for table `lease_contracts`
 --
 ALTER TABLE `lease_contracts`
+  ADD CONSTRAINT `lease_contracts_application_id_foreign` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`),
+  ADD CONSTRAINT `lease_contracts_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `lease_contracts_bed_id_foreign` FOREIGN KEY (`bed_id`) REFERENCES `beds` (`id`),
+  ADD CONSTRAINT `lease_contracts_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `lease_contracts_inquiry_id_foreign` FOREIGN KEY (`inquiry_id`) REFERENCES `inquiries` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `lease_contracts_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
 
