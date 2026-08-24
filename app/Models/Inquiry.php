@@ -19,6 +19,11 @@ class Inquiry extends Model
         'status',
     ];
 
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
+
     public function contracts(): HasMany
     {
         return $this->hasMany(LeaseContract::class);

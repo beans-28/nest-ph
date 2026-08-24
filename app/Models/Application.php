@@ -5,38 +5,36 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class LeaseContract extends Model
+class Application extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'application_id',
-        'tenant_id',
-        'bed_id',
         'inquiry_id',
-        'start_date',
-        'end_date',
-        'monthly_rate',
-        'esign_status',
-        'signed_document_url',
-        'signed_at',
+        'tenant_id',
+        'full_name',
+        'contact_number',
+        'email',
+        'emergency_contact_name',
+        'emergency_contact_number',
+        'bed_id',
+        'preferred_start_date',
+        'dpa_consent',
         'status',
         'created_by',
         'approved_by',
     ];
 
     protected $casts = [
-        'start_date' => 'date',
-        'end_date' => 'date',
-        'monthly_rate' => 'decimal:2',
-        'signed_at' => 'datetime',
+        'preferred_start_date' => 'date',
+        'dpa_consent' => 'boolean',
     ];
 
-    public function application(): BelongsTo
+    public function inquiry(): BelongsTo
     {
-        return $this->belongsTo(Application::class);
+        return $this->belongsTo(Inquiry::class);
     }
 
     public function tenant(): BelongsTo
@@ -49,11 +47,6 @@ class LeaseContract extends Model
         return $this->belongsTo(Bed::class);
     }
 
-    public function inquiry(): BelongsTo
-    {
-        return $this->belongsTo(Inquiry::class);
-    }
-
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -64,8 +57,8 @@ class LeaseContract extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
-    public function billingStatements(): HasMany
+    public function leaseContract(): HasOne
     {
-        return $this->hasMany(BillingStatement::class, 'contract_id');
+        return $this->hasOne(LeaseContract::class);
     }
 }
