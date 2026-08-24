@@ -492,7 +492,6 @@ INSERT INTO floors (floor_name, description) VALUES
 -- Deferred to later sprints (not created here):
 --   - penalties, damages (Week 5 — separate tables w/ auto billing-line-item FK, not yet built)
 --   - waive_audit_log (Week 5 — who/when/reason for waived penalties/damages)
---   - ticket_messages (thread of replies per maintenance_ticket)
 --   - delinquency_escalations (merged into escalation_logs for now)
 --   - audit_logs
 --   - documents
