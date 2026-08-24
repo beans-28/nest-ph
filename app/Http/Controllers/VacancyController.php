@@ -7,6 +7,7 @@ use App\Models\Floor;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class VacancyController extends Controller
@@ -152,6 +153,28 @@ class VacancyController extends Controller
         $bed->room->syncStatusFromBeds();
 
         return response()->json($bed->fresh());
+    }
+
+    public function uploadVrImage(Request $request, Room $room)
+    {
+        $request->validate([
+            'vr_image' => 'required|file|mimes:jpg,jpeg,png|max:10240', // max 10MB
+        ]);
+
+        // Delete the old file first, if one exists
+        if ($room->vr_asset_path) {
+            Storage::disk('public')->delete($room->vr_asset_path);
+        }
+
+        $path = $request->file('vr_image')->store('vr-assets', 'public');
+
+        $room->update(['vr_asset_path' => $path]);
+
+        return response()->json([
+            'message' => 'VR image uploaded successfully.',
+            'vr_asset_path' => $path,
+            'url' => Storage::disk('public')->url($path),
+        ]);
     }
 
     private function transformRoom(Room $room, Floor $floor): array

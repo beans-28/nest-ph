@@ -21,3 +21,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::patch('/users/{user}/grant-admin', [UserManagementController::class, 'grantAdmin']);
     Route::patch('/users/{user}/revoke-admin', [UserManagementController::class, 'revokeAdmin']);
 });
+
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::post('/rooms/{room}/vr-image', [\App\Http\Controllers\VacancyController::class, 'uploadVrImage']);
+});
