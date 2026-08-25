@@ -44,4 +44,14 @@ class Tenant extends Model
     {
         return $this->hasMany(Payment::class);
     }
+
+    public function penalties(): HasMany
+    {
+        return $this->hasMany(Penalty::class);
+    }
+
+    public function damages(): HasMany
+    {
+        return $this->hasMany(Damage::class);
+    }
 }

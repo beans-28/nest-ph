@@ -19,12 +19,18 @@ class Payment extends Model
         'payment_method',
         'reference_number',
         'payment_date',
+        'status',
+        'proof_path',
+        'review_notes',
+        'reviewed_by',
+        'reviewed_at',
         'recorded_by',
     ];
 
     protected $casts = [
         'amount_paid' => 'decimal:2',
         'payment_date' => 'date',
+        'reviewed_at' => 'datetime',
     ];
 
     public function billingStatement(): BelongsTo
@@ -40,5 +46,10 @@ class Payment extends Model
     public function recordedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    public function reviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 }

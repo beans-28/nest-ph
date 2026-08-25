@@ -7,11 +7,15 @@ use App\Models\Application;
 use App\Models\Bed;
 use App\Models\Inquiry;
 use App\Models\LeaseContract;
+use App\Models\Role;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ApplicationController extends Controller
@@ -202,9 +206,9 @@ class ApplicationController extends Controller
 
     /**
      * Admin: approve an application. This is the pivot point of onboarding —
-     * it creates (or re-links) the tenant record, creates the lease contract,
-     * and assigns the bed, all in one transaction so a partial failure can't
-     * leave the system half-onboarded.
+     * it creates (or re-links) the tenant record and their login account,
+     * creates the lease contract, and assigns the bed, all in one transaction
+     * so a partial failure can't leave the system half-onboarded.
      */
     public function approve(Request $request, Application $application): JsonResponse
     {
@@ -240,13 +244,11 @@ class ApplicationController extends Controller
             // Reuse the existing tenant record for a returning tenant, so their
             // history stays intact. Otherwise create a fresh one from the
             // details captured on the application.
-            $tenant = $returningTenant ?? Tenant::create([
-                'full_name' => $application->full_name,
-                'contact_number' => $application->contact_number,
-                'email' => $application->email,
-                'emergency_contact_name' => $application->emergency_contact_name,
-                'emergency_contact_number' => $application->emergency_contact_number,
-            ]);
+            $tenant = $returningTenant;
+
+            if (! $tenant) {
+                $tenant = $this->createTenantWithLogin($application);
+            }
 
             $contract = LeaseContract::create([
                 'application_id' => $application->id,
@@ -347,6 +349,56 @@ class ApplicationController extends Controller
         return response()->json([
             'message' => 'Application cancelled.',
             'application' => $application->fresh(),
+        ]);
+    }
+
+    /**
+     * Creates the tenant record together with a login account, so an approved
+     * tenant can actually sign in to the portal. Without this link, the
+     * tenant-scoped routes have no tenant to resolve from the session.
+     *
+     * If the applicant gave no email there's no way to create an account, so
+     * the tenant record is created unlinked — an admin can attach a login
+     * later once contact details are on file.
+     */
+    private function createTenantWithLogin(Application $application): Tenant
+    {
+        $tenantUser = null;
+
+        if (! empty($application->email)) {
+            $tenantRole = Role::firstOrCreate(['role_name' => 'tenant']);
+
+            $tenantUser = User::where('email', $application->email)->first();
+
+            if (! $tenantUser) {
+                $temporaryPassword = Str::random(12);
+
+                $tenantUser = User::create([
+                    'name' => $application->full_name,
+                    'email' => $application->email,
+                    'password' => Hash::make($temporaryPassword),
+                    'role_id' => $tenantRole->id,
+                    'is_active' => true,
+                ]);
+
+                // The temporary password is only logged for now — replace this
+                // with a welcome email once mail delivery is set up. Until then,
+                // the tenant should use "Forgot Password" to set their own.
+                $this->notify('tenant.account_created', [
+                    'user_id' => $tenantUser->id,
+                    'email' => $tenantUser->email,
+                    'temporary_password' => $temporaryPassword,
+                ]);
+            }
+        }
+
+        return Tenant::create([
+            'user_id' => $tenantUser?->id,
+            'full_name' => $application->full_name,
+            'contact_number' => $application->contact_number,
+            'email' => $application->email,
+            'emergency_contact_name' => $application->emergency_contact_name,
+            'emergency_contact_number' => $application->emergency_contact_number,
         ]);
     }
 
