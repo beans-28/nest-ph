@@ -18,6 +18,8 @@ class BillingStatement extends Model
         'billing_period_end',
         'due_date',
         'base_rent',
+        'utilities_amount',
+        'wifi_amount',
         'penalty_amount',
         'total_amount',
         'status',
@@ -28,6 +30,8 @@ class BillingStatement extends Model
         'billing_period_end' => 'date',
         'due_date' => 'date',
         'base_rent' => 'decimal:2',
+        'utilities_amount' => 'decimal:2',
+        'wifi_amount' => 'decimal:2',
         'penalty_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
     ];
