@@ -12,10 +12,11 @@ class Room extends Model
 
     protected $fillable = [
         'room_no',
-        'floor',
+        'floor_id',
         'room_type',
         'monthly_rate',
         'status',
+        'vr_asset_path'
     ];
 
     protected $casts = [
@@ -25,5 +26,20 @@ class Room extends Model
     public function beds(): HasMany
     {
         return $this->hasMany(Bed::class);
+    }
+    
+    public function floor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Floor::class);
+    }
+
+    public function syncStatusFromBeds(): void
+    {
+        if ($this->status === 'maintenance') {
+            return;
+        }
+
+    $hasVacant = $this->beds()->where('status', 'vacant')->exists();
+    $this->update(['status' => $hasVacant ? 'available' : 'full']);
     }
 }

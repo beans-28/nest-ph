@@ -18,24 +18,38 @@ class AuthController extends Controller
         $remember = $request->boolean('remember');
 
         if (! Auth::attempt($credentials, $remember)) {
-            return response()->json([
-                'message' => 'Invalid credentials.',
-            ], 401);
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json([
+                    'message' => 'Invalid credentials.',
+                ], 401);
+            }
+
+            return back()->withErrors(['email' => 'Invalid credentials.'])->withInput();
         }
 
         $request->session()->regenerate();
 
         $user = Auth::user();
 
-        return response()->json([
-            'message' => 'Logged in successfully.',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-            ],
-        ], 200);
+        // Decide a post-login redirect target. The shared `/dashboard`
+        // route already renders admin or tenant views depending on the
+        // authenticated user's relations/role, so redirect there.
+        $redirect = url('/dashboard');
+
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'message' => 'Logged in successfully.',
+                'redirect' => $redirect,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
+            ], 200);
+        }
+
+        return redirect()->intended('/dashboard');
     }
 
     public function logout(Request $request)

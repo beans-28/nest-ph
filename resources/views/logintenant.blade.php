@@ -3,57 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | NEST.PH</title>
-   <style>
-   
-:root {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-}
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Tenant Login | NEST.PH</title>
+    <style>
+:root { --font-body: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);color:#06310c;background:linear-gradient(180deg,#293c2d 0%,#273826 100%);min-height:100vh}
+.topbar{width:100%;padding:18px 48px;display:flex;justify-content:space-between;align-items:center;background:rgba(99,133,104,0.96)}
+.page-wrapper{display:grid;grid-template-columns:1fr 1.05fr;max-width:1180px;margin:36px auto 64px;gap:40px;padding:0 48px}
+.panel-left{display:flex;flex-direction:column;justify-content:center;gap:30px;color:#f7f9f5}
+.brand-mark{width:240px;height:240px;border-radius:45px;background:linear-gradient(180deg,#7ac07d 0%,#39593a 100%);display:flex;align-items:center;justify-content:center}
+.panel-right{background:#eef0ed;border-radius:36px;padding:46px 42px 38px}
+.tab-header{display:inline-flex;border-radius:999px;background:rgba(79,99,77,0.16);padding:6px;margin-bottom:30px}
+.tab-header button{border:none;background:transparent;padding:16px 34px;border-radius:999px;font-size:13px;color:#5c725d;cursor:pointer}
+.tab-header button.active{background:#f7f8f4;color:#2f4f34}
+.form-group{display:grid;gap:12px;margin-bottom:22px}
+.form-group label{font-size:12px;font-weight:600;color:#556a56;text-transform:uppercase}
+.form-group input{border:none;border-bottom:1px solid #a6b69f;padding:10px 6px 8px}
+.btn-login{width:100%;margin:18px 0 24px;padding:16px 0;border-radius:12px;background:#4f6f52;color:#f7f9f2;font-weight:700}
+.password-links{display:flex;justify-content:center;gap:10px;margin:6px 0 14px}
+@media(max-width:1024px){.page-wrapper{grid-template-columns:1fr;padding:0 28px}.panel-left{order:2;text-align:center}.brand-mark{margin:0 auto}}
+</style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="left">
+            <a href="#">VR TOUR</a>
+            <a href="#">ROOMS</a>
+            <a href="#">HOME</a>
+            <span class="label">Dorm Info</span>
+        </div>
+        <div class="right">
+            <span class="logo">NEST.PH</span>
+            <button type="button">Admin</button>
+            <button type="button">Apply</button>
+            <button type="button" class="primary">Log In</button>
+        </div>
+    </header>
 
-        body {
-            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            color: #06310c;
-            background: linear-gradient(180deg, #293c2d 0%, #273826 100%);
-            min-height: 100vh;
-        }
+    <main class="page-wrapper">
+        <section class="panel-left">
+            <button class="back-button" type="button" aria-label="Go back">←</button>
+            <h1>Study hard, make friends, and live your NEST life.</h1>
+            <div class="brand-mark"><span>N</span></div>
+        </section>
 
-        .topbar {
-            width: 100%;
-            padding: 18px 48px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(99, 133, 104, 0.96);
-            position: sticky;
-            top: 0;
-            z-index: 10;
+        <section class="panel-right">
+            <div class="tab-header">
+                <button type="button" class="active">TENANT</button>
+                <button type="button" data-href="{{ route('login.admin') }}" onclick="window.location.href=this.dataset.href">ADMIN</button>
+            </div>
+            <h2>Tenant Log In</h2>
+            <form id="login-form" action="/tenant/login" method="POST">
+                @csrf
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input id="email" name="email" type="email" placeholder="you@example.com" required />
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" placeholder="Enter password" required />
+                </div>
+                <button type="submit" class="btn-login">
+                    <span class="spinner"></span>
+                    <span class="btn-text">Login</span>
+                </button>
+            </form>
+<script>
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const button = this.querySelector('.btn-login');
+    if (button.disabled) return;
+    button.disabled = true;
+    button.classList.add('loading');
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    try {
+        const response = await fetch('/tenant/login', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+            window.location.href = data.redirect || '/dashboard';
+        } else {
+            alert(data.message || 'Invalid credentials.');
+            button.disabled = false;
+            button.classList.remove('loading');
         }
+    } catch (err) {
+        console.error(err);
+        button.disabled = false;
+        button.classList.remove('loading');
+    }
+});
+</script>
 
-        .topbar .left,
-        .topbar .right {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-        }
-
-        .topbar a,
-        .topbar button {
-            color: #f4f7f1;
-            text-decoration: none;
-            font-size: 13px;
-            letter-spacing: .02em;
-        }
-
-        .topbar a:hover,
-        .topbar button:hover {
-            color: #d8e4d3;
-        }
+            <div class="password-links">
+                <a href="{{ route('passwords', ['from' => 'tenant']) }}">Forgot Password?</a>
+                <span class="divider">•</span>
+                <a href="{{ route('passwords', ['from' => 'tenant']) }}">Update Password</a>
+            </div>
+            <p class="help-text">Don't have an account? <a href="#">Signup Here</a></p>
+        </section>
+    </main>
+</body>
+</html>
 
         .topbar .logo {
             font-size: 18px;
@@ -356,7 +417,11 @@
         <section class="panel-right">
             <div class="tab-header">
                 <button type="button" class="active">TENANT</button>
+<<<<<<< HEAD
                 <button type="button">ADMIN</button>
+=======
+                <button type="button" data-href="{{ route('login.admin') }}" onclick="window.location.href=this.dataset.href">ADMIN</button>
+>>>>>>> 19dca98bca881921813252e5f798da8fb35a8945
             </div>
             <h2>Tenant Log In</h2>
             <form id="login-form" action="/tenant/login" method="POST">
@@ -379,7 +444,11 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
     const button = this.querySelector('.btn-login');
     if (button.disabled) return;
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 19dca98bca881921813252e5f798da8fb35a8945
     button.disabled = true;
     button.classList.add('loading');
 
@@ -389,7 +458,11 @@ document.getElementById('login-form').addEventListener('submit', async function(
     try {
         const response = await fetch("/tenant/login", {
             method: 'POST',
+<<<<<<< HEAD
             headers: { 
+=======
+            headers: {
+>>>>>>> 19dca98bca881921813252e5f798da8fb35a8945
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 // Laravel requires this token for security:
@@ -400,7 +473,11 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
         if (response.ok) {
             alert("Login successful!");
+<<<<<<< HEAD
             window.location.href = "/dashboard"; 
+=======
+            window.location.href = "/dashboard";
+>>>>>>> 19dca98bca881921813252e5f798da8fb35a8945
         } else {
             const data = await response.json();
             alert(data.message || "Invalid credentials.");
@@ -415,14 +492,26 @@ document.getElementById('login-form').addEventListener('submit', async function(
 });
 </script>
 
+<<<<<<< HEAD
             
             <div class="password-links">
                 <a href="{{ route('password.request') }}">Forgot Password?</a>
                 <span class="divider">•</span>
                 <a href="{{ route('passwords') }}">Update Password</a>
+=======
+
+            <div class="password-links">
+                <a href="{{ route('passwords', ['from' => 'tenant']) }}">Forgot Password?</a>
+                <span class="divider">•</span>
+                <a href="{{ route('passwords', ['from' => 'tenant']) }}">Update Password</a>
+>>>>>>> 19dca98bca881921813252e5f798da8fb35a8945
             </div>
             <p class="help-text">Don't have an account? <a href="#">Signup Here</a></p>
         </section>
     </main>
 </body>
+<<<<<<< HEAD
 </html>
+=======
+</html>
+>>>>>>> 19dca98bca881921813252e5f798da8fb35a8945

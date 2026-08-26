@@ -12,20 +12,32 @@ class LeaseContract extends Model
     use HasFactory;
 
     protected $fillable = [
+        'application_id',
         'tenant_id',
         'bed_id',
         'inquiry_id',
         'start_date',
         'end_date',
         'monthly_rate',
+        'esign_status',
+        'signed_document_url',
+        'signed_at',
         'status',
+        'created_by',
+        'approved_by',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
         'monthly_rate' => 'decimal:2',
+        'signed_at' => 'datetime',
     ];
+
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
+    }
 
     public function tenant(): BelongsTo
     {
@@ -40,6 +52,16 @@ class LeaseContract extends Model
     public function inquiry(): BelongsTo
     {
         return $this->belongsTo(Inquiry::class);
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
     }
 
     public function billingStatements(): HasMany

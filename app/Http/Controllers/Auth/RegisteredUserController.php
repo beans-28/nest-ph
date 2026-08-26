@@ -36,10 +36,13 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $tenantRole = \App\Models\Role::where('role_name', 'tenant')->firstOrFail();
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role_id' => $tenantRole->id,
         ]);
 
         event(new Registered($user));

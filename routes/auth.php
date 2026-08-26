@@ -17,8 +17,10 @@ Route::middleware('guest')->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
+    // Redirect the default auth GET /login to the custom admin login page
+    Route::get('login', function () {
+        return redirect()->route('login.admin');
+    })->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store'])
         ->name('login');

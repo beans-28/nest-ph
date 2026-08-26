@@ -20,9 +20,15 @@
 			animation: app-spin 0.9s linear infinite;
 		}
 
+<<<<<<< HEAD
 	app-spin {
 			to { transform: rotate(360deg); }
 		}
+=======
+	@keyframes app-spin {
+    to { transform: rotate(360deg); }
+	}
+>>>>>>> 19dca98bca881921813252e5f798da8fb35a8945
 
 		
 		.app-spinner--small { width: 32px; height: 32px; border-width:4px; }
@@ -31,9 +37,17 @@
 	
 
 
+<<<<<<< HEAD
 	$overlay = $overlay ?? true;
 	$variant = $variant ?? null; // 'small' or 'dark'
 	$variantClass = $variant ? 'app-spinner--'.$variant : '';
+=======
+	@php
+    	$overlay = $overlay ?? true;
+    	$variant = $variant ?? null;
+    	$variantClass = $variant ? 'app-spinner--'.$variant : '';
+	@endphp
+>>>>>>> 19dca98bca881921813252e5f798da8fb35a8945
 
 
 	<div class="app-loading-overlay" aria-hidden="false" role="status">
