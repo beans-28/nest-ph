@@ -55,7 +55,7 @@ class BillingController extends Controller
     {
         $billingStatement->load([
             'tenant',
-            'contract.bed.room:id,room_no,room_type',
+            'contract.bed.room.floor',
             'payments.recordedBy:id,name',
         ]);
 
@@ -121,8 +121,7 @@ class BillingController extends Controller
 
     /**
      * Admin: pull any outstanding unbilled penalties for this statement's
-     * tenant onto it, without generating a new period. Useful when a damage
-     * is recorded after that month's statement already went out.
+     * tenant onto it, without generating a new period.
      */
     public function attachPenalties(BillingStatement $billingStatement): JsonResponse
     {
@@ -151,15 +150,17 @@ class BillingController extends Controller
     /**
      * Core billing-generation logic.
      *
-     * Monthly rent from the contract's current monthly_rate, one statement per
-     * monthly period. Due date is a grace period after the period opens.
-     * Period rolls forward from the last statement's end + 1 day, or the
-     * contract's start_date if none exists yet — and only once that period has
-     * actually begun, so future months aren't billed early.
+     * Matches Use Case Report Table 19 ("Generate Billing Statement"):
+     *   1. Compute base rent for the tenant's assigned room.
+     *   2. Add the fixed utility charges among tenants sharing the same
+     *      floor/facility (see splitUtilityCost()).
+     *   3. Check for existing unpaid balance and apply late payment penalty
+     *      if applicable (handled by foldPenaltiesInto(), Week 5 Tue's work).
      *
-     * Any of the tenant's active, unbilled penalties are folded in as line
-     * items at the same time (Tuesday's "penalty auto-appears as a billing
-     * line item" requirement).
+     * One statement per monthly period. Due date is a grace period after the
+     * period opens. Period rolls forward from the last statement's end + 1
+     * day, or the contract's start_date if none exists — and only once that
+     * period has actually begun, so future months aren't billed early.
      */
     private function generateForContract(LeaseContract $contract): ?BillingStatement
     {
@@ -171,12 +172,10 @@ class BillingController extends Controller
             ? $lastBill->billing_period_end->copy()->addDay()
             : $contract->start_date->copy();
 
-        // Not due yet — don't generate future periods early.
         if ($periodStart->isAfter(now())) {
             return null;
         }
 
-        // Don't bill past the contract's end date, if it has one.
         if ($contract->end_date && $periodStart->isAfter($contract->end_date)) {
             return null;
         }
@@ -184,7 +183,9 @@ class BillingController extends Controller
         $periodEnd = $periodStart->copy()->addMonthNoOverflow()->subDay();
         $dueDate = $periodStart->copy()->addDays(self::DUE_DATE_GRACE_DAYS);
 
-        return DB::transaction(function () use ($contract, $periodStart, $periodEnd, $dueDate) {
+        [$utilitiesShare, $wifiShare] = $this->splitUtilityCost($contract);
+
+        return DB::transaction(function () use ($contract, $periodStart, $periodEnd, $dueDate, $utilitiesShare, $wifiShare) {
             $bill = BillingStatement::create([
                 'contract_id' => $contract->id,
                 'tenant_id' => $contract->tenant_id,
@@ -192,8 +193,10 @@ class BillingController extends Controller
                 'billing_period_end' => $periodEnd,
                 'due_date' => $dueDate,
                 'base_rent' => $contract->monthly_rate,
+                'utilities_amount' => $utilitiesShare,
+                'wifi_amount' => $wifiShare,
                 'penalty_amount' => 0,
-                'total_amount' => $contract->monthly_rate,
+                'total_amount' => $contract->monthly_rate + $utilitiesShare + $wifiShare,
                 'status' => 'unpaid',
             ]);
 
@@ -201,6 +204,35 @@ class BillingController extends Controller
 
             return $bill->fresh();
         });
+    }
+
+    /**
+     * Splits this contract's floor's fixed monthly utility/wifi cost evenly
+     * among all tenants currently on active contracts on that same floor —
+     * "the fixed utility charges among tenants sharing the same floor" per
+     * the use case report. Falls back to 0/0 if the floor has no configured
+     * cost, or (edge case) no active tenants to split it across.
+     */
+    private function splitUtilityCost(LeaseContract $contract): array
+    {
+        $floor = $contract->bed?->room?->floor;
+
+        if (! $floor) {
+            return [0, 0];
+        }
+
+        $activeTenantsOnFloor = LeaseContract::where('status', 'active')
+            ->whereHas('bed.room', fn ($q) => $q->where('floor_id', $floor->id))
+            ->count();
+
+        if ($activeTenantsOnFloor === 0) {
+            return [0, 0];
+        }
+
+        $utilitiesShare = round($floor->monthly_utility_cost / $activeTenantsOnFloor, 2);
+        $wifiShare = round($floor->monthly_wifi_cost / $activeTenantsOnFloor, 2);
+
+        return [$utilitiesShare, $wifiShare];
     }
 
     /**
@@ -226,16 +258,12 @@ class BillingController extends Controller
 
         $bill->update([
             'penalty_amount' => $penaltyTotal,
-            'total_amount' => $bill->base_rent + $penaltyTotal,
+            'total_amount' => $bill->base_rent + $bill->utilities_amount + $bill->wifi_amount + $penaltyTotal,
         ]);
 
         return $penalties->count();
     }
 
-    /**
-     * Adds a computed `amount_paid` / `balance` without storing them — always
-     * derived fresh from the actual payment records.
-     */
     private function withBalance(BillingStatement $bill): BillingStatement
     {
         $paid = $bill->payments->sum('amount_paid');

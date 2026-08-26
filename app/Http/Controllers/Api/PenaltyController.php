@@ -283,7 +283,7 @@ class PenaltyController extends Controller
 
         $bill->update([
             'penalty_amount' => $activePenaltyTotal,
-            'total_amount' => $bill->base_rent + $activePenaltyTotal,
+            'total_amount' => $bill->base_rent + $bill->utilities_amount + $bill->wifi_amount + $activePenaltyTotal,
         ]);
     }
 }

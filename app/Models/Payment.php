@@ -21,6 +21,7 @@ class Payment extends Model
         'payment_date',
         'status',
         'proof_path',
+        'notes',
         'review_notes',
         'reviewed_by',
         'reviewed_at',

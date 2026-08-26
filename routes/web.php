@@ -1,17 +1,19 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -45,6 +47,27 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/vacancy/rooms/{room}', [VacancyController::class, 'destroyRoom'])->name('vacancy.rooms.destroy');
 
     Route::patch('/vacancy/beds/{bed}', [VacancyController::class, 'updateBedStatus'])->name('vacancy.beds.update');
+});
+
+/*
+|--------------------------------------------------------------------------
+| TENANT BILLING PAGE (auth + tenant middleware)
+|--------------------------------------------------------------------------
+| Paths match the already-built tenantbilling.blade.php / tenantdashboard's
+| JS exactly (no /api prefix) — see TenantPortalController for the same
+| logic exposed under /api/my/... for any other API consumer.
+*/
+Route::middleware(['auth', 'tenant'])->group(function () {
+    Route::get('/billing', function () {
+        return view('tenantbilling');
+    })->name('tenant.billing');
+
+    Route::prefix('my/billing')->group(function () {
+        Route::get('/summary', [TenantPortalController::class, 'me']);
+        Route::get('/bills', [TenantPortalController::class, 'myBills']);
+        Route::get('/bills/{billingStatement}', [TenantPortalController::class, 'showBill']);
+        Route::post('/bills/{billingStatement}/payment-proof', [TenantPortalController::class, 'submitProof']);
+    });
 });
 
 require __DIR__.'/auth.php';

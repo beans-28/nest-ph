@@ -40,17 +40,10 @@ class TenantPortalController extends Controller
         return $statement;
     }
 
-    private function ownedPayment(Request $request, Payment $payment): Payment
-    {
-        if ($payment->tenant_id !== $this->tenant($request)->id) {
-            throw new NotFoundHttpException('Payment not found.');
-        }
-
-        return $payment;
-    }
-
     /**
-     * Tenant: my profile and current account summary.
+     * Tenant: my profile + active contract summary.
+     * Matches the frontend's `/my/billing/summary` call — expects
+     * `tenant.full_name` and `contract.bed.room.room_no`.
      */
     public function me(Request $request): JsonResponse
     {
@@ -60,14 +53,15 @@ class TenantPortalController extends Controller
             'tenant' => $tenant->only(['id', 'full_name', 'email', 'contact_number']),
             'contract' => $tenant->contracts()
                 ->where('status', 'active')
-                ->with('bed:id,room_id,bed_label', 'bed.room:id,room_no,room_type')
+                ->with('bed.room.floor')
                 ->first(),
             'summary' => $this->accountSummary($tenant),
         ]);
     }
 
     /**
-     * Tenant: my billing statements.
+     * Tenant: my billing statements. Wrapped in {bills: [...]} to match what
+     * the frontend expects from `/my/billing/bills`.
      */
     public function myBills(Request $request): JsonResponse
     {
@@ -92,7 +86,7 @@ class TenantPortalController extends Controller
     }
 
     /**
-     * Tenant: one of my statements, with its penalty line items and payments.
+     * Tenant: one of my statements, with penalty line items and payments.
      */
     public function showBill(Request $request, BillingStatement $billingStatement): JsonResponse
     {
@@ -152,6 +146,7 @@ class TenantPortalController extends Controller
             'payment_method' => ['required', Rule::in(['gcash', 'bank_transfer', 'other'])],
             'reference_number' => ['nullable', 'string', 'max:100'],
             'payment_date' => ['required', 'date', 'before_or_equal:today'],
+            'notes' => ['nullable', 'string', 'max:500'],
             'proof' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
         ], [
             'proof.required' => 'Please attach a screenshot or file showing proof of payment.',
@@ -177,6 +172,7 @@ class TenantPortalController extends Controller
             'payment_method' => $data['payment_method'],
             'reference_number' => $data['reference_number'] ?? null,
             'payment_date' => $data['payment_date'],
+            'notes' => $data['notes'] ?? null,
             'status' => 'pending',
             'proof_path' => $request->file('proof')->store('payment-proofs', 'public'),
             'created_at' => now(),
@@ -196,12 +192,12 @@ class TenantPortalController extends Controller
 
     /**
      * Tenant: receipt data for one of MY approved payments.
-     * Only approved payments produce a receipt — a pending or rejected
-     * submission isn't proof of anything yet.
      */
     public function receipt(Request $request, Payment $payment): JsonResponse
     {
-        $payment = $this->ownedPayment($request, $payment);
+        if ($payment->tenant_id !== $this->tenant($request)->id) {
+            throw new NotFoundHttpException('Payment not found.');
+        }
 
         if ($payment->status !== 'approved') {
             return response()->json([
