@@ -1,0 +1,24 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('rooms', function (Blueprint $table) {
+            $table->string('vr_caption', 255)->nullable()->after('vr_asset_path');
+            $table->enum('vr_visibility', ['public', 'locked', 'draft'])
+                ->default('draft')->after('vr_caption');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('rooms', function (Blueprint $table) {
+            $table->dropColumn(['vr_caption', 'vr_visibility']);
+        });
+    }
+};

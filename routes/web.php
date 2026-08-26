@@ -47,6 +47,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/vacancy/rooms/{room}', [VacancyController::class, 'destroyRoom'])->name('vacancy.rooms.destroy');
 
     Route::patch('/vacancy/beds/{bed}', [VacancyController::class, 'updateBedStatus'])->name('vacancy.beds.update');
+
+    // --- VR Management ---
+    Route::get('/vr-management', [VacancyController::class, 'vrIndex'])->name('vr.index');
+    Route::post('/vacancy/rooms/{room}/vr-image', [VacancyController::class, 'uploadVrImage']);
+    Route::delete('/vacancy/rooms/{room}/vr-image', [VacancyController::class, 'deleteVrImage']);
+    Route::patch('/vacancy/rooms/{room}/vr-info', [VacancyController::class, 'updateVrInfo']);
 });
 
 /*

@@ -13,7 +13,6 @@ use App\Http\Controllers\Api\PenaltyController;
 use App\Http\Controllers\Api\DamageController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\TenantPortalController;
-use App\Http\Controllers\VacancyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -74,8 +73,11 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::patch('/users/{user}/grant-admin', [UserManagementController::class, 'grantAdmin']);
     Route::patch('/users/{user}/revoke-admin', [UserManagementController::class, 'revokeAdmin']);
 
-    // --- VR image upload (Week 3) ---
-    Route::post('/rooms/{room}/vr-image', [VacancyController::class, 'uploadVrImage']);
+    // NOTE: VR image upload/delete/info moved to routes/web.php under
+    // /vacancy/rooms/{room}/vr-... to match the VR Management page's actual
+    // frontend calls. The old /api/rooms/{room}/vr-image route (Week 3) was
+    // removed here since nothing else was using it — same pattern as the
+    // Week 3 Floor/Room/Bed API cleanup.
 
     // --- Inquiries (Week 4, Mon) ---
     Route::get('/inquiries', [InquiryController::class, 'index']);
@@ -103,7 +105,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/billing/contracts/{contract}/generate', [BillingController::class, 'generateForContractEndpoint']);
     Route::post('/billing/{billingStatement}/attach-penalties', [BillingController::class, 'attachPenalties']);
 
-    // --- Payments (Record Cash Payment / review of tenant-submitted proofs) ---
+    // --- Payments ---
     Route::get('/payments', [PaymentController::class, 'index']);
     Route::get('/payments/{payment}', [PaymentController::class, 'show']);
     Route::post('/billing/{billingStatement}/payments/cash', [PaymentController::class, 'recordCash']);

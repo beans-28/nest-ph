@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Room extends Model
@@ -16,7 +17,9 @@ class Room extends Model
         'room_type',
         'monthly_rate',
         'status',
-        'vr_asset_path'
+        'vr_asset_path',
+        'vr_caption',
+        'vr_visibility',
     ];
 
     protected $casts = [
@@ -27,8 +30,8 @@ class Room extends Model
     {
         return $this->hasMany(Bed::class);
     }
-    
-    public function floor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+
+    public function floor(): BelongsTo
     {
         return $this->belongsTo(Floor::class);
     }
@@ -39,7 +42,7 @@ class Room extends Model
             return;
         }
 
-    $hasVacant = $this->beds()->where('status', 'vacant')->exists();
-    $this->update(['status' => $hasVacant ? 'available' : 'full']);
+        $hasVacant = $this->beds()->where('status', 'vacant')->exists();
+        $this->update(['status' => $hasVacant ? 'available' : 'full']);
     }
 }

@@ -14,6 +14,7 @@ class VacancyController extends Controller
 {
     private const BED_STATUSES = ['vacant', 'occupied', 'maintenance'];
     private const ROOM_STATUSES = ['available', 'full', 'maintenance'];
+    private const VR_VISIBILITIES = ['public', 'locked', 'draft'];
 
     public function index()
     {
@@ -111,7 +112,6 @@ class VacancyController extends Controller
             'status' => $data['status'] ?? $room->status,
         ]);
 
-        // Position-based sync: update existing beds in place, add/remove only the difference
         $existingBeds = $room->beds()->orderBy('id')->get();
 
         for ($i = 0; $i < $data['bed_count']; $i++) {
@@ -155,13 +155,26 @@ class VacancyController extends Controller
         return response()->json($bed->fresh());
     }
 
+    /**
+     * Renders the VR Management page — every room, with its current VR
+     * image/caption/visibility, grouped as a flat list (the page tabs
+     * between rooms itself rather than grouping by floor).
+     */
+    public function vrIndex()
+    {
+        $rooms = Room::with('floor')->orderBy('room_no')->get()
+            ->map(fn ($room) => $this->transformVrRoom($room))
+            ->values();
+
+        return view('vrmanagement', compact('rooms'));
+    }
+
     public function uploadVrImage(Request $request, Room $room)
     {
         $request->validate([
             'vr_image' => 'required|file|mimes:jpg,jpeg,png|max:10240', // max 10MB
         ]);
 
-        // Delete the old file first, if one exists
         if ($room->vr_asset_path) {
             Storage::disk('public')->delete($room->vr_asset_path);
         }
@@ -175,6 +188,47 @@ class VacancyController extends Controller
             'vr_asset_path' => $path,
             'url' => Storage::disk('public')->url($path),
         ]);
+    }
+
+    /**
+     * Removes a room's VR panorama image. Distinct from re-uploading — this
+     * clears the slot entirely rather than replacing it.
+     */
+    public function deleteVrImage(Room $room): JsonResponse
+    {
+        if (! $room->vr_asset_path) {
+            return response()->json([
+                'message' => 'This room has no VR image to delete.',
+            ], 409);
+        }
+
+        Storage::disk('public')->delete($room->vr_asset_path);
+        $room->update(['vr_asset_path' => null]);
+
+        return response()->json([
+            'message' => 'VR image deleted.',
+            'room' => $this->transformVrRoom($room->fresh('floor')),
+        ]);
+    }
+
+    /**
+     * Updates a room's VR caption and visibility (public / locked / draft).
+     * Separate from the image upload itself, matching the VR Management
+     * page's "Save" action and its quick lock/unlock toggle.
+     */
+    public function updateVrInfo(Request $request, Room $room): JsonResponse
+    {
+        $data = $request->validate([
+            'vr_caption' => ['nullable', 'string', 'max:255'],
+            'vr_visibility' => ['required', Rule::in(self::VR_VISIBILITIES)],
+        ]);
+
+        $room->update([
+            'vr_caption' => $data['vr_caption'] ?? null,
+            'vr_visibility' => $data['vr_visibility'],
+        ]);
+
+        return response()->json($this->transformVrRoom($room->fresh('floor')));
     }
 
     private function transformRoom(Room $room, Floor $floor): array
@@ -191,6 +245,20 @@ class VacancyController extends Controller
                 'bed_label' => $bed->bed_label,
                 'status' => $bed->status,
             ])->values(),
+        ];
+    }
+
+    private function transformVrRoom(Room $room): array
+    {
+        return [
+            'id' => $room->id,
+            'room_no' => $room->room_no,
+            'floor' => $room->floor ? (string) $room->floor->floor_number : null,
+            'vr_asset_path' => $room->vr_asset_path,
+            'vr_url' => $room->vr_asset_path ? Storage::disk('public')->url($room->vr_asset_path) : null,
+            'vr_caption' => $room->vr_caption,
+            'vr_visibility' => $room->vr_visibility,
+            'updated_at' => $room->updated_at?->format('M j, Y g:ia'),
         ];
     }
 }
