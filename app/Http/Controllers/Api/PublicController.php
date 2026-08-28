@@ -226,4 +226,23 @@ class PublicController extends Controller
  
         return response()->json($beds);
     }
+
+        public function dormInfoPage(): \Illuminate\View\View
+    {
+        $profile = DormitoryProfile::current();
+ 
+        return view('publicdorminfo', [
+            'dormName' => $profile->dorm_name,
+            'description' => $profile->description,
+            'address' => $profile->address,
+            'contactNumber' => $profile->contact_number,
+            'contactEmail' => $profile->contact_email,
+            'policiesFileUrl' => $profile->policies_file_path
+                ? Storage::disk('public')->url($profile->policies_file_path)
+                : null,
+            'paymentsAndFees' => $profile->payments_and_fees,
+            'houseRules' => $profile->house_rules,
+            'checkoutProcedures' => $profile->checkout_procedures,
+        ]);
+    }
 }

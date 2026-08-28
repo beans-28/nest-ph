@@ -7,7 +7,6 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
-use App\Http\Controllers\Auth\PasswordResetCodeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,9 +24,7 @@ Route::get('/vr-tour', function () {
     return view('publicvr');
 })->name('public.vr');
 
-Route::get('/dorm-info', function () {
-    return view('publicdorminfo');
-})->name('public.dorminfo');
+Route::get('/dorm-info', [PublicController::class, 'dormInfoPage'])->name('public.dorminfo');
 
 Route::get('/inquire', function () {
     return view('publicinquiry');
@@ -36,12 +33,6 @@ Route::get('/inquire', function () {
 Route::get('/apply', function () {
     return view('publicapply');
 })->name('public.apply');
-
-Route::post('/password/send-code', [PasswordResetCodeController::class, 'send'])->name('password.code.send');
-
-Route::post('/password/verify-code', [PasswordResetCodeController::class, 'verify'])->name('password.code.verify');
-
-Route::post('/password/reset-with-code', [PasswordResetCodeController::class, 'reset'])->name('password.code.reset');
 
 Route::prefix('public-api')->group(function () {
     Route::get('/rooms', [PublicController::class, 'rooms']);

@@ -15,6 +15,7 @@ class DormitoryProfile extends Model
         'contact_number',
         'contact_email',
         'logo_path',
+        'policies_file_path',
         'payments_and_fees',
         'house_rules',
         'checkout_procedures',
