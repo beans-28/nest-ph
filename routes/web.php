@@ -14,9 +14,7 @@ use App\Http\Controllers\VacancyController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::get('/', [PublicController::class, 'home'])->name('home');
 
 Route::get('/rooms', function () {
     return view('publicrooms');

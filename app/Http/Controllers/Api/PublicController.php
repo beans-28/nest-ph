@@ -15,6 +15,29 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class PublicController extends Controller
 {
     /**
+     * Landing page. Server-renders the real "Beds Available" stat; the rest
+     * of the hero stats (Happy Tenants, Star Ratings) are static marketing
+     * copy per the Figma design — no backing data exists for those yet
+     * (reviews aren't built, Week 7 scope).
+     */
+    public function home()
+    {
+        $availableBeds = Room::withCount([
+            'beds as vacant_beds_count' => fn ($q) => $q->where('status', 'vacant'),
+        ])->get()->sum('vacant_beds_count');
+
+        $profile = DormitoryProfile::current();
+
+        return view('welcome', [
+            'availableBeds' => $availableBeds,
+            'dormName' => $profile->dorm_name,
+            'contactNumber' => $profile->contact_number,
+            'contactEmail' => $profile->contact_email,
+            'address' => $profile->address,
+        ]);
+    }
+
+    /**
      * Public room listing for the browse page.
      *
      * Only exposes public-safe fields — no timestamps, no internal metadata.
