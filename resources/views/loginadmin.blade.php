@@ -11,7 +11,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html, body { overflow-x: hidden; }
+        .page-wrap { overflow-x: hidden; }
 
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
@@ -37,43 +37,42 @@
 
         .topnav {
             background: linear-gradient(90deg, #567357, #a2d9a4);
-            padding: 20px 80px;
+            padding: 14px clamp(20px, 5vw, 64px);
             display: flex;
             align-items: center;
-            gap: 48px;
+            gap: clamp(16px, 3vw, 40px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: box-shadow 0.25s ease;
         }
-        .topnav .menu { flex: 1; display: flex; align-items: center; gap: 16px; }
+        .topnav.scrolled {
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+        }
+        .topnav .menu { flex: 1; display: flex; align-items: center; gap: 10px; }
         .topnav .menu a, .topnav .menu span {
-            color: #fff; font-weight: 500; font-size: 16px;
-            padding: 12px 8px; display: inline-flex; align-items: center; gap: 4px;
+            color: #fff; font-weight: 500; font-size: 14px;
+            padding: 10px 6px; display: inline-flex; align-items: center; gap: 4px;
             text-decoration: none;
         }
         .topnav .menu a.pill {
             border: 1px solid rgba(255,255,255,0.5);
             border-radius: 999px;
-            padding: 8px 18px;
+            padding: 7px 16px;
         }
         .topnav .menu a.pill:hover { background: rgba(255,255,255,0.12); }
         .topnav .logo {
             display: flex; align-items: center; gap: 6px;
-            color: #fff; font-weight: 700; font-size: 24px;
+            color: #fff; font-weight: 700; font-size: 19px;
             letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
         }
-        .topnav .logo .mark { width: 22px; height: 22px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
-        .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 16px; }
+        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 48px; padding: 0 24px; border: 2px solid #fff;
-            font-weight: 500; font-size: 16px; letter-spacing: 0.02em; cursor: pointer;
+            height: 40px; padding: 0 18px; border: 2px solid #fff;
+            font-weight: 500; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer;
             white-space: nowrap; text-decoration: none;
-        }
-        .btn-white { background: #fff; color: #292420; }
-        .btn-outline-white { background: transparent; color: #fff; }
-        .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 16px; }
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            height: 48px; padding: 0 24px; border: 2px solid #fff;
-            font-weight: 500; font-size: 16px; cursor: pointer; white-space: nowrap; text-decoration: none;
         }
         .btn-white { background: #fff; color: #292420; }
         .btn-outline-white { background: transparent; color: #fff; }
@@ -83,13 +82,13 @@
             display: grid;
             grid-template-columns: 37% 63%;
             align-items: stretch;
-            min-height: calc(100vh - 90px);
-            padding: 20px 60px 60px 0;
+            min-height: calc(100vh - 70px);
+            padding: clamp(16px, 3vw, 20px) clamp(24px, 5vw, 60px) clamp(24px, 5vw, 60px) 0;
         }
 
         .login-left {
             position: relative;
-            padding: 20px 40px 40px 80px;
+            padding: 16px clamp(20px, 4vw, 40px) clamp(24px, 4vw, 40px) clamp(28px, 6vw, 80px);
             display: flex;
             flex-direction: column;
         }
@@ -97,11 +96,11 @@
             background: none;
             border: none;
             color: #fff;
-            font-size: 26px;
+            font-size: 22px;
             cursor: pointer;
             line-height: 1;
             padding: 0;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
             align-self: flex-start;
         }
         .login-left-content {
@@ -113,52 +112,52 @@
         .login-left h1 {
             color: #fff;
             font-weight: 700;
-            font-size: 42px;
-            line-height: 1.15;
-            max-width: 380px;
+            font-size: clamp(24px, 3vw, 34px);
+            line-height: 1.2;
+            max-width: 340px;
         }
         .login-left h1 .accent {
             display: block;
             color: #44ad65;
             font-weight: 900;
-            font-size: 50px;
+            font-size: clamp(28px, 3.6vw, 40px);
             margin-top: 4px;
         }
         .brand-mark {
-            margin-top: 48px;
-            width: 200px;
-            height: 200px;
+            margin-top: 36px;
+            width: 150px;
+            height: 150px;
             background: linear-gradient(180deg, #567357 0%, #a2d9a4 100%);
-            border-radius: 0 100px 100px 0;
+            border-radius: 0 80px 80px 0;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .brand-mark span {
             font-family: 'Agbalumo', cursive;
-            font-size: 130px;
+            font-size: 96px;
             color: #fff;
             line-height: 1;
         }
 
         .login-right-wrap {
             position: relative;
-            padding-top: 40px;
+            padding-top: 32px;
             display: flex;
             flex-direction: column;
         }
 
         .login-right {
             background: #eeeded;
-            border-radius: 40px;
-            padding: 60px 80px 60px;
+            border-radius: 32px;
+            padding: clamp(36px, 5vw, 52px) clamp(24px, 5vw, 56px) clamp(36px, 5vw, 52px);
             flex: 1;
         }
 
         .tab-header {
             position: absolute;
             top: 0;
-            left: 40px;
+            left: 32px;
             display: inline-flex;
             border-radius: 999px;
             overflow: hidden;
@@ -167,40 +166,40 @@
         .tab-header a {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 18px 36px;
+            gap: 6px;
+            padding: 13px 26px;
             font-weight: 700;
-            font-size: 18px;
+            font-size: 14px;
             letter-spacing: 0.02em;
             text-decoration: none;
             color: #526652;
             background: #d8dcd8;
         }
         .tab-header a.active { background: #eeeded; color: #194e19; }
-        .tab-header a svg { width: 20px; height: 20px; }
+        .tab-header a svg { width: 16px; height: 16px; }
 
         .login-right h2 {
             color: #567357;
             font-weight: 700;
-            font-size: 34px;
-            margin-bottom: 32px;
-            margin-top: 24px;
+            font-size: clamp(20px, 2.4vw, 26px);
+            margin-bottom: 24px;
+            margin-top: 20px;
         }
 
-        .form-group { margin-bottom: 28px; max-width: 640px; }
+        .form-group { margin-bottom: 22px; max-width: 560px; }
         .form-group label {
             display: block;
             color: #567357;
             font-weight: 500;
-            font-size: 15px;
-            margin-bottom: 10px;
+            font-size: 13px;
+            margin-bottom: 8px;
         }
         .form-group input {
             width: 100%;
             border: none;
             border-bottom: 1px solid #a6b69f;
-            padding: 8px 4px;
-            font-size: 16px;
+            padding: 7px 4px;
+            font-size: 14px;
             background: transparent;
             color: #292420;
             outline: none;
@@ -209,15 +208,15 @@
 
         .btn-login {
             width: 100%;
-            max-width: 640px;
-            margin-top: 12px;
-            padding: 22px 0;
+            max-width: 560px;
+            margin-top: 10px;
+            padding: 17px 0;
             border: none;
             border-radius: 8px;
             background: #567357;
             color: #fff;
             font-weight: 700;
-            font-size: 16px;
+            font-size: 14px;
             letter-spacing: 0.05em;
             cursor: pointer;
             position: relative;
@@ -228,7 +227,7 @@
 
         .spinner {
             display: none;
-            width: 16px; height: 16px;
+            width: 14px; height: 14px;
             border: 2px solid rgba(255,255,255,0.3);
             border-top: 2px solid #fff;
             border-radius: 50%;
@@ -240,28 +239,28 @@
 
         .help-text {
             text-align: center;
-            margin-top: 24px;
-            max-width: 640px;
+            margin-top: 20px;
+            max-width: 560px;
             font-weight: 700;
-            font-size: 15px;
+            font-size: 13px;
             color: #292420;
         }
         .help-text a { color: #567357; text-decoration: none; }
-        .help-text.secondary { font-weight: 400; color: #4b5f4c; margin-top: 10px; }
+        .help-text.secondary { font-weight: 400; color: #4b5f4c; margin-top: 8px; }
 
         @media (max-width: 1024px) {
-            .login-grid { grid-template-columns: 1fr; padding: 20px 32px 40px; }
-            .login-left { padding: 0 0 30px; }
-            .login-right { padding: 50px 32px 40px; }
-            .tab-header { left: 20px; }
-            .topnav { padding: 20px 32px; flex-wrap: wrap; }
+            .login-grid { grid-template-columns: 1fr; padding: 20px 28px 32px; }
+            .login-left { padding: 0 0 24px; }
+            .login-right { padding: 40px 28px 32px; }
+            .tab-header { left: 16px; }
+            .topnav { padding: 14px 28px; flex-wrap: wrap; }
         }
         @media (max-width: 640px) {
-            .login-left h1 { font-size: 32px; }
-            .login-left h1 .accent { font-size: 38px; }
-            .brand-mark { width: 150px; height: 150px; }
-            .brand-mark span { font-size: 95px; }
-            .tab-header a { padding: 14px 20px; font-size: 15px; }
+            .login-left h1 { font-size: 22px; }
+            .login-left h1 .accent { font-size: 26px; }
+            .brand-mark { width: 110px; height: 110px; }
+            .brand-mark span { font-size: 70px; }
+            .tab-header a { padding: 11px 16px; font-size: 12.5px; }
         }
     </style>
 </head>
@@ -283,6 +282,7 @@
         </div>
     </nav>
 
+    <div class="page-wrap">
     <div class="login-grid">
         <div class="login-left">
             <button class="back-button" type="button" aria-label="Go back" onclick="window.location.href='{{ route('home') }}'">←</button>
@@ -327,6 +327,7 @@
             </div>
         </div>
     </div>
+    </div>
 
 <script>
 document.getElementById('login-form').addEventListener('submit', async function(e) {
@@ -365,6 +366,15 @@ document.getElementById('login-form').addEventListener('submit', async function(
         console.error("Error:", error);
         button.disabled = false;
         button.classList.remove('loading');
+    }
+});
+
+window.addEventListener('scroll', function () {
+    const nav = document.querySelector('.topnav');
+    if (window.scrollY > 10) {
+        nav.classList.add('scrolled');
+    } else {
+        nav.classList.remove('scrolled');
     }
 });
 </script>
