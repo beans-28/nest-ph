@@ -263,6 +263,103 @@
             .brand-mark span { font-size: 70px; }
             .tab-header a { padding: 11px 16px; font-size: 12.5px; }
         }
+
+        /* ===== Account locked modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .modal-overlay.visible { display: flex; }
+
+        .lockout-modal {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 360px;
+            width: 100%;
+            padding: 32px 28px 28px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .lockout-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 18px;
+            background: #f9dede;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lockout-icon svg { width: 26px; height: 26px; color: #cc3333; }
+        .lockout-modal h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: #292420;
+            margin-bottom: 14px;
+        }
+        .lockout-modal p {
+            font-size: 13px;
+            color: #4b4b4b;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .lockout-modal p strong { color: #cc3333; }
+        .lockout-box {
+            background: #fdf0f0;
+            border: 1px solid #f3cccc;
+            border-radius: 10px;
+            padding: 14px;
+            margin: 16px 0 18px;
+        }
+        .lockout-box .label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12.5px;
+            color: #292420;
+            margin-bottom: 6px;
+        }
+        .lockout-box .label svg { width: 14px; height: 14px; }
+        .lockout-timer {
+            font-size: 25px;
+            font-weight: 700;
+            color: #cc3333;
+            letter-spacing: 0.02em;
+        }
+        .lockout-note {
+            font-size: 12px;
+            color: #6b6b6b;
+            margin-bottom: 20px;
+        }
+        .lockout-modal .btn-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+        .lockout-modal .btn-login svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+        /* ===== Inline login error (replaces browser alert) ===== */
+        .login-error {
+            display: none;
+            align-items: flex-start;
+            gap: 8px;
+            margin: -8px 0 18px;
+            max-width: 560px;
+        }
+        .login-error.visible { display: flex; }
+        .login-error svg { width: 16px; height: 16px; color: #cc3333; flex-shrink: 0; margin-top: 2px; }
+        .login-error-text { display: flex; flex-direction: column; gap: 2px; }
+        .login-error-text .main { color: #cc3333; font-weight: 700; font-size: 13px; }
+        .login-error-text .sub { color: #6b6b6b; font-weight: 400; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -317,6 +414,13 @@
                         <label for="password">Password</label>
                         <input id="password" type="password" placeholder="Enter password" />
                     </div>
+                    <div class="login-error" id="loginError">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86l-8.4 14.55A1.5 1.5 0 003.19 21h17.62a1.5 1.5 0 001.3-2.59l-8.4-14.55a1.5 1.5 0 00-2.62 0z"/></svg>
+                        <span class="login-error-text">
+                            <span class="main" id="loginErrorMain"></span>
+                            <span class="sub" id="loginErrorSub"></span>
+                        </span>
+                    </div>
                     <button type="submit" class="btn-login">
                         <span class="spinner"></span>
                         <span class="btn-text">Login</span>
@@ -329,6 +433,29 @@
     </div>
     </div>
 
+    <div class="modal-overlay" id="lockoutModal">
+        <div class="lockout-modal">
+            <div class="lockout-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+            </div>
+            <h3>Account Locked</h3>
+            <p>You have exceeded the maximum number of allowed password attempts.</p>
+            <p>For your security, your account has been locked for <strong>15 minutes</strong>.</p>
+            <div class="lockout-box">
+                <div class="label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                    Try again in
+                </div>
+                <div class="lockout-timer" id="lockoutTimer">15:00</div>
+            </div>
+            <p class="lockout-note">If you didn't try to log in, please reset your password or contact the administrator.</p>
+            <a href="{{ route('passwords', ['from' => 'tenant']) }}" class="btn-login">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+                Go to Forgot Password
+            </a>
+        </div>
+    </div>
+
 <script>
 document.getElementById('login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -338,6 +465,7 @@ document.getElementById('login-form').addEventListener('submit', async function(
 
     button.disabled = true;
     button.classList.add('loading');
+    document.getElementById('loginError').classList.remove('visible');
 
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -354,20 +482,63 @@ document.getElementById('login-form').addEventListener('submit', async function(
         });
 
         if (response.ok) {
-            alert("Login successful!");
             window.location.href = "/dashboard";
-        } else {
-            const data = await response.json();
-            alert(data.message || "Invalid credentials.");
-            button.disabled = false;
-            button.classList.remove('loading');
+            return;
         }
+
+        const data = await response.json();
+
+        if (response.status === 429) {
+            showLockoutModal(data.retry_after || 900);
+        } else {
+            showInlineError(data);
+        }
+
+        button.disabled = false;
+        button.classList.remove('loading');
     } catch (error) {
         console.error("Error:", error);
         button.disabled = false;
         button.classList.remove('loading');
     }
 });
+
+function showInlineError(data) {
+    const mainText = data.attempts
+        ? `Incorrect password. ${data.attempts} of ${data.max_attempts} attempts used.`
+        : (data.message || 'Invalid credentials.');
+    const subText = data.attempts
+        ? `For your security, your account will be locked after ${data.max_attempts} failed attempts.`
+        : '';
+
+    document.getElementById('loginErrorMain').textContent = mainText;
+    document.getElementById('loginErrorSub').textContent = subText;
+    document.getElementById('loginError').classList.add('visible');
+}
+
+let lockoutInterval = null;
+
+function showLockoutModal(seconds) {
+    document.getElementById('lockoutModal').classList.add('visible');
+    updateLockoutTimer(seconds);
+
+    clearInterval(lockoutInterval);
+    lockoutInterval = setInterval(function () {
+        seconds -= 1;
+        if (seconds <= 0) {
+            clearInterval(lockoutInterval);
+            document.getElementById('lockoutModal').classList.remove('visible');
+            return;
+        }
+        updateLockoutTimer(seconds);
+    }, 1000);
+}
+
+function updateLockoutTimer(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    document.getElementById('lockoutTimer').textContent = minutes + ':' + String(secs).padStart(2, '0');
+}
 
 window.addEventListener('scroll', function () {
     const nav = document.querySelector('.topnav');
