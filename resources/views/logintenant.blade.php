@@ -5,378 +5,332 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login | NEST.PH</title>
-   <style>
-   
-:root {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-}
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html, body { overflow-x: hidden; }
 
         body {
-            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            color: #06310c;
-            background: linear-gradient(180deg, #293c2d 0%, #273826 100%);
+            font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+            color: #292420;
+            background: linear-gradient(180deg, #567357 0%, #59473f 100%);
             min-height: 100vh;
         }
 
-        .topbar {
-            width: 100%;
-            padding: 18px 48px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(99, 133, 104, 0.96);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .topbar .left,
-        .topbar .right {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-        }
-
-        .topbar a,
-        .topbar button {
-            color: #f4f7f1;
-            text-decoration: none;
-            font-size: 13px;
-            letter-spacing: .02em;
-        }
-
-        .topbar a:hover,
-        .topbar button:hover {
-            color: #d8e4d3;
-        }
-
-        .topbar .logo {
-            font-size: 18px;
-            font-weight: 600;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-        }
-
-        .topbar .label {
-            padding: 8px 16px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: rgba(255,255,255,0.07);
-            font-size: 12px;
-        }
-
-        .topbar button {
-            border: 1px solid rgba(255,255,255,0.18);
-            background: transparent;
-            border-radius: 6px;
-            padding: 10px 20px;
-            cursor: pointer;
-        }
-
-        .topbar button.primary {
-            background: #fff;
-            color: #274d2f;
-            border-color: transparent;
-        }
-
-        .page-wrapper {
-            display: grid;
-            grid-template-columns: 1fr 1.05fr;
-            max-width: 1180px;
-            margin: 36px auto 64px;
-            min-height: calc(100vh - 120px);
-            gap: 40px;
-            padding: 0 48px;
-        }
-
-        .panel-left {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 30px;
-            color: #f7f9f5;
-            position: relative;
-        }
-
-        .back-button {
+        /* Decorative leaf textures — same technique as homepage */
+        .textured { position: relative; overflow: hidden; }
+        .textured .bg-texture {
             position: absolute;
-            top: 0;
-            left: 0;
-            background: rgba(255, 255, 255, 0.15);
-            border: none;
-            color: #f7f9f5;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            font-size: 24px;
-            cursor: pointer;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            z-index: 0;
+            mix-blend-mode: multiply;
+            opacity: 0.5;
+        }
+        .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
+
+        .topnav {
+            background: linear-gradient(90deg, #567357, #a2d9a4);
+            padding: 20px 80px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
+            gap: 48px;
+        }
+        .topnav .menu { flex: 1; display: flex; align-items: center; gap: 16px; }
+        .topnav .menu a, .topnav .menu span {
+            color: #fff; font-weight: 500; font-size: 16px;
+            padding: 12px 8px; display: inline-flex; align-items: center; gap: 4px;
+            text-decoration: none;
+        }
+        .topnav .menu a.pill {
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 999px;
+            padding: 8px 18px;
+        }
+        .topnav .menu a.pill:hover { background: rgba(255,255,255,0.12); }
+        .topnav .logo {
+            display: flex; align-items: center; gap: 6px;
+            color: #fff; font-weight: 700; font-size: 24px;
+            letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
+        }
+        .topnav .logo .mark { width: 22px; height: 22px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 16px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            height: 48px; padding: 0 24px; border: 2px solid #fff;
+            font-weight: 500; font-size: 16px; letter-spacing: 0.02em; cursor: pointer;
+            white-space: nowrap; text-decoration: none;
+        }
+        .btn-white { background: #fff; color: #292420; }
+        .btn-outline-white { background: transparent; color: #fff; }
+        .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 16px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            height: 48px; padding: 0 24px; border: 2px solid #fff;
+            font-weight: 500; font-size: 16px; cursor: pointer; white-space: nowrap; text-decoration: none;
+        }
+        .btn-white { background: #fff; color: #292420; }
+        .btn-outline-white { background: transparent; color: #fff; }
+
+        /* ===== LOGIN AREA ===== */
+        .login-grid {
+            display: grid;
+            grid-template-columns: 37% 63%;
+            align-items: stretch;
+            min-height: calc(100vh - 90px);
+            padding: 20px 60px 60px 0;
         }
 
-        .back-button:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .panel-left h1 {
-            font-size: clamp(2.5rem, 3.5vw, 4rem);
-            line-height: 1.05;
-            max-width: 480px;
-        }
-
-        .panel-left .brand-mark {
-            width: 240px;
-            height: 240px;
-            border-radius: 45px;
-            background: linear-gradient(180deg, #7ac07d 0%, #39593a 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.22);
-        }
-
-        .panel-left .brand-mark span {
-            font-size: 6rem;
-            font-weight: 700;
-            color: #f5f7f1;
-            letter-spacing: -0.05em;
-        }
-
-        .panel-right {
-            background: #eef0ed;
-            border-radius: 36px;
-            padding: 46px 42px 38px;
+        .login-left {
+            position: relative;
+            padding: 20px 40px 40px 80px;
             display: flex;
             flex-direction: column;
-            justify-content: start;
-            box-shadow: 0 24px 80px rgba(13, 25, 14, 0.12);
+        }
+        .back-button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 26px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            margin-bottom: 40px;
+            align-self: flex-start;
+        }
+        .login-left-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .login-left h1 {
+            color: #fff;
+            font-weight: 700;
+            font-size: 42px;
+            line-height: 1.15;
+            max-width: 380px;
+        }
+        .login-left h1 .accent {
+            display: block;
+            color: #44ad65;
+            font-weight: 900;
+            font-size: 50px;
+            margin-top: 4px;
+        }
+        .brand-mark {
+            margin-top: 48px;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(180deg, #567357 0%, #a2d9a4 100%);
+            border-radius: 0 100px 100px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .brand-mark span {
+            font-family: 'Agbalumo', cursive;
+            font-size: 130px;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .login-right-wrap {
+            position: relative;
+            padding-top: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-right {
+            background: #eeeded;
+            border-radius: 40px;
+            padding: 60px 80px 60px;
+            flex: 1;
         }
 
         .tab-header {
+            position: absolute;
+            top: 0;
+            left: 40px;
             display: inline-flex;
             border-radius: 999px;
-            background: rgba(79, 99, 77, 0.16);
-            border: 1px solid rgba(71, 91, 70, 0.18);
-            padding: 6px;
-            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         }
-
-        .tab-header button {
-            border: none;
-            background: transparent;
-            padding: 16px 34px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 600;
+        .tab-header a {
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #5c725d;
-            cursor: pointer;
+            gap: 8px;
+            padding: 18px 36px;
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.02em;
+            text-decoration: none;
+            color: #526652;
+            background: #d8dcd8;
+        }
+        .tab-header a.active { background: #eeeded; color: #194e19; }
+        .tab-header a svg { width: 20px; height: 20px; }
+
+        .login-right h2 {
+            color: #567357;
+            font-weight: 700;
+            font-size: 34px;
+            margin-bottom: 32px;
+            margin-top: 24px;
         }
 
-        .tab-header button.active {
-            background: #f7f8f4;
-            box-shadow: inset 0 0 0 1px rgba(71, 91, 70, 0.14);
-            color: #2f4f34;
-        }
-
-        .panel-right h2 {
-            margin-bottom: 36px;
-            font-size: 2.3rem;
-            letter-spacing: -0.04em;
-        }
-
-        .form-group {
-            display: grid;
-            gap: 12px;
-            margin-bottom: 22px;
-        }
-
+        .form-group { margin-bottom: 28px; max-width: 640px; }
         .form-group label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #556a56;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
+            display: block;
+            color: #567357;
+            font-weight: 500;
+            font-size: 15px;
+            margin-bottom: 10px;
         }
-
         .form-group input {
+            width: 100%;
             border: none;
             border-bottom: 1px solid #a6b69f;
-            padding: 10px 6px 8px;
-            font-size: 1rem;
+            padding: 8px 4px;
+            font-size: 16px;
             background: transparent;
-            color: #1f3322;
+            color: #292420;
             outline: none;
-        }
-
-        .form-group input::placeholder {
-            color: #8a9b84;
+            font-family: inherit;
         }
 
         .btn-login {
             width: 100%;
-            margin: 18px 0 24px;
-            padding: 16px 0;
+            max-width: 640px;
+            margin-top: 12px;
+            padding: 22px 0;
             border: none;
-            border-radius: 12px;
-            background: #4f6f52;
-            color: #f7f9f2;
+            border-radius: 8px;
+            background: #567357;
+            color: #fff;
             font-weight: 700;
-            letter-spacing: .04em;
+            font-size: 16px;
+            letter-spacing: 0.05em;
             cursor: pointer;
             position: relative;
-            transition: all 0.2s ease;
+            transition: background 0.2s;
         }
-
-        .btn-login:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
+        .btn-login:hover:not(:disabled) { background: #197335; }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
 
         .spinner {
             display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid #f7f9f2;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid #fff;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             margin-right: 8px;
         }
-
-        .btn-login.loading .spinner {
-            display: inline-block;
-        }
-
-        .btn-login.loading .btn-text {
-            opacity: 0.8;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        .btn-login.loading .spinner { display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .help-text {
             text-align: center;
-            font-size: 13px;
-            color: #4b5f4c;
-        }
-
-        .password-links {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin: 6px 0 14px;
-            font-size: 13px;
-        }
-
-        .password-links a,
-        .help-text a {
-            color: #3f6e45;
+            margin-top: 24px;
+            max-width: 640px;
             font-weight: 700;
-            text-decoration: none;
+            font-size: 15px;
+            color: #292420;
         }
-
-        .password-links .divider {
-            color: #7f947f;
-        }
+        .help-text a { color: #567357; text-decoration: none; }
+        .help-text.secondary { font-weight: 400; color: #4b5f4c; margin-top: 10px; }
 
         @media (max-width: 1024px) {
-            .page-wrapper {
-                grid-template-columns: 1fr;
-                padding: 0 28px;
-            }
-            .topbar {
-                flex-wrap: wrap;
-                gap: 14px;
-            }
-            .topbar .left,
-            .topbar .right {
-                flex-wrap: wrap;
-                gap: 16px;
-            }
-            .panel-left {
-                order: 2;
-                text-align: center;
-            }
-            .panel-left .brand-mark {
-                margin: 0 auto;
-            }
+            .login-grid { grid-template-columns: 1fr; padding: 20px 32px 40px; }
+            .login-left { padding: 0 0 30px; }
+            .login-right { padding: 50px 32px 40px; }
+            .tab-header { left: 20px; }
+            .topnav { padding: 20px 32px; flex-wrap: wrap; }
         }
-
         @media (max-width: 640px) {
-            .topbar {
-                padding: 14px 20px;
-            }
-            .page-wrapper {
-                margin: 16px auto 32px;
-                gap: 24px;
-            }
-            .panel-right {
-                padding: 32px 24px;
-            }
-            .tab-header button {
-                padding: 14px 22px;
-            }
-        }</style>
+            .login-left h1 { font-size: 32px; }
+            .login-left h1 .accent { font-size: 38px; }
+            .brand-mark { width: 150px; height: 150px; }
+            .brand-mark span { font-size: 95px; }
+            .tab-header a { padding: 14px 20px; font-size: 15px; }
+        }
+    </style>
 </head>
 <body>
-    <header class="topbar">
-        <div class="left">
-            <a href="#">VR TOUR</a>
-            <a href="#">ROOMS</a>
-            <a href="#">HOME</a>
-            <span class="label">Dorm Info</span>
-        </div>
-        <div class="right">
-            <span class="logo">NEST.PH</span>
-            <button type="button">Admin</button>
-            <button type="button">Apply</button>
-            <button type="button" class="primary">Log In</button>
-        </div>
-    </header>
 
-    <main class="page-wrapper">
-        <section class="panel-left">
-            <button class="back-button" type="button" aria-label="Go back">←</button>
-            <h1>Study hard, make friends, and live your NEST life.</h1>
-            <div class="brand-mark"><span>N</span></div>
-        </section>
+    <nav class="topnav textured">
+        <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
+        <div class="menu">
+            <a href="{{ route('public.vr') }}">VR TOUR</a>
+            <a href="{{ route('public.rooms') }}">ROOMS</a>
+            <a href="{{ route('home') }}">HOME</a>
+            <a href="{{ route('public.dorminfo') }}" class="pill">Dorm Info</a>
+        </div>
+        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="buttons">
+            <a href="{{ route('login.admin') }}" class="btn btn-white">Admin</a>
+            <a href="{{ route('public.apply') }}" class="btn btn-outline-white">Apply</a>
+            <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
+        </div>
+    </nav>
 
-        <section class="panel-right">
-            <div class="tab-header">
-                <button type="button" class="active">TENANT</button>
-                <button type="button" data-href="{{ route('login.admin') }}" onclick="window.location.href=this.dataset.href">ADMIN</button>
+    <div class="login-grid">
+        <div class="login-left">
+            <button class="back-button" type="button" aria-label="Go back" onclick="window.location.href='{{ route('home') }}'">←</button>
+            <div class="login-left-content">
+                <h1>Study hard, make friends, and live your<span class="accent">NEST life.</span></h1>
+                <div class="brand-mark"><span>N</span></div>
             </div>
-            <h2>Tenant Log In</h2>
-            <form id="login-form" action="/tenant/login" method="POST">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input id="email" type="email" placeholder="you@example.com" />
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input id="password" type="password" placeholder="Enter password" />
-                </div>
-                <button type="submit" class="btn-login">
-                    <span class="spinner"></span>
-                    <span class="btn-text">Login</span>
-                </button>
-            </form>
+        </div>
+
+        <div class="login-right-wrap">
+            <div class="tab-header">
+                <a href="{{ route('login.tenant') }}" class="active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+                    TENANT
+                </a>
+                <a href="{{ route('login.admin') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5M16 14.5c3 0 5.5 1.8 5.5 5"/></svg>
+                    ADMIN
+                </a>
+            </div>
+
+            <div class="login-right">
+                <h2>Tenant Log In</h2>
+
+                <form id="login-form" action="/tenant/login" method="POST">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input id="email" type="email" placeholder="you@example.com" />
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input id="password" type="password" placeholder="Enter password" />
+                    </div>
+                    <button type="submit" class="btn-login">
+                        <span class="spinner"></span>
+                        <span class="btn-text">Login</span>
+                    </button>
+                </form>
+
+                <p class="help-text">Did you forget your password? <a href="{{ route('passwords', ['from' => 'tenant']) }}">Forgot Password</a></p>
+                <p class="help-text secondary">Don't have an account? <a href="#" style="color:#197335; font-weight:700;">Signup Here</a></p>
+            </div>
+        </div>
+    </div>
+
 <script>
 document.getElementById('login-form').addEventListener('submit', async function(e) {
-    e.preventDefault(); // Stop the page from reloading
+    e.preventDefault();
 
     const button = this.querySelector('.btn-login');
     if (button.disabled) return;
@@ -393,7 +347,6 @@ document.getElementById('login-form').addEventListener('submit', async function(
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                // Laravel requires this token for security:
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
             body: JSON.stringify({ email: email, password: password })
@@ -416,14 +369,5 @@ document.getElementById('login-form').addEventListener('submit', async function(
 });
 </script>
 
-
-            <div class="password-links">
-                <a href="{{ route('passwords', ['from' => 'tenant']) }}">Forgot Password?</a>
-                <span class="divider">•</span>
-                <a href="{{ route('passwords', ['from' => 'tenant']) }}">Update Password</a>
-            </div>
-            <p class="help-text">Don't have an account? <a href="#">Signup Here</a></p>
-        </section>
-    </main>
 </body>
 </html>
