@@ -207,9 +207,10 @@
         }
 
         .btn-login {
+            display: block;
             width: 100%;
             max-width: 560px;
-            margin-top: 10px;
+            margin: 10px auto 0;
             padding: 17px 0;
             border: none;
             border-radius: 8px;
@@ -239,7 +240,7 @@
 
         .help-text {
             text-align: center;
-            margin-top: 20px;
+            margin: 20px auto 0;
             max-width: 560px;
             font-weight: 700;
             font-size: 13px;
@@ -323,7 +324,6 @@
                 </form>
 
                 <p class="help-text">Did you forget your password? <a href="{{ route('passwords', ['from' => 'admin']) }}">Forgot Password</a></p>
-                <p class="help-text secondary">Don't have an account? <a href="#" style="color:#197335; font-weight:700;">Signup Here</a></p>
             </div>
         </div>
     </div>
