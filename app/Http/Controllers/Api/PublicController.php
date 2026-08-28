@@ -216,4 +216,14 @@ class PublicController extends Controller
             'vr_caption' => $tourIsPublic ? $room->vr_caption : null,
         ];
     }
+    
+        public function roomBeds(Room $room): JsonResponse
+    {
+        $beds = $room->beds()
+            ->where('status', 'vacant')
+            ->orderBy('bed_label')
+            ->get(['id', 'bed_label']);
+ 
+        return response()->json($beds);
+    }
 }

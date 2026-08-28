@@ -46,6 +46,7 @@ Route::post('/password/reset-with-code', [PasswordResetCodeController::class, 'r
 Route::prefix('public-api')->group(function () {
     Route::get('/rooms', [PublicController::class, 'rooms']);
     Route::get('/rooms/{room}', [PublicController::class, 'room']);
+    Route::get('/rooms/{room}/beds', [PublicController::class, 'roomBeds']);
     Route::get('/rooms/{room}/vr-tour', [PublicController::class, 'roomVrTour']);
     Route::get('/vr-tours', [PublicController::class, 'vrTours']);
     Route::get('/dorm-info', [PublicController::class, 'dormInfo']);

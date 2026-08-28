@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -22,25 +23,53 @@ class ApplicationController extends Controller
 {
     private const STATUSES = ['pending', 'approved', 'rejected', 'cancelled'];
 
+    private const TENANT_TYPES = ['student', 'working_student', 'full_time_employee', 'part_time_employee'];
+
     /**
      * Public "Apply for Occupancy" submission. No authentication required —
      * the applicant is not a tenant yet, so their personal info is stored on
      * the application itself. tenant_id stays null until approval.
+     *
+     * Expanded (Aug 2026) to capture the full set of fields the Figma
+     * "Apply for Occupancy" wizard collects — see the
+     * 2026_08_29_000001_add_full_fields_to_applications_table migration.
      */
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'inquiry_id' => ['nullable', 'integer', 'exists:inquiries,id'],
 
-            // Applicant's own details (no tenants row exists for them yet).
+            // Personal information
             'full_name' => ['required', 'string', 'max:150'],
+            'birthdate' => ['nullable', 'date', 'before:today'],
+            'gender' => ['nullable', 'string', 'max:20'],
+            'nationality' => ['nullable', 'string', 'max:60'],
+            'medical_condition' => ['nullable', 'string', 'max:255'],
+            'occupation' => ['nullable', 'string', 'max:100'],
+            'school_company' => ['nullable', 'string', 'max:150'],
+            'school_company_address' => ['nullable', 'string', 'max:255'],
+
+            // Contact information
             'contact_number' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:150'],
+            'landline' => ['nullable', 'string', 'max:20'],
+            'home_address' => ['nullable', 'string', 'max:255'],
+
+            // Emergency contact information
             'emergency_contact_name' => ['nullable', 'string', 'max:150'],
             'emergency_contact_number' => ['nullable', 'string', 'max:20'],
+            'emergency_contact_email' => ['nullable', 'email', 'max:150'],
+            'emergency_contact_landline' => ['nullable', 'string', 'max:20'],
+            'father_name' => ['nullable', 'string', 'max:150'],
+            'mother_name' => ['nullable', 'string', 'max:150'],
 
+            // Room information
             'bed_id' => ['required', 'integer', 'exists:beds,id'],
             'preferred_start_date' => ['nullable', 'date', 'after_or_equal:today'],
+            'tenant_end_date' => ['nullable', 'date', 'after:preferred_start_date'],
+            'type_of_tenant' => ['nullable', Rule::in(self::TENANT_TYPES)],
+            'id_document' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'signed_contract' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
 
             // Same server-side RA 10173 consent enforcement as the inquiry form.
             'dpa_consent' => ['required', 'accepted'],
@@ -48,6 +77,7 @@ class ApplicationController extends Controller
             'dpa_consent.required' => 'You must consent to the data privacy notice before submitting.',
             'dpa_consent.accepted' => 'You must consent to the data privacy notice before submitting.',
             'preferred_start_date.after_or_equal' => 'Preferred start date cannot be in the past.',
+            'tenant_end_date.after' => 'Tenant end date must be after the preferred start date.',
         ]);
 
         if (empty($data['contact_number']) && empty($data['email'])) {
@@ -79,16 +109,46 @@ class ApplicationController extends Controller
             ], 409);
         }
 
+        $idDocumentPath = $request->hasFile('id_document')
+            ? $request->file('id_document')->store('application-documents', 'public')
+            : null;
+
+        $signedContractPath = $request->hasFile('signed_contract')
+            ? $request->file('signed_contract')->store('application-documents', 'public')
+            : null;
+
         $application = Application::create([
             'inquiry_id' => $data['inquiry_id'] ?? null,
             'tenant_id' => null, // set on approval, not now
+
             'full_name' => $data['full_name'],
+            'birthdate' => $data['birthdate'] ?? null,
+            'gender' => $data['gender'] ?? null,
+            'nationality' => $data['nationality'] ?? null,
+            'medical_condition' => $data['medical_condition'] ?? null,
+            'occupation' => $data['occupation'] ?? null,
+            'school_company' => $data['school_company'] ?? null,
+            'school_company_address' => $data['school_company_address'] ?? null,
+
             'contact_number' => $data['contact_number'] ?? null,
             'email' => $data['email'] ?? null,
+            'landline' => $data['landline'] ?? null,
+            'home_address' => $data['home_address'] ?? null,
+
             'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
             'emergency_contact_number' => $data['emergency_contact_number'] ?? null,
+            'emergency_contact_email' => $data['emergency_contact_email'] ?? null,
+            'emergency_contact_landline' => $data['emergency_contact_landline'] ?? null,
+            'father_name' => $data['father_name'] ?? null,
+            'mother_name' => $data['mother_name'] ?? null,
+
             'bed_id' => $bed->id,
             'preferred_start_date' => $data['preferred_start_date'] ?? null,
+            'tenant_end_date' => $data['tenant_end_date'] ?? null,
+            'type_of_tenant' => $data['type_of_tenant'] ?? null,
+            'id_document_path' => $idDocumentPath,
+            'signed_contract_path' => $signedContractPath,
+
             'dpa_consent' => true,
             'status' => 'pending',
         ]);
@@ -258,7 +318,7 @@ class ApplicationController extends Controller
                 'start_date' => $data['start_date']
                     ?? $application->preferred_start_date
                     ?? now()->toDateString(),
-                'end_date' => $data['end_date'] ?? null,
+                'end_date' => $data['end_date'] ?? $application->tenant_end_date ?? null,
                 'monthly_rate' => $data['monthly_rate'] ?? $bed->room->monthly_rate ?? 0,
                 'esign_status' => 'pending',
                 'status' => 'pending', // becomes 'active' once the contract is signed
