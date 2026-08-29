@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\LeaseContractController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
@@ -109,6 +110,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::delete('/vr-tours/scenes/{scene}', [VrTourController::class, 'destroyScene']);
     Route::post('/vr-tours/scenes/{scene}/hotspots', [VrTourController::class, 'storeHotspot']);
     Route::delete('/vr-tours/hotspots/{hotspot}', [VrTourController::class, 'destroyHotspot']);
+
+    // --- Lease contracts (Week 4, Wed) ---
+    // Mirrors the /api/lease-contracts endpoints but under session auth, so
+    // the Blade page can call them directly like the other admin screens do.
+    Route::get('/lease-contracts', [LeaseContractController::class, 'page'])->name('contracts.index');
+    Route::post('/lease-contracts/{leaseContract}/sign', [LeaseContractController::class, 'submitSigned']);
+    Route::patch('/lease-contracts/{leaseContract}/not-applicable', [LeaseContractController::class, 'markNotApplicable']);
+    Route::patch('/lease-contracts/{leaseContract}/terminate', [LeaseContractController::class, 'terminate']);
 });
 
 /*

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\DormitoryProfile;
 use App\Models\LeaseContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,55 @@ use Illuminate\Validation\Rule;
 class LeaseContractController extends Controller
 {
     private const STATUSES = ['pending', 'active', 'terminated', 'expired'];
+
+    /**
+     * Renders the admin Contract Management page. Server-renders the contract
+     * list so the page has data on first paint; the sign/not-applicable/
+     * terminate actions below are then called from the page directly.
+     */
+    public function page(): \Illuminate\View\View
+    {
+        $contracts = LeaseContract::with([
+            'tenant:id,full_name,email,contact_number,emergency_contact_name,emergency_contact_number',
+            'bed:id,room_id,bed_label,status',
+            'bed.room:id,room_no,room_type,monthly_rate',
+            'application:id,full_name,status,home_address',
+            'createdBy:id,name',
+            'approvedBy:id,name',
+        ])->latest()->get()->map(function ($contract) {
+            return [
+                'id' => $contract->id,
+                'status' => $contract->status,
+                'esign_status' => $contract->esign_status,
+                'start_date' => $contract->start_date?->format('M j, Y'),
+                'end_date' => $contract->end_date?->format('M j, Y'),
+                'monthly_rate' => $contract->monthly_rate,
+                'signed_at' => $contract->signed_at?->format('M j, Y g:ia'),
+                'signed_document_url' => $this->publicUrlFor($contract->signed_document_url),
+                'created_at' => $contract->created_at?->format('M j, Y'),
+                'tenant' => [
+                    'full_name' => $contract->tenant?->full_name,
+                    'email' => $contract->tenant?->email,
+                    'contact_number' => $contract->tenant?->contact_number,
+                    'emergency_contact_name' => $contract->tenant?->emergency_contact_name,
+                    'emergency_contact_number' => $contract->tenant?->emergency_contact_number,
+                ],
+                'room_no' => $contract->bed?->room?->room_no,
+                'bed_label' => $contract->bed?->bed_label,
+                'home_address' => $contract->application?->home_address,
+                'approved_by' => $contract->approvedBy?->name,
+                'created_by' => $contract->createdBy?->name,
+            ];
+        })->values();
+
+        $profile = DormitoryProfile::current();
+
+        return view('admincontracts', [
+            'contracts' => $contracts,
+            'dormName' => $profile->dorm_name ?: 'Pureza Station Dormitory',
+            'dormAddress' => $profile->address,
+        ]);
+    }
 
     /**
      * Admin: list contracts, newest first. Optional ?status= filter.
@@ -90,7 +140,7 @@ class LeaseContractController extends Controller
 
         if ($request->hasFile('signed_document')) {
             // Replace any previous upload rather than orphaning the old file.
-            if ($path && Storage::disk('public')->exists($path)) {
+            if ($path && ! str_starts_with($path, 'http') && Storage::disk('public')->exists($path)) {
                 Storage::disk('public')->delete($path);
             }
             $path = $request->file('signed_document')->store('signed-contracts', 'public');
@@ -123,9 +173,8 @@ class LeaseContractController extends Controller
                 'bed:id,room_id,bed_label,status',
                 'bed.room:id,room_no',
             ]),
-            'signed_document_url' => $path
-                ? (str_starts_with($path, 'http') ? $path : Storage::disk('public')->url($path))
-                : null,
+            'signed_document_url' => $this->publicUrlFor($path),
+            'signed_at' => $leaseContract->fresh()->signed_at?->format('M j, Y g:ia'),
         ]);
     }
 
@@ -192,6 +241,22 @@ class LeaseContractController extends Controller
             'message' => 'Contract terminated and bedspace released.',
             'contract' => $leaseContract->fresh(),
         ]);
+    }
+
+    /**
+     * A signed document can be either an uploaded file on the public disk or
+     * an external link, so the stored value is only run through Storage when
+     * it isn't already a full URL.
+     */
+    private function publicUrlFor(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        return str_starts_with($path, 'http')
+            ? $path
+            : Storage::disk('public')->url($path);
     }
 
     /**
