@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH — VR Management</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 <style>
   :root{
     --green-dark:#3f6b4a; --green-mid:#4f7c57;
@@ -44,7 +46,6 @@
   .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:18px; }
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; color:#eaf0ea; cursor:pointer; position:relative; }
   .topbar-icon svg{ width:16px; height:16px; }
-  .badge{ position:absolute; top:-3px; right:-3px; background:#e0554f; color:#fff; font-size:9px; font-weight:700; width:15px; height:15px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--green-dark); }
   .avatar-icon{ background:rgba(255,255,255,0.9); color:var(--green-dark); }
 
   .content{ padding:28px 32px 48px 32px; flex:1; }
@@ -68,10 +69,11 @@
   .vr-card-sub{ font-size:11px; color:var(--text-light); margin:4px 0 2px 0; }
   .vr-card-updated{ font-size:11px; color:var(--text-light); margin-bottom:10px; }
   .vr-card-actions{ display:flex; gap:6px; flex-wrap:wrap; }
-  .vr-btn{ flex:1; min-width:70px; font-size:11px; font-weight:600; padding:7px 6px; border-radius:6px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; text-align:center; }
-  .vr-btn:hover{ background:#f7f9f7; }
+  .vr-btn{ flex:1; min-width:70px; font-size:11px; font-weight:600; padding:7px 6px; border-radius:6px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; text-align:center; font-family:var(--font-body); }
+  .vr-btn:hover:not(:disabled){ background:#f7f9f7; }
+  .vr-btn:disabled{ opacity:0.5; cursor:not-allowed; }
   .vr-btn.primary{ background:var(--green-btn); border-color:var(--green-btn); color:#fff; }
-  .vr-btn.primary:hover{ background:var(--green-btn-hover); }
+  .vr-btn.primary:hover:not(:disabled){ background:var(--green-btn-hover); }
   .vr-btn.warn{ background:#fbeceb; border-color:#f2cfcc; color:var(--status-occupied); }
 
   /* ===== EDIT VIEW ===== */
@@ -84,21 +86,48 @@
   .vr-tab-scroll-btn{ flex-shrink:0; width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:#fff; color:var(--text-mid); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .vr-tab-scroll-btn svg{ width:14px; height:14px; }
 
-  .vr-edit-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:24px; }
+  .vr-edit-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:18px; }
   .vr-edit-label{ font-size:11px; font-weight:700; letter-spacing:0.5px; color:var(--text-mid); text-transform:uppercase; margin-bottom:8px; }
-  .vr-panorama-preview{ border:2px dashed var(--status-vacant); background:var(--status-vacant-bg); border-radius:10px; min-height:260px; display:flex; align-items:center; justify-content:center; color:var(--green-accent); font-size:12.5px; font-weight:600; letter-spacing:0.5px; position:relative; overflow:hidden; background-size:cover; background-position:center; cursor:pointer; }
-  .vr-panorama-preview img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-  .vr-panorama-preview .vr-preview-label{ position:relative; z-index:1; background:rgba(255,255,255,0.85); padding:6px 14px; border-radius:20px; }
-  .vr-preview-actions{ display:flex; gap:10px; margin-top:10px; }
-  .vr-preview-actions .vr-btn{ flex:none; padding:8px 16px; }
   .vr-field{ margin-top:20px; }
   .vr-field input[type=text], .vr-field select{ width:100%; border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-size:13px; color:var(--text-dark); background:#fff; font-family:var(--font-body); }
   .vr-field-row{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   .vr-field input[readonly]{ background:#f4f6f4; color:var(--text-mid); }
-  .vr-edit-actions{ display:flex; gap:10px; margin-top:26px; }
+  .vr-edit-actions{ display:flex; gap:10px; margin-top:26px; align-items:center; }
   .vr-edit-actions .vr-btn{ flex:none; padding:11px 26px; font-size:12.5px; }
   .vr-save-msg{ font-size:12px; color:var(--green-accent); font-weight:600; margin-left:auto; align-self:center; display:none; }
-  input[type=file]{ display:none; }
+  input[type=file].hidden-file{ display:none; }
+
+  /* Scenes */
+  .scene-strip{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+  .scene-item{ width:160px; border:2px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; background:#fafbfa; }
+  .scene-item.active{ border-color:var(--green-accent); }
+  .scene-item img{ width:100%; height:84px; object-fit:cover; display:block; background:#dfe6e0; }
+  .scene-item .meta{ padding:8px 10px; }
+  .scene-item .title{ font-size:12px; font-weight:700; word-break:break-word; }
+  .scene-item .badge-default{ font-size:9.5px; font-weight:700; color:var(--green-accent); text-transform:uppercase; letter-spacing:0.4px; }
+  .scene-empty{ font-size:12.5px; color:var(--text-light); font-style:italic; padding:8px 0 16px; }
+
+  .add-scene-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; border-top:1px solid var(--border); padding-top:18px; }
+  .add-scene-row .field{ display:flex; flex-direction:column; gap:6px; }
+  .add-scene-row input[type=text]{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); min-width:220px; }
+  .add-scene-row input[type=file]{ font-size:12px; }
+
+  #editorPanorama{ width:100%; height:400px; border-radius:10px; overflow:hidden; background:#222; }
+  .editor-hint{ background:#eef5ef; border:1px solid #cfe0d1; border-radius:8px; padding:10px 14px; font-size:12.5px; color:#33513a; margin-bottom:12px; line-height:1.6; }
+  .editor-hint.placing{ background:#fff6e0; border-color:#f0dfa8; color:#6b5a1f; }
+  .hotspot-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:12px; }
+  .hotspot-row .field{ display:flex; flex-direction:column; gap:6px; }
+  .hotspot-row select, .hotspot-row input[type=text]{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); min-width:190px; background:#fff; }
+
+  .hotspot-table{ width:100%; border-collapse:collapse; margin-top:14px; font-size:12.5px; }
+  .hotspot-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:8px 10px; border-bottom:1px solid var(--border); }
+  .hotspot-table td{ padding:9px 10px; border-bottom:1px solid #f0f2f0; }
+  .hotspot-table .coords{ color:var(--text-light); font-size:11.5px; }
+  .hotspot-table .empty{ color:var(--text-light); font-style:italic; }
+
+  .toast{ position:fixed; bottom:22px; right:22px; background:var(--green-accent); color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; display:none; z-index:99; box-shadow:0 6px 18px rgba(0,0,0,0.2); }
+  .toast.error{ background:var(--status-occupied); }
+  .toast.visible{ display:block; }
 </style>
 </head>
 <body>
@@ -112,7 +141,7 @@
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>Tenant Manager</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>Billing and Payments</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>Delinquency</li>
-      <li class="nav-item" data-href="{{ route('admin.addfloor') }}" onclick="window.location.href=this.dataset.href"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="4" width="7" height="7"/><rect x="3" y="15" width="7" height="7"/><rect x="14" y="15" width="7" height="7"/></svg></span>Vacancy Monitor</li>
+      <li class="nav-item" data-href="{{ route('admin.addfloor') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="4" width="7" height="7"/><rect x="3" y="15" width="7" height="7"/><rect x="14" y="15" width="7" height="7"/></svg></span>Vacancy Monitor</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></span>Tickets</li>
       <li class="nav-item active" data-href="{{ route('vr.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 3v18M16 3v18"/></svg></span>VR Management</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>Lease Management</li>
@@ -159,16 +188,59 @@
           <div class="vr-tab-scroll-btn" id="tabsRight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
         </div>
 
+        <!-- Scenes -->
         <div class="vr-edit-card">
-          <div class="vr-edit-label">Panorama Image</div>
-          <div class="vr-panorama-preview" id="panoramaPreview">
-            <span class="vr-preview-label">PANORAMA PREVIEW — click to upload</span>
+          <div class="vr-edit-label">Panorama Scenes</div>
+          <div class="scene-strip" id="sceneStrip"></div>
+
+          <div class="add-scene-row">
+            <div class="field">
+              <div class="vr-edit-label">New Scene Title</div>
+              <input type="text" id="newSceneTitle" placeholder="e.g. Entrance, Bedside, Study Corner">
+            </div>
+            <div class="field">
+              <div class="vr-edit-label">360&deg; Panorama (equirectangular)</div>
+              <input type="file" id="newScenePanorama" accept="image/jpeg,image/png">
+            </div>
+            <button class="vr-btn primary" id="addSceneBtn" type="button" style="flex:none;padding:10px 20px;">Add Scene</button>
           </div>
-          <input type="file" id="panoramaFileInput" accept="image/png,image/jpeg">
-          <div class="vr-preview-actions">
-            <button class="vr-btn primary" id="uploadBtn" type="button">Upload / Replace Image</button>
-            <button class="vr-btn warn" id="deleteImageBtn" type="button">Delete Image</button>
+        </div>
+
+        <!-- Hotspot editor -->
+        <div class="vr-edit-card" id="hotspotCard">
+          <div class="vr-edit-label">Place Hotspots — <span id="editorSceneTitle"></span></div>
+
+          <div class="editor-hint" id="editorHint"></div>
+
+          <div class="hotspot-row">
+            <div class="field">
+              <div class="vr-edit-label">Destination Scene</div>
+              <select id="targetScene"></select>
+            </div>
+            <div class="field">
+              <div class="vr-edit-label">Arrow Label (optional)</div>
+              <input type="text" id="hotspotLabel" placeholder="Auto: “Go to [scene]”">
+            </div>
+            <button class="vr-btn primary" id="placeHotspotBtn" type="button" style="flex:none;padding:10px 20px;">Place Hotspot</button>
+            <button class="vr-btn" id="cancelPlaceBtn" type="button" style="flex:none;padding:10px 20px;display:none;">Cancel</button>
           </div>
+
+          <div id="editorPanorama"></div>
+
+          <table class="hotspot-table">
+            <thead><tr><th>Label</th><th>Goes To</th><th>Position</th><th></th></tr></thead>
+            <tbody id="hotspotBody"></tbody>
+          </table>
+
+          <div class="vr-edit-actions">
+            <button class="vr-btn" id="setDefaultBtn" type="button">Make Starting Scene</button>
+            <button class="vr-btn warn" id="deleteSceneBtn" type="button">Delete This Scene</button>
+          </div>
+        </div>
+
+        <!-- Room-level settings -->
+        <div class="vr-edit-card">
+          <div class="vr-edit-label">Tour Settings</div>
 
           <div class="vr-field">
             <div class="vr-edit-label">Caption to Show on View</div>
@@ -196,11 +268,14 @@
             <span class="vr-save-msg" id="saveMsg">Saved!</span>
           </div>
         </div>
+
       </div>
 
     </div>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <script type="application/json" id="vr-rooms-data">{!! json_encode($rooms) !!}</script>
 
@@ -208,16 +283,21 @@
 (function(){
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-  // Server-rendered room list, read from a JSON script tag (avoids using @@json in comments)
-  // parsing issues with the VS Code JS/TS language service — same pattern
-  // used on the Vacancy Monitoring page).
   let rooms = JSON.parse(document.getElementById('vr-rooms-data').textContent);
   let activeRoomId = null;
+  let activeSceneId = null;
+  let viewer = null;
+  let placingMode = false;
 
   const listView = document.getElementById('vrListView');
   const editView = document.getElementById('vrEditView');
   const vrGrid = document.getElementById('vrGrid');
   const vrTabs = document.getElementById('vrTabs');
+  const sceneStrip = document.getElementById('sceneStrip');
+  const hotspotCard = document.getElementById('hotspotCard');
+  const targetSelect = document.getElementById('targetScene');
+  const hotspotBody = document.getElementById('hotspotBody');
+  const editorHint = document.getElementById('editorHint');
 
   document.querySelectorAll('[data-href]').forEach(el => {
     el.addEventListener('click', () => { window.location.href = el.dataset.href; });
@@ -231,21 +311,39 @@
     });
   }
 
+  function toast(msg, isError){
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.toggle('error', !!isError);
+    el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 2600);
+  }
+
+  function esc(str){
+    const d = document.createElement('div');
+    d.textContent = str ?? '';
+    return d.innerHTML;
+  }
+
   async function api(url, options = {}){
     const headers = Object.assign({ 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }, options.headers || {});
     const res = await fetch(url, Object.assign({}, options, { headers }));
     if(!res.ok){
       const errBody = await res.json().catch(() => ({}));
-      const message = errBody.message || (errBody.errors ? Object.values(errBody.errors)[0][0] : `Request failed (${res.status})`);
-      throw new Error(message);
+      throw new Error(errBody.message || (errBody.errors ? Object.values(errBody.errors)[0][0] : `Request failed (${res.status})`));
     }
     return res.status === 204 ? null : res.json();
   }
 
-  function findRoom(id){
-    return rooms.find(r => r.id === id);
+  function findRoom(id){ return rooms.find(r => r.id === id); }
+  function activeRoom(){ return findRoom(activeRoomId); }
+  function activeScene(){ return activeRoom()?.scenes.find(s => s.id === activeSceneId); }
+
+  function defaultSceneOf(room){
+    return room.scenes.find(s => s.is_default) || room.scenes[0] || null;
   }
 
+  // ===== LIST VIEW =====
   function renderGrid(){
     vrGrid.innerHTML = '';
 
@@ -259,164 +357,310 @@
       card.className = 'vr-card';
 
       const locked = room.vr_visibility === 'locked';
-      const thumbStyle = room.vr_url ? `style="background-image:url('${room.vr_url}')"` : '';
+      const cover = defaultSceneOf(room);
+      const thumbStyle = cover ? `style="background-image:url('${cover.panorama_url}')"` : '';
+      const sceneCount = room.scenes.length;
 
       card.innerHTML = `
-        <div class="vr-thumb ${room.vr_url ? '' : 'empty'}" ${thumbStyle}>
-          ${room.vr_url ? '<span class="vr-badge-360">360°</span>' : '<span>No image uploaded</span>'}
-          ${room.vr_url ? `<span class="vr-lock-icon" title="${locked ? 'Locked' : 'Unlocked'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${locked ? '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 118 0v3"/>' : '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 017.5-2"/>'}</svg></span>` : ''}
+        <div class="vr-thumb ${cover ? '' : 'empty'}" ${thumbStyle}>
+          ${cover ? '<span class="vr-badge-360">360°</span>' : '<span>No scenes yet</span>'}
+          ${cover ? `<span class="vr-lock-icon" title="${locked ? 'Locked' : 'Unlocked'}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${locked ? '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 118 0v3"/>' : '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 017.5-2"/>'}</svg></span>` : ''}
         </div>
         <div class="vr-card-body">
-          <div class="vr-card-title">Room ${room.room_no} <span class="vr-floor-chip">Floor ${room.floor ?? '—'}</span></div>
-          <div class="vr-card-sub">${room.vr_caption ? room.vr_caption : 'No caption set'}</div>
-          <div class="vr-card-updated">Updated ${room.updated_at ?? '—'}</div>
+          <div class="vr-card-title">Room ${esc(room.room_no)} <span class="vr-floor-chip">Floor ${esc(room.floor ?? '—')}</span></div>
+          <div class="vr-card-sub">${sceneCount} scene${sceneCount === 1 ? '' : 's'} · ${esc(room.vr_visibility)}</div>
+          <div class="vr-card-updated">${esc(room.updated_at ?? '')}</div>
           <div class="vr-card-actions">
-            <button class="vr-btn primary" data-action="update" data-id="${room.id}">Update VR</button>
-            <button class="vr-btn" data-action="edit" data-id="${room.id}">Edit Info</button>
-            <button class="vr-btn" data-action="lock" data-id="${room.id}">${locked ? 'Unlock View' : 'Lock View'}</button>
+            <button class="vr-btn primary" data-edit="${room.id}">Edit Tour</button>
           </div>
         </div>
       `;
+
       vrGrid.appendChild(card);
     });
 
-    vrGrid.querySelectorAll('[data-action]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = Number(btn.dataset.id);
-        const action = btn.dataset.action;
-        if(action === 'lock'){
-          quickToggleLock(id);
-        } else {
-          openEditView(id);
-        }
-      });
+    vrGrid.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => openEditor(Number(btn.dataset.edit)));
     });
   }
 
-  async function quickToggleLock(id){
-    const room = findRoom(id);
-    const newVisibility = room.vr_visibility === 'locked' ? 'public' : 'locked';
-    try {
-      const updated = await api(`/vacancy/rooms/${id}/vr-info`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vr_caption: room.vr_caption, vr_visibility: newVisibility }),
-      });
-      Object.assign(room, updated);
-      renderGrid();
-    } catch(e){
-      alert(e.message);
-    }
+  // ===== EDIT VIEW =====
+  function openEditor(roomId){
+    activeRoomId = roomId;
+    const room = activeRoom();
+    activeSceneId = room.scenes.length ? (defaultSceneOf(room).id) : null;
+
+    listView.style.display = 'none';
+    editView.style.display = 'block';
+
+    document.getElementById('captionInput').value = room.vr_caption || '';
+    document.getElementById('visibilitySelect').value = room.vr_visibility || 'draft';
+    document.getElementById('lastUpdatedInput').value = room.updated_at || '';
+
+    renderTabs();
+    renderSceneStrip();
+    renderEditor();
   }
 
   function renderTabs(){
-    vrTabs.innerHTML = '';
-    rooms.forEach(room => {
-      const tab = document.createElement('div');
-      tab.className = 'vr-tab' + (room.id === activeRoomId ? ' active' : '');
-      tab.innerHTML = `Room ${room.room_no}<span class="tab-floor">Floor ${room.floor ?? '—'}</span>`;
-      tab.addEventListener('click', () => selectRoom(room.id));
-      vrTabs.appendChild(tab);
+    vrTabs.innerHTML = rooms.map(room => `
+      <div class="vr-tab ${room.id === activeRoomId ? 'active' : ''}" data-tab="${room.id}">
+        Room ${esc(room.room_no)}
+        <span class="tab-floor">Floor ${esc(room.floor ?? '—')}</span>
+      </div>
+    `).join('');
+
+    vrTabs.querySelectorAll('[data-tab]').forEach(tab => {
+      tab.addEventListener('click', () => openEditor(Number(tab.dataset.tab)));
     });
   }
 
-  function selectRoom(id){
-    activeRoomId = id;
-    const room = findRoom(id);
-    renderTabs();
+  function renderSceneStrip(){
+    const room = activeRoom();
 
-    const preview = document.getElementById('panoramaPreview');
-    if(room.vr_url){
-      preview.style.backgroundImage = `url('${room.vr_url}')`;
-      preview.innerHTML = '';
-    } else {
-      preview.style.backgroundImage = 'none';
-      preview.innerHTML = '<span class="vr-preview-label">PANORAMA PREVIEW — click to upload</span>';
+    if(room.scenes.length === 0){
+      sceneStrip.innerHTML = '<div class="scene-empty">No scenes yet. Upload a 360° panorama below to start this room\'s tour.</div>';
+      return;
     }
 
-    document.getElementById('captionInput').value = room.vr_caption ?? '';
-    document.getElementById('visibilitySelect').value = room.vr_visibility ?? 'draft';
-    document.getElementById('lastUpdatedInput').value = room.updated_at ?? '—';
-    document.getElementById('saveMsg').style.display = 'none';
+    sceneStrip.innerHTML = room.scenes.map(scene => `
+      <div class="scene-item ${scene.id === activeSceneId ? 'active' : ''}" data-scene="${scene.id}">
+        <img src="${scene.panorama_url}" alt="">
+        <div class="meta">
+          <div class="title">${esc(scene.title)}</div>
+          ${scene.is_default ? '<div class="badge-default">Starting scene</div>' : ''}
+        </div>
+      </div>
+    `).join('');
+
+    sceneStrip.querySelectorAll('[data-scene]').forEach(item => {
+      item.addEventListener('click', () => {
+        activeSceneId = Number(item.dataset.scene);
+        renderSceneStrip();
+        renderEditor();
+      });
+    });
   }
 
-  function openEditView(id){
-    selectRoom(id);
-    listView.style.display = 'none';
-    editView.style.display = 'block';
+  function updateHint(){
+    document.getElementById('cancelPlaceBtn').style.display = placingMode ? 'inline-block' : 'none';
+    editorHint.classList.toggle('placing', placingMode);
+    editorHint.innerHTML = placingMode
+      ? 'Now <strong>click the spot in the panorama</strong> where the arrow should appear — usually a doorway, or the direction someone would walk.'
+      : 'Drag to look around. To add an arrow, pick a destination, click <strong>Place Hotspot</strong>, then click where it should sit in the panorama.';
   }
 
-  function backToList(){
+  function renderTargetOptions(){
+    const others = activeRoom().scenes.filter(s => s.id !== activeSceneId);
+    targetSelect.innerHTML = others.length
+      ? others.map(s => `<option value="${s.id}">${esc(s.title)}</option>`).join('')
+      : '<option value="">Add another scene first</option>';
+    document.getElementById('placeHotspotBtn').disabled = others.length === 0;
+  }
+
+  function renderHotspotTable(){
+    const scene = activeScene();
+
+    if(!scene || scene.hotspots.length === 0){
+      hotspotBody.innerHTML = '<tr><td colspan="4" class="empty">No hotspots in this scene yet.</td></tr>';
+      return;
+    }
+
+    hotspotBody.innerHTML = scene.hotspots.map(h => `
+      <tr>
+        <td>${esc(h.label)}</td>
+        <td>${esc(h.target_title || '—')}</td>
+        <td class="coords">pitch ${Number(h.pitch).toFixed(1)}°, yaw ${Number(h.yaw).toFixed(1)}°</td>
+        <td><button class="vr-btn warn" data-remove="${h.id}" style="flex:none;">Remove</button></td>
+      </tr>
+    `).join('');
+
+    hotspotBody.querySelectorAll('[data-remove]').forEach(btn => {
+      btn.addEventListener('click', () => removeHotspot(Number(btn.dataset.remove)));
+    });
+  }
+
+  function renderEditor(){
+    const scene = activeScene();
+
+    if(!scene){
+      hotspotCard.style.display = 'none';
+      return;
+    }
+
+    hotspotCard.style.display = 'block';
+    document.getElementById('editorSceneTitle').textContent = scene.title;
+
+    renderTargetOptions();
+    renderHotspotTable();
+    updateHint();
+
+    if(viewer){ viewer.destroy(); viewer = null; }
+
+    viewer = pannellum.viewer('editorPanorama', {
+      type: 'equirectangular',
+      panorama: scene.panorama_url,
+      autoLoad: true,
+      showControls: true,
+      hotSpots: scene.hotspots.map(h => ({
+        pitch: Number(h.pitch),
+        yaw: Number(h.yaw),
+        type: 'info',
+        text: h.label,
+      })),
+    });
+
+    // Pannellum turns a raw click into sphere coordinates, which is what makes
+    // click-to-place possible instead of hand-typing pitch/yaw angles.
+    viewer.on('mousedown', function(event){
+      if(!placingMode) return;
+      const coords = viewer.mouseEventToCoords(event);
+      placingMode = false;
+      updateHint();
+      addHotspot(coords[0], coords[1]);
+    });
+  }
+
+  // ===== ACTIONS =====
+  document.getElementById('backToListBtn').addEventListener('click', () => {
+    if(viewer){ viewer.destroy(); viewer = null; }
     editView.style.display = 'none';
     listView.style.display = 'block';
     renderGrid();
+  });
+
+  document.getElementById('addSceneBtn').addEventListener('click', async function(){
+    const title = document.getElementById('newSceneTitle').value.trim();
+    const fileInput = document.getElementById('newScenePanorama');
+
+    if(!title) return toast('Give the scene a title first.', true);
+    if(!fileInput.files[0]) return toast('Choose a panorama image.', true);
+
+    const form = new FormData();
+    form.append('title', title);
+    form.append('panorama', fileInput.files[0]);
+
+    this.disabled = true;
+    try {
+      const scene = await api(`/vr-tours/rooms/${activeRoomId}/scenes`, { method:'POST', body: form });
+      activeRoom().scenes.push(scene);
+      activeSceneId = scene.id;
+      document.getElementById('newSceneTitle').value = '';
+      fileInput.value = '';
+      renderSceneStrip();
+      renderEditor();
+      toast('Scene added.');
+    } catch(e){ toast(e.message, true); }
+    this.disabled = false;
+  });
+
+  document.getElementById('placeHotspotBtn').addEventListener('click', function(){
+    if(!targetSelect.value) return toast('Add a second scene to link to first.', true);
+    placingMode = true;
+    updateHint();
+  });
+
+  document.getElementById('cancelPlaceBtn').addEventListener('click', function(){
+    placingMode = false;
+    updateHint();
+  });
+
+  async function addHotspot(pitch, yaw){
+    try {
+      const hotspot = await api(`/vr-tours/scenes/${activeSceneId}/hotspots`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          target_scene_id: Number(targetSelect.value),
+          pitch: pitch,
+          yaw: yaw,
+          label: document.getElementById('hotspotLabel').value.trim() || null,
+        }),
+      });
+
+      activeScene().hotspots.push(hotspot);
+      document.getElementById('hotspotLabel').value = '';
+      renderHotspotTable();
+      renderEditor();
+      toast('Hotspot placed.');
+    } catch(e){ toast(e.message, true); }
   }
 
-  document.getElementById('backToListBtn').addEventListener('click', backToList);
-  document.getElementById('cancelEditBtn').addEventListener('click', backToList);
+  async function removeHotspot(id){
+    try {
+      await api(`/vr-tours/hotspots/${id}`, { method:'DELETE' });
+      const scene = activeScene();
+      scene.hotspots = scene.hotspots.filter(h => h.id !== id);
+      renderHotspotTable();
+      renderEditor();
+      toast('Hotspot removed.');
+    } catch(e){ toast(e.message, true); }
+  }
 
-  // Upload / replace panorama image
-  const fileInput = document.getElementById('panoramaFileInput');
-  document.getElementById('uploadBtn').addEventListener('click', () => fileInput.click());
-  document.getElementById('panoramaPreview').addEventListener('click', () => fileInput.click());
+  document.getElementById('setDefaultBtn').addEventListener('click', async function(){
+    try {
+      await api(`/vr-tours/scenes/${activeSceneId}/default`, { method:'POST' });
+      activeRoom().scenes.forEach(s => { s.is_default = (s.id === activeSceneId); });
+      renderSceneStrip();
+      toast('Starting scene updated.');
+    } catch(e){ toast(e.message, true); }
+  });
 
-  fileInput.addEventListener('change', async () => {
-    if(!fileInput.files.length || activeRoomId === null) return;
-    const formData = new FormData();
-    formData.append('vr_image', fileInput.files[0]);
+  document.getElementById('deleteSceneBtn').addEventListener('click', async function(){
+    const scene = activeScene();
+    if(!confirm(`Delete "${scene.title}"? Any arrows pointing to it will be removed too.`)) return;
 
     try {
-      const result = await api(`/vacancy/rooms/${activeRoomId}/vr-image`, {
-        method: 'POST',
-        body: formData,
+      await api(`/vr-tours/scenes/${activeSceneId}`, { method:'DELETE' });
+      const room = activeRoom();
+      const deletedId = activeSceneId;
+      room.scenes = room.scenes.filter(s => s.id !== deletedId);
+      // Arrows leading to the deleted scene are gone server-side; clear them
+      // locally too so the table doesn't show stale rows.
+      room.scenes.forEach(s => {
+        s.hotspots = s.hotspots.filter(h => h.target_scene_id !== deletedId);
       });
-      const room = findRoom(activeRoomId);
-      room.vr_asset_path = result.vr_asset_path;
-      room.vr_url = result.url;
-      selectRoom(activeRoomId);
-    } catch(e){
-      alert(e.message);
-    } finally {
-      fileInput.value = '';
-    }
+      if(room.scenes.length && !room.scenes.some(s => s.is_default)){
+        room.scenes[0].is_default = true;
+      }
+      activeSceneId = room.scenes.length ? room.scenes[0].id : null;
+      renderSceneStrip();
+      renderEditor();
+      toast('Scene deleted.');
+    } catch(e){ toast(e.message, true); }
   });
 
-  // Delete panorama image
-  document.getElementById('deleteImageBtn').addEventListener('click', async () => {
-    if(activeRoomId === null) return;
-    const room = findRoom(activeRoomId);
-    if(!room.vr_url){ alert('This room has no VR image to delete.'); return; }
-    if(!confirm(`Delete the panorama image for Room ${room.room_no}? This cannot be undone.`)) return;
-
-    try {
-      const result = await api(`/vacancy/rooms/${activeRoomId}/vr-image`, { method: 'DELETE' });
-      Object.assign(room, result.room);
-      selectRoom(activeRoomId);
-    } catch(e){
-      alert(e.message);
-    }
-  });
-
-  // Save caption + visibility
-  document.getElementById('saveInfoBtn').addEventListener('click', async () => {
-    if(activeRoomId === null) return;
-    const caption = document.getElementById('captionInput').value.trim();
-    const visibility = document.getElementById('visibilitySelect').value;
-
+  document.getElementById('saveInfoBtn').addEventListener('click', async function(){
     try {
       const updated = await api(`/vacancy/rooms/${activeRoomId}/vr-info`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vr_caption: caption, vr_visibility: visibility }),
+        method:'PATCH',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          vr_caption: document.getElementById('captionInput').value,
+          vr_visibility: document.getElementById('visibilitySelect').value,
+        }),
       });
-      Object.assign(findRoom(activeRoomId), updated);
-      document.getElementById('lastUpdatedInput').value = updated.updated_at;
+
+      const room = activeRoom();
+      room.vr_caption = updated.vr_caption;
+      room.vr_visibility = updated.vr_visibility;
+      room.updated_at = updated.updated_at;
+      document.getElementById('lastUpdatedInput').value = updated.updated_at || '';
+
       const msg = document.getElementById('saveMsg');
-      msg.style.display = 'inline';
+      msg.style.display = 'block';
       setTimeout(() => { msg.style.display = 'none'; }, 2000);
-    } catch(e){
-      alert(e.message);
-    }
+    } catch(e){ toast(e.message, true); }
+  });
+
+  document.getElementById('cancelEditBtn').addEventListener('click', function(){
+    const room = activeRoom();
+    document.getElementById('captionInput').value = room.vr_caption || '';
+    document.getElementById('visibilitySelect').value = room.vr_visibility || 'draft';
+  });
+
+  document.getElementById('tabsRight').addEventListener('click', () => {
+    vrTabs.scrollBy({ left: 200, behavior: 'smooth' });
   });
 
   renderGrid();

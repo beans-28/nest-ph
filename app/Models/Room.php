@@ -15,6 +15,7 @@ class Room extends Model
         'room_no',
         'floor_id',
         'room_type',
+        'amenities',
         'monthly_rate',
         'status',
         'vr_asset_path',
@@ -24,6 +25,7 @@ class Room extends Model
 
     protected $casts = [
         'monthly_rate' => 'decimal:2',
+        'amenities' => 'array',
     ];
 
     public function beds(): HasMany
@@ -34,6 +36,19 @@ class Room extends Model
     public function floor(): BelongsTo
     {
         return $this->belongsTo(Floor::class);
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(RoomPhoto::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Panorama scenes making up this room's multi-scene VR tour.
+     */
+    public function vrScenes(): HasMany
+    {
+        return $this->hasMany(VrScene::class)->orderBy('sort_order');
     }
 
     public function syncStatusFromBeds(): void

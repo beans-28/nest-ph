@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
+use App\Http\Controllers\VrTourController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,15 +17,15 @@ use App\Http\Controllers\VacancyController;
 
 Route::get('/', [PublicController::class, 'home'])->name('home');
 
-Route::get('/rooms', function () {
-    return view('publicrooms');
-})->name('public.rooms');
+Route::get('/rooms', [PublicController::class, 'roomsPage'])->name('public.rooms');
 
 Route::get('/vr-tour', function () {
     return view('publicvr');
 })->name('public.vr');
 
 Route::get('/dorm-info', [PublicController::class, 'dormInfoPage'])->name('public.dorminfo');
+Route::get('/dorm-info/policies-file', [PublicController::class, 'policiesFileView'])->name('public.dorminfo.file');
+Route::get('/dorm-info/policies-file/download', [PublicController::class, 'policiesFileDownload'])->name('public.dorminfo.download');
 
 Route::get('/inquire', function () {
     return view('publicinquiry');
@@ -92,9 +93,19 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/vacancy/beds/{bed}', [VacancyController::class, 'updateBedStatus'])->name('vacancy.beds.update');
 
     Route::get('/vr-management', [VacancyController::class, 'vrIndex'])->name('vr.index');
-    Route::post('/vacancy/rooms/{room}/vr-image', [VacancyController::class, 'uploadVrImage']);
-    Route::delete('/vacancy/rooms/{room}/vr-image', [VacancyController::class, 'deleteVrImage']);
     Route::patch('/vacancy/rooms/{room}/vr-info', [VacancyController::class, 'updateVrInfo']);
+
+    Route::delete('/vacancy/rooms/{room}/photos/{photo}', [VacancyController::class, 'deleteRoomPhoto']);
+    Route::post('/vacancy/rooms/{room}/photos/reorder', [VacancyController::class, 'reorderRoomPhotos']);
+
+    // Multi-scene VR tour: panorama scenes + click-to-place hotspots. Driven
+    // by the VR Management page's edit view.
+    Route::post('/vr-tours/rooms/{room}/scenes', [VrTourController::class, 'storeScene']);
+    Route::patch('/vr-tours/scenes/{scene}', [VrTourController::class, 'updateScene']);
+    Route::post('/vr-tours/scenes/{scene}/default', [VrTourController::class, 'setDefaultScene']);
+    Route::delete('/vr-tours/scenes/{scene}', [VrTourController::class, 'destroyScene']);
+    Route::post('/vr-tours/scenes/{scene}/hotspots', [VrTourController::class, 'storeHotspot']);
+    Route::delete('/vr-tours/hotspots/{hotspot}', [VrTourController::class, 'destroyHotspot']);
 });
 
 /*
