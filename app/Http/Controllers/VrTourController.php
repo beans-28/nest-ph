@@ -13,9 +13,20 @@ use Illuminate\Support\Facades\Storage;
 class VrTourController extends Controller
 {
     /**
+     * Typical vertical field of view of a phone camera sweeping a panorama.
+     * Used to estimate how wide a partial panorama's sweep was, since the
+     * photo itself carries no such metadata.
+     */
+    private const PHONE_VERTICAL_FOV = 60.0;
+
+    /**
      * Uploads a new panorama as a scene. The first scene added to a room
      * automatically becomes the default (the one the tour opens on), so a
      * tour is never left without an entry point.
+     *
+     * Accepts both true 360 photos and ordinary phone panoramas — the coverage
+     * angles are estimated from the image's shape so a non-technical admin can
+     * upload straight from their phone's Panorama mode without a second app.
      */
     public function storeScene(Request $request, Room $room): JsonResponse
     {
@@ -24,16 +35,81 @@ class VrTourController extends Controller
             'panorama' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:20480'], // 20MB — panoramas are large
         ]);
 
+        $file = $request->file('panorama');
+        $fov = $this->estimateFieldOfView($file->getRealPath());
+
         $isFirst = ! $room->vrScenes()->exists();
 
         $scene = $room->vrScenes()->create([
             'title' => $data['title'],
-            'panorama_path' => $request->file('panorama')->store('vr-scenes', 'public'),
+            'panorama_path' => $file->store('vr-scenes', 'public'),
             'is_default' => $isFirst,
             'sort_order' => ($room->vrScenes()->max('sort_order') ?? -1) + 1,
+            'haov' => $fov['haov'],
+            'vaov' => $fov['vaov'],
+            'v_offset' => 0,
+            'is_partial' => $fov['is_partial'],
         ]);
 
         return response()->json($this->transformScene($scene->load('hotspots.targetScene:id,title')), 201);
+    }
+
+    /**
+     * Works out how much of the world a panorama covers, from its shape alone.
+     *
+     * A true equirectangular 360 photo is always 2:1, so anything close to that
+     * is treated as full coverage. Anything wider and flatter is a partial
+     * sweep — a phone panorama — where the horizontal coverage is estimated by
+     * assuming a typical phone's vertical field of view and scaling by the
+     * image's aspect ratio. It's an estimate, not metadata, which is why the
+     * admin can adjust it with the sweep slider afterwards.
+     */
+    private function estimateFieldOfView(string $path): array
+    {
+        $size = @getimagesize($path);
+
+        if (! $size || $size[1] == 0) {
+            return ['haov' => 360.0, 'vaov' => 180.0, 'is_partial' => false];
+        }
+
+        $ratio = $size[0] / $size[1];
+
+        // 2:1 (within tolerance) means a genuine full-sphere panorama.
+        if ($ratio >= 1.9 && $ratio <= 2.1) {
+            return ['haov' => 360.0, 'vaov' => 180.0, 'is_partial' => false];
+        }
+
+        $haov = min(360.0, round($ratio * self::PHONE_VERTICAL_FOV, 2));
+        $vaov = round($haov / $ratio, 2);
+
+        return ['haov' => $haov, 'vaov' => $vaov, 'is_partial' => true];
+    }
+
+    /**
+     * Lets the admin correct the estimated sweep by dragging a slider while
+     * watching a live preview — no angle maths required on their part.
+     */
+    public function updateSceneView(Request $request, VrScene $scene): JsonResponse
+    {
+        $data = $request->validate([
+            'haov' => ['required', 'numeric', 'between:30,360'],
+            'v_offset' => ['nullable', 'numeric', 'between:-90,90'],
+        ]);
+
+        $size = @getimagesize(Storage::disk('public')->path($scene->panorama_path));
+        $ratio = ($size && $size[1] != 0) ? $size[0] / $size[1] : 2;
+
+        $haov = (float) $data['haov'];
+        $vaov = min(180.0, round($haov / $ratio, 2));
+
+        $scene->update([
+            'haov' => $haov,
+            'vaov' => $vaov,
+            'v_offset' => $data['v_offset'] ?? 0,
+            'is_partial' => $haov < 359.5,
+        ]);
+
+        return response()->json($this->transformScene($scene->fresh('hotspots.targetScene')));
     }
 
     public function updateScene(Request $request, VrScene $scene): JsonResponse
@@ -148,6 +224,10 @@ class VrTourController extends Controller
             'panorama_url' => Storage::disk('public')->url($scene->panorama_path),
             'is_default' => $scene->is_default,
             'sort_order' => $scene->sort_order,
+            'haov' => $scene->haov,
+            'vaov' => $scene->vaov,
+            'v_offset' => $scene->v_offset,
+            'is_partial' => $scene->is_partial,
             'hotspots' => $scene->hotspots->map(fn ($hotspot) => [
                 'id' => $hotspot->id,
                 'target_scene_id' => $hotspot->target_scene_id,

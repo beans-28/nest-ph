@@ -177,6 +177,11 @@ class PublicController extends Controller
             $scenes[(string) $scene->id] = [
                 'title' => $scene->title,
                 'panorama' => Storage::disk('public')->url($scene->panorama_path),
+                // Partial (phone) panoramas need their real coverage angles,
+                // otherwise Pannellum stretches them across a full sphere.
+                'haov' => (float) $scene->haov,
+                'vaov' => (float) $scene->vaov,
+                'vOffset' => (float) $scene->v_offset,
                 'hotSpots' => $scene->hotspots->map(fn ($hotspot) => [
                     'pitch' => (float) $hotspot->pitch,
                     'yaw' => (float) $hotspot->yaw,

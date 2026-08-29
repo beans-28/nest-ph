@@ -14,10 +14,18 @@ class VrScene extends Model
         'panorama_path',
         'is_default',
         'sort_order',
+        'haov',
+        'vaov',
+        'v_offset',
+        'is_partial',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
+        'is_partial' => 'boolean',
+        'haov' => 'float',
+        'vaov' => 'float',
+        'v_offset' => 'float',
     ];
 
     public function room(): BelongsTo

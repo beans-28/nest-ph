@@ -308,6 +308,10 @@ class VacancyController extends Controller
                 'title' => $scene->title,
                 'panorama_url' => Storage::disk('public')->url($scene->panorama_path),
                 'is_default' => $scene->is_default,
+                'haov' => $scene->haov,
+                'vaov' => $scene->vaov,
+                'v_offset' => $scene->v_offset,
+                'is_partial' => $scene->is_partial,
                 'hotspots' => $scene->hotspots->map(fn ($hotspot) => [
                     'id' => $hotspot->id,
                     'target_scene_id' => $hotspot->target_scene_id,

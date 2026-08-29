@@ -11,12 +11,18 @@
     <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        .page-wrap { overflow-x: hidden; }
+
+        /* The whole page is locked to the viewport — no page scrolling, so the
+           panorama fills the space between the nav and the room strip and the
+           strip is always visible without needing sticky positioning. */
+        html, body { height: 100%; overflow: hidden; }
+
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
             color: #292420;
             background: linear-gradient(90deg, #4e7454 0%, #92db9f 100%);
-            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .textured { position: relative; overflow: hidden; }
@@ -31,10 +37,8 @@
             background: linear-gradient(90deg, #567357, #a2d9a4);
             padding: 14px clamp(20px, 5vw, 64px);
             display: flex; align-items: center; gap: clamp(16px, 3vw, 40px);
-            position: sticky; top: 0; z-index: 1000;
-            transition: box-shadow 0.25s ease;
+            flex-shrink: 0;
         }
-        .topnav.scrolled { box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
         .topnav .menu { flex: 1; display: flex; align-items: center; gap: 10px; }
         .topnav .menu a {
             color: #fff; font-weight: 500; font-size: 14px;
@@ -60,69 +64,77 @@
         /* Title bar */
         .vr-titlebar {
             background: linear-gradient(90deg, #ddd8d7, #f2f2f2);
-            padding: 18px clamp(20px, 5vw, 64px);
+            padding: 10px clamp(20px, 5vw, 64px);
             box-shadow: 0 4px 4px rgba(0,0,0,0.2), inset 0 4px 4px rgba(0,0,0,0.12);
+            flex-shrink: 0;
         }
-        .vr-titlebar h1 { font-size: clamp(20px, 2.6vw, 30px); font-weight: 700; color: #2a241f; }
+        .vr-titlebar h1 { font-size: clamp(15px, 1.8vw, 20px); font-weight: 700; color: #2a241f; }
 
-        /* Viewer */
-        .viewer-shell { position: relative; background: #1a1a18; }
-        #panorama { width: 100%; height: min(66vh, 620px); }
-        .viewer-overlay {
-            position: absolute; top: 16px; left: 16px; z-index: 5;
-            display: flex; align-items: center; gap: 10px; pointer-events: none;
+        /* Viewer — takes whatever height is left between nav and strip */
+        .viewer-shell {
+            position: relative; background: #1a1a18;
+            flex: 1; min-height: 0; display: flex; flex-direction: column;
         }
-        .scene-chip {
-            background: rgba(0,0,0,0.55); color: #fff; font-size: 13px; font-weight: 500;
-            padding: 8px 16px; border-radius: 999px; backdrop-filter: blur(4px);
-        }
+        #panorama { width: 100%; flex: 1; min-height: 0; }
         .viewer-message {
             display: flex; align-items: center; justify-content: center;
-            height: min(66vh, 620px); color: #e6e6e2; font-size: 14px; text-align: center;
+            flex: 1; color: #e6e6e2; font-size: 14px; text-align: center;
             padding: 20px;
         }
-        .scene-nav {
-            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
-            padding: 14px clamp(16px, 4vw, 40px);
-            background: rgba(0,0,0,0.3);
-        }
-        .scene-nav button {
-            background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 999px; padding: 7px 16px; font-size: 12.5px; font-weight: 500;
-            cursor: pointer; font-family: inherit; transition: background 0.15s;
-        }
-        .scene-nav button:hover { background: rgba(255,255,255,0.28); }
-        .scene-nav button.active { background: #fff; color: #292420; border-color: #fff; font-weight: 700; }
-
-        /* Room picker strip */
+        /* Room picker strip — pinned to the bottom of the viewport so it stays
+           reachable while looking around the panorama. */
         .rooms-strip {
-            background: linear-gradient(8deg, #5d473e -20%, rgba(37,26,22,0.85) 85%);
-            padding: clamp(20px, 3vw, 30px) clamp(16px, 4vw, 40px) clamp(28px, 4vw, 40px);
+            flex-shrink: 0;
+            background: linear-gradient(8deg, rgba(93,71,62,0.96) -20%, rgba(28,20,17,0.96) 85%);
+            padding: 8px clamp(14px, 3vw, 28px) 10px;
+            box-shadow: 0 -6px 20px rgba(0,0,0,0.28);
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
         .rooms-strip h2 {
-            color: #fff; font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 18px;
+            color: rgba(255,255,255,0.75); font-size: 10.5px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.09em;
+            text-align: center; margin-bottom: 9px;
         }
         .rooms-scroll {
-            display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px;
-            scroll-snap-type: x mandatory;
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;
+            scroll-snap-type: x mandatory; justify-content: flex-start;
         }
+        .rooms-scroll::-webkit-scrollbar { height: 5px; }
+        .rooms-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 4px; }
+
         .room-thumb {
-            position: relative; flex: 0 0 220px; height: 150px; border-radius: 10px;
+            position: relative; flex: 0 0 132px; height: 76px; border-radius: 8px;
             overflow: hidden; cursor: pointer; scroll-snap-align: start;
-            background: #3f4a3f; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            border: 2px solid transparent; transition: border-color 0.15s;
+            background: #3f4a3f; box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+            border: 2px solid transparent;
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+            animation: thumbIn 0.4s ease backwards;
         }
-        .room-thumb.active { border-color: #92db9f; }
-        .room-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .room-thumb:hover { transform: translateY(-3px); box-shadow: 0 7px 16px rgba(0,0,0,0.42); }
+        .room-thumb.active { border-color: #92db9f; transform: translateY(-2px); }
+        .room-thumb img {
+            width: 100%; height: 100%; object-fit: cover; display: block;
+            transition: transform 0.35s ease;
+        }
+        .room-thumb:hover img { transform: scale(1.07); }
         .room-thumb .label {
-            position: absolute; top: 8px; left: 10px; color: #fff; font-weight: 700;
-            font-size: 17px; text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+            position: absolute; top: 5px; left: 7px; color: #fff; font-weight: 700;
+            font-size: 13px; text-shadow: 0 2px 6px rgba(0,0,0,0.8);
         }
         .room-thumb .count {
-            position: absolute; bottom: 8px; right: 10px; color: #fff; font-size: 10.5px;
-            background: rgba(0,0,0,0.55); padding: 3px 8px; border-radius: 999px;
+            position: absolute; bottom: 5px; right: 6px; color: #fff; font-size: 9px;
+            background: rgba(0,0,0,0.6); padding: 2px 7px; border-radius: 999px;
         }
-        .strip-empty { color: #ddd8d7; text-align: center; font-size: 13px; padding: 20px; }
+        .strip-empty { color: #ddd8d7; text-align: center; font-size: 12px; padding: 12px; }
+
+        @keyframes thumbIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .room-thumb, .room-thumb img, .rooms-strip { animation: none; transition: none; }
+        }
 
         @media (max-width: 1024px) { .topnav { padding: 14px 24px; flex-wrap: wrap; } }
     </style>
@@ -145,28 +157,20 @@
         </div>
     </nav>
 
-    <div class="page-wrap">
+    <div class="vr-titlebar">
+        <h1>VR Room Viewing &mdash; 360&deg; Virtual Tour</h1>
+    </div>
 
-        <div class="vr-titlebar">
-            <h1>VR Room Viewing &mdash; 360&deg; Virtual Tour</h1>
+    <div class="viewer-shell">
+        <div id="panorama"></div>
+        <div class="viewer-message" id="viewerMessage">Loading virtual tours…</div>
+    </div>
+
+    <div class="rooms-strip">
+        <h2>Rooms</h2>
+        <div class="rooms-scroll" id="roomsScroll">
+            <div class="strip-empty">Loading…</div>
         </div>
-
-        <div class="viewer-shell">
-            <div class="viewer-overlay">
-                <span class="scene-chip" id="sceneChip" style="display:none;"></span>
-            </div>
-            <div id="panorama"></div>
-            <div class="viewer-message" id="viewerMessage">Loading virtual tours…</div>
-            <div class="scene-nav" id="sceneNav" style="display:none;"></div>
-        </div>
-
-        <div class="rooms-strip">
-            <h2>Rooms</h2>
-            <div class="rooms-scroll" id="roomsScroll">
-                <div class="strip-empty">Loading…</div>
-            </div>
-        </div>
-
     </div>
 
 <script>
@@ -177,14 +181,10 @@
 
     const panoramaEl = document.getElementById('panorama');
     const messageEl = document.getElementById('viewerMessage');
-    const sceneChip = document.getElementById('sceneChip');
-    const sceneNav = document.getElementById('sceneNav');
     const roomsScroll = document.getElementById('roomsScroll');
 
     function showMessage(text) {
         panoramaEl.style.display = 'none';
-        sceneNav.style.display = 'none';
-        sceneChip.style.display = 'none';
         messageEl.style.display = 'flex';
         messageEl.textContent = text;
     }
@@ -211,55 +211,34 @@
             viewer = null;
         }
 
-        viewer = pannellum.viewer('panorama', Object.assign({}, room.tour, {
+        // Prefix each scene's title with the room number so Pannellum's own
+        // bottom-left title carries both, instead of duplicating it in a
+        // separate overlay chip.
+        const tour = {
+            default: room.tour.default,
+            scenes: Object.fromEntries(
+                Object.entries(room.tour.scenes).map(([id, scene]) => [
+                    id,
+                    Object.assign({}, scene, {
+                        title: 'Room ' + room.room_no + ' — ' + scene.title,
+                    }),
+                ])
+            ),
+        };
+
+        viewer = pannellum.viewer('panorama', Object.assign({}, tour, {
             autoLoad: true,
             showControls: true,
             hotSpotDebug: false,
+            // Pannellum's default field of view (100°) reads as quite zoomed in
+            // on a room-sized space. Starting wider shows more of the room at
+            // once; visitors can still pinch/scroll in and out from here.
+            hfov: 125,
+            minHfov: 50,
+            maxHfov: 140,
         }));
 
-        viewer.on('scenechange', function (sceneId) {
-            updateSceneUi(room, sceneId);
-        });
-
-        updateSceneUi(room, room.tour.default.firstScene);
-        renderSceneNav(room);
         markActiveThumb();
-    }
-
-    function updateSceneUi(room, sceneId) {
-        const scene = room.tour.scenes[sceneId];
-        if (scene) {
-            sceneChip.style.display = 'inline-block';
-            sceneChip.textContent = 'Room ' + room.room_no + ' — ' + scene.title;
-        }
-        sceneNav.querySelectorAll('button').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.scene === String(sceneId));
-        });
-    }
-
-    /**
-     * Buttons to jump directly between scenes. The hotspot arrows inside the
-     * panorama are the primary way to move around; this is a fallback for
-     * anyone who can't find an arrow.
-     */
-    function renderSceneNav(room) {
-        const ids = Object.keys(room.tour.scenes);
-
-        if (ids.length < 2) {
-            sceneNav.style.display = 'none';
-            return;
-        }
-
-        sceneNav.style.display = 'flex';
-        sceneNav.innerHTML = ids.map(id => `
-            <button type="button" data-scene="${id}">${escapeHtml(room.tour.scenes[id].title)}</button>
-        `).join('');
-
-        sceneNav.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (viewer) viewer.loadScene(btn.dataset.scene);
-            });
-        });
     }
 
     function markActiveThumb() {
@@ -274,8 +253,8 @@
             return;
         }
 
-        roomsScroll.innerHTML = tours.map(room => `
-            <div class="room-thumb" data-room="${room.id}">
+        roomsScroll.innerHTML = tours.map((room, i) => `
+            <div class="room-thumb" data-room="${room.id}" style="animation-delay:${i * 55}ms">
                 ${room.thumbnail_url ? `<img src="${room.thumbnail_url}" alt="Room ${escapeHtml(room.room_no)}">` : ''}
                 <span class="label">${escapeHtml(room.room_no)}</span>
                 <span class="count">${room.scene_count} view${room.scene_count === 1 ? '' : 's'}</span>
@@ -307,11 +286,6 @@
             showMessage('Could not load the virtual tours right now.');
             roomsScroll.innerHTML = '<div class="strip-empty">Could not load rooms.</div>';
         });
-
-    window.addEventListener('scroll', function () {
-        const nav = document.querySelector('.topnav');
-        nav.classList.toggle('scrolled', window.scrollY > 10);
-    });
 })();
 </script>
 
