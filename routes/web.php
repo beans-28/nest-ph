@@ -17,7 +17,9 @@ use App\Http\Controllers\VrTourController;
 
 Route::get('/', [PublicController::class, 'home'])->name('home');
 
-Route::get('/rooms', [PublicController::class, 'roomsPage'])->name('public.rooms');
+Route::get('/rooms', function () {
+    return view('publicrooms');
+})->name('public.rooms');
 
 Route::get('/vr-tour', function () {
     return view('publicvr');
