@@ -19,10 +19,15 @@ class LeaseContract extends Model
         'start_date',
         'end_date',
         'monthly_rate',
+        'discount_amount',
         'esign_status',
         'signed_document_url',
         'signed_at',
         'status',
+        'termination_reason',
+        'terminated_at',
+        'last_renewed_at',
+        'last_renewed_by',
         'created_by',
         'approved_by',
     ];
@@ -31,7 +36,10 @@ class LeaseContract extends Model
         'start_date' => 'date',
         'end_date' => 'date',
         'monthly_rate' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'signed_at' => 'datetime',
+        'terminated_at' => 'datetime',
+        'last_renewed_at' => 'datetime',
     ];
 
     public function application(): BelongsTo

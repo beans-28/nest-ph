@@ -128,6 +128,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Mirrors the /api/lease-contracts endpoints but under session auth, so
     // the Blade page can call them directly like the other admin screens do.
     Route::get('/lease-contracts', [LeaseContractController::class, 'page'])->name('contracts.index');
+    Route::post('/lease-contracts', [LeaseContractController::class, 'store']);
+    Route::get('/lease-contracts/tenants/search', [LeaseContractController::class, 'searchTenants']);
+    Route::patch('/lease-contracts/{leaseContract}/renew', [LeaseContractController::class, 'renew']);
     Route::post('/lease-contracts/{leaseContract}/sign', [LeaseContractController::class, 'submitSigned']);
     Route::patch('/lease-contracts/{leaseContract}/not-applicable', [LeaseContractController::class, 'markNotApplicable']);
     Route::patch('/lease-contracts/{leaseContract}/terminate', [LeaseContractController::class, 'terminate']);
