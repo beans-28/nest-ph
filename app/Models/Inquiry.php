@@ -20,10 +20,14 @@ class Inquiry extends Model
         'preferred_room_type',
         'dpa_consent',
         'status',
+        'reply_message',
+        'replied_at',
+        'replied_by',
     ];
 
     protected $casts = [
         'dpa_consent' => 'boolean',
+        'replied_at' => 'datetime',
     ];
 
     public function room(): BelongsTo
@@ -39,5 +43,10 @@ class Inquiry extends Model
     public function contracts(): HasMany
     {
         return $this->hasMany(LeaseContract::class);
+    }
+
+    public function repliedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'replied_by');
     }
 }

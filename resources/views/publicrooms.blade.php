@@ -328,7 +328,7 @@
                             <div class="listing-buttons">
                                 ${tourButton}
                                 <a href="{{ route('public.apply') }}">Apply</a>
-                                <a href="{{ route('public.inquiry') }}">Inquiry</a>
+                                <a href="{{ route('public.inquiry') }}?room_id=${room.id}&room_type=${encodeURIComponent(room.room_type || '')}">Inquiry</a>
                             </div>
                         </div>
                     </div>

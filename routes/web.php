@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LeaseContractController;
+use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
@@ -97,6 +98,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/vr-management', [VacancyController::class, 'vrIndex'])->name('vr.index');
     Route::patch('/vacancy/rooms/{room}/vr-info', [VacancyController::class, 'updateVrInfo']);
+
+    // --- Inquiry management (Week 4, Mon) ---
+    Route::get('/inquiries', [InquiryController::class, 'page'])->name('inquiries.index');
+    Route::post('/inquiries/{inquiry}/reply', [InquiryController::class, 'reply']);
+    Route::patch('/inquiries/{inquiry}/status', [InquiryController::class, 'updateStatus']);
 
     Route::delete('/vacancy/rooms/{room}/photos/{photo}', [VacancyController::class, 'deleteRoomPhoto']);
     Route::post('/vacancy/rooms/{room}/photos/reorder', [VacancyController::class, 'reorderRoomPhotos']);
