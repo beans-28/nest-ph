@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ApplicationApprovedMail;
+use App\Mail\ApplicationReapplicationMail;
+use App\Mail\ApplicationRejectedMail;
 use App\Models\Application;
 use App\Models\Bed;
 use App\Models\Inquiry;
@@ -15,13 +18,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ApplicationController extends Controller
 {
-    private const STATUSES = ['pending', 'approved', 'rejected', 'cancelled'];
+    private const STATUSES = ['pending', 'approved', 'rejected', 're_application_requested', 'cancelled'];
 
     private const TENANT_TYPES = ['student', 'working_student', 'full_time_employee', 'part_time_employee'];
 
@@ -30,16 +34,16 @@ class ApplicationController extends Controller
      * the applicant is not a tenant yet, so their personal info is stored on
      * the application itself. tenant_id stays null until approval.
      *
-     * Expanded (Aug 2026) to capture the full set of fields the Figma
-     * "Apply for Occupancy" wizard collects — see the
-     * 2026_08_29_000001_add_full_fields_to_applications_table migration.
+     * Use Case Report — Apply for Occupancy, step 7.3: the selected bedspace
+     * is tagged Reserved the moment the application is submitted (not left
+     * vacant until approval), so it stops showing as available to other
+     * prospective tenants immediately.
      */
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'inquiry_id' => ['nullable', 'integer', 'exists:inquiries,id'],
 
-            // Personal information
             'full_name' => ['required', 'string', 'max:150'],
             'birthdate' => ['nullable', 'date', 'before:today'],
             'gender' => ['nullable', 'string', 'max:20'],
@@ -49,13 +53,11 @@ class ApplicationController extends Controller
             'school_company' => ['nullable', 'string', 'max:150'],
             'school_company_address' => ['nullable', 'string', 'max:255'],
 
-            // Contact information
             'contact_number' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:150'],
             'landline' => ['nullable', 'string', 'max:20'],
             'home_address' => ['nullable', 'string', 'max:255'],
 
-            // Emergency contact information
             'emergency_contact_name' => ['nullable', 'string', 'max:150'],
             'emergency_contact_number' => ['nullable', 'string', 'max:20'],
             'emergency_contact_email' => ['nullable', 'email', 'max:150'],
@@ -63,7 +65,6 @@ class ApplicationController extends Controller
             'father_name' => ['nullable', 'string', 'max:150'],
             'mother_name' => ['nullable', 'string', 'max:150'],
 
-            // Room information
             'bed_id' => ['required', 'integer', 'exists:beds,id'],
             'preferred_start_date' => ['nullable', 'date', 'after_or_equal:today'],
             'tenant_end_date' => ['nullable', 'date', 'after:preferred_start_date'],
@@ -71,7 +72,6 @@ class ApplicationController extends Controller
             'id_document' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'signed_contract' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
 
-            // Same server-side RA 10173 consent enforcement as the inquiry form.
             'dpa_consent' => ['required', 'accepted'],
         ], [
             'dpa_consent.required' => 'You must consent to the data privacy notice before submitting.',
@@ -91,14 +91,12 @@ class ApplicationController extends Controller
 
         $bed = Bed::with('room')->findOrFail($data['bed_id']);
 
-        // Availability is checked live at submission time, not just in the UI.
         if ($bed->status !== 'vacant') {
             return response()->json([
                 'message' => 'That bedspace is no longer available. Please choose another.',
             ], 409);
         }
 
-        // Block double-applying for the same bed while one is still pending.
         $alreadyPending = Application::where('bed_id', $bed->id)
             ->where('status', 'pending')
             ->exists();
@@ -117,49 +115,61 @@ class ApplicationController extends Controller
             ? $request->file('signed_contract')->store('application-documents', 'public')
             : null;
 
-        $application = Application::create([
-            'inquiry_id' => $data['inquiry_id'] ?? null,
-            'tenant_id' => null, // set on approval, not now
+        $application = DB::transaction(function () use ($data, $bed, $idDocumentPath, $signedContractPath) {
+            $application = Application::create([
+                'inquiry_id' => $data['inquiry_id'] ?? null,
+                'tenant_id' => null,
 
-            'full_name' => $data['full_name'],
-            'birthdate' => $data['birthdate'] ?? null,
-            'gender' => $data['gender'] ?? null,
-            'nationality' => $data['nationality'] ?? null,
-            'medical_condition' => $data['medical_condition'] ?? null,
-            'occupation' => $data['occupation'] ?? null,
-            'school_company' => $data['school_company'] ?? null,
-            'school_company_address' => $data['school_company_address'] ?? null,
+                'full_name' => $data['full_name'],
+                'birthdate' => $data['birthdate'] ?? null,
+                'gender' => $data['gender'] ?? null,
+                'nationality' => $data['nationality'] ?? null,
+                'medical_condition' => $data['medical_condition'] ?? null,
+                'occupation' => $data['occupation'] ?? null,
+                'school_company' => $data['school_company'] ?? null,
+                'school_company_address' => $data['school_company_address'] ?? null,
 
-            'contact_number' => $data['contact_number'] ?? null,
-            'email' => $data['email'] ?? null,
-            'landline' => $data['landline'] ?? null,
-            'home_address' => $data['home_address'] ?? null,
+                'contact_number' => $data['contact_number'] ?? null,
+                'email' => $data['email'] ?? null,
+                'landline' => $data['landline'] ?? null,
+                'home_address' => $data['home_address'] ?? null,
 
-            'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
-            'emergency_contact_number' => $data['emergency_contact_number'] ?? null,
-            'emergency_contact_email' => $data['emergency_contact_email'] ?? null,
-            'emergency_contact_landline' => $data['emergency_contact_landline'] ?? null,
-            'father_name' => $data['father_name'] ?? null,
-            'mother_name' => $data['mother_name'] ?? null,
+                'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
+                'emergency_contact_number' => $data['emergency_contact_number'] ?? null,
+                'emergency_contact_email' => $data['emergency_contact_email'] ?? null,
+                'emergency_contact_landline' => $data['emergency_contact_landline'] ?? null,
+                'father_name' => $data['father_name'] ?? null,
+                'mother_name' => $data['mother_name'] ?? null,
 
-            'bed_id' => $bed->id,
-            'preferred_start_date' => $data['preferred_start_date'] ?? null,
-            'tenant_end_date' => $data['tenant_end_date'] ?? null,
-            'type_of_tenant' => $data['type_of_tenant'] ?? null,
-            'id_document_path' => $idDocumentPath,
-            'signed_contract_path' => $signedContractPath,
+                'bed_id' => $bed->id,
+                'preferred_start_date' => $data['preferred_start_date'] ?? null,
+                'tenant_end_date' => $data['tenant_end_date'] ?? null,
+                'type_of_tenant' => $data['type_of_tenant'] ?? null,
+                'id_document_path' => $idDocumentPath,
+                'signed_contract_path' => $signedContractPath,
 
-            'dpa_consent' => true,
-            'status' => 'pending',
-        ]);
+                'dpa_consent' => true,
+                'status' => 'pending',
+            ]);
 
-        // If this came from an inquiry, mark that inquiry as converted.
+            // Step 7.3: tag the bedspace Reserved so it stops appearing
+            // available to other prospective tenants immediately.
+            $bed->update(['status' => 'reserved']);
+            $bed->room?->syncStatusFromBeds();
+
+            return $application;
+        });
+
         if ($application->inquiry_id) {
             Inquiry::where('id', $application->inquiry_id)
                 ->where('status', '!=', 'converted')
                 ->update(['status' => 'converted']);
         }
 
+        // Step 7.4: notify the administrator. Real delivery (email/SMS to a
+        // configured admin address) isn't wired up yet — same stub pattern
+        // used for inquiries — so this keeps a durable record rather than a
+        // promise the code doesn't keep.
         $this->notify('application.submitted', [
             'application_id' => $application->id,
             'applicant' => $application->full_name,
@@ -193,8 +203,6 @@ class ApplicationController extends Controller
         }
 
         $applications = $query->get()->map(function ($application) {
-            // Surface the returning-applicant flag in the review queue so the
-            // admin sees who qualifies for a discount before opening each one.
             $application->returning_tenant_match = $this->findReturningTenant($application)?->only(['id', 'full_name', 'email', 'contact_number']);
 
             return $application;
@@ -257,6 +265,8 @@ class ApplicationController extends Controller
             'id' => $application->id,
             'full_name' => $application->full_name,
             'status' => $application->status,
+            'rejection_reason' => $application->rejection_reason,
+            're_application_note' => $application->re_application_note,
             'preferred_start_date' => $application->preferred_start_date,
             'bed' => $application->bed,
             'contract' => $application->leaseContract,
@@ -269,6 +279,11 @@ class ApplicationController extends Controller
      * it creates (or re-links) the tenant record and their login account,
      * creates the lease contract, and assigns the bed, all in one transaction
      * so a partial failure can't leave the system half-onboarded.
+     *
+     * Accepts an optional discount_amount — Week 4 timeline: "Apply Discount
+     * button for returning tenants." Only meaningful when the applicant
+     * matches a past tenant record; there's no automatic discount rule
+     * defined anywhere in the spec, so this is a manual admin judgment call.
      */
     public function approve(Request $request, Application $application): JsonResponse
     {
@@ -276,6 +291,7 @@ class ApplicationController extends Controller
             'start_date' => ['nullable', 'date'],
             'end_date' => ['nullable', 'date', 'after:start_date'],
             'monthly_rate' => ['nullable', 'numeric', 'min:0'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         if ($application->status !== 'pending') {
@@ -292,23 +308,27 @@ class ApplicationController extends Controller
             ], 409);
         }
 
-        if ($bed->status !== 'vacant') {
+        // The bed should be sitting in the Reserved state this application put
+        // it in at submission time. If it isn't, something else has already
+        // claimed or changed it — approving now would silently double-assign
+        // a bed.
+        if ($bed->status !== 'reserved') {
             return response()->json([
-                'message' => 'That bedspace is no longer vacant and cannot be assigned.',
+                'message' => 'That bedspace is no longer reserved for this application and cannot be assigned.',
             ], 409);
         }
 
         $returningTenant = $this->findReturningTenant($application);
 
         $result = DB::transaction(function () use ($application, $bed, $data, $returningTenant, $request) {
-            // Reuse the existing tenant record for a returning tenant, so their
-            // history stays intact. Otherwise create a fresh one from the
-            // details captured on the application.
             $tenant = $returningTenant;
+            $temporaryPassword = null;
 
             if (! $tenant) {
-                $tenant = $this->createTenantWithLogin($application);
+                [$tenant, $temporaryPassword] = $this->createTenantWithLogin($application);
             }
+
+            $monthlyRate = $data['monthly_rate'] ?? $bed->room->monthly_rate ?? 0;
 
             $contract = LeaseContract::create([
                 'application_id' => $application->id,
@@ -319,7 +339,8 @@ class ApplicationController extends Controller
                     ?? $application->preferred_start_date
                     ?? now()->toDateString(),
                 'end_date' => $data['end_date'] ?? $application->tenant_end_date ?? null,
-                'monthly_rate' => $data['monthly_rate'] ?? $bed->room->monthly_rate ?? 0,
+                'monthly_rate' => $monthlyRate,
+                'discount_amount' => $data['discount_amount'] ?? null,
                 'esign_status' => 'pending',
                 'status' => 'pending', // becomes 'active' once the contract is signed
                 'created_by' => $request->user()?->id,
@@ -335,21 +356,42 @@ class ApplicationController extends Controller
                 'approved_by' => $request->user()?->id,
             ]);
 
-            return ['tenant' => $tenant, 'contract' => $contract];
+            return [
+                'tenant' => $tenant,
+                'contract' => $contract,
+                'temporary_password' => $temporaryPassword,
+            ];
         });
+
+        // Step 11.3: email the applicant their login credentials. Sent outside
+        // the transaction so a slow mail server never holds the DB lock, and
+        // a failed send doesn't roll back an otherwise-successful approval.
+        if ($application->email) {
+            try {
+                Mail::to($application->email)->send(new ApplicationApprovedMail(
+                    $application,
+                    $application->email,
+                    $result['temporary_password']
+                ));
+            } catch (\Throwable $e) {
+                Log::warning('Application approval email failed to send.', [
+                    'application_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         $this->notify('application.approved', [
             'application_id' => $application->id,
             'tenant_id' => $result['tenant']->id,
             'contract_id' => $result['contract']->id,
             'returning_tenant' => (bool) $returningTenant,
+            'discount_amount' => $data['discount_amount'] ?? null,
             'approved_by' => $request->user()?->id,
         ]);
 
         return response()->json([
-            'message' => $returningTenant
-                ? 'Application approved. This is a returning tenant — they may qualify for a discount.'
-                : 'Application approved and lease contract created.',
+            'message' => 'Application approved. Tenant account created and credentials sent.',
             'discount_eligible' => (bool) $returningTenant,
             'application' => $application->fresh()->load('bed.room:id,room_no,room_type,monthly_rate'),
             'tenant' => $result['tenant'],
@@ -359,11 +401,16 @@ class ApplicationController extends Controller
 
     /**
      * Admin: reject a pending application.
+     *
+     * Use Case Report steps 12–13: requires a reason, releases the Reserved
+     * bedspace back to Vacant, and emails the applicant with that reason.
      */
     public function reject(Request $request, Application $application): JsonResponse
     {
         $data = $request->validate([
-            'reason' => ['nullable', 'string', 'max:500'],
+            'reason' => ['required', 'string', 'max:500'],
+        ], [
+            'reason.required' => 'A rejection reason is required.',
         ]);
 
         if ($application->status !== 'pending') {
@@ -372,23 +419,90 @@ class ApplicationController extends Controller
             ], 409);
         }
 
-        $application->update([
-            'status' => 'rejected',
-            'approved_by' => $request->user()?->id, // records who actioned it
-        ]);
+        DB::transaction(function () use ($application, $data, $request) {
+            $application->update([
+                'status' => 'rejected',
+                'rejection_reason' => $data['reason'],
+                'approved_by' => $request->user()?->id,
+            ]);
 
-        // NOTE: applications has no rejection_reason column, so the reason is
-        // only logged for now, not persisted on the record. Raise with PELEA
-        // if the reason needs to be stored and shown back to the applicant.
+            $this->releaseBed($application);
+        });
+
+        if ($application->email) {
+            try {
+                Mail::to($application->email)->send(new ApplicationRejectedMail($application->fresh()));
+            } catch (\Throwable $e) {
+                Log::warning('Application rejection email failed to send.', [
+                    'application_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
         $this->notify('application.rejected', [
             'application_id' => $application->id,
             'applicant' => $application->full_name,
-            'reason' => $data['reason'] ?? null,
+            'reason' => $data['reason'],
             'rejected_by' => $request->user()?->id,
         ]);
 
         return response()->json([
-            'message' => 'Application rejected.',
+            'message' => 'Application rejected. Applicant notified.',
+            'application' => $application->fresh(),
+        ]);
+    }
+
+    /**
+     * Admin: request re-application. Use Case Report steps 14–15 — a third
+     * outcome distinct from rejection: the bedspace is released the same way,
+     * but the applicant is invited to submit a fresh application rather than
+     * being turned away outright.
+     */
+    public function requestReapplication(Request $request, Application $application): JsonResponse
+    {
+        $data = $request->validate([
+            'note' => ['required', 'string', 'max:500'],
+        ], [
+            'note.required' => 'Instructions for the applicant are required.',
+        ]);
+
+        if ($application->status !== 'pending') {
+            return response()->json([
+                'message' => 'Only pending applications can have re-application requested.',
+            ], 409);
+        }
+
+        DB::transaction(function () use ($application, $data, $request) {
+            $application->update([
+                'status' => 're_application_requested',
+                're_application_note' => $data['note'],
+                'approved_by' => $request->user()?->id,
+            ]);
+
+            $this->releaseBed($application);
+        });
+
+        if ($application->email) {
+            try {
+                Mail::to($application->email)->send(new ApplicationReapplicationMail($application->fresh()));
+            } catch (\Throwable $e) {
+                Log::warning('Re-application request email failed to send.', [
+                    'application_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $this->notify('application.reapplication_requested', [
+            'application_id' => $application->id,
+            'applicant' => $application->full_name,
+            'note' => $data['note'],
+            'requested_by' => $request->user()?->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Re-application request sent to applicant.',
             'application' => $application->fresh(),
         ]);
     }
@@ -404,12 +518,92 @@ class ApplicationController extends Controller
             ], 409);
         }
 
-        $application->update(['status' => 'cancelled']);
+        DB::transaction(function () use ($application) {
+            $application->update(['status' => 'cancelled']);
+            $this->releaseBed($application);
+        });
 
         return response()->json([
             'message' => 'Application cancelled.',
             'application' => $application->fresh(),
         ]);
+    }
+
+    /**
+     * Renders the admin Review Applications page.
+     */
+    public function page()
+    {
+        $applications = Application::with([
+            'bed:id,room_id,bed_label,status',
+            'bed.room:id,room_no,room_type,monthly_rate',
+        ])->latest()->get()->map(function ($application) {
+            $returning = $this->findReturningTenant($application);
+
+            return [
+                'id' => $application->id,
+                'status' => $application->status,
+                'full_name' => $application->full_name,
+                'birthdate' => $application->birthdate?->format('M j, Y'),
+                'gender' => $application->gender,
+                'nationality' => $application->nationality,
+                'medical_condition' => $application->medical_condition,
+                'occupation' => $application->occupation,
+                'school_company' => $application->school_company,
+                'school_company_address' => $application->school_company_address,
+                'contact_number' => $application->contact_number,
+                'email' => $application->email,
+                'landline' => $application->landline,
+                'home_address' => $application->home_address,
+                'emergency_contact_name' => $application->emergency_contact_name,
+                'emergency_contact_number' => $application->emergency_contact_number,
+                'emergency_contact_email' => $application->emergency_contact_email,
+                'father_name' => $application->father_name,
+                'mother_name' => $application->mother_name,
+                'room_no' => $application->bed?->room?->room_no,
+                'bed_label' => $application->bed?->bed_label,
+                'monthly_rate' => $application->bed?->room?->monthly_rate,
+                'preferred_start_date' => $application->preferred_start_date?->format('M j, Y'),
+                'tenant_end_date' => $application->tenant_end_date?->format('M j, Y'),
+                'type_of_tenant' => $application->type_of_tenant,
+                'id_document_url' => $this->publicUrlFor($application->id_document_path),
+                'signed_contract_url' => $this->publicUrlFor($application->signed_contract_path),
+                'rejection_reason' => $application->rejection_reason,
+                're_application_note' => $application->re_application_note,
+                'created_at' => $application->created_at?->format('M j, Y g:ia'),
+                'returning_tenant' => $returning ? [
+                    'id' => $returning->id,
+                    'full_name' => $returning->full_name,
+                ] : null,
+            ];
+        })->values();
+
+        return view('adminapplications', ['applications' => $applications]);
+    }
+
+    /**
+     * Releases the bedspace a rejected/re-application-requested/cancelled
+     * application was holding, back to Vacant — steps 13.2 / 15.2.
+     */
+    private function releaseBed(Application $application): void
+    {
+        $bed = Bed::with('room')->find($application->bed_id);
+
+        if ($bed && $bed->status === 'reserved') {
+            $bed->update(['status' => 'vacant']);
+            $bed->room?->syncStatusFromBeds();
+        }
+    }
+
+    private function publicUrlFor(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        return str_starts_with($path, 'http')
+            ? $path
+            : Storage::disk('public')->url($path);
     }
 
     /**
@@ -420,10 +614,13 @@ class ApplicationController extends Controller
      * If the applicant gave no email there's no way to create an account, so
      * the tenant record is created unlinked — an admin can attach a login
      * later once contact details are on file.
+     *
+     * Returns [Tenant, temporaryPassword|null].
      */
-    private function createTenantWithLogin(Application $application): Tenant
+    private function createTenantWithLogin(Application $application): array
     {
         $tenantUser = null;
+        $temporaryPassword = null;
 
         if (! empty($application->email)) {
             $tenantRole = Role::firstOrCreate(['role_name' => 'tenant']);
@@ -440,19 +637,10 @@ class ApplicationController extends Controller
                     'role_id' => $tenantRole->id,
                     'is_active' => true,
                 ]);
-
-                // The temporary password is only logged for now — replace this
-                // with a welcome email once mail delivery is set up. Until then,
-                // the tenant should use "Forgot Password" to set their own.
-                $this->notify('tenant.account_created', [
-                    'user_id' => $tenantUser->id,
-                    'email' => $tenantUser->email,
-                    'temporary_password' => $temporaryPassword,
-                ]);
             }
         }
 
-        return Tenant::create([
+        $tenant = Tenant::create([
             'user_id' => $tenantUser?->id,
             'full_name' => $application->full_name,
             'contact_number' => $application->contact_number,
@@ -460,6 +648,8 @@ class ApplicationController extends Controller
             'emergency_contact_name' => $application->emergency_contact_name,
             'emergency_contact_number' => $application->emergency_contact_number,
         ]);
+
+        return [$tenant, $temporaryPassword];
     }
 
     /**

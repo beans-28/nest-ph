@@ -109,7 +109,8 @@
         .bed-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
         .bed-dot.vacant { background: radial-gradient(circle, #ffeeef 0%, #00d444 100%); }
         .bed-dot.occupied { background: radial-gradient(circle, #ffeeef 0%, #e24149 100%); }
-        .bed-dot.maintenance { background: radial-gradient(circle, #ffeeef 0%, #a165b3 100%); }
+        .bed-dot.reserved { background: radial-gradient(circle, #ffeeef 0%, #a165b3 100%); }
+        .bed-dot.maintenance { background: radial-gradient(circle, #ffeeef 0%, #d4c130 100%); }
         .bed-label { font-weight: 700; min-width: 22px; }
         .bed-status { color: #4c5c6b; text-transform: capitalize; }
         .empty-note { color: #eeeded; font-size: 13px; text-align: center; padding: 20px; grid-column: 1 / -1; }
@@ -249,10 +250,10 @@
     </div>
 
     <script>
-        // Bed status → legend dot color mapping. "maintenance" is treated as
-        // the closest visual match to the design's "Reserved" category —
-        // there's no literal reserved concept in the current bed schema.
-        const STATUS_LABELS = { vacant: 'Open', occupied: 'Occupied', maintenance: 'Reserved' };
+        // Bed status → legend dot color mapping. "reserved" is now a genuine
+        // status (an applicant has claimed the bed pending admin review), not
+        // an approximation of anything else.
+        const STATUS_LABELS = { vacant: 'Open', occupied: 'Occupied', reserved: 'Reserved', maintenance: 'Maintenance' };
 
         function escapeHtml(str) {
             const div = document.createElement('div');

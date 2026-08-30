@@ -13,7 +13,7 @@ use Illuminate\Validation\Rule;
 
 class VacancyController extends Controller
 {
-    private const BED_STATUSES = ['vacant', 'occupied', 'maintenance'];
+    private const BED_STATUSES = ['vacant', 'reserved', 'occupied', 'maintenance'];
     private const ROOM_STATUSES = ['available', 'full', 'maintenance'];
     private const VR_VISIBILITIES = ['public', 'locked', 'draft'];
 
