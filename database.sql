@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 24, 2026 at 08:37 AM
+-- Generation Time: Aug 30, 2026 at 08:18 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -62,19 +62,47 @@ CREATE TABLE `applications` (
   `inquiry_id` bigint(20) UNSIGNED DEFAULT NULL,
   `tenant_id` bigint(20) UNSIGNED DEFAULT NULL,
   `full_name` varchar(150) NOT NULL,
+  `birthdate` date DEFAULT NULL,
+  `gender` varchar(20) DEFAULT NULL,
+  `nationality` varchar(60) DEFAULT NULL,
+  `medical_condition` varchar(255) DEFAULT NULL,
+  `occupation` varchar(100) DEFAULT NULL,
+  `school_company` varchar(150) DEFAULT NULL,
+  `school_company_address` varchar(255) DEFAULT NULL,
   `contact_number` varchar(20) DEFAULT NULL,
   `email` varchar(150) DEFAULT NULL,
+  `landline` varchar(20) DEFAULT NULL,
+  `home_address` varchar(255) DEFAULT NULL,
   `emergency_contact_name` varchar(150) DEFAULT NULL,
   `emergency_contact_number` varchar(20) DEFAULT NULL,
+  `emergency_contact_email` varchar(150) DEFAULT NULL,
+  `emergency_contact_landline` varchar(20) DEFAULT NULL,
+  `father_name` varchar(150) DEFAULT NULL,
+  `mother_name` varchar(150) DEFAULT NULL,
   `bed_id` bigint(20) UNSIGNED NOT NULL,
   `preferred_start_date` date DEFAULT NULL,
+  `tenant_end_date` date DEFAULT NULL,
+  `type_of_tenant` varchar(30) DEFAULT NULL,
+  `id_document_path` varchar(255) DEFAULT NULL,
+  `signed_contract_path` varchar(255) DEFAULT NULL,
   `dpa_consent` tinyint(1) NOT NULL DEFAULT 0,
-  `status` enum('pending','approved','rejected','cancelled') NOT NULL DEFAULT 'pending',
+  `status` enum('pending','approved','rejected','re_application_requested','cancelled') NOT NULL DEFAULT 'pending',
+  `rejection_reason` text DEFAULT NULL,
+  `re_application_note` text DEFAULT NULL,
   `created_by` bigint(20) UNSIGNED DEFAULT NULL,
   `approved_by` bigint(20) UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `applications`
+--
+
+INSERT INTO `applications` (`id`, `inquiry_id`, `tenant_id`, `full_name`, `birthdate`, `gender`, `nationality`, `medical_condition`, `occupation`, `school_company`, `school_company_address`, `contact_number`, `email`, `landline`, `home_address`, `emergency_contact_name`, `emergency_contact_number`, `emergency_contact_email`, `emergency_contact_landline`, `father_name`, `mother_name`, `bed_id`, `preferred_start_date`, `tenant_end_date`, `type_of_tenant`, `id_document_path`, `signed_contract_path`, `dpa_consent`, `status`, `rejection_reason`, `re_application_note`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
+(1, NULL, NULL, 'Maria Santos', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'maria@example.com', NULL, NULL, 'Pedro Santos', '09171234567', NULL, NULL, NULL, NULL, 29, NULL, NULL, NULL, NULL, NULL, 1, 'cancelled', NULL, NULL, NULL, NULL, '2026-08-23 23:03:41', '2026-08-23 23:35:00'),
+(3, NULL, NULL, 'Vince Lopez', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '09289811405', 'vincehh28@gmail.com', NULL, NULL, 'Arlene Lopez', '09289811405', NULL, NULL, NULL, NULL, 29, '2026-09-01', NULL, NULL, NULL, NULL, 1, 'pending', NULL, NULL, NULL, NULL, '2026-08-28 19:17:02', '2026-08-28 19:17:02'),
+(4, NULL, 4, 'John Dela Cruz', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '09289811405', 'delacruz@gmail.com', NULL, NULL, 'Jane Dela Cruz', '09289811406', NULL, NULL, NULL, NULL, 31, '2026-09-01', NULL, NULL, NULL, NULL, 1, 'approved', NULL, NULL, NULL, 3, '2026-08-30 06:06:21', '2026-08-30 06:11:32');
 
 -- --------------------------------------------------------
 
@@ -86,10 +114,22 @@ CREATE TABLE `beds` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `room_id` bigint(20) UNSIGNED NOT NULL,
   `bed_label` varchar(20) NOT NULL,
-  `status` enum('vacant','occupied','maintenance') NOT NULL DEFAULT 'vacant',
+  `status` enum('vacant','reserved','occupied','maintenance') NOT NULL DEFAULT 'vacant',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `beds`
+--
+
+INSERT INTO `beds` (`id`, `room_id`, `bed_label`, `status`, `created_at`, `updated_at`) VALUES
+(28, 14, 'Bed 1', 'occupied', '2026-08-23 23:02:27', '2026-08-23 23:02:27'),
+(29, 14, 'Bed 2', 'vacant', '2026-08-23 23:02:27', '2026-08-28 19:10:20'),
+(30, 15, 'Bed 1', 'vacant', '2026-08-29 05:59:04', '2026-08-29 05:59:04'),
+(31, 15, 'Bed 2', 'occupied', '2026-08-29 05:59:04', '2026-08-30 06:11:32'),
+(32, 15, 'Bed 3', 'occupied', '2026-08-29 05:59:04', '2026-08-29 05:59:04'),
+(33, 15, 'Bed 4', 'maintenance', '2026-08-29 05:59:04', '2026-08-29 05:59:04');
 
 -- --------------------------------------------------------
 
@@ -105,6 +145,8 @@ CREATE TABLE `billing_statements` (
   `billing_period_end` date NOT NULL,
   `due_date` date NOT NULL,
   `base_rent` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `utilities_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `wifi_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `penalty_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `total_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `status` enum('unpaid','partial','paid','overdue') NOT NULL DEFAULT 'unpaid',
@@ -124,6 +166,16 @@ CREATE TABLE `cache` (
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `cache`
+--
+
+INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
+('laravel-cache-login-attempts:tenanttest@example.com|127.0.0.1', 'i:2;', 1788066366),
+('laravel-cache-login-attempts:tenanttest@example.com|127.0.0.1:timer', 'i:1788066366;', 1788066366),
+('laravel-cache-login-attempts:testtenant@example.com|127.0.0.1', 'i:3;', 1788066380),
+('laravel-cache-login-attempts:testtenant@example.com|127.0.0.1:timer', 'i:1788066380;', 1788066380);
+
 -- --------------------------------------------------------
 
 --
@@ -135,6 +187,55 @@ CREATE TABLE `cache_locks` (
   `owner` varchar(255) NOT NULL,
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `damages`
+--
+
+CREATE TABLE `damages` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `tenant_id` bigint(20) UNSIGNED NOT NULL,
+  `room_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `bed_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `description` varchar(255) NOT NULL,
+  `cost` decimal(10,2) NOT NULL,
+  `date_incurred` date NOT NULL,
+  `photo_path` varchar(255) DEFAULT NULL,
+  `created_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `dormitory_profile`
+--
+
+CREATE TABLE `dormitory_profile` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `dorm_name` varchar(150) NOT NULL,
+  `description` text DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `contact_number` varchar(20) DEFAULT NULL,
+  `contact_email` varchar(150) DEFAULT NULL,
+  `logo_path` varchar(255) DEFAULT NULL,
+  `policies_file_path` varchar(255) DEFAULT NULL,
+  `payments_and_fees` longtext DEFAULT NULL,
+  `house_rules` longtext DEFAULT NULL,
+  `checkout_procedures` longtext DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `dormitory_profile`
+--
+
+INSERT INTO `dormitory_profile` (`id`, `dorm_name`, `description`, `address`, `contact_number`, `contact_email`, `logo_path`, `policies_file_path`, `payments_and_fees`, `house_rules`, `checkout_procedures`, `created_at`, `updated_at`) VALUES
+(1, 'NEST.PH', 'A safe, comfortable, and affordable place to live, study, and grow.', 'Pureza Station, Manila', '0917-893-2970', 'dormitorypurezastation@gmail.com', NULL, 'policies/test.pdf', 'Rent may be paid in cash, GCash, or bank deposit (BDO).\n\nTenancy is subject to a three-month minimum. Tenants must provide the start\nand end date of their stay upon registration.\n\nUpon registration, new tenants pay a reservation fee composed of a security\ndeposit (one month, refundable for a 3-month contract) and one month advance\nrent. The reservation fee is non-refundable if the tenant cancels or checks\nout earlier than the three-month minimum. The deposit is returned within\n2–3 weeks after the check-out date.\n\nRent is due every 1st day of the month. For GCash or bank deposit, payment\nconfirmation must be sent to the dormitory\'s official contact channels.\n\nTenants are granted a 3-day grace period for late rent payments. Beyond the\ngrace period, a 10% penalty fee applies. Failure to pay within one month\nresults in a notice of eviction for non-payment.\n\nTenants wishing to extend their stay must give at least 1 month notice.\nMove-out requires at least 2 weeks notice; move-out schedule is end of month.', 'Alcoholic beverages, smoking, and vaping are not allowed on dormitory premises.\n\nWashing of clothes is not allowed; a laundry service is available outside.\n\nTenants are responsible for keeping common areas clean after use, and must\npromptly report any damages or issues to maintenance staff.\n\nTenants must pay for any loss or damage to dormitory property caused by\nthemselves or their guests, at the cost of the damage (minimum ₱500).\n\nOnly registered tenants may enter the rooms. Visitors may be entertained at\nthe receiving area.\n\nHazardous goods (gas, cooking stoves, flammable fuels, firearms) are strictly\nprohibited; violation carries a ₱500 fine and may be reported to authorities.\nDrugs and illegal substances are strictly prohibited and will be reported.\n\nSilence should be observed at all times out of consideration for other tenants.\nTreat fellow tenants and staff with respect — harassment, discrimination, or\nbullying will not be tolerated.\n\nManagement is not responsible for losses or injuries occurring on the premises.\nTenants should exercise care and diligence at all times.\n\nDoors and windows must be closed when using the air-conditioner. When leaving,\nturn off all faucets, showers, lights, air conditioners, and appliances, and\nlock the door. Lost or damaged keys cost ₱50 to replace.\n\nA strict NO PETS policy is enforced.\n\nCurfew hours: 11PM – 4AM. Aircon schedule: 10PM – 5AM.', 'Advanced notice: Residents planning to check out must give written notice at\nleast two weeks before their intended departure date.\n\nRoom inspection: A staff member will inspect the room/bed before check-out to\nassess damages or cleanliness issues. Rooms should be clean before inspection.\n\nDamages and repairs: Residents are responsible for damage beyond normal wear\nand tear, and will be charged for repairs or replacements.\n\nFurniture and equipment: All dormitory-provided furniture and equipment must\nbe present and in good condition. Missing or damaged items incur charges.\n\nCleanliness: Rooms must be left in move-in condition, with all personal\nbelongings removed and shared areas cleaned.\n\nTrash disposal: Dispose of all trash and recyclables in designated bins.\n\nKey return: Room keys must be returned upon check-out. Failure to return keys\nmay result in a fine.\n\nCheck-out time: Residents must vacate by 2:00 PM on the check-out date.\n\nFinal settlement: After inspection, the security deposit is returned minus any\ndeductions for damages or outstanding charges, within two weeks of check-out.', '2026-08-27 12:47:03', '2026-08-28 19:32:44');
 
 -- --------------------------------------------------------
 
@@ -179,6 +280,8 @@ CREATE TABLE `failed_jobs` (
 CREATE TABLE `floors` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `floor_name` varchar(50) NOT NULL,
+  `monthly_utility_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `monthly_wifi_cost` decimal(10,2) NOT NULL DEFAULT 0.00,
   `floor_number` tinyint(3) UNSIGNED NOT NULL,
   `description` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -189,8 +292,8 @@ CREATE TABLE `floors` (
 -- Dumping data for table `floors`
 --
 
-INSERT INTO `floors` (`id`, `floor_name`, `floor_number`, `description`, `created_at`, `updated_at`) VALUES
-(3, 'Second Floor', 1, 'Shared rooms, east wing', '2026-07-29 22:22:25', '2026-07-29 22:22:25');
+INSERT INTO `floors` (`id`, `floor_name`, `monthly_utility_cost`, `monthly_wifi_cost`, `floor_number`, `description`, `created_at`, `updated_at`) VALUES
+(3, 'Second Floor', 0.00, 0.00, 1, 'Shared rooms, east wing', '2026-07-29 22:22:25', '2026-08-26 05:49:20');
 
 -- --------------------------------------------------------
 
@@ -203,12 +306,27 @@ CREATE TABLE `inquiries` (
   `full_name` varchar(150) NOT NULL,
   `contact_number` varchar(20) DEFAULT NULL,
   `email` varchar(150) DEFAULT NULL,
+  `room_id` bigint(20) UNSIGNED DEFAULT NULL,
   `message` text DEFAULT NULL,
+  `reply_message` text DEFAULT NULL,
+  `replied_at` timestamp NULL DEFAULT NULL,
+  `replied_by` bigint(20) UNSIGNED DEFAULT NULL,
   `preferred_room_type` varchar(50) DEFAULT NULL,
+  `dpa_consent` tinyint(1) NOT NULL DEFAULT 0,
   `status` enum('new','contacted','converted','closed') NOT NULL DEFAULT 'new',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `inquiries`
+--
+
+INSERT INTO `inquiries` (`id`, `full_name`, `contact_number`, `email`, `room_id`, `message`, `reply_message`, `replied_at`, `replied_by`, `preferred_room_type`, `dpa_consent`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Juan Dela Cruz', NULL, 'juan@example.com', NULL, 'Interested in a shared room for August', NULL, NULL, NULL, NULL, 1, 'closed', '2026-08-23 23:00:38', '2026-08-30 05:20:59'),
+(3, 'Vince Lopez', '09289811405', 'vincehh28@gmail.com', NULL, 'Up to ilan yung pede sa room po?', 'hello! up to 4', '2026-08-30 05:17:57', 3, 'Standard', 1, 'contacted', '2026-08-30 05:15:43', '2026-08-30 05:17:57'),
+(4, 'John Wick', '09289811405', 'johnwick@gmail.com', 14, 'may aso po ba d2?', 'wala ssob', '2026-08-30 05:27:02', 3, NULL, 1, 'contacted', '2026-08-30 05:25:58', '2026-08-30 05:27:02'),
+(5, 'Tung Tung', '09289811405', 'tungtungsahur@gmail.com', 15, 'hey', NULL, NULL, NULL, 'Standard', 1, 'new', '2026-08-30 05:30:35', '2026-08-30 05:30:35');
 
 -- --------------------------------------------------------
 
@@ -260,6 +378,7 @@ CREATE TABLE `lease_contracts` (
   `start_date` date NOT NULL,
   `end_date` date DEFAULT NULL,
   `monthly_rate` decimal(10,2) NOT NULL,
+  `discount_amount` decimal(10,2) DEFAULT NULL,
   `esign_status` enum('pending','signed','not_applicable') NOT NULL DEFAULT 'pending',
   `signed_document_url` varchar(255) DEFAULT NULL,
   `signed_at` timestamp NULL DEFAULT NULL,
@@ -269,6 +388,13 @@ CREATE TABLE `lease_contracts` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `lease_contracts`
+--
+
+INSERT INTO `lease_contracts` (`id`, `application_id`, `tenant_id`, `bed_id`, `inquiry_id`, `start_date`, `end_date`, `monthly_rate`, `discount_amount`, `esign_status`, `signed_document_url`, `signed_at`, `status`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
+(4, 4, 4, 31, NULL, '2026-09-01', NULL, 4777.00, NULL, 'pending', NULL, NULL, 'pending', 3, 3, '2026-08-30 06:11:32', '2026-08-30 06:11:32');
 
 -- --------------------------------------------------------
 
@@ -330,7 +456,36 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (20, '2026_08_01_053125_add_granted_by_to_admin_privileges_table', 4),
 (21, '2026_08_01_053150_add_status_index_to_rooms_table', 4),
 (22, '2026_08_25_000001_create_applications_table', 5),
-(23, '2026_08_25_000002_add_application_and_esign_fields_to_lease_contracts_table', 5);
+(23, '2026_08_25_000002_add_application_and_esign_fields_to_lease_contracts_table', 5),
+(24, '2026_08_25_000003_add_dpa_consent_and_room_to_inquiries_table', 6),
+(25, '2026_08_25_000010_create_damages_table', 7),
+(26, '2026_08_25_000011_create_penalties_table', 7),
+(27, '2026_08_25_000012_create_penalty_audit_logs_table', 7),
+(28, '2026_08_25_000020_add_proof_review_fields_to_payments_table', 8),
+(29, '2026_08_26_000001_add_utility_costs_to_floors_table', 9),
+(30, '2026_08_26_000002_add_utility_fields_and_payment_notes', 9),
+(31, '2026_08_26_000003_add_vr_caption_and_visibility_to_rooms_table', 10),
+(32, '2026_08_26_000004_create_dormitory_profile_table', 11),
+(33, '2026_08_28_000001_create_password_reset_codes_table', 12),
+(34, '2026_08_29_000001_add_full_fields_to_applications_table', 13),
+(35, '2026_08_29_000002_add_policies_file_path_to_dormitory_profile_table', 14),
+(36, '2026_08_29_000003_add_amenities_and_room_photos', 15),
+(37, '2026_08_29_000004_create_vr_scenes_and_hotspots', 16),
+(38, '2026_08_29_000005_add_fov_to_vr_scenes', 17),
+(39, '2026_08_29_000006_add_reply_fields_to_inquiries_table', 18),
+(40, '2026_08_30_000001_add_reserved_status_and_application_workflow_fields', 19);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `password_reset_codes`
+--
+
+CREATE TABLE `password_reset_codes` (
+  `email` varchar(255) NOT NULL,
+  `code` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -358,7 +513,48 @@ CREATE TABLE `payments` (
   `payment_method` enum('cash','gcash','bank_transfer','other') NOT NULL DEFAULT 'cash',
   `reference_number` varchar(100) DEFAULT NULL,
   `payment_date` date NOT NULL,
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'approved',
+  `proof_path` varchar(255) DEFAULT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `review_notes` varchar(500) DEFAULT NULL,
+  `reviewed_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `reviewed_at` timestamp NULL DEFAULT NULL,
   `recorded_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `penalties`
+--
+
+CREATE TABLE `penalties` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `tenant_id` bigint(20) UNSIGNED NOT NULL,
+  `damage_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `billing_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `type` enum('damage','manual','other') NOT NULL DEFAULT 'manual',
+  `description` varchar(255) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `status` enum('active','waived') NOT NULL DEFAULT 'active',
+  `created_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `penalty_audit_logs`
+--
+
+CREATE TABLE `penalty_audit_logs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `penalty_id` bigint(20) UNSIGNED NOT NULL,
+  `action` enum('created','waived','reinstated') NOT NULL DEFAULT 'created',
+  `performed_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `reason` varchar(500) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -411,12 +607,47 @@ CREATE TABLE `rooms` (
   `floor_id` bigint(20) UNSIGNED DEFAULT NULL,
   `room_no` varchar(20) NOT NULL,
   `room_type` varchar(50) DEFAULT NULL,
+  `amenities` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`amenities`)),
   `monthly_rate` decimal(10,2) NOT NULL DEFAULT 0.00,
   `status` enum('available','full','maintenance') NOT NULL DEFAULT 'available',
   `vr_asset_path` varchar(255) DEFAULT NULL,
+  `vr_caption` varchar(255) DEFAULT NULL,
+  `vr_visibility` enum('public','locked','draft') NOT NULL DEFAULT 'draft',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `rooms`
+--
+
+INSERT INTO `rooms` (`id`, `floor_id`, `room_no`, `room_type`, `amenities`, `monthly_rate`, `status`, `vr_asset_path`, `vr_caption`, `vr_visibility`, `created_at`, `updated_at`) VALUES
+(14, 3, '35', 'Standard', '[\"wifi\",\"electricity\",\"water\"]', 4555.00, 'available', NULL, 'Living Room', 'public', '2026-08-23 23:02:27', '2026-08-29 10:47:57'),
+(15, 3, '36', 'Standard', '[]', 4777.00, 'available', NULL, NULL, 'draft', '2026-08-29 05:59:04', '2026-08-29 05:59:04');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `room_photos`
+--
+
+CREATE TABLE `room_photos` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `room_id` bigint(20) UNSIGNED NOT NULL,
+  `path` varchar(255) NOT NULL,
+  `sort_order` smallint(5) UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `room_photos`
+--
+
+INSERT INTO `room_photos` (`id`, `room_id`, `path`, `sort_order`, `created_at`, `updated_at`) VALUES
+(1, 14, 'room-photos/test.jpg', 0, '2026-08-29 05:10:13', '2026-08-29 05:10:13'),
+(2, 14, 'room-photos/test.jpg', 0, '2026-08-29 05:12:21', '2026-08-29 05:12:21'),
+(3, 14, 'room-photos/test.jpg', 0, '2026-08-29 05:12:48', '2026-08-29 05:12:48');
 
 -- --------------------------------------------------------
 
@@ -438,8 +669,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('5hhcZO8wMbcF6vgMxROSrIjX8zRL3A6DAIfsz69U', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.131.0 Chrome/148.0.7778.280 Electron/42.7.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicWwyWk9JN21iTEVVMkdXNnNWMFVZZGFxbUhxd2hWemhEOUxGMm9wNSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1787551348),
-('evk3cSX7vCyM9RGo2riV6pfpnM6j6xaaZmKSHaGW', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoidndBUmdrYWdTQ2FpQ2JrazVZcTRGSHBsODdBQ2pCa2tCMHJPMlprbSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC92YWNhbmN5LW1vbml0b3JpbmciO3M6NToicm91dGUiO3M6MTM6InZhY2FuY3kuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjM6InVybCI7YToxOntzOjg6ImludGVuZGVkIjtzOjQwOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvdmFjYW5jeS1tb25pdG9yaW5nIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzt9', 1787551610);
+('8wNrXV1kX8V407xerazdrY2EME4NaIYv0PK3nlKA', 9, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjY6Il90b2tlbiI7czo0MDoiZEU4U0J2cU9nZFQ1Y1Q3QnhycXdxaUtzanI4RmphOElDNjNyQUhaUiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6OToiZGFzaGJvYXJkIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6OTtzOjE3OiJwYXNzd29yZF9oYXNoX3dlYiI7czo2NDoiNDExNDc1N2I4NGQ1Mjk2OGE1YzdlYjdlMjc2NDdhYTdjZWJmZTc1YzgzYjVkNzIzYmVjM2YxNmJlZmFmNmU1MyI7fQ==', 1788070402),
+('hNTn65UETepG7V3BZfkFZthacX4rOk6yenOrGYs2', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidUdNVFRLejFjRWgzNmNmZDFIQW04ckhlQ1dEZkdqcThyTzFFSlh0VyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9iaWxsaW5nIjtzOjU6InJvdXRlIjtzOjE0OiJ0ZW5hbnQuYmlsbGluZyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM7fQ==', 1788020060);
 
 -- --------------------------------------------------------
 
@@ -459,6 +690,13 @@ CREATE TABLE `tenants` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `tenants`
+--
+
+INSERT INTO `tenants` (`id`, `user_id`, `full_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `is_blacklisted`, `created_at`, `updated_at`) VALUES
+(4, 9, 'John Dela Cruz', '09289811405', 'delacruz@gmail.com', 'Jane Dela Cruz', '09289811406', 0, '2026-08-30 06:11:32', '2026-08-30 06:11:32');
 
 -- --------------------------------------------------------
 
@@ -484,9 +722,64 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role_id`, `is_active`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Test Tenant', 'tenant@nestph.test', NULL, '$2y$12$2IJybVNs6NbJGRLrH/UfJeQKEIE4ESx3iv6Ej8W6/6jNM7o3lxqrq', 1, 1, NULL, '2026-07-24 22:11:59', '2026-07-24 22:11:59'),
+(1, 'Test Tenant', 'tenant@nestph.test', NULL, '$2y$12$dxcMGpzmn1dy2l1.L96SEellNJOxyS8gWEm0haGvhn858I.HVXzP6', 1, 1, NULL, '2026-07-24 22:11:59', '2026-08-28 18:36:17'),
 (2, 'Test Admin', 'admin@nestph.test', NULL, '$2y$12$If2FiAnM0xiHlnJA9.cgDOAChO1s6Nsp0YvsDdodxHkZKeBe4xmkm', 2, 1, NULL, '2026-07-24 22:11:59', '2026-07-24 22:11:59'),
-(3, 'Test Owner', 'owner@nestph.test', NULL, '$2y$12$tBbYyy35ASpYBp1J16pNkOLef7.5rNtW/O/3jO5M.0Vkg/xe4CHfK', 2, 1, NULL, '2026-07-24 22:12:00', '2026-07-24 22:12:00');
+(3, 'Test Owner', 'owner@nestph.test', NULL, '$2y$12$tBbYyy35ASpYBp1J16pNkOLef7.5rNtW/O/3jO5M.0Vkg/xe4CHfK', 2, 1, NULL, '2026-07-24 22:12:00', '2026-07-24 22:12:00'),
+(9, 'John Dela Cruz', 'delacruz@gmail.com', NULL, '$2y$12$k3PCXiSoLTXe4G3NnIT24eaeQtjFdK3ckRw0kMS71z5IYiu.Jjt9a', 1, 1, NULL, '2026-08-30 06:11:32', '2026-08-30 06:11:32');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vr_hotspots`
+--
+
+CREATE TABLE `vr_hotspots` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `vr_scene_id` bigint(20) UNSIGNED NOT NULL,
+  `target_scene_id` bigint(20) UNSIGNED NOT NULL,
+  `pitch` decimal(8,4) NOT NULL,
+  `yaw` decimal(8,4) NOT NULL,
+  `label` varchar(100) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `vr_hotspots`
+--
+
+INSERT INTO `vr_hotspots` (`id`, `vr_scene_id`, `target_scene_id`, `pitch`, `yaw`, `label`, `created_at`, `updated_at`) VALUES
+(1, 3, 2, -8.0868, -171.2028, 'Go to Living Room', '2026-08-29 11:09:49', '2026-08-29 11:09:49'),
+(2, 2, 3, -10.4894, 17.5260, 'Go to Living Room 2', '2026-08-29 11:10:21', '2026-08-29 11:10:21');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vr_scenes`
+--
+
+CREATE TABLE `vr_scenes` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `room_id` bigint(20) UNSIGNED NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `panorama_path` varchar(255) NOT NULL,
+  `is_default` tinyint(1) NOT NULL DEFAULT 0,
+  `sort_order` smallint(5) UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `haov` decimal(6,2) NOT NULL DEFAULT 360.00,
+  `vaov` decimal(6,2) NOT NULL DEFAULT 180.00,
+  `v_offset` decimal(6,2) NOT NULL DEFAULT 0.00,
+  `is_partial` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `vr_scenes`
+--
+
+INSERT INTO `vr_scenes` (`id`, `room_id`, `title`, `panorama_path`, `is_default`, `sort_order`, `created_at`, `updated_at`, `haov`, `vaov`, `v_offset`, `is_partial`) VALUES
+(2, 14, 'Living Room', 'vr-scenes/gh5b9nHJl453HdQ5GdaVPUh69n5V4dpYt55Vle0h.jpg', 0, 0, '2026-08-29 10:46:22', '2026-08-29 11:09:26', 360.00, 64.30, 0.00, 0),
+(3, 14, 'Living Room 2', 'vr-scenes/L2wMpnRUvVzBiue58Ua6pVDAgcHnT5ATkQYawngE.jpg', 1, 1, '2026-08-29 11:09:04', '2026-08-29 11:09:26', 360.00, 53.73, 0.00, 1);
 
 --
 -- Indexes for dumped tables
@@ -542,6 +835,22 @@ ALTER TABLE `cache_locks`
   ADD KEY `cache_locks_expiration_index` (`expiration`);
 
 --
+-- Indexes for table `damages`
+--
+ALTER TABLE `damages`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `damages_tenant_id_foreign` (`tenant_id`),
+  ADD KEY `damages_room_id_foreign` (`room_id`),
+  ADD KEY `damages_bed_id_foreign` (`bed_id`),
+  ADD KEY `damages_created_by_foreign` (`created_by`);
+
+--
+-- Indexes for table `dormitory_profile`
+--
+ALTER TABLE `dormitory_profile`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `escalation_logs`
 --
 ALTER TABLE `escalation_logs`
@@ -567,7 +876,10 @@ ALTER TABLE `floors`
 -- Indexes for table `inquiries`
 --
 ALTER TABLE `inquiries`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `inquiries_room_id_foreign` (`room_id`),
+  ADD KEY `inquiries_status_created_at_index` (`status`,`created_at`),
+  ADD KEY `inquiries_replied_by_foreign` (`replied_by`);
 
 --
 -- Indexes for table `jobs`
@@ -611,6 +923,12 @@ ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `password_reset_codes`
+--
+ALTER TABLE `password_reset_codes`
+  ADD PRIMARY KEY (`email`);
+
+--
 -- Indexes for table `password_reset_tokens`
 --
 ALTER TABLE `password_reset_tokens`
@@ -622,8 +940,27 @@ ALTER TABLE `password_reset_tokens`
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`id`),
   ADD KEY `payments_billing_id_foreign` (`billing_id`),
-  ADD KEY `payments_tenant_id_foreign` (`tenant_id`),
-  ADD KEY `payments_recorded_by_foreign` (`recorded_by`);
+  ADD KEY `payments_recorded_by_foreign` (`recorded_by`),
+  ADD KEY `payments_reviewed_by_foreign` (`reviewed_by`),
+  ADD KEY `payments_tenant_id_status_index` (`tenant_id`,`status`);
+
+--
+-- Indexes for table `penalties`
+--
+ALTER TABLE `penalties`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `penalties_damage_id_foreign` (`damage_id`),
+  ADD KEY `penalties_billing_id_foreign` (`billing_id`),
+  ADD KEY `penalties_created_by_foreign` (`created_by`),
+  ADD KEY `penalties_tenant_id_status_index` (`tenant_id`,`status`);
+
+--
+-- Indexes for table `penalty_audit_logs`
+--
+ALTER TABLE `penalty_audit_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `penalty_audit_logs_penalty_id_foreign` (`penalty_id`),
+  ADD KEY `penalty_audit_logs_performed_by_foreign` (`performed_by`);
 
 --
 -- Indexes for table `personal_access_tokens`
@@ -650,6 +987,13 @@ ALTER TABLE `rooms`
   ADD KEY `rooms_status_index` (`status`);
 
 --
+-- Indexes for table `room_photos`
+--
+ALTER TABLE `room_photos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `room_photos_room_id_foreign` (`room_id`);
+
+--
 -- Indexes for table `sessions`
 --
 ALTER TABLE `sessions`
@@ -673,6 +1017,21 @@ ALTER TABLE `users`
   ADD KEY `users_role_id_foreign` (`role_id`);
 
 --
+-- Indexes for table `vr_hotspots`
+--
+ALTER TABLE `vr_hotspots`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `vr_hotspots_vr_scene_id_foreign` (`vr_scene_id`),
+  ADD KEY `vr_hotspots_target_scene_id_foreign` (`target_scene_id`);
+
+--
+-- Indexes for table `vr_scenes`
+--
+ALTER TABLE `vr_scenes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `vr_scenes_room_id_foreign` (`room_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -686,19 +1045,31 @@ ALTER TABLE `admin_privileges`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `beds`
 --
 ALTER TABLE `beds`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `billing_statements`
 --
 ALTER TABLE `billing_statements`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `damages`
+--
+ALTER TABLE `damages`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `dormitory_profile`
+--
+ALTER TABLE `dormitory_profile`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `escalation_logs`
@@ -722,7 +1093,7 @@ ALTER TABLE `floors`
 -- AUTO_INCREMENT for table `inquiries`
 --
 ALTER TABLE `inquiries`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -734,7 +1105,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `lease_contracts`
 --
 ALTER TABLE `lease_contracts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `maintenance_tickets`
@@ -746,13 +1117,25 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `penalties`
+--
+ALTER TABLE `penalties`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `penalty_audit_logs`
+--
+ALTER TABLE `penalty_audit_logs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -770,19 +1153,37 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `room_photos`
+--
+ALTER TABLE `room_photos`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `tenants`
 --
 ALTER TABLE `tenants`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT for table `vr_hotspots`
+--
+ALTER TABLE `vr_hotspots`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `vr_scenes`
+--
+ALTER TABLE `vr_scenes`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
@@ -819,12 +1220,28 @@ ALTER TABLE `billing_statements`
   ADD CONSTRAINT `billing_statements_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `damages`
+--
+ALTER TABLE `damages`
+  ADD CONSTRAINT `damages_bed_id_foreign` FOREIGN KEY (`bed_id`) REFERENCES `beds` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `damages_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `damages_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `damages_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `escalation_logs`
 --
 ALTER TABLE `escalation_logs`
   ADD CONSTRAINT `escalation_logs_billing_id_foreign` FOREIGN KEY (`billing_id`) REFERENCES `billing_statements` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `escalation_logs_performed_by_foreign` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `escalation_logs_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `inquiries`
+--
+ALTER TABLE `inquiries`
+  ADD CONSTRAINT `inquiries_replied_by_foreign` FOREIGN KEY (`replied_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `inquiries_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `lease_contracts`
@@ -852,13 +1269,36 @@ ALTER TABLE `maintenance_tickets`
 ALTER TABLE `payments`
   ADD CONSTRAINT `payments_billing_id_foreign` FOREIGN KEY (`billing_id`) REFERENCES `billing_statements` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `payments_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `payments_reviewed_by_foreign` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `payments_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `penalties`
+--
+ALTER TABLE `penalties`
+  ADD CONSTRAINT `penalties_billing_id_foreign` FOREIGN KEY (`billing_id`) REFERENCES `billing_statements` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `penalties_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `penalties_damage_id_foreign` FOREIGN KEY (`damage_id`) REFERENCES `damages` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `penalties_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `penalty_audit_logs`
+--
+ALTER TABLE `penalty_audit_logs`
+  ADD CONSTRAINT `penalty_audit_logs_penalty_id_foreign` FOREIGN KEY (`penalty_id`) REFERENCES `penalties` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `penalty_audit_logs_performed_by_foreign` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `rooms`
 --
 ALTER TABLE `rooms`
   ADD CONSTRAINT `rooms_floor_id_foreign` FOREIGN KEY (`floor_id`) REFERENCES `floors` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `room_photos`
+--
+ALTER TABLE `room_photos`
+  ADD CONSTRAINT `room_photos_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `tenants`
@@ -871,6 +1311,19 @@ ALTER TABLE `tenants`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `users_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
+
+--
+-- Constraints for table `vr_hotspots`
+--
+ALTER TABLE `vr_hotspots`
+  ADD CONSTRAINT `vr_hotspots_target_scene_id_foreign` FOREIGN KEY (`target_scene_id`) REFERENCES `vr_scenes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `vr_hotspots_vr_scene_id_foreign` FOREIGN KEY (`vr_scene_id`) REFERENCES `vr_scenes` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `vr_scenes`
+--
+ALTER TABLE `vr_scenes`
+  ADD CONSTRAINT `vr_scenes_room_id_foreign` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
