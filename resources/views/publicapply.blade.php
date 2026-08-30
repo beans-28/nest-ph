@@ -170,6 +170,29 @@
         .file-drop-icons { display: flex; gap: 10px; color: #9aa5ac; }
         .file-drop-icons svg { width: 16px; height: 16px; }
 
+        .contract-review-card {
+            background: #fff; border: 1px solid #d8dde3; border-radius: 10px; padding: 18px 20px;
+        }
+        .contract-review-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+        .contract-review-head svg { width: 26px; height: 26px; color: #567357; flex-shrink: 0; margin-top: 2px; }
+        .crc-title { font-size: 14px; font-weight: 700; color: #194e19; }
+        .crc-sub { font-size: 12px; color: #7a8a7c; margin-top: 3px; line-height: 1.5; }
+        .contract-review-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+        .crc-btn {
+            display: inline-flex; align-items: center; background: #567357; color: #fff; font-weight: 700;
+            font-size: 12.5px; padding: 10px 20px; border-radius: 7px; text-decoration: none;
+        }
+        .crc-btn.secondary { background: #fff; color: #567357; border: 1px solid #a6b69f; }
+        .crc-unavailable {
+            background: #fdf0f0; border: 1px solid #f3cccc; color: #b3261e; border-radius: 8px;
+            padding: 11px 14px; font-size: 12.5px; line-height: 1.6; margin-bottom: 16px;
+        }
+        .crc-checkbox {
+            display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: #4b5f4c;
+            line-height: 1.6; padding-top: 14px; border-top: 1px solid #eef1ee;
+        }
+        .crc-checkbox input { margin-top: 2px; accent-color: #567357; width: 15px; height: 15px; flex-shrink: 0; }
+
         .step-actions { display: flex; justify-content: space-between; gap: 16px; margin-top: 28px; }
         .btn-nav {
             display: inline-flex; align-items: center; justify-content: center;
@@ -436,7 +459,7 @@
                     </div>
 
                     <div class="field-row">
-                        <div class="field">
+                        <div class="field full">
                             <label>Type of Tenant <span class="req">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-option"><input type="radio" name="type_of_tenant" value="student" required> Student</label>
@@ -445,6 +468,37 @@
                                 <label class="radio-option"><input type="radio" name="type_of_tenant" value="part_time_employee" required> Part-time Employee</label>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field full">
+                            <div class="contract-review-card">
+                                <div class="contract-review-head">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                                    <div>
+                                        <div class="crc-title">Review the Dormitory Contract</div>
+                                        <div class="crc-sub">Read the full terms before signing. Download a copy to print, sign, and scan.</div>
+                                    </div>
+                                </div>
+
+                                @if($hasContractTemplate)
+                                    <div class="contract-review-actions">
+                                        <a href="{{ route('public.apply.contract') }}" target="_blank" rel="noopener" class="crc-btn">View Contract</a>
+                                        <a href="{{ route('public.apply.contract.download') }}" class="crc-btn secondary">Download Contract</a>
+                                    </div>
+                                @else
+                                    <div class="crc-unavailable">The contract document hasn't been uploaded yet. Please check back soon, or contact the dormitory directly before applying.</div>
+                                @endif
+
+                                <label class="crc-checkbox">
+                                    <input type="checkbox" id="contract_acceptance" required>
+                                    <span>I have reviewed and downloaded a copy of the dormitory contract.</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
                         <div class="field">
                             <label>ID <span class="req">*</span></label>
                             <div class="file-drop" id="idDrop">
@@ -452,14 +506,11 @@
                                 <span class="placeholder" id="idPlaceholder">Add file (JPG, PNG, or PDF)</span>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="field-row">
-                        <div class="field full">
+                        <div class="field">
                             <label>Signed Contract <span class="req">*</span></label>
                             <div class="file-drop" id="contractDrop">
                                 <input type="file" id="signed_contract" accept=".jpg,.jpeg,.png,.pdf" required>
-                                <span class="placeholder" id="contractPlaceholder">Add file (JPG, PNG, or PDF)</span>
+                                <span class="placeholder" id="contractPlaceholder">Upload the contract you just signed</span>
                             </div>
                         </div>
                     </div>
@@ -546,6 +597,7 @@
                         <path d="M21 32 L28 39 L43 24" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                     </svg>
                     <h2>Application Successful</h2>
+                    <p id="successAppNumber" style="display:none; font-weight:700; color:#194e19; margin-bottom:6px;"></p>
                     <p>Please wait for the administrator's review and approval. Kindly check your email inbox regularly for updates regarding your application status.</p>
                     <a href="{{ route('home') }}" class="btn-nav primary" style="display:inline-flex;">BACK TO HOME</a>
                 </div>
@@ -795,6 +847,7 @@
         if (contractFile) formData.append('signed_contract', contractFile);
 
         formData.append('dpa_consent', document.getElementById('dpa_consent').checked ? '1' : '0');
+        formData.append('contract_acceptance', document.getElementById('contract_acceptance').checked ? '1' : '0');
 
         fetch('/api/applications', {
             method: 'POST',
@@ -813,6 +866,12 @@
                     const firstError = data.errors ? Object.values(data.errors)[0][0] : null;
                     showFormError(firstError || data.message || 'Something went wrong. Please review your answers and try again.');
                     return;
+                }
+
+                if (data.application && data.application.id) {
+                    const numEl = document.getElementById('successAppNumber');
+                    numEl.textContent = 'Application #' + data.application.id;
+                    numEl.style.display = 'block';
                 }
 
                 setActiveStep(5);

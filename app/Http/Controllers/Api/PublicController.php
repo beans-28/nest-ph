@@ -174,6 +174,13 @@ class PublicController extends Controller
         $scenes = [];
 
         foreach ($room->vrScenes as $scene) {
+            // A partial (phone) panorama has no image data above or below its
+            // captured band, which renders as black. Constraining pitch to the
+            // photo's real vertical coverage keeps the visitor inside the
+            // photographed area instead of letting them tilt into the void.
+            $halfVaov = max(1, (float) $scene->vaov / 2);
+            $isFullSphere = (float) $scene->vaov >= 179;
+
             $scenes[(string) $scene->id] = [
                 'title' => $scene->title,
                 'panorama' => Storage::disk('public')->url($scene->panorama_path),
@@ -182,6 +189,8 @@ class PublicController extends Controller
                 'haov' => (float) $scene->haov,
                 'vaov' => (float) $scene->vaov,
                 'vOffset' => (float) $scene->v_offset,
+                'minPitch' => $isFullSphere ? -90 : round((float) $scene->v_offset - $halfVaov, 2),
+                'maxPitch' => $isFullSphere ? 90 : round((float) $scene->v_offset + $halfVaov, 2),
                 'hotSpots' => $scene->hotspots->map(fn ($hotspot) => [
                     'pitch' => (float) $hotspot->pitch,
                     'yaw' => (float) $hotspot->yaw,
@@ -312,9 +321,58 @@ class PublicController extends Controller
     }
 
     /**
-     * Renders the public "Dorm Info" page.
+     * Renders the public "Apply for Occupancy" page. Passes whether a
+     * contract template has been uploaded, so the page can show a graceful
+     * message instead of a broken link if the admin hasn't added one yet.
      */
-    public function dormInfoPage(): \Illuminate\View\View
+    public function applyPage(): \Illuminate\View\View
+    {
+        $profile = DormitoryProfile::current();
+
+        return view('publicapply', [
+            'hasContractTemplate' => (bool) $profile->contract_template_path,
+        ]);
+    }
+
+    /**
+     * Use Case Report — Apply for Occupancy, step 4.1: "Display the full
+     * dormitory contract for review." Streamed the same way as the Dorm Info
+     * policies PDF — reading directly through Storage rather than the
+     * public/storage symlink, which sidesteps a known bug where PHP's
+     * built-in dev server (php artisan serve) returns 403 for symlinked
+     * paths on Windows.
+     */
+    public function contractTemplateView()
+    {
+        $profile = DormitoryProfile::current();
+
+        abort_unless($profile->contract_template_path, 404);
+
+        return Storage::disk('public')->response($profile->contract_template_path);
+    }
+
+    /**
+     * Step 5.1: "Generate and serve the downloadable contract file."
+     */
+    public function contractTemplateDownload()
+    {
+        $profile = DormitoryProfile::current();
+
+        abort_unless($profile->contract_template_path, 404);
+
+        return Storage::disk('public')->download(
+            $profile->contract_template_path,
+            'NEST-PH-Dormitory-Contract.pdf'
+        );
+    }
+
+    /**
+     * Renders the public "Dorm Info" page — house rules, payments/fees,
+     * checkout procedures, and contact details, server-rendered directly
+     * (see the dormInfo() note above for why a separate JSON version also
+     * exists).
+     */
+    public function dormInfoPage()
     {
         $profile = DormitoryProfile::current();
 

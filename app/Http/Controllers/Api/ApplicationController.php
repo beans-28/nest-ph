@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ApplicationAcknowledgmentMail;
 use App\Mail\ApplicationApprovedMail;
 use App\Mail\ApplicationReapplicationMail;
 use App\Mail\ApplicationRejectedMail;
@@ -72,10 +73,18 @@ class ApplicationController extends Controller
             'id_document' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'signed_contract' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
 
+            // Use Case Report — Apply for Occupancy, step 7.1: "Prevent
+            // submission if [contract acceptance] is missing." Validated
+            // server-side, same as dpa_consent below — a client-side-only
+            // checkbox can be bypassed by calling this endpoint directly.
+            'contract_acceptance' => ['required', 'accepted'],
+
             'dpa_consent' => ['required', 'accepted'],
         ], [
             'dpa_consent.required' => 'You must consent to the data privacy notice before submitting.',
             'dpa_consent.accepted' => 'You must consent to the data privacy notice before submitting.',
+            'contract_acceptance.required' => 'You must confirm you have reviewed the dormitory contract before submitting.',
+            'contract_acceptance.accepted' => 'You must confirm you have reviewed the dormitory contract before submitting.',
             'preferred_start_date.after_or_equal' => 'Preferred start date cannot be in the past.',
             'tenant_end_date.after' => 'Tenant end date must be after the preferred start date.',
         ]);
@@ -175,6 +184,21 @@ class ApplicationController extends Controller
             'applicant' => $application->full_name,
             'bed_id' => $bed->id,
         ]);
+
+        // Step 7.5: acknowledgment email to the applicant. A failed send
+        // must not block the submission itself — caught and logged instead
+        // of surfacing as an error to the applicant, same as the other
+        // outcome emails.
+        if ($application->email) {
+            try {
+                Mail::to($application->email)->send(new ApplicationAcknowledgmentMail($application));
+            } catch (\Throwable $e) {
+                Log::warning('Application acknowledgment email failed to send.', [
+                    'application_id' => $application->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return response()->json([
             'message' => 'Application submitted successfully. It is now pending review.',

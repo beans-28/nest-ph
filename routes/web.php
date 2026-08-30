@@ -36,9 +36,9 @@ Route::get('/inquire', function () {
     return view('publicinquiry');
 })->name('public.inquiry');
 
-Route::get('/apply', function () {
-    return view('publicapply');
-})->name('public.apply');
+Route::get('/apply', [PublicController::class, 'applyPage'])->name('public.apply');
+Route::get('/apply/contract-template', [PublicController::class, 'contractTemplateView'])->name('public.apply.contract');
+Route::get('/apply/contract-template/download', [PublicController::class, 'contractTemplateDownload'])->name('public.apply.contract.download');
 
 Route::prefix('public-api')->group(function () {
     Route::get('/rooms', [PublicController::class, 'rooms']);
