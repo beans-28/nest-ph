@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LeaseContractController;
 use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\ApplicationController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
@@ -106,6 +107,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/applications/{application}/approve', [ApplicationController::class, 'approve']);
     Route::post('/applications/{application}/reject', [ApplicationController::class, 'reject']);
     Route::post('/applications/{application}/request-reapplication', [ApplicationController::class, 'requestReapplication']);
+
+    // --- Billing and Payments (admin review of pending payment proofs) ---
+    Route::get('/payments', [PaymentController::class, 'page'])->name('payments.index');
+    Route::post('/payments/{payment}/approve', [PaymentController::class, 'approveProof']);
+    Route::post('/payments/{payment}/reject', [PaymentController::class, 'rejectProof']);
 
     // --- Inquiry management (Week 4, Mon) ---
     Route::get('/inquiries', [InquiryController::class, 'page'])->name('inquiries.index');

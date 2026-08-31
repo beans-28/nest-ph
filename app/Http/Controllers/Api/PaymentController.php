@@ -18,6 +18,167 @@ use Illuminate\Validation\Rule;
 class PaymentController extends Controller
 {
     /**
+     * Renders the admin Billing and Payments page. Scoped to the Pending
+     * Payment tab for now — that's the piece needed to actually test
+     * approving/rejecting move-in fee payments through a real UI instead of
+     * calling the API directly. Billing Overview and Record Payment Entry
+     * are deliberately left as placeholders; they're real remaining scope,
+     * not things this page pretends are already done.
+     */
+    public function page()
+    {
+        // Table 23: catch any statement that's gone overdue with zero
+        // payment activity, which the reactive per-payment resync alone
+        // would never touch. See BillingStatement::syncOverdueStatuses().
+        BillingStatement::syncOverdueStatuses();
+
+        $pending = Payment::with([
+            'tenant:id,full_name',
+            'billingStatement:id,contract_id,type,billing_period_start,total_amount',
+            'billingStatement.contract:id,bed_id',
+            'billingStatement.contract.bed:id,room_id',
+            'billingStatement.contract.bed.room:id,room_no,room_type',
+        ])
+            ->where('status', 'pending')
+            ->latest('created_at')
+            ->get()
+            ->map(fn ($p) => $this->transformPendingRow($p))
+            ->values();
+
+        // Use Case Report Table 22 (View Payment History): the Billing
+        // Overview tab lists every statement with its running balance.
+        // BillingController::index() already computes this same shape via
+        // its own withBalance() helper for the recurring monthly billing
+        // system (Table 19) -- this reuses the same BillingStatement/Payment
+        // tables rather than duplicating that generation logic here.
+        $overview = BillingStatement::with([
+            'tenant:id,full_name',
+            'contract:id,bed_id',
+            'contract.bed:id,room_id',
+            'contract.bed.room:id,room_no,room_type',
+            'payments' => fn ($q) => $q->orderBy('payment_date'),
+        ])
+            ->latest('due_date')
+            ->get()
+            ->map(fn ($b) => $this->transformOverviewRow($b))
+            ->values();
+
+        $now = now();
+
+        $stats = [
+            'total_outstanding' => round(
+                BillingStatement::whereIn('status', ['unpaid', 'partial', 'overdue'])
+                    ->get()
+                    ->sum(fn ($b) => (float) $b->total_amount - Payment::where('billing_id', $b->id)->where('status', 'approved')->sum('amount_paid')),
+                2
+            ),
+            'paid_this_month' => round(
+                Payment::where('status', 'approved')
+                    ->whereYear('payment_date', $now->year)
+                    ->whereMonth('payment_date', $now->month)
+                    ->sum('amount_paid'),
+                2
+            ),
+            'overdue_accounts' => BillingStatement::where('status', 'overdue')->distinct('tenant_id')->count('tenant_id'),
+            'pending_count' => $pending->count(),
+        ];
+
+        return view('adminbilling', [
+            'pending' => $pending,
+            'overview' => $overview,
+            'stats' => $stats,
+        ]);
+    }
+
+    /**
+     * One row per billing statement for the Overview tab -- tenant, room,
+     * period, due date (with days-overdue when applicable), amounts,
+     * balance, status, and the statement's own payment history for the
+     * View drawer (Table 22: "select a specific transaction to view
+     * details").
+     */
+    private function transformOverviewRow(BillingStatement $bill): array
+    {
+        $room = $bill->contract?->bed?->room;
+        $approvedPaid = $bill->payments->where('status', 'approved')->sum('amount_paid');
+        $balance = round((float) $bill->total_amount - $approvedPaid, 2);
+
+        $daysOverdue = null;
+        if ($bill->due_date && $bill->status !== 'paid') {
+            $diff = now()->startOfDay()->diffInDays($bill->due_date, false);
+            if ($diff < 0) {
+                $daysOverdue = abs($diff);
+            }
+        }
+
+        return [
+            'id' => $bill->id,
+            'tenant_name' => $bill->tenant?->full_name ?? 'â',
+            'room_no' => $room?->room_no,
+            'room_type' => $room?->room_type,
+            'billing_type' => $bill->type,
+            'billing_month' => $this->formatDate($bill->billing_period_start, 'F Y'),
+            'due_date' => $this->formatDate($bill->due_date, 'M j, Y'),
+            'days_overdue' => $daysOverdue,
+            'total_amount' => $bill->total_amount,
+            'base_rent' => $bill->base_rent,
+            'utilities_amount' => $bill->utilities_amount,
+            'wifi_amount' => $bill->wifi_amount,
+            'penalty_amount' => $bill->penalty_amount,
+            'amount_paid' => round($approvedPaid, 2),
+            'balance' => $balance,
+            'status' => $bill->status,
+            'payments' => $bill->payments->map(fn ($p) => [
+                'id' => $p->id,
+                'date' => $this->formatDate($p->payment_date, 'M j, Y'),
+                'amount_paid' => $p->amount_paid,
+                'payment_method' => $p->payment_method,
+                'reference_number' => $p->reference_number,
+                'status' => $p->status,
+            ])->values(),
+        ];
+    }
+
+    private function transformPendingRow(Payment $payment): array
+    {
+        $bill = $payment->billingStatement;
+        $room = $bill?->contract?->bed?->room;
+
+        return [
+            'id' => $payment->id,
+            'tenant_name' => $payment->tenant?->full_name ?? '—',
+            'room_no' => $room?->room_no,
+            'room_type' => $room?->room_type,
+            'billing_type' => $bill?->type, // 'move_in' or 'monthly' — shown as a badge so the move-in fee rows are easy to spot while testing
+            'billing_month' => $this->formatDate($bill?->billing_period_start, 'F Y'),
+            'date_paid' => $this->formatDate($payment->payment_date, 'M j, Y'),
+            'payment_method' => $payment->payment_method,
+            'amount_paid' => $payment->amount_paid,
+            'reference_number' => $payment->reference_number,
+            'notes' => $payment->notes,
+            'proof_url' => $payment->proof_path ? Storage::disk('public')->url($payment->proof_path) : null,
+            'created_at' => $this->formatDate($payment->created_at, 'M j, Y g:ia'),
+        ];
+    }
+
+    /**
+     * Formats a date value regardless of whether it arrives as a Carbon
+     * instance (properly cast) or a plain string (cast missing/misapplied
+     * somewhere upstream) — this method has been bitten by exactly that
+     * mismatch twice already, so it no longer assumes either way.
+     */
+    private function formatDate($value, string $format): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        return $value instanceof \Illuminate\Support\Carbon
+            ? $value->format($format)
+            : \Carbon\Carbon::parse($value)->format($format);
+    }
+
+    /**
      * Admin: list payments. Optional ?tenant_id=, ?billing_id=, ?status= filters.
      */
     public function index(Request $request): JsonResponse

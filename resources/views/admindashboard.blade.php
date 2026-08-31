@@ -52,7 +52,6 @@
   .back-arrow{ width:34px; height:34px; border-radius:8px; background:var(--card-bg); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
   .page-head h1{ font-size:20px; font-weight:700; margin:0; color:var(--text-dark); }
 
-  /* ===== TOP STAT CARDS ===== */
   .stats-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:20px; }
   .stat-card{ background:var(--card-bg); border-radius:12px; border:1px solid var(--border); padding:16px 18px; box-shadow:0 1px 2px rgba(20,30,20,0.03); position:relative; }
   .stat-card-head{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-mid); margin-bottom:8px; }
@@ -67,20 +66,17 @@
   .stat-sub{ font-size:11px; color:var(--text-light); margin-top:2px; }
   .placeholder-tag{ position:absolute; top:14px; right:16px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--status-maintenance); background:var(--status-maintenance-bg); padding:3px 7px; border-radius:20px; }
 
-  /* ===== ALERT BANNER ===== */
   .alert-banner{ background:linear-gradient(90deg, #f6d6d3, #fbeceb); border:1px solid #f2c3bf; border-radius:12px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
   .alert-banner-text strong{ display:block; font-size:13.5px; color:#a3372e; }
   .alert-banner-text span{ font-size:12px; color:#8a4a44; }
   .alert-review-btn{ background:#a3372e; color:#fff; border:none; border-radius:8px; padding:9px 16px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
 
-  /* ===== TWO-COLUMN LAYOUT ===== */
   .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
   .dash-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-bottom:20px; }
   .dash-card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
   .dash-card-head h2{ font-size:14.5px; font-weight:700; margin:0; }
   .dash-card-head .view-all{ font-size:11.5px; color:var(--green-accent); font-weight:600; cursor:pointer; }
 
-  /* Occupancy bars */
   .occ-row{ display:grid; grid-template-columns:70px 1fr 40px; align-items:center; gap:12px; margin-bottom:14px; }
   .occ-row:last-child{ margin-bottom:0; }
   .occ-label{ font-size:12.5px; color:var(--text-mid); }
@@ -88,7 +84,6 @@
   .occ-bar-fill{ height:100%; border-radius:20px; background:linear-gradient(90deg, var(--green-accent), var(--status-vacant)); }
   .occ-count{ font-size:11.5px; color:var(--text-light); text-align:right; }
 
-  /* Tickets */
   .ticket-item{ border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:12px; }
   .ticket-item:last-child{ margin-bottom:0; }
   .ticket-title{ font-size:13px; font-weight:700; color:var(--text-dark); display:flex; align-items:center; justify-content:between; gap:8px; }
@@ -96,7 +91,6 @@
   .ticket-desc{ font-size:12px; color:var(--text-mid); margin-top:4px; }
   .ticket-meta{ font-size:11px; color:var(--text-light); margin-top:6px; }
 
-  /* Recent activities table */
   .activity-tabs{ font-size:11.5px; color:var(--green-accent); font-weight:600; margin-bottom:10px; }
   table.activity-table{ width:100%; border-collapse:collapse; }
   table.activity-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:6px 8px; border-bottom:1px solid var(--border); }
@@ -116,7 +110,7 @@
     <ul class="nav-list">
       <li class="nav-item active" data-href="{{ route('dashboard') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>Dashboard</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>Tenant Manager</li>
-      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>Billing and Payments</li>
+      <li class="nav-item" data-href="{{ route('payments.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span>Billing and Payments</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>Delinquency</li>
       <li class="nav-item" data-href="{{ route('admin.addfloor') }}" onclick="window.location.href=this.dataset.href"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="4" width="7" height="7"/><rect x="3" y="15" width="7" height="7"/><rect x="14" y="15" width="7" height="7"/></svg></span>Vacancy Monitor</li>
       <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></span>Tickets</li>
@@ -146,7 +140,6 @@
         <h1>Admin Dashboard</h1>
       </div>
 
-      <!-- ===== TOP STAT CARDS ===== -->
       <div class="stats-row">
         <div class="stat-card">
           <span class="placeholder-tag">Coming Soon</span>
@@ -173,7 +166,6 @@
         </div>
       </div>
 
-      <!-- ===== DELINQUENCY ALERT (placeholder) ===== -->
       <div class="alert-banner">
         <div class="alert-banner-text">
           <strong>Delinquency alerts will appear here</strong>
@@ -184,7 +176,6 @@
 
       <div class="dash-grid">
         <div>
-          <!-- ===== OCCUPANCY (real data) ===== -->
           <div class="dash-card">
             <div class="dash-card-head"><h2>Occupancy</h2></div>
             @if($occupancy->isEmpty())
@@ -201,7 +192,6 @@
             @endif
           </div>
 
-          <!-- ===== TICKETS (placeholder) ===== -->
           <div class="dash-card">
             <div class="dash-card-head"><h2>Tickets</h2><span class="view-all">View All</span></div>
             <div class="empty-note">
@@ -212,7 +202,6 @@
         </div>
 
         <div>
-          <!-- ===== RECENT ACTIVITIES (placeholder) ===== -->
           <div class="dash-card">
             <div class="dash-card-head"><h2>Recent Activities</h2></div>
             <div class="activity-tabs">ALL</div>
