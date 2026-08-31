@@ -112,6 +112,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/payments', [PaymentController::class, 'page'])->name('payments.index');
     Route::post('/payments/{payment}/approve', [PaymentController::class, 'approveProof']);
     Route::post('/payments/{payment}/reject', [PaymentController::class, 'rejectProof']);
+    Route::get('/billing/tenants/{tenant}/statements', [PaymentController::class, 'outstandingStatementsForTenant']);
+    Route::post('/billing/{billingStatement}/payments/cash', [PaymentController::class, 'recordCash']);
 
     // --- Inquiry management (Week 4, Mon) ---
     Route::get('/inquiries', [InquiryController::class, 'page'])->name('inquiries.index');

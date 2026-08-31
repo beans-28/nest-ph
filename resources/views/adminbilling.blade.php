@@ -127,6 +127,28 @@
   .stmt-history-row .amt{ font-weight:700; margin-left:auto; }
   .stmt-history-empty{ color:var(--text-light); font-style:italic; font-size:12px; padding:10px 0; }
 
+  /* Record Cash Payment modal */
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{ background:#fff; border-radius:14px; width:100%; max-width:520px; max-height:88vh; overflow-y:auto; }
+  .modal-head{ padding:20px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; }
+  .modal-head h2{ font-size:16px; font-weight:700; margin:0; }
+  .modal-body{ padding:22px 24px; }
+  .modal-body .fld{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  .modal-body label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
+  .modal-body input, .modal-body select{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); width:100%; }
+  .modal-row2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .tenant-results{ border:1px solid var(--border); border-radius:8px; margin-top:6px; max-height:160px; overflow-y:auto; display:none; }
+  .tenant-results.open{ display:block; }
+  .tenant-result-item{ padding:10px 13px; font-size:13px; cursor:pointer; border-bottom:1px solid #f0f2f0; }
+  .tenant-result-item:hover{ background:#f7f9f7; }
+  .tenant-result-item:last-child{ border-bottom:none; }
+  .selected-tenant{ background:var(--status-vacant-bg); border:1px solid var(--status-vacant); border-radius:8px; padding:10px 13px; font-size:13px; color:var(--green-accent); font-weight:600; display:none; align-items:center; gap:10px; margin-top:6px; }
+  .selected-tenant.open{ display:flex; }
+  .selected-tenant button{ margin-left:auto; background:none; border:none; color:var(--status-occupied); font-size:11.5px; font-weight:600; cursor:pointer; }
+  .modal-actions{ display:flex; gap:10px; padding:18px 24px; border-top:1px solid var(--border); }
+  .rp-balance-note{ background:var(--status-vacant-bg); border:1px solid var(--status-vacant); border-radius:8px; padding:10px 13px; font-size:12.5px; color:var(--green-accent); font-weight:600; }
+
   .overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50; }
   .overlay.open{ display:block; }
   .drawer{ position:fixed; top:0; right:0; height:100%; width:min(520px,100%); background:#fff; z-index:51; transform:translateX(100%); transition:transform .25s ease; overflow-y:auto; display:none; }
@@ -193,6 +215,8 @@
       <div class="page-head">
         <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Billing and Payments</h1>
+        <div style="flex:1;"></div>
+        <button class="btn primary" id="openRecordPaymentBtn">+ Record Payment Entry</button>
       </div>
 
       <div class="stats-row">
@@ -298,6 +322,50 @@
     <button class="drawer-close" id="drawerClose">&times;</button>
   </div>
   <div class="drawer-body" id="drawerBody"></div>
+</div>
+
+<div class="modal-overlay" id="recordPaymentModal">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Record Cash Payment</h2></div>
+    <div class="modal-body">
+      <div class="fld">
+        <label for="rpTenantSearchInput">Tenant</label>
+        <input type="text" id="rpTenantSearchInput" placeholder="Search registered tenants by name...">
+        <div class="tenant-results" id="rpTenantResults"></div>
+        <div class="selected-tenant" id="rpSelectedTenant">
+          <span id="rpSelectedTenantName"></span>
+          <button type="button" id="rpClearTenantBtn">Change</button>
+        </div>
+      </div>
+
+      <div class="fld">
+        <label for="rpStatementSelect">Billing Statement</label>
+        <select id="rpStatementSelect"><option value="">Select a tenant first</option></select>
+      </div>
+
+      <div class="fld" id="rpBalanceNote" style="display:none;"></div>
+
+      <div class="modal-row2">
+        <div class="fld">
+          <label for="rpAmountInput">Amount Paid</label>
+          <input type="number" id="rpAmountInput" step="0.01" min="0.01" placeholder="0.00">
+        </div>
+        <div class="fld">
+          <label for="rpDateInput">Date Received</label>
+          <input type="date" id="rpDateInput">
+        </div>
+      </div>
+
+      <div class="fld">
+        <label for="rpReferenceInput">Reference Number (optional)</label>
+        <input type="text" id="rpReferenceInput" placeholder="OR#, receipt number, etc.">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="rpSubmitBtn" style="flex:1;">Record Payment</button>
+      <button class="btn" id="rpCancelBtn">Cancel</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -737,6 +805,120 @@
   }
 
   renderOverviewTable();
+
+  // ===== Record Cash Payment modal =====
+  let rpSelectedTenantId = null;
+  let rpTenantSearchTimer = null;
+
+  $('openRecordPaymentBtn').addEventListener('click', () => {
+    resetRecordPaymentModal();
+    $('recordPaymentModal').classList.add('open');
+  });
+  $('rpCancelBtn').addEventListener('click', () => $('recordPaymentModal').classList.remove('open'));
+
+  function resetRecordPaymentModal(){
+    rpSelectedTenantId = null;
+    $('rpTenantSearchInput').value = '';
+    $('rpTenantResults').classList.remove('open');
+    $('rpSelectedTenant').classList.remove('open');
+    $('rpStatementSelect').innerHTML = '<option value="">Select a tenant first</option>';
+    $('rpBalanceNote').style.display = 'none';
+    $('rpAmountInput').value = '';
+    $('rpDateInput').value = '';
+    $('rpReferenceInput').value = '';
+  }
+
+  $('rpTenantSearchInput').addEventListener('input', function(){
+    clearTimeout(rpTenantSearchTimer);
+    const q = this.value.trim();
+    rpTenantSearchTimer = setTimeout(async () => {
+      try {
+        const tenants = await api(`/lease-contracts/tenants/search?q=${encodeURIComponent(q)}`);
+        if(tenants.length === 0){
+          $('rpTenantResults').innerHTML = '<div class="tenant-result-item" style="color:var(--text-light);font-style:italic;">No matching tenants found.</div>';
+        } else {
+          $('rpTenantResults').innerHTML = tenants.map(t => `<div class="tenant-result-item" data-id="${t.id}" data-name="${esc(t.full_name)}">${esc(t.full_name)} <span style="color:var(--text-light);">\u00b7 ${esc(t.email || t.contact_number || '')}</span></div>`).join('');
+          $('rpTenantResults').querySelectorAll('[data-id]').forEach(item => {
+            item.addEventListener('click', () => {
+              rpSelectedTenantId = Number(item.dataset.id);
+              $('rpSelectedTenantName').textContent = item.dataset.name;
+              $('rpSelectedTenant').classList.add('open');
+              $('rpTenantResults').classList.remove('open');
+              $('rpTenantSearchInput').value = '';
+              loadOutstandingStatements(rpSelectedTenantId);
+            });
+          });
+        }
+        $('rpTenantResults').classList.add('open');
+      } catch(e){ /* silent */ }
+    }, 250);
+  });
+
+  $('rpClearTenantBtn').addEventListener('click', () => {
+    rpSelectedTenantId = null;
+    $('rpSelectedTenant').classList.remove('open');
+    $('rpStatementSelect').innerHTML = '<option value="">Select a tenant first</option>';
+    $('rpBalanceNote').style.display = 'none';
+  });
+
+  async function loadOutstandingStatements(tenantId){
+    $('rpStatementSelect').innerHTML = '<option value="">Loading\u2026</option>';
+    try {
+      const statements = await api(`/billing/tenants/${tenantId}/statements`);
+      if(statements.length === 0){
+        $('rpStatementSelect').innerHTML = '<option value="">No outstanding statements for this tenant</option>';
+        return;
+      }
+      $('rpStatementSelect').innerHTML = '<option value="">Select a statement</option>' +
+        statements.map(s => `<option value="${s.id}" data-balance="${s.balance}">${esc(s.billing_month)} \u2014 Balance ${peso(s.balance)}</option>`).join('');
+    } catch(e){
+      $('rpStatementSelect').innerHTML = '<option value="">Could not load statements</option>';
+    }
+  }
+
+  $('rpStatementSelect').addEventListener('change', function(){
+    const opt = this.selectedOptions[0];
+    const balance = opt ? opt.dataset.balance : null;
+    if(balance){
+      $('rpBalanceNote').style.display = 'block';
+      $('rpBalanceNote').innerHTML = `<div class="rp-balance-note">Outstanding balance: ${peso(balance)}</div>`;
+      $('rpAmountInput').value = balance;
+    } else {
+      $('rpBalanceNote').style.display = 'none';
+    }
+  });
+
+  $('rpSubmitBtn').addEventListener('click', async function(){
+    const statementId = $('rpStatementSelect').value;
+    const amount = $('rpAmountInput').value;
+    const date = $('rpDateInput').value;
+
+    if(!rpSelectedTenantId) return toast('Select a tenant first.', true);
+    if(!statementId) return toast('Select a billing statement.', true);
+    if(!amount || Number(amount) <= 0) return toast('Enter a valid amount.', true);
+
+    this.disabled = true;
+    try {
+      const result = await api(`/billing/${statementId}/payments/cash`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          amount_paid: amount,
+          payment_date: date || null,
+          reference_number: $('rpReferenceInput').value || null,
+        }),
+      });
+
+      $('recordPaymentModal').classList.remove('open');
+      toast(result.message || 'Payment recorded successfully.');
+
+      // Simplest correct way to reflect the change everywhere (stats,
+      // overview balance, pending count) without duplicating the page's
+      // computation logic client-side.
+      setTimeout(() => window.location.reload(), 700);
+    } catch(e){ toast(e.message, true); }
+    this.disabled = false;
+  });
 })();
 </script>
 

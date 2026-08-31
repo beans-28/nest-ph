@@ -179,6 +179,38 @@ class PaymentController extends Controller
     }
 
     /**
+     * Admin: a specific tenant's not-fully-paid statements, for the Record
+     * Cash Payment modal's statement picker. Table 20 step 1 ("Display
+     * tenant's outstanding balance and billing history") -- scoped to just
+     * what's needed to pick which statement a cash payment applies to.
+     */
+    public function outstandingStatementsForTenant(\App\Models\Tenant $tenant): JsonResponse
+    {
+        BillingStatement::syncOverdueStatuses();
+
+        $statements = BillingStatement::where('tenant_id', $tenant->id)
+            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->with('payments')
+            ->orderBy('due_date')
+            ->get()
+            ->map(function ($bill) {
+                $approvedPaid = $bill->payments->where('status', 'approved')->sum('amount_paid');
+
+                return [
+                    'id' => $bill->id,
+                    'billing_month' => $this->formatDate($bill->billing_period_start, 'F Y'),
+                    'due_date' => $this->formatDate($bill->due_date, 'M j, Y'),
+                    'total_amount' => $bill->total_amount,
+                    'balance' => round((float) $bill->total_amount - $approvedPaid, 2),
+                    'status' => $bill->status,
+                ];
+            })
+            ->values();
+
+        return response()->json($statements);
+    }
+
+    /**
      * Admin: list payments. Optional ?tenant_id=, ?billing_id=, ?status= filters.
      */
     public function index(Request $request): JsonResponse
