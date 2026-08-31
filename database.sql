@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 31, 2026 at 08:26 AM
+-- Generation Time: Aug 31, 2026 at 01:57 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -100,13 +100,8 @@ CREATE TABLE `applications` (
 --
 
 INSERT INTO `applications` (`id`, `inquiry_id`, `tenant_id`, `full_name`, `birthdate`, `gender`, `nationality`, `medical_condition`, `occupation`, `school_company`, `school_company_address`, `contact_number`, `email`, `landline`, `home_address`, `emergency_contact_name`, `emergency_contact_number`, `emergency_contact_email`, `emergency_contact_landline`, `father_name`, `mother_name`, `bed_id`, `preferred_start_date`, `tenant_end_date`, `type_of_tenant`, `id_document_path`, `signed_contract_path`, `dpa_consent`, `status`, `rejection_reason`, `re_application_note`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
-(1, NULL, NULL, 'Maria Santos', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'maria@example.com', NULL, NULL, 'Pedro Santos', '09171234567', NULL, NULL, NULL, NULL, 29, NULL, NULL, NULL, NULL, NULL, 1, 'cancelled', NULL, NULL, NULL, NULL, '2026-08-23 23:03:41', '2026-08-23 23:35:00'),
-(3, NULL, NULL, 'Vince Lopez', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '09289811405', 'vincehh28@gmail.com', NULL, NULL, 'Arlene Lopez', '09289811405', NULL, NULL, NULL, NULL, 29, '2026-09-01', NULL, NULL, NULL, NULL, 1, 'rejected', 'Medical Condition', NULL, NULL, 3, '2026-08-28 19:17:02', '2026-08-30 14:27:46'),
-(4, NULL, 4, 'John Dela Cruz', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '09289811405', 'delacruz@gmail.com', NULL, NULL, 'Jane Dela Cruz', '09289811406', NULL, NULL, NULL, NULL, 31, '2026-09-01', NULL, NULL, NULL, NULL, 1, 'approved', NULL, NULL, NULL, 3, '2026-08-30 06:06:21', '2026-08-30 06:11:32'),
-(5, NULL, 4, 'Bengs Lopez', '2004-07-28', 'female', 'Filipino', 'Nonerz', 'Student', 'PUP', 'Sta. Mesa', '09289811405', 'vincehh28@gmail.com', '619', 'Tarlac City', 'Arleng Lopez', '09289811406', 'vincehh28@gmail.com', NULL, 'Larong Lopez', 'Arleng Lopez', 30, '2026-09-01', '2026-12-23', 'student', 'application-documents/XMzja3ePhXmVsfFHouyyx9yrb2Sae31jIbtPUQ31.jpg', 'application-documents/ObejxgZUJlbrfXhJEkeoBGCzOs2V6KS1MkSq9Ljz.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-30 13:15:10', '2026-08-30 14:27:22'),
-(6, NULL, NULL, 'Tristan Cabarios', '2004-01-01', 'male', 'Filipino', 'None', 'Student', 'Don Bosco', 'Sto. Cristo Tarlac City', '0919868634', 'tristan@gmail.com', NULL, 'Gerona, Tarlac City', 'Annie Cabarios', '0926543254', 'anc@gmail.com', NULL, 'John Cabarios', 'Annie Cabarios', 29, '2026-09-03', '2027-01-20', 'student', 'application-documents/nwT4jc7MbDTn4oxs11cXuG6K9MFJjpoVEj0dbN68.jpg', 'application-documents/cxYmxskYOh4HiD04Nt9Ne4TIY5s6QlSqlMyWEtDP.pdf', 1, 'rejected', 'nvm', NULL, NULL, 3, '2026-08-30 18:55:10', '2026-08-30 18:58:58'),
-(7, NULL, 5, 'Carla Bugasto', '2005-01-01', 'female', 'Filipino', 'None', 'Student', 'TSU', 'San Rafael, T.C.', '09778643521', 'carla@gmail.com', NULL, 'Tarlac City', 'Maya Bugasto', '09573456732', 'maya@gmail.com', NULL, 'Bang Bugasto', 'Maya Bugasto', 35, '2026-09-10', '2027-03-30', 'student', 'application-documents/FTJ5wyIB4eWWuDV9zTjeazvRRFhmxaUUNcAWIv9j.jpg', 'application-documents/UiZ5eYviTClGTJcFWB71qFtamhRM4CoEjtrl5hxx.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-30 19:04:02', '2026-08-30 19:05:31'),
-(8, NULL, NULL, 'adasdasdas', '2026-08-13', 'female', 'Filipino', 'None', 'adadasda', 'sdadasd', 'sadasdsd', '09223213123', 'adadas@gmail.com', NULL, 'asdadasdasd', 'asdsadasdasd', '092131231232', 'sadasdasdsad@gmail.com', NULL, 'asdads', 'dasdadasd', 34, '2026-09-02', '2026-11-26', 'student', 'application-documents/xdM4EJ5QZo9hWXroCtu3E6kfYOw0GqBkVdzXRbe5.jpg', 'application-documents/shhDmU4ZxvyXMhMj2ZAFmAxJl3STz2QCQBOSdNt6.pdf', 1, 'pending', NULL, NULL, NULL, NULL, '2026-08-31 06:16:41', '2026-08-31 06:16:41');
+(8, NULL, 13, 'adasdasdas', '2026-08-13', 'female', 'Filipino', 'None', 'adadasda', 'sdadasd', 'sadasdsd', '09223213123', 'adadas@gmail.com', NULL, 'asdadasdasd', 'asdsadasdasd', '092131231232', 'sadasdasdsad@gmail.com', NULL, 'asdads', 'dasdadasd', 34, '2026-09-02', '2026-11-26', 'student', 'application-documents/xdM4EJ5QZo9hWXroCtu3E6kfYOw0GqBkVdzXRbe5.jpg', 'application-documents/shhDmU4ZxvyXMhMj2ZAFmAxJl3STz2QCQBOSdNt6.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 06:16:41', '2026-08-31 10:04:14'),
+(9, NULL, 14, 'Test Tenant 1', '2026-08-12', 'female', 'Filipino', 'None', 'assadasdasddsa', 'sdadsd', 'sdadasd', '09778643524', 'testtenant1@gmail.com', NULL, 'asdasdasd', 'parents', '09573426732', 'parents@gmail.com', NULL, 'Father Parents', 'Mother Parents', 38, '2026-09-03', '2026-12-23', 'student', 'application-documents/uesfq0GVNL0tc8y3dFTloKnAIpePXiTGudlj3azU.jpg', 'application-documents/iY01Hw1mW8CceLrI5195ioAA0VOnRvrPSSK3K5ih.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 10:52:25', '2026-08-31 10:53:46');
 
 -- --------------------------------------------------------
 
@@ -128,15 +123,13 @@ CREATE TABLE `beds` (
 --
 
 INSERT INTO `beds` (`id`, `room_id`, `bed_label`, `status`, `created_at`, `updated_at`) VALUES
-(28, 14, 'Bed 1', 'occupied', '2026-08-23 23:02:27', '2026-08-23 23:02:27'),
-(29, 14, 'Bed 2', 'occupied', '2026-08-23 23:02:27', '2026-08-30 18:57:21'),
-(30, 15, 'Bed 1', 'occupied', '2026-08-29 05:59:04', '2026-08-30 14:27:22'),
-(31, 15, 'Bed 2', 'occupied', '2026-08-29 05:59:04', '2026-08-30 06:11:32'),
-(32, 15, 'Bed 3', 'occupied', '2026-08-29 05:59:04', '2026-08-29 05:59:04'),
-(33, 15, 'Bed 4', 'maintenance', '2026-08-29 05:59:04', '2026-08-29 05:59:04'),
 (34, 16, 'Bed 1', 'reserved', '2026-08-30 18:57:43', '2026-08-31 06:16:41'),
-(35, 16, 'Bed 2', 'occupied', '2026-08-30 18:57:43', '2026-08-30 19:05:31'),
-(36, 16, 'Bed 3', 'vacant', '2026-08-30 18:57:43', '2026-08-30 18:57:43');
+(35, 16, 'Bed 2', 'vacant', '2026-08-30 18:57:43', '2026-08-31 10:40:56'),
+(36, 16, 'Bed 3', 'vacant', '2026-08-30 18:57:43', '2026-08-30 18:57:43'),
+(38, 17, 'Bed 1', 'occupied', '2026-08-31 10:49:31', '2026-08-31 11:21:55'),
+(39, 17, 'Bed 2', 'vacant', '2026-08-31 10:49:31', '2026-08-31 10:49:31'),
+(40, 17, 'Bed 3', 'vacant', '2026-08-31 10:49:31', '2026-08-31 10:49:31'),
+(41, 17, 'Bed 4', 'vacant', '2026-08-31 10:49:31', '2026-08-31 10:49:31');
 
 -- --------------------------------------------------------
 
@@ -161,6 +154,14 @@ CREATE TABLE `billing_statements` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `billing_statements`
+--
+
+INSERT INTO `billing_statements` (`id`, `contract_id`, `tenant_id`, `type`, `billing_period_start`, `billing_period_end`, `due_date`, `base_rent`, `utilities_amount`, `wifi_amount`, `penalty_amount`, `total_amount`, `status`, `created_at`, `updated_at`) VALUES
+(5, 14, 13, 'move_in', '2026-09-02', '2026-09-02', '2026-09-02', 10000.00, 0.00, 0.00, 0.00, 10000.00, 'unpaid', '2026-08-31 10:04:14', '2026-08-31 10:04:14'),
+(6, 15, 14, 'move_in', '2026-09-03', '2026-09-03', '2026-09-03', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-08-31 10:53:46', '2026-08-31 11:21:55');
 
 -- --------------------------------------------------------
 
@@ -336,8 +337,8 @@ CREATE TABLE `inquiries` (
 INSERT INTO `inquiries` (`id`, `full_name`, `contact_number`, `email`, `room_id`, `message`, `reply_message`, `replied_at`, `replied_by`, `preferred_room_type`, `dpa_consent`, `status`, `created_at`, `updated_at`) VALUES
 (1, 'Juan Dela Cruz', NULL, 'juan@example.com', NULL, 'Interested in a shared room for August', NULL, NULL, NULL, NULL, 1, 'closed', '2026-08-23 23:00:38', '2026-08-30 05:20:59'),
 (3, 'Vince Lopez', '09289811405', 'vincehh28@gmail.com', NULL, 'Up to ilan yung pede sa room po?', 'hello! up to 4', '2026-08-30 05:17:57', 3, 'Standard', 1, 'contacted', '2026-08-30 05:15:43', '2026-08-30 05:17:57'),
-(4, 'John Wick', '09289811405', 'johnwick@gmail.com', 14, 'may aso po ba d2?', 'wala ssob', '2026-08-30 05:27:02', 3, NULL, 1, 'contacted', '2026-08-30 05:25:58', '2026-08-30 05:27:02'),
-(5, 'Tung Tung', '09289811405', 'tungtungsahur@gmail.com', 15, 'hey', NULL, NULL, NULL, 'Standard', 1, 'new', '2026-08-30 05:30:35', '2026-08-30 05:30:35');
+(4, 'John Wick', '09289811405', 'johnwick@gmail.com', NULL, 'may aso po ba d2?', 'wala ssob', '2026-08-30 05:27:02', 3, NULL, 1, 'contacted', '2026-08-30 05:25:58', '2026-08-30 05:27:02'),
+(5, 'Tung Tung', '09289811405', 'tungtungsahur@gmail.com', NULL, 'hey', NULL, NULL, NULL, 'Standard', 1, 'new', '2026-08-30 05:30:35', '2026-08-30 05:30:35');
 
 -- --------------------------------------------------------
 
@@ -409,9 +410,8 @@ CREATE TABLE `lease_contracts` (
 --
 
 INSERT INTO `lease_contracts` (`id`, `application_id`, `tenant_id`, `bed_id`, `inquiry_id`, `start_date`, `end_date`, `monthly_rate`, `discount_amount`, `esign_status`, `signed_document_url`, `signed_at`, `status`, `termination_reason`, `terminated_at`, `last_renewed_at`, `last_renewed_by`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
-(4, 4, 4, 31, NULL, '2026-09-01', NULL, 4777.00, NULL, 'pending', NULL, NULL, 'pending', NULL, NULL, NULL, NULL, 3, 3, '2026-08-30 06:11:32', '2026-08-30 06:11:32'),
-(5, 5, 4, 30, NULL, '2026-09-01', '2026-12-23', 4777.00, NULL, 'pending', NULL, NULL, 'pending', NULL, NULL, NULL, NULL, 3, 3, '2026-08-30 14:27:22', '2026-08-30 14:27:22'),
-(6, 7, 5, 35, NULL, '2026-09-10', '2027-03-30', 5000.00, NULL, 'pending', NULL, NULL, 'pending', NULL, NULL, NULL, NULL, 3, 3, '2026-08-30 19:05:31', '2026-08-30 19:05:31');
+(14, 8, 13, 34, NULL, '2026-09-02', '2026-11-26', 5000.00, NULL, 'pending', NULL, NULL, 'pending', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:04:14', '2026-08-31 10:04:14'),
+(15, 9, 14, 38, NULL, '2026-09-03', '2026-12-23', 2125.00, NULL, 'pending', NULL, NULL, 'pending', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:53:46', '2026-08-31 10:53:46');
 
 -- --------------------------------------------------------
 
@@ -545,6 +545,14 @@ CREATE TABLE `payments` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`id`, `billing_id`, `tenant_id`, `amount_paid`, `payment_method`, `reference_number`, `payment_date`, `status`, `proof_path`, `notes`, `review_notes`, `reviewed_by`, `reviewed_at`, `recorded_by`, `created_at`) VALUES
+(3, 5, 13, 10000.00, 'gcash', '1234 5467 8162', '2026-08-31', 'pending', 'payment-proofs/ypW8WoUCXSEIwMVyWEXnv1tTS7hIyxZv3itPcP6G.png', 'Time of payment: 18:19. Here po', NULL, NULL, NULL, NULL, '2026-08-31 10:19:22'),
+(4, 6, 14, 4250.00, 'gcash', '1234 5467 8161', '2026-08-31', 'approved', 'payment-proofs/Mi8dv1TOqcEKFhjqS8y37ACZbze4b233k0yVoikl.png', 'Time of payment: 18:56. sadasd', NULL, 3, '2026-08-31 11:21:55', NULL, '2026-08-31 10:56:26');
+
 -- --------------------------------------------------------
 
 --
@@ -644,9 +652,8 @@ CREATE TABLE `rooms` (
 --
 
 INSERT INTO `rooms` (`id`, `floor_id`, `room_no`, `room_type`, `amenities`, `monthly_rate`, `status`, `vr_asset_path`, `vr_caption`, `vr_visibility`, `created_at`, `updated_at`) VALUES
-(14, 3, '35', 'Standard', '[\"wifi\",\"electricity\",\"water\"]', 4555.00, 'full', NULL, 'Living Room', 'public', '2026-08-23 23:02:27', '2026-08-30 18:57:21'),
-(15, 3, '36', 'Standard', '[]', 4777.00, 'full', NULL, NULL, 'draft', '2026-08-29 05:59:04', '2026-08-30 13:15:10'),
-(16, 3, '1', 'Standard', '[]', 5000.00, 'available', NULL, NULL, 'draft', '2026-08-30 18:57:43', '2026-08-30 18:57:43');
+(16, 3, '1', 'Standard', '[]', 5000.00, 'available', NULL, NULL, 'draft', '2026-08-30 18:57:43', '2026-08-30 18:57:43'),
+(17, 3, '2', 'Standard', '[]', 8500.00, 'available', NULL, NULL, 'draft', '2026-08-31 10:49:31', '2026-08-31 10:49:31');
 
 -- --------------------------------------------------------
 
@@ -662,15 +669,6 @@ CREATE TABLE `room_photos` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `room_photos`
---
-
-INSERT INTO `room_photos` (`id`, `room_id`, `path`, `sort_order`, `created_at`, `updated_at`) VALUES
-(1, 14, 'room-photos/test.jpg', 0, '2026-08-29 05:10:13', '2026-08-29 05:10:13'),
-(2, 14, 'room-photos/test.jpg', 0, '2026-08-29 05:12:21', '2026-08-29 05:12:21'),
-(3, 14, 'room-photos/test.jpg', 0, '2026-08-29 05:12:48', '2026-08-29 05:12:48');
 
 -- --------------------------------------------------------
 
@@ -693,7 +691,8 @@ CREATE TABLE `sessions` (
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
 ('5QVjmkvKugGfeoRLUjarTqoXabpNtjolzj90Jc6H', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiN2E5b0NmV3N6Znp1eFF0eVdMaGdyNTFxS2EzT2U2eFdJN1BnQU5mTCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788157499),
-('qRRTT67SnmqoTLKOveFp75m1CbMsf4xXCMTCCUiI', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiMFF0Nmx2SmJyTDVkVUp5ZzN0VWs0QkM5MHN5cE04ZXVPSGRTMGNFaCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hcHBsaWNhdGlvbnMiO3M6NToicm91dGUiO3M6MTg6ImFwcGxpY2F0aW9ucy5pbmRleCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6MzoidXJsIjthOjE6e3M6ODoiaW50ZW5kZWQiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MztzOjE3OiJwYXNzd29yZF9oYXNoX3dlYiI7czo2NDoiOWRhYTE0OTMzNjcxMTIwNTUxMDBmOGUxODU4MzIwZGJiNGZiYTY5MTAxZDcwMmM3ZmYzNzQzZThjZjIzNjEwNyI7fQ==', 1788157350);
+('qRRTT67SnmqoTLKOveFp75m1CbMsf4xXCMTCCUiI', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiMFF0Nmx2SmJyTDVkVUp5ZzN0VWs0QkM5MHN5cE04ZXVPSGRTMGNFaCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hcHBsaWNhdGlvbnMiO3M6NToicm91dGUiO3M6MTg6ImFwcGxpY2F0aW9ucy5pbmRleCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6MzoidXJsIjthOjE6e3M6ODoiaW50ZW5kZWQiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MztzOjE3OiJwYXNzd29yZF9oYXNoX3dlYiI7czo2NDoiOWRhYTE0OTMzNjcxMTIwNTUxMDBmOGUxODU4MzIwZGJiNGZiYTY5MTAxZDcwMmM3ZmYzNzQzZThjZjIzNjEwNyI7fQ==', 1788157350),
+('xu5Ajrf0IJCDR8m77lPfJtNzZxIVPakU7EqtdSEn', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo3OntzOjY6Il90b2tlbiI7czo0MDoienI0blFHZU83eVY0cVlJS1JhRm5pdm9uZGY5bHQ4aW5RZlA0VFl4NSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9wYXltZW50cyI7czo1OiJyb3V0ZSI7czoxNDoicGF5bWVudHMuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO3M6MjA6Im1vdmVfaW5fcGF5bWVudF90eXBlIjtzOjQ6ImZ1bGwiO3M6MjI6Im1vdmVfaW5fcGF5bWVudF9tZXRob2QiO3M6NToiZ2Nhc2giO3M6MTc6InBhc3N3b3JkX2hhc2hfd2ViIjtzOjY0OiI0MTE0NzU3Yjg0ZDUyOTY4YTVjN2ViN2UyNzY0N2FhN2NlYmZlNzVjODNiNWQ3MjNiZWMzZjE2YmVmYWY2ZTUzIjt9', 1788177381);
 
 -- --------------------------------------------------------
 
@@ -720,8 +719,8 @@ CREATE TABLE `tenants` (
 --
 
 INSERT INTO `tenants` (`id`, `user_id`, `full_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `status`, `is_blacklisted`, `created_at`, `updated_at`) VALUES
-(4, 9, 'John Dela Cruz', '09289811405', 'delacruz@gmail.com', 'Jane Dela Cruz', '09289811406', 'pending_move_in_payment', 0, '2026-08-30 06:11:32', '2026-08-30 06:11:32'),
-(5, 10, 'Carla Bugasto', '09778643521', 'carla@gmail.com', 'Maya Bugasto', '09573456732', 'pending_move_in_payment', 0, '2026-08-30 19:05:31', '2026-08-30 19:05:31');
+(13, 18, 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', 'pending_move_in_payment', 0, '2026-08-31 10:04:14', '2026-08-31 10:04:14'),
+(14, 19, 'Test Tenant 1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', 'active', 0, '2026-08-31 10:53:46', '2026-08-31 11:21:55');
 
 -- --------------------------------------------------------
 
@@ -751,7 +750,9 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `ro
 (2, 'Test Admin', 'admin@nestph.test', NULL, '$2y$12$If2FiAnM0xiHlnJA9.cgDOAChO1s6Nsp0YvsDdodxHkZKeBe4xmkm', 2, 1, NULL, '2026-07-24 22:11:59', '2026-07-24 22:11:59'),
 (3, 'Test Owner', 'owner@nestph.test', NULL, '$2y$12$tBbYyy35ASpYBp1J16pNkOLef7.5rNtW/O/3jO5M.0Vkg/xe4CHfK', 2, 1, NULL, '2026-07-24 22:12:00', '2026-07-24 22:12:00'),
 (9, 'John Dela Cruz', 'delacruz@gmail.com', NULL, '$2y$12$k3PCXiSoLTXe4G3NnIT24eaeQtjFdK3ckRw0kMS71z5IYiu.Jjt9a', 1, 1, NULL, '2026-08-30 06:11:32', '2026-08-30 06:11:32'),
-(10, 'Carla Bugasto', 'carla@gmail.com', NULL, '$2y$12$zpurO4Udqsfep0Dga16Emuuo29pZblCvUUzyuZS1V0tFID9ToKEm2', 1, 1, NULL, '2026-08-30 19:05:31', '2026-08-30 19:05:31');
+(10, 'Carla Bugasto', 'carla@gmail.com', NULL, '$2y$12$zpurO4Udqsfep0Dga16Emuuo29pZblCvUUzyuZS1V0tFID9ToKEm2', 1, 1, NULL, '2026-08-30 19:05:31', '2026-08-30 19:05:31'),
+(18, 'adasdasdas', 'adadas@gmail.com', NULL, '$2y$12$jYvF.c77Jy9w5.7rMNqogeHuWorg/.ULCOXujNRuZeDdZ24d1/yn2', 1, 1, NULL, '2026-08-31 10:04:14', '2026-08-31 10:04:14'),
+(19, 'Test Tenant 1', 'testtenant1@gmail.com', NULL, '$2y$12$3B5WRI0MHOAO5U/p7mPhR.QeXvj.ZEQvZiubtg9/h1.J0wY/V8UoG', 1, 1, NULL, '2026-08-31 10:53:46', '2026-08-31 10:53:46');
 
 -- --------------------------------------------------------
 
@@ -769,14 +770,6 @@ CREATE TABLE `vr_hotspots` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `vr_hotspots`
---
-
-INSERT INTO `vr_hotspots` (`id`, `vr_scene_id`, `target_scene_id`, `pitch`, `yaw`, `label`, `created_at`, `updated_at`) VALUES
-(1, 3, 2, -8.0868, -171.2028, 'Go to Living Room', '2026-08-29 11:09:49', '2026-08-29 11:09:49'),
-(2, 2, 3, -10.4894, 17.5260, 'Go to Living Room 2', '2026-08-29 11:10:21', '2026-08-29 11:10:21');
 
 -- --------------------------------------------------------
 
@@ -798,14 +791,6 @@ CREATE TABLE `vr_scenes` (
   `v_offset` decimal(6,2) NOT NULL DEFAULT 0.00,
   `is_partial` tinyint(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `vr_scenes`
---
-
-INSERT INTO `vr_scenes` (`id`, `room_id`, `title`, `panorama_path`, `is_default`, `sort_order`, `created_at`, `updated_at`, `haov`, `vaov`, `v_offset`, `is_partial`) VALUES
-(2, 14, 'Living Room', 'vr-scenes/gh5b9nHJl453HdQ5GdaVPUh69n5V4dpYt55Vle0h.jpg', 0, 0, '2026-08-29 10:46:22', '2026-08-29 11:09:26', 360.00, 64.30, 0.00, 0),
-(3, 14, 'Living Room 2', 'vr-scenes/L2wMpnRUvVzBiue58Ua6pVDAgcHnT5ATkQYawngE.jpg', 1, 1, '2026-08-29 11:09:04', '2026-08-29 11:09:26', 360.00, 53.73, 0.00, 1);
 
 --
 -- Indexes for dumped tables
@@ -1072,19 +1057,19 @@ ALTER TABLE `admin_privileges`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `beds`
 --
 ALTER TABLE `beds`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `billing_statements`
 --
 ALTER TABLE `billing_statements`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `damages`
@@ -1132,7 +1117,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `lease_contracts`
 --
 ALTER TABLE `lease_contracts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `maintenance_tickets`
@@ -1150,7 +1135,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `penalties`
@@ -1180,7 +1165,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `room_photos`
@@ -1192,13 +1177,13 @@ ALTER TABLE `room_photos`
 -- AUTO_INCREMENT for table `tenants`
 --
 ALTER TABLE `tenants`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `vr_hotspots`
