@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
 use App\Http\Controllers\VrTourController;
+use App\Http\Controllers\TenantOnboardingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,7 +73,7 @@ Route::get('/passwords', function () {
 })->name('passwords');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth'])
+    ->middleware(['auth', 'movein.check'])
     ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -142,10 +143,20 @@ Route::middleware(['auth', 'admin'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'tenant'])->group(function () {
+Route::middleware(['auth', 'tenant', 'movein.check'])->group(function () {
     Route::get('/billing', function () {
         return view('tenantbilling');
     })->name('tenant.billing');
+
+    // Use Case Report — Pay Move-In Fees (welcome + payment-type +
+    // payment-method + payment/proof-upload screens; the admin review queue
+    // is separate, not-yet-built work).
+    Route::get('/move-in', [TenantOnboardingController::class, 'welcome'])->name('tenant.movein.welcome');
+    Route::get('/move-in/payment-type', [TenantOnboardingController::class, 'paymentType'])->name('tenant.movein.payment-type');
+    Route::post('/move-in/payment-type', [TenantOnboardingController::class, 'storePaymentType'])->name('tenant.movein.payment-type.store');
+    Route::get('/move-in/payment-method', [TenantOnboardingController::class, 'paymentMethod'])->name('tenant.movein.payment-method');
+    Route::post('/move-in/payment-method', [TenantOnboardingController::class, 'storePaymentMethod'])->name('tenant.movein.payment-method.store');
+    Route::get('/move-in/payment', [TenantOnboardingController::class, 'payment'])->name('tenant.movein.payment');
 
     Route::prefix('my/billing')->group(function () {
         Route::get('/summary', [TenantPortalController::class, 'me']);

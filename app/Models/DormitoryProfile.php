@@ -17,6 +17,8 @@ class DormitoryProfile extends Model
         'logo_path',
         'policies_file_path',
         'contract_template_path',
+        'gcash_number',
+        'bdo_account_number',
         'payments_and_fees',
         'house_rules',
         'checkout_procedures',

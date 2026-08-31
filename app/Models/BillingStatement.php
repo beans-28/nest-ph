@@ -14,6 +14,7 @@ class BillingStatement extends Model
     protected $fillable = [
         'contract_id',
         'tenant_id',
+        'type',
         'billing_period_start',
         'billing_period_end',
         'due_date',

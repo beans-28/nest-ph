@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'tenant' => \App\Http\Middleware\EnsureUserIsTenant::class,
+            'movein.check' => \App\Http\Middleware\RedirectPendingMoveInTenant::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

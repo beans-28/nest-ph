@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\MoveInPermitMail;
+use App\Models\Bed;
 use App\Models\BillingStatement;
 use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -112,6 +115,12 @@ class PaymentController extends Controller
         });
 
         $billingStatement->refresh();
+
+        // Use Case Report — Pay Move-In Fees, step 6.1: if this payment fully
+        // settled a move-in fee, occupy the bed and activate the tenant.
+        // Cash payments go through this same activation path as approved
+        // online proof — either route to "fully paid" should trigger it.
+        $this->activateTenantIfMoveInSettled($billingStatement);
 
         $this->notify('payment.recorded', [
             'payment_id' => $payment->id,
@@ -229,6 +238,11 @@ class PaymentController extends Controller
         });
 
         $statement->refresh();
+
+        // Use Case Report — Pay Move-In Fees, step 6.1: verifying payment on
+        // a move-in fee is what actually occupies the bed and activates the
+        // tenant — not application approval, which only reserves it.
+        $this->activateTenantIfMoveInSettled($statement);
 
         $this->notify('payment.proof_approved', [
             'payment_id' => $payment->id,
@@ -363,6 +377,65 @@ class PaymentController extends Controller
         }
 
         $statement->update(['status' => $status]);
+    }
+
+    /**
+     * Use Case Report — Pay Move-In Fees, step 6.1: once a move-in fee
+     * statement is fully settled, occupy the bed and — for a brand-new
+     * onboarding tenant — activate the account and send the move-in permit.
+     *
+     * Deliberately separates "occupy the bed" from "activate the tenant":
+     * a returning tenant (findReturningTenant() match during approval) is
+     * already Active from a prior stay, so only the bed needs to flip here.
+     * Both cash payments and approved online proof funnel through this same
+     * path, since either one can be what finally settles the statement.
+     *
+     * Safe to call even when the statement isn't fully paid yet, or isn't a
+     * move-in fee at all — it's a no-op in both cases. Also safe to call more
+     * than once on an already-settled statement (idempotent): the bed/tenant
+     * status checks inside mean a repeat call changes nothing.
+     */
+    private function activateTenantIfMoveInSettled(BillingStatement $statement): void
+    {
+        if ($statement->type !== 'move_in' || $statement->status !== 'paid') {
+            return;
+        }
+
+        $statement->loadMissing('contract', 'tenant');
+        $contract = $statement->contract;
+        $tenant = $statement->tenant;
+
+        DB::transaction(function () use ($contract, $tenant) {
+            if ($contract && $contract->bed_id) {
+                $bed = Bed::with('room')->find($contract->bed_id);
+
+                if ($bed && $bed->status === 'reserved') {
+                    $bed->update(['status' => 'occupied']);
+                    $bed->room?->syncStatusFromBeds();
+                }
+            }
+
+            if ($tenant && $tenant->status === 'pending_move_in_payment') {
+                $tenant->update(['status' => 'active']);
+            }
+        });
+
+        if ($tenant && $tenant->email) {
+            try {
+                Mail::to($tenant->email)->send(new MoveInPermitMail($tenant, $contract));
+            } catch (\Throwable $e) {
+                Log::warning('Move-in permit email failed to send.', [
+                    'tenant_id' => $tenant->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $this->notify('tenant.movein_settled', [
+            'tenant_id' => $tenant?->id,
+            'contract_id' => $contract?->id,
+            'billing_id' => $statement->id,
+        ]);
     }
 
     private function buildReceipt(Payment $payment): array

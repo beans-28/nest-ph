@@ -371,8 +371,14 @@ class ApplicationController extends Controller
                 'approved_by' => $request->user()?->id,
             ]);
 
-            $bed->update(['status' => 'occupied']);
-            $bed->room->syncStatusFromBeds();
+            // NOTE: the bed is deliberately left as 'reserved' here — it was
+            // already reserved at application submission time (store()), and
+            // approving the application doesn't mean the tenant has actually
+            // paid anything yet. It only becomes 'occupied' once the move-in
+            // fee payment is verified — see
+            // PaymentController::activateTenantIfMoveInSettled(). Setting it
+            // to 'occupied' here was a real bug: it let a bed look permanently
+            // assigned even if the applicant never paid.
 
             $application->update([
                 'status' => 'approved',
@@ -380,10 +386,35 @@ class ApplicationController extends Controller
                 'approved_by' => $request->user()?->id,
             ]);
 
+            // Step 11.2: "create billing record" — the move-in fee breakdown
+            // (security deposit + 1 month advance rent) that Table 17's Pay
+            // Move-In Fees flow requires to exist before the tenant can even
+            // see a total due. A brand-new tenant is only ever created with
+            // 'pending_move_in_payment' status by createTenantWithLogin();
+            // a returning tenant's existing status is left untouched, since
+            // they may already be Active from a prior stay.
+            $moveInFeeAmount = $monthlyRate * 2; // 1 month deposit + 1 month advance
+
+            $billingStatement = \App\Models\BillingStatement::create([
+                'contract_id' => $contract->id,
+                'tenant_id' => $tenant->id,
+                'type' => 'move_in',
+                'billing_period_start' => $contract->start_date,
+                'billing_period_end' => $contract->start_date,
+                'due_date' => $contract->start_date,
+                'base_rent' => $moveInFeeAmount,
+                'utilities_amount' => 0,
+                'wifi_amount' => 0,
+                'penalty_amount' => 0,
+                'total_amount' => $moveInFeeAmount,
+                'status' => 'pending',
+            ]);
+
             return [
                 'tenant' => $tenant,
                 'contract' => $contract,
                 'temporary_password' => $temporaryPassword,
+                'move_in_billing' => $billingStatement,
             ];
         });
 
@@ -671,6 +702,7 @@ class ApplicationController extends Controller
             'email' => $application->email,
             'emergency_contact_name' => $application->emergency_contact_name,
             'emergency_contact_number' => $application->emergency_contact_number,
+            'status' => 'pending_move_in_payment',
         ]);
 
         return [$tenant, $temporaryPassword];
