@@ -94,9 +94,26 @@ class VacancyController extends Controller
         return response()->json($this->transformRoom($room->fresh(['beds', 'photos']), $floor), 201);
     }
 
+    /**
+     * Same protection as destroyRoom() — checked across every room on the
+     * floor, since deleting the floor would otherwise hit the identical
+     * foreign key wall, just deeper into the cascade and with an uglier
+     * raw SQL error to show for it.
+     */
     public function destroyFloor(string $floorNumber): JsonResponse
     {
         $floor = Floor::where('floor_number', (int) $floorNumber)->firstOrFail();
+
+        $bedIds = Bed::whereIn('room_id', $floor->rooms()->pluck('id'))->pluck('id');
+
+        $hasHistory = \App\Models\Application::whereIn('bed_id', $bedIds)->exists()
+            || \App\Models\LeaseContract::whereIn('bed_id', $bedIds)->exists();
+
+        if ($hasHistory) {
+            return response()->json([
+                'message' => 'This floor can\'t be deleted — one or more of its rooms has beds with application or lease history tied to them, and removing the floor would orphan those records.',
+            ], 409);
+        }
 
         foreach ($floor->rooms as $room) {
             $room->beds()->delete();
@@ -178,8 +195,26 @@ class VacancyController extends Controller
         return response()->json($this->transformRoom($room->fresh(['beds', 'photos']), $floor));
     }
 
+    /**
+     * Deleting a room whose beds are tied to any application or lease
+     * history would orphan those records — the database's foreign key
+     * constraint already blocks this at the SQL level, but without this
+     * check the admin just sees a raw SQLSTATE error instead of a clear
+     * explanation of what actually went wrong.
+     */
     public function destroyRoom(Room $room): JsonResponse
     {
+        $bedIds = $room->beds()->pluck('id');
+
+        $hasHistory = \App\Models\Application::whereIn('bed_id', $bedIds)->exists()
+            || \App\Models\LeaseContract::whereIn('bed_id', $bedIds)->exists();
+
+        if ($hasHistory) {
+            return response()->json([
+                'message' => 'This room can\'t be deleted — one or more of its beds has application or lease history tied to it, and removing the room would orphan those records. If the room is no longer usable, consider marking its beds as Maintenance instead.',
+            ], 409);
+        }
+
         $room->delete(); // beds and photos cascade via FK constraint
 
         return response()->json(['message' => 'Room deleted successfully.']);
@@ -281,6 +316,7 @@ class VacancyController extends Controller
             'room_type' => $room->room_type,
             'amenities' => $room->amenities ?? [],
             'monthly_rate' => $room->monthly_rate,
+            'price_per_bed' => $room->perBedRate(),
             'status' => $room->status,
             'beds' => $room->beds->map(fn ($bed) => [
                 'id' => $bed->id,

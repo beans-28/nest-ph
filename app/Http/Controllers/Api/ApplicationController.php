@@ -352,7 +352,17 @@ class ApplicationController extends Controller
                 [$tenant, $temporaryPassword] = $this->createTenantWithLogin($application);
             }
 
-            $monthlyRate = $data['monthly_rate'] ?? $bed->room->monthly_rate ?? 0;
+            // The discount is applied directly to the stored rate rather than
+            // kept as a separate adjustment applied ad-hoc wherever a bill is
+            // calculated. That means any future consumer of monthly_rate —
+            // a recurring monthly billing generator, for instance, which
+            // doesn't exist yet — automatically inherits the discount with
+            // nothing to remember. discount_amount itself is kept purely as
+            // an audit trail of how much was taken off, not as a value
+            // anything needs to re-subtract later.
+            $baseRate = $data['monthly_rate'] ?? $bed->room->perBedRate();
+            $discountAmount = $data['discount_amount'] ?? 0;
+            $monthlyRate = max(0, $baseRate - $discountAmount);
 
             $contract = LeaseContract::create([
                 'application_id' => $application->id,
@@ -617,7 +627,7 @@ class ApplicationController extends Controller
                 'mother_name' => $application->mother_name,
                 'room_no' => $application->bed?->room?->room_no,
                 'bed_label' => $application->bed?->bed_label,
-                'monthly_rate' => $application->bed?->room?->monthly_rate,
+                'monthly_rate' => $application->bed?->room?->perBedRate(),
                 'preferred_start_date' => $application->preferred_start_date?->format('M j, Y'),
                 'tenant_end_date' => $application->tenant_end_date?->format('M j, Y'),
                 'type_of_tenant' => $application->type_of_tenant,

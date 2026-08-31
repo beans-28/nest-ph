@@ -33,6 +33,22 @@ class Room extends Model
         return $this->hasMany(Bed::class);
     }
 
+    /**
+     * A room's monthly_rate is the rent for the WHOLE room, not any one
+     * tenant's share — a 4-bed room split 4 ways means each tenant pays a
+     * quarter, not the full room rate. This is computed live from bed count
+     * rather than stored separately, so it can never drift out of sync if a
+     * bed is later added or removed from the room.
+     */
+    public function perBedRate(): float
+    {
+        $bedCount = $this->relationLoaded('beds') ? $this->beds->count() : $this->beds()->count();
+
+        return $bedCount > 0
+            ? round((float) $this->monthly_rate / $bedCount, 2)
+            : (float) $this->monthly_rate;
+    }
+
     public function floor(): BelongsTo
     {
         return $this->belongsTo(Floor::class);

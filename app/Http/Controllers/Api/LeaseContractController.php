@@ -159,12 +159,16 @@ class LeaseContractController extends Controller
             : null;
 
         $contract = DB::transaction(function () use ($data, $bed, $signedPath, $request) {
+            $baseRate = $data['monthly_rate'] ?? $bed->room->perBedRate();
+            $discountAmount = $data['discount_amount'] ?? 0;
+            $monthlyRate = max(0, $baseRate - $discountAmount);
+
             $contract = LeaseContract::create([
                 'tenant_id' => $data['tenant_id'],
                 'bed_id' => $bed->id,
                 'start_date' => $data['start_date'],
                 'end_date' => $data['end_date'],
-                'monthly_rate' => $data['monthly_rate'] ?? $bed->room->monthly_rate ?? 0,
+                'monthly_rate' => $monthlyRate,
                 'discount_amount' => $data['discount_amount'] ?? null,
                 'esign_status' => $signedPath ? 'signed' : 'pending',
                 'signed_document_url' => $signedPath,

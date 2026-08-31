@@ -288,6 +288,7 @@ class PublicController extends Controller
             'room_type' => $room->room_type,
             'amenities' => $room->amenities ?? [],
             'monthly_rate' => $room->monthly_rate,
+            'price_per_bed' => $room->perBedRate(),
             'status' => $room->status,
             'total_beds' => $room->beds_count,
             'available_beds' => $room->vacant_beds_count,
@@ -365,14 +366,10 @@ class PublicController extends Controller
             'NEST-PH-Dormitory-Contract.pdf'
         );
     }
-
     /**
-     * Renders the public "Dorm Info" page — house rules, payments/fees,
-     * checkout procedures, and contact details, server-rendered directly
-     * (see the dormInfo() note above for why a separate JSON version also
-     * exists).
+     * Renders the public "Dorm Info" page.
      */
-    public function dormInfoPage()
+    public function dormInfoPage(): \Illuminate\View\View
     {
         $profile = DormitoryProfile::current();
 

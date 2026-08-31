@@ -302,7 +302,7 @@
         ${a.returning_tenant ? `
           <div class="returning-note">
             <strong>This applicant matches an existing tenant record</strong> (${esc(a.returning_tenant.full_name)}).
-            They may qualify for a returning-tenant discount — enter an amount below if approving.
+            They may qualify for a returning-tenant discount — enter an amount below to reduce their monthly rate by that much if approving.
           </div>
           <div class="discount-fld">
             <label for="discountInput">Discount Amount (₱)</label>

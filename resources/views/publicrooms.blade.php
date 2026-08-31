@@ -324,7 +324,7 @@
                             <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4 2.2C10.5 6.2 12 5 14 5c3.5 0 5 3.5 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
                         </div>
                         <div class="listing-body">
-                            <div class="listing-price">${typeLabel} - ${formatPrice(room.monthly_rate)}/mo</div>
+                            <div class="listing-price">${typeLabel} - ${formatPrice(room.price_per_bed)}/mo</div>
                             <div class="listing-amenities">${amenitiesHtml}</div>
                             <div class="listing-buttons">
                                 ${tourButton}
