@@ -162,7 +162,7 @@ Route::middleware(['auth', 'tenant', 'movein.check'])->group(function () {
         Route::get('/summary', [TenantPortalController::class, 'me']);
         Route::get('/bills', [TenantPortalController::class, 'myBills']);
         Route::get('/bills/{billingStatement}', [TenantPortalController::class, 'showBill']);
-        Route::post('/bills/{billingStatement}/payment-proof', [TenantPortalController::class, 'submitProof']);
+        Route::post('/bills/{billingStatement}/payment-proof', [TenantPortalController::class, 'submitProof'])->name('tenant.billing.payment-proof');
     });
 });
 

@@ -308,15 +308,6 @@
     </div>
 
 <script>
-    // NOTE: no real payment gateway is wired up here — this QR simply
-    // encodes the account info as text so it visually matches the design.
-    // Scanning it won't actually initiate a real GCash/BDO transaction.
-    const qrPayload = @json($paymentMethod === 'bdo'
-        ? 'BDO Account: ' . ($bdoAccountNumber ?: 'Not configured')
-        : 'GCash: ' . ($gcashNumber ?: 'Not configured'));
-
-    QRCode.toCanvas(document.getElementById('qrCanvas'), qrPayload, { width: 96, margin: 1 });
-
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('proofFile');
     const uploadedFile = document.getElementById('uploadedFile');
@@ -441,6 +432,25 @@
             nav.classList.remove('scrolled');
         }
     });
+
+    // QR code generation runs LAST and is wrapped defensively — if the CDN
+    // library fails to load (network restriction, ad blocker, offline), this
+    // must never be able to break the actual upload/submit functionality
+    // above, which is the part that actually matters.
+    try {
+        const qrPayload = @json($paymentMethod === 'bdo'
+            ? 'BDO Account: ' . ($bdoAccountNumber ?: 'Not configured')
+            : 'GCash: ' . ($gcashNumber ?: 'Not configured'));
+
+        if (typeof QRCode !== 'undefined') {
+            QRCode.toCanvas(document.getElementById('qrCanvas'), qrPayload, { width: 96, margin: 1 });
+        } else {
+            document.querySelector('.qr-code-box').innerHTML =
+                '<div style="width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#9aa5ac;text-align:center;padding:6px;">QR code unavailable</div>';
+        }
+    } catch (qrError) {
+        console.warn('QR code generation failed (non-critical):', qrError);
+    }
 </script>
 
 </body>

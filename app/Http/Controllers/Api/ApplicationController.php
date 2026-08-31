@@ -407,7 +407,7 @@ class ApplicationController extends Controller
                 'wifi_amount' => 0,
                 'penalty_amount' => 0,
                 'total_amount' => $moveInFeeAmount,
-                'status' => 'pending',
+                'status' => 'unpaid',
             ]);
 
             return [

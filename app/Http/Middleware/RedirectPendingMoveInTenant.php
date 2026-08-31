@@ -39,6 +39,10 @@ class RedirectPendingMoveInTenant
             'tenant.movein.welcome',
             'tenant.movein.payment-type',
             'tenant.movein.payment-type.store',
+            'tenant.movein.payment-method',
+            'tenant.movein.payment-method.store',
+            'tenant.movein.payment',
+            'tenant.billing.payment-proof',
             'logout',
         ];
 
