@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 31, 2026 at 01:57 PM
+-- Generation Time: Sep 01, 2026 at 07:50 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -123,7 +123,7 @@ CREATE TABLE `beds` (
 --
 
 INSERT INTO `beds` (`id`, `room_id`, `bed_label`, `status`, `created_at`, `updated_at`) VALUES
-(34, 16, 'Bed 1', 'reserved', '2026-08-30 18:57:43', '2026-08-31 06:16:41'),
+(34, 16, 'Bed 1', 'occupied', '2026-08-30 18:57:43', '2026-09-01 10:56:54'),
 (35, 16, 'Bed 2', 'vacant', '2026-08-30 18:57:43', '2026-08-31 10:40:56'),
 (36, 16, 'Bed 3', 'vacant', '2026-08-30 18:57:43', '2026-08-30 18:57:43'),
 (38, 17, 'Bed 1', 'occupied', '2026-08-31 10:49:31', '2026-08-31 11:21:55'),
@@ -160,7 +160,7 @@ CREATE TABLE `billing_statements` (
 --
 
 INSERT INTO `billing_statements` (`id`, `contract_id`, `tenant_id`, `type`, `billing_period_start`, `billing_period_end`, `due_date`, `base_rent`, `utilities_amount`, `wifi_amount`, `penalty_amount`, `total_amount`, `status`, `created_at`, `updated_at`) VALUES
-(5, 14, 13, 'move_in', '2026-09-02', '2026-09-02', '2026-09-02', 10000.00, 0.00, 0.00, 0.00, 10000.00, 'unpaid', '2026-08-31 10:04:14', '2026-08-31 10:04:14'),
+(5, 14, 13, 'move_in', '2026-09-02', '2026-09-02', '2026-09-02', 10000.00, 0.00, 0.00, 0.00, 10000.00, 'paid', '2026-08-31 10:04:14', '2026-09-01 10:56:54'),
 (6, 15, 14, 'move_in', '2026-09-03', '2026-09-03', '2026-09-03', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-08-31 10:53:46', '2026-08-31 11:21:55');
 
 -- --------------------------------------------------------
@@ -216,6 +216,13 @@ CREATE TABLE `damages` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `damages`
+--
+
+INSERT INTO `damages` (`id`, `tenant_id`, `room_id`, `bed_id`, `description`, `cost`, `date_incurred`, `photo_path`, `created_by`, `created_at`, `updated_at`) VALUES
+(2, 14, 17, 38, 'Lababo', 200.00, '2026-09-01', NULL, 3, '2026-09-01 11:24:38', '2026-09-01 11:24:38');
 
 -- --------------------------------------------------------
 
@@ -410,8 +417,8 @@ CREATE TABLE `lease_contracts` (
 --
 
 INSERT INTO `lease_contracts` (`id`, `application_id`, `tenant_id`, `bed_id`, `inquiry_id`, `start_date`, `end_date`, `monthly_rate`, `discount_amount`, `esign_status`, `signed_document_url`, `signed_at`, `status`, `termination_reason`, `terminated_at`, `last_renewed_at`, `last_renewed_by`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
-(14, 8, 13, 34, NULL, '2026-09-02', '2026-11-26', 5000.00, NULL, 'pending', NULL, NULL, 'pending', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:04:14', '2026-08-31 10:04:14'),
-(15, 9, 14, 38, NULL, '2026-09-03', '2026-12-23', 2125.00, NULL, 'pending', NULL, NULL, 'pending', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:53:46', '2026-08-31 10:53:46');
+(14, 8, 13, 34, NULL, '2026-09-02', '2026-11-26', 5000.00, NULL, 'signed', 'signed-contracts/5FYVdnBPMocx6j22WH29lux4n25icoqRuQRrEhkW.pdf', '2026-08-31 16:00:00', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:04:14', '2026-09-01 11:57:42'),
+(15, 9, 14, 38, NULL, '2026-09-03', '2026-12-23', 2125.00, NULL, 'signed', 'signed-contracts/mezX8KAOVqUaMIzhmsqxuYfocP0dJcPPNPnklwW6.pdf', '2026-08-31 16:00:00', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:53:46', '2026-09-01 11:23:04');
 
 -- --------------------------------------------------------
 
@@ -495,7 +502,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (42, '2026_08_30_000003_add_contract_template_to_dormitory_profile', 21),
 (43, '2026_08_30_000004_add_status_to_tenants_table', 22),
 (44, '2026_08_30_000005_add_type_to_billing_statements', 23),
-(45, '2026_08_30_000006_add_payment_numbers_to_dormitory_profile', 24);
+(45, '2026_08_30_000006_add_payment_numbers_to_dormitory_profile', 24),
+(46, '2026_09_01_000001_add_date_incurred_to_penalties_table', 25),
+(47, '2026_09_02_000001_add_tenant_id_status_index_to_billing_statements_table', 26);
 
 -- --------------------------------------------------------
 
@@ -550,7 +559,7 @@ CREATE TABLE `payments` (
 --
 
 INSERT INTO `payments` (`id`, `billing_id`, `tenant_id`, `amount_paid`, `payment_method`, `reference_number`, `payment_date`, `status`, `proof_path`, `notes`, `review_notes`, `reviewed_by`, `reviewed_at`, `recorded_by`, `created_at`) VALUES
-(3, 5, 13, 10000.00, 'gcash', '1234 5467 8162', '2026-08-31', 'pending', 'payment-proofs/ypW8WoUCXSEIwMVyWEXnv1tTS7hIyxZv3itPcP6G.png', 'Time of payment: 18:19. Here po', NULL, NULL, NULL, NULL, '2026-08-31 10:19:22'),
+(3, 5, 13, 10000.00, 'gcash', '1234 5467 8162', '2026-08-31', 'approved', 'payment-proofs/ypW8WoUCXSEIwMVyWEXnv1tTS7hIyxZv3itPcP6G.png', 'Time of payment: 18:19. Here po', NULL, 3, '2026-09-01 10:56:54', NULL, '2026-08-31 10:19:22'),
 (4, 6, 14, 4250.00, 'gcash', '1234 5467 8161', '2026-08-31', 'approved', 'payment-proofs/Mi8dv1TOqcEKFhjqS8y37ACZbze4b233k0yVoikl.png', 'Time of payment: 18:56. sadasd', NULL, 3, '2026-08-31 11:21:55', NULL, '2026-08-31 10:56:26');
 
 -- --------------------------------------------------------
@@ -567,11 +576,20 @@ CREATE TABLE `penalties` (
   `type` enum('damage','manual','other') NOT NULL DEFAULT 'manual',
   `description` varchar(255) NOT NULL,
   `amount` decimal(10,2) NOT NULL,
+  `date_incurred` date DEFAULT NULL,
   `status` enum('active','waived') NOT NULL DEFAULT 'active',
   `created_by` bigint(20) UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `penalties`
+--
+
+INSERT INTO `penalties` (`id`, `tenant_id`, `damage_id`, `billing_id`, `type`, `description`, `amount`, `date_incurred`, `status`, `created_by`, `created_at`, `updated_at`) VALUES
+(3, 13, NULL, NULL, 'manual', 'Late payment fee', 250.00, NULL, 'active', NULL, '2026-09-01 10:41:18', '2026-09-01 10:41:18'),
+(4, 14, 2, NULL, 'damage', 'Damage: Lababo', 200.00, NULL, 'waived', 3, '2026-09-01 11:24:38', '2026-09-01 11:30:43');
 
 -- --------------------------------------------------------
 
@@ -587,6 +605,14 @@ CREATE TABLE `penalty_audit_logs` (
   `reason` varchar(500) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `penalty_audit_logs`
+--
+
+INSERT INTO `penalty_audit_logs` (`id`, `penalty_id`, `action`, `performed_by`, `reason`, `created_at`) VALUES
+(6, 4, 'created', 3, 'Auto-created from damage record #2', '2026-09-01 11:24:38'),
+(7, 4, 'waived', 3, 'Paid', '2026-09-01 11:30:43');
 
 -- --------------------------------------------------------
 
@@ -690,9 +716,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('5QVjmkvKugGfeoRLUjarTqoXabpNtjolzj90Jc6H', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiN2E5b0NmV3N6Znp1eFF0eVdMaGdyNTFxS2EzT2U2eFdJN1BnQU5mTCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788157499),
-('qRRTT67SnmqoTLKOveFp75m1CbMsf4xXCMTCCUiI', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiMFF0Nmx2SmJyTDVkVUp5ZzN0VWs0QkM5MHN5cE04ZXVPSGRTMGNFaCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hcHBsaWNhdGlvbnMiO3M6NToicm91dGUiO3M6MTg6ImFwcGxpY2F0aW9ucy5pbmRleCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6MzoidXJsIjthOjE6e3M6ODoiaW50ZW5kZWQiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MztzOjE3OiJwYXNzd29yZF9oYXNoX3dlYiI7czo2NDoiOWRhYTE0OTMzNjcxMTIwNTUxMDBmOGUxODU4MzIwZGJiNGZiYTY5MTAxZDcwMmM3ZmYzNzQzZThjZjIzNjEwNyI7fQ==', 1788157350),
-('xu5Ajrf0IJCDR8m77lPfJtNzZxIVPakU7EqtdSEn', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo3OntzOjY6Il90b2tlbiI7czo0MDoienI0blFHZU83eVY0cVlJS1JhRm5pdm9uZGY5bHQ4aW5RZlA0VFl4NSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9wYXltZW50cyI7czo1OiJyb3V0ZSI7czoxNDoicGF5bWVudHMuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO3M6MjA6Im1vdmVfaW5fcGF5bWVudF90eXBlIjtzOjQ6ImZ1bGwiO3M6MjI6Im1vdmVfaW5fcGF5bWVudF9tZXRob2QiO3M6NToiZ2Nhc2giO3M6MTc6InBhc3N3b3JkX2hhc2hfd2ViIjtzOjY0OiI0MTE0NzU3Yjg0ZDUyOTY4YTVjN2ViN2UyNzY0N2FhN2NlYmZlNzVjODNiNWQ3MjNiZWMzZjE2YmVmYWY2ZTUzIjt9', 1788177381);
+('QwGXZxLTC2FMr2D2XluBZbbuqe6hLwuJ8nvk453M', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYjlUc2ZUNmRyZVhhYnF5cElVN3llTUd4cWxoeHJISkF2ZldLaHpDUiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9wYXltZW50cyI7czo1OiJyb3V0ZSI7czoxNDoicGF5bWVudHMuaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1788263911);
 
 -- --------------------------------------------------------
 
@@ -719,7 +743,7 @@ CREATE TABLE `tenants` (
 --
 
 INSERT INTO `tenants` (`id`, `user_id`, `full_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `status`, `is_blacklisted`, `created_at`, `updated_at`) VALUES
-(13, 18, 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', 'pending_move_in_payment', 0, '2026-08-31 10:04:14', '2026-08-31 10:04:14'),
+(13, 18, 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', 'active', 0, '2026-08-31 10:04:14', '2026-09-01 10:56:54'),
 (14, 19, 'Test Tenant 1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', 'active', 0, '2026-08-31 10:53:46', '2026-08-31 11:21:55');
 
 -- --------------------------------------------------------
@@ -829,7 +853,7 @@ ALTER TABLE `beds`
 ALTER TABLE `billing_statements`
   ADD PRIMARY KEY (`id`),
   ADD KEY `billing_statements_contract_id_foreign` (`contract_id`),
-  ADD KEY `billing_statements_tenant_id_foreign` (`tenant_id`);
+  ADD KEY `billing_statements_tenant_id_status_index` (`tenant_id`,`status`);
 
 --
 -- Indexes for table `cache`
@@ -1075,7 +1099,7 @@ ALTER TABLE `billing_statements`
 -- AUTO_INCREMENT for table `damages`
 --
 ALTER TABLE `damages`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `dormitory_profile`
@@ -1129,7 +1153,7 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1141,13 +1165,13 @@ ALTER TABLE `payments`
 -- AUTO_INCREMENT for table `penalties`
 --
 ALTER TABLE `penalties`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `penalty_audit_logs`
 --
 ALTER TABLE `penalty_audit_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
