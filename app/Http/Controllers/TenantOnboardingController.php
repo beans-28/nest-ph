@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BillingStatement;
 use App\Models\DormitoryProfile;
+use App\Models\Payment;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,12 +25,39 @@ class TenantOnboardingController extends Controller
      * in. NOTE: this page currently isn't gated by tenant status on its own —
      * the actual restriction comes from the `movein.check` middleware
      * applied to the tenant route group, which redirects here.
+     *
+     * FIX: previously this always showed the "Application Approved / Proceed
+     * with Payment" screen even if the tenant had already submitted a proof
+     * of payment that was just sitting in the admin's review queue — meaning
+     * a tenant who already paid and was waiting for verification kept
+     * getting bounced through the whole move-in flow every time they logged
+     * back in. Now checks for a pending proof first and redirects to a
+     * dedicated waiting screen instead.
      */
     public function welcome()
     {
         $tenant = Tenant::where('user_id', Auth::id())->firstOrFail();
 
+        if ($this->hasPendingProof($tenant)) {
+            return redirect()->route('tenant.movein.pending');
+        }
+
         return view('tenantmoveinwelcome', [
+            'tenant' => $tenant,
+        ]);
+    }
+
+    /**
+     * Shown instead of the welcome/payment flow once the tenant has already
+     * submitted a proof of payment that's still awaiting admin review.
+     * Includes a "Submit Again" option in case they need to correct or
+     * resubmit their proof before it's reviewed.
+     */
+    public function pendingVerification()
+    {
+        $tenant = Tenant::where('user_id', Auth::id())->firstOrFail();
+
+        return view('tenantmoveinpending', [
             'tenant' => $tenant,
         ]);
     }
@@ -142,5 +170,25 @@ class TenantOnboardingController extends Controller
             ->where('status', '!=', 'paid')
             ->latest()
             ->first();
+    }
+
+    /**
+     * True when the tenant's move-in billing statement already has a
+     * proof-of-payment submission sitting in the admin's review queue.
+     * Note: if the tenant uses "Submit Again", a second pending Payment row
+     * will exist alongside the first — the admin can approve whichever one
+     * is correct. Not yet handled: auto-voiding the earlier submission.
+     */
+    private function hasPendingProof(Tenant $tenant): bool
+    {
+        $billing = $this->pendingMoveInBill($tenant);
+
+        if (! $billing) {
+            return false;
+        }
+
+        return Payment::where('billing_id', $billing->id)
+            ->where('status', 'pending')
+            ->exists();
     }
 }

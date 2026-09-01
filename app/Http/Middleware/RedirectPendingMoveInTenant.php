@@ -37,6 +37,7 @@ class RedirectPendingMoveInTenant
 
         $allowedRouteNames = [
             'tenant.movein.welcome',
+            'tenant.movein.pending',
             'tenant.movein.payment-type',
             'tenant.movein.payment-type.store',
             'tenant.movein.payment-method',

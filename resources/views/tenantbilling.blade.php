@@ -89,6 +89,11 @@
   .view-more-wrap{ text-align:center; margin-top:20px; }
   .view-more-btn{ background:#fff; border:1px solid var(--border); border-radius:20px; padding:9px 24px; font-size:12.5px; font-weight:600; color:var(--text-dark); cursor:pointer; }
 
+  /* ===== PENALTIES ===== */
+  .penalties-panel{ margin-top:20px; }
+  .penalty-total-row{ display:flex; justify-content:space-between; align-items:center; padding:14px 10px 4px 10px; border-top:1px solid var(--border); margin-top:6px; font-size:13.5px; font-weight:700; color:var(--text-dark); }
+  .penalty-total-row span:last-child{ font-size:15px; color:var(--green-accent); }
+
   /* ===== METHOD VIEW ===== */
   .method-top-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:20px; }
   .amount-card{ background:linear-gradient(135deg, var(--green-dark), var(--green-darker)); border-radius:14px; padding:22px 24px; color:#fff; }
@@ -276,6 +281,22 @@
           </table>
           <div class="view-more-wrap">
             <button class="view-more-btn" id="viewMoreBtn">View More History  ⌄</button>
+          </div>
+        </div>
+
+        <div class="billing-panel penalties-panel">
+          <h3>Penalties</h3>
+          <table class="billing-table">
+            <thead>
+              <tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th></tr>
+            </thead>
+            <tbody id="penaltyRows">
+              <tr><td colspan="4" class="empty-note">Loading…</td></tr>
+            </tbody>
+          </table>
+          <div class="penalty-total-row">
+            <span>Running Total</span>
+            <span id="penaltyRunningTotal">₱0.00</span>
           </div>
         </div>
       </div>
@@ -474,6 +495,45 @@
   function fullDate(d){
     if(!d) return '—';
     return new Date(d).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  let allPenalties = [];
+
+  async function loadPenalties(){
+    try {
+      allPenalties = await api('/my/billing/penalties');
+      renderPenalties();
+    } catch(e){
+      document.getElementById('penaltyRows').innerHTML = `<tr><td colspan="4" class="empty-note">${e.message}</td></tr>`;
+    }
+  }
+
+  function renderPenalties(){
+    const tbody = document.getElementById('penaltyRows');
+
+    if(!allPenalties.length){
+      tbody.innerHTML = '<tr><td colspan="4" class="empty-note">No penalties on your account.</td></tr>';
+      document.getElementById('penaltyRunningTotal').textContent = peso(0);
+      return;
+    }
+
+    let runningTotal = 0;
+    tbody.innerHTML = allPenalties.map(p => {
+      if(p.status === 'active') runningTotal += Number(p.amount);
+      const pillClass = p.status === 'waived' ? 'paid' : 'pending';
+      const pillLabel = p.status === 'waived' ? 'Waived' : 'Active';
+      const typeLabel = p.type.charAt(0).toUpperCase() + p.type.slice(1);
+      return `
+        <tr>
+          <td>${fullDate(p.created_at)}</td>
+          <td>${typeLabel}</td>
+          <td>${peso(p.amount)}</td>
+          <td><span class="status-pill ${pillClass}">${pillLabel}</span></td>
+        </tr>
+      `;
+    }).join('');
+
+    document.getElementById('penaltyRunningTotal').textContent = peso(runningTotal);
   }
 
   function showView(id){
@@ -752,6 +812,7 @@
   });
 
   loadEverything();
+  loadPenalties();
 
   // Demo helper: open a mock GCash payment flow when ?demo=gcash is present
   try{

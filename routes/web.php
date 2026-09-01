@@ -160,6 +160,7 @@ Route::middleware(['auth', 'tenant', 'movein.check'])->group(function () {
     // payment-method + payment/proof-upload screens; the admin review queue
     // is separate, not-yet-built work).
     Route::get('/move-in', [TenantOnboardingController::class, 'welcome'])->name('tenant.movein.welcome');
+    Route::get('/move-in/pending', [TenantOnboardingController::class, 'pendingVerification'])->name('tenant.movein.pending');
     Route::get('/move-in/payment-type', [TenantOnboardingController::class, 'paymentType'])->name('tenant.movein.payment-type');
     Route::post('/move-in/payment-type', [TenantOnboardingController::class, 'storePaymentType'])->name('tenant.movein.payment-type.store');
     Route::get('/move-in/payment-method', [TenantOnboardingController::class, 'paymentMethod'])->name('tenant.movein.payment-method');
@@ -171,6 +172,7 @@ Route::middleware(['auth', 'tenant', 'movein.check'])->group(function () {
         Route::get('/bills', [TenantPortalController::class, 'myBills']);
         Route::get('/bills/{billingStatement}', [TenantPortalController::class, 'showBill']);
         Route::post('/bills/{billingStatement}/payment-proof', [TenantPortalController::class, 'submitProof'])->name('tenant.billing.payment-proof');
+        Route::get('/penalties', [TenantPortalController::class, 'myPenalties']);
     });
 });
 
