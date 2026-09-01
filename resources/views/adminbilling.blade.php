@@ -255,6 +255,7 @@
         </div>
       </div>
 
+      <div id="overviewTab" data-tab-content="overview">
         <div class="filters-row">
           <input type="text" class="search-input" id="overviewSearchInput" placeholder="Search Tenants or Rooms...">
           <select id="overviewRoomTypeFilter">
@@ -291,7 +292,7 @@
         </div>
       </div>
 
-      <div id="pendingTab" style="display:none;">
+      <div id="pendingTab" data-tab-content="pending" style="display:none;">
         <div class="filters-row">
           <input type="text" class="search-input" id="searchInput" placeholder="Search Tenants or Rooms...">
           <select id="methodFilter">
@@ -322,7 +323,7 @@
         </div>
       </div>
 
-      <div id="penaltiesTab" style="display:none;">
+      <div id="penaltiesTab" data-tab-content="penalties" style="display:none;">
         <div class="filters-row">
           <input type="text" class="search-input" id="penaltySearchInput" placeholder="Search Tenants...">
           <select id="penaltyTypeFilter">
@@ -597,12 +598,19 @@
   }
 
   // ===== Tabs =====
+  // Single source of truth: every tab-content div carries data-tab-content
+  // matching its tab-item's data-tab. Looping over all of them and hiding
+  // everything except the match is more defensive than separate hardcoded
+  // getElementById() calls per tab -- a single missing/misnamed wrapper div
+  // can no longer leave a tab's content stuck visible underneath another.
+  const tabContents = document.querySelectorAll('[data-tab-content]');
   $('tabsRow').querySelectorAll('[data-tab]').forEach(t => {
     t.addEventListener('click', () => {
       $('tabsRow').querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('active', x === t));
-      $('overviewTab').style.display = t.dataset.tab === 'overview' ? 'block' : 'none';
-      $('pendingTab').style.display = t.dataset.tab === 'pending' ? 'block' : 'none';
-      $('penaltiesTab').style.display = t.dataset.tab === 'penalties' ? 'block' : 'none';
+      tabContents.forEach(el => {
+        el.style.display = el.dataset.tabContent === t.dataset.tab ? 'block' : 'none';
+      });
+      if(t.dataset.tab === 'overview') renderOverviewTable();
       if(t.dataset.tab === 'penalties') loadPenalties();
     });
   });
@@ -889,13 +897,6 @@
     renderOverviewTable();
   });
 
-  // Re-render the Overview table whenever that tab is actually opened
-  $('tabsRow').querySelectorAll('[data-tab]').forEach(t => {
-    t.addEventListener('click', () => {
-      if(t.dataset.tab === 'overview') renderOverviewTable();
-    });
-  });
-
   const PAYMENT_METHOD_LABEL = { gcash:'GCash', bank_transfer:'BDO', other:'Other' };
 
   /**
@@ -1144,7 +1145,7 @@
         <td>${esc(TYPE_LABEL[p.type] ?? p.type)}</td>
         <td>${esc(p.description)}</td>
         <td>${peso(p.amount)}</td>
-                <td>${p.date ? new Date(p.date).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—'}</td>
+        <td>${p.date ? new Date(p.date).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—'}</td>
         <td><span class="status-pill ${p.status === 'waived' ? 'paid' : 'pending'}">${p.status === 'waived' ? 'Waived' : 'Active'}</span></td>
         <td>
           <div class="action-cell">
