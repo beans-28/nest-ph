@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PenaltyController;
 use App\Http\Controllers\Api\DamageController;
+use App\Http\Controllers\Api\BillingController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
@@ -116,7 +117,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/payments/{payment}/reject', [PaymentController::class, 'rejectProof']);
     Route::get('/billing/tenants/{tenant}/statements', [PaymentController::class, 'outstandingStatementsForTenant']);
     Route::post('/billing/{billingStatement}/payments/cash', [PaymentController::class, 'recordCash']);
-
+    Route::post('/billing/generate', [BillingController::class, 'generate']);
+    
     // --- Inquiry management (Week 4, Mon) ---
     Route::get('/inquiries', [InquiryController::class, 'page'])->name('inquiries.index');
     Route::post('/inquiries/{inquiry}/reply', [InquiryController::class, 'reply']);

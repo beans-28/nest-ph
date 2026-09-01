@@ -9,6 +9,7 @@ use App\Models\Penalty;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class BillingController extends Controller
@@ -193,7 +194,7 @@ class BillingController extends Controller
 
         [$utilitiesShare, $wifiShare] = $this->splitUtilityCost($contract);
 
-        return DB::transaction(function () use ($contract, $periodStart, $periodEnd, $dueDate, $utilitiesShare, $wifiShare) {
+        $bill = DB::transaction(function () use ($contract, $periodStart, $periodEnd, $dueDate, $utilitiesShare, $wifiShare) {
             $bill = BillingStatement::create([
                 'contract_id' => $contract->id,
                 'tenant_id' => $contract->tenant_id,
@@ -212,6 +213,22 @@ class BillingController extends Controller
 
             return $bill->fresh();
         });
+
+        // Step 8 of Table 19: "Send Billing Notification to Tenant" via
+        // portal + SMS. No SMS gateway is configured anywhere in this
+        // project yet -- same stub pattern already used for application and
+        // inquiry notifications -- so this keeps a durable record of the
+        // event rather than a promise the code doesn't keep. Swap for a
+        // real Mail/SMS send once that's built.
+        $this->notify('billing.statement_generated', [
+            'billing_id' => $bill->id,
+            'tenant_id' => $bill->tenant_id,
+            'contract_id' => $contract->id,
+            'total_amount' => $bill->total_amount,
+            'due_date' => $bill->due_date?->toDateString(),
+        ]);
+
+        return $bill;
     }
 
     /**
@@ -226,6 +243,18 @@ class BillingController extends Controller
         $floor = $contract->bed?->room?->floor;
 
         if (! $floor) {
+            // Exception in Table 19: "Utility charge data is incomplete or
+            // missing for the billing period; system flags the discrepancy
+            // and notifies the administrator." Doesn't block generation --
+            // the statement still goes out with a 0 utility share -- this
+            // just makes sure the gap is visible instead of silently
+            // zeroing it out with no record.
+            $this->notify('billing.utility_data_missing', [
+                'contract_id' => $contract->id,
+                'tenant_id' => $contract->tenant_id,
+                'reason' => 'No floor is configured for this contract\'s room.',
+            ]);
+
             return [0, 0];
         }
 
@@ -241,6 +270,16 @@ class BillingController extends Controller
         $wifiShare = round($floor->monthly_wifi_cost / $activeTenantsOnFloor, 2);
 
         return [$utilitiesShare, $wifiShare];
+    }
+
+    /**
+     * Notification stub -- same pattern as ApplicationController /
+     * PaymentController. The hook exists and logs a durable record; real
+     * delivery (Mail/SMS) isn't wired up yet.
+     */
+    private function notify(string $event, array $payload): void
+    {
+        Log::info("[notification stub] {$event}", $payload);
     }
 
     /**

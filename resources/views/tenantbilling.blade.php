@@ -526,7 +526,7 @@
       const typeLabel = p.type.charAt(0).toUpperCase() + p.type.slice(1);
       return `
         <tr>
-          <td>${fullDate(p.created_at)}</td>
+          <td>${fullDate(p.date)}</td>
           <td>${typeLabel}</td>
           <td>${peso(p.amount)}</td>
           <td><span class="status-pill ${pillClass}">${pillLabel}</span></td>

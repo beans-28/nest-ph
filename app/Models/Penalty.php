@@ -18,12 +18,14 @@ class Penalty extends Model
         'type',
         'description',
         'amount',
+        'date_incurred',
         'status',
         'created_by',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'date_incurred' => 'date',
     ];
 
     public function tenant(): BelongsTo

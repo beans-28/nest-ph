@@ -39,22 +39,29 @@ class PenaltyController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        // room_no and damage_photo_url are computed here (not stored columns)
-        // so the admin Penalties table can show them without a second
-        // request — same pattern as $bill->balance / $payment->proof_url
-        // elsewhere in this codebase.
+        // room_no, damage_photo_url, and date are computed here (not stored
+        // columns) so the admin Penalties table can show them without a
+        // second request — same pattern as $bill->balance / $payment->proof_url
+        // elsewhere in this codebase. "date" unifies the two ways a penalty
+        // can carry a date: a damage-linked one uses its Damage's own
+        // date_incurred, a manually-added one uses its own date_incurred
+        // column — falling back to created_at for rows added before that
+        // column existed.
         return response()->json(
             $query->get()->map(function ($penalty) {
                 $penalty->room_no = $penalty->tenant?->activeContract?->bed?->room?->room_no;
                 $penalty->damage_photo_url = $penalty->damage?->photo_path
                     ? Storage::disk('public')->url($penalty->damage->photo_path)
                     : null;
+                $penalty->date = $penalty->type === 'damage'
+                    ? $penalty->damage?->date_incurred
+                    : ($penalty->date_incurred ?? $penalty->created_at?->toDateString());
 
                 return $penalty;
             })
         );
     }
-    
+
     /**
      * Admin: view a single penalty with its full audit trail.
      */
@@ -73,17 +80,22 @@ class PenaltyController extends Controller
     {
         $data = $request->validate([
             'tenant_id' => ['required', 'integer', 'exists:tenants,id'],
+            'type' => ['nullable', Rule::in(['manual', 'other'])],
             'description' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
+            'date_incurred' => ['nullable', 'date', 'before_or_equal:today'],
+        ], [
+            'date_incurred.before_or_equal' => 'The date cannot be in the future.',
         ]);
 
         $penalty = DB::transaction(function () use ($data, $request) {
             $penalty = Penalty::create([
                 'tenant_id' => $data['tenant_id'],
                 'damage_id' => null,
-                'type' => 'manual',
+                'type' => $data['type'] ?? 'manual',
                 'description' => $data['description'],
                 'amount' => $data['amount'],
+                'date_incurred' => $data['date_incurred'] ?? now()->toDateString(),
                 'status' => 'active',
                 'created_by' => $request->user()?->id,
             ]);

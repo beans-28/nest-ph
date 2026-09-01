@@ -255,7 +255,6 @@
         </div>
       </div>
 
-      <div id="overviewTab">
         <div class="filters-row">
           <input type="text" class="search-input" id="overviewSearchInput" placeholder="Search Tenants or Rooms...">
           <select id="overviewRoomTypeFilter">
@@ -268,6 +267,7 @@
             <option value="paid">Paid</option>
             <option value="overdue">Overdue</option>
           </select>
+          <button class="btn primary" id="generateBillingBtn">+ Generate This Month's Billing</button>
         </div>
 
         <div class="table-panel">
@@ -476,13 +476,27 @@
       </div>
 
       <div class="fld">
-        <label for="apDescriptionInput">Description</label>
-        <input type="text" id="apDescriptionInput" placeholder="e.g. Late curfew violation">
+        <label for="apTypeSelect">Type</label>
+        <select id="apTypeSelect">
+          <option value="manual">Manual</option>
+          <option value="other">Other</option>
+        </select>
       </div>
 
       <div class="fld">
-        <label for="apAmountInput">Amount</label>
-        <input type="number" id="apAmountInput" step="0.01" min="0.01" placeholder="0.00">
+        <label for="apDescriptionInput">Reason</label>
+        <input type="text" id="apDescriptionInput" placeholder="e.g. Late curfew violation">
+      </div>
+
+      <div class="modal-row2">
+        <div class="fld">
+          <label for="apAmountInput">Amount</label>
+          <input type="number" id="apAmountInput" step="0.01" min="0.01" placeholder="0.00">
+        </div>
+        <div class="fld">
+          <label for="apDateInput">Date</label>
+          <input type="date" id="apDateInput">
+        </div>
       </div>
     </div>
     <div class="modal-actions">
@@ -949,6 +963,26 @@
 
   renderOverviewTable();
 
+  // ===== Generate Billing =====
+  // Matches Use Case Report Table 19 ("Generate Billing Statement"). Runs
+  // BillingController::generate() for every active contract that's due for
+  // its next monthly statement -- safe to click repeatedly, contracts that
+  // aren't due yet (or already have a current-period statement) are skipped
+  // automatically rather than double-billed.
+  $('generateBillingBtn').addEventListener('click', async function(){
+    if(!confirm("Generate this month's billing statements for every active tenant who is due for one? Tenants who already have a current statement will be skipped automatically.")) return;
+
+    this.disabled = true;
+    try {
+      const result = await api('/billing/generate', { method:'POST' });
+      toast(result.message || 'Billing statements generated.');
+      setTimeout(() => window.location.reload(), 900);
+    } catch(e){
+      toast(e.message, true);
+      this.disabled = false;
+    }
+  });
+
   // ===== Record Cash Payment modal =====
   let rpSelectedTenantId = null;
   let rpTenantSearchTimer = null;
@@ -1110,7 +1144,7 @@
         <td>${esc(TYPE_LABEL[p.type] ?? p.type)}</td>
         <td>${esc(p.description)}</td>
         <td>${peso(p.amount)}</td>
-        <td>${p.created_at ? new Date(p.created_at).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—'}</td>
+                <td>${p.date ? new Date(p.date).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—'}</td>
         <td><span class="status-pill ${p.status === 'waived' ? 'paid' : 'pending'}">${p.status === 'waived' ? 'Waived' : 'Active'}</span></td>
         <td>
           <div class="action-cell">
@@ -1288,8 +1322,12 @@
     $('apTenantSearchInput').value = '';
     $('apTenantResults').classList.remove('open');
     $('apSelectedTenant').classList.remove('open');
+    $('apTypeSelect').value = 'manual';
     $('apDescriptionInput').value = '';
     $('apAmountInput').value = '';
+    const today = new Date().toISOString().slice(0, 10);
+    $('apDateInput').value = today;
+    $('apDateInput').max = today;
   }
 
   $('apTenantSearchInput').addEventListener('input', function(){
@@ -1324,7 +1362,7 @@
 
   $('apSubmitBtn').addEventListener('click', async function(){
     if(!apSelectedTenantId) return toast('Select a tenant first.', true);
-    if(!$('apDescriptionInput').value.trim()) return toast('Enter a description.', true);
+    if(!$('apDescriptionInput').value.trim()) return toast('Enter a reason.', true);
     if(!$('apAmountInput').value || Number($('apAmountInput').value) <= 0) return toast('Enter a valid amount.', true);
 
     this.disabled = true;
@@ -1334,8 +1372,10 @@
         headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({
           tenant_id: apSelectedTenantId,
+          type: $('apTypeSelect').value,
           description: $('apDescriptionInput').value.trim(),
           amount: $('apAmountInput').value,
+          date_incurred: $('apDateInput').value || null,
         }),
       });
       $('addPenaltyModal').classList.remove('open');

@@ -113,9 +113,16 @@ class TenantPortalController extends Controller
                 ->with('damage:id,description,date_incurred')
                 ->latest()
                 ->get()
+                ->map(function ($penalty) {
+                    $penalty->date = $penalty->type === 'damage'
+                        ? $penalty->damage?->date_incurred
+                        : ($penalty->date_incurred ?? $penalty->created_at?->toDateString());
+
+                    return $penalty;
+                })
         );
     }
-
+    
     /**
      * Tenant: my payment history, newest first.
      */
