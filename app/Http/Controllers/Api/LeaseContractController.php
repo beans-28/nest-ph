@@ -364,6 +364,35 @@ class LeaseContractController extends Controller
     }
 
     /**
+     * Admin: a tenant's currently active lease's room/bed. Used by the
+     * Record Damage form to auto-load "Room/Bed" once a tenant is selected
+     * (Use Case Report — Record Tenant Damage, step 2.1).
+     */
+    public function activeLeaseForTenant(Tenant $tenant): JsonResponse
+    {
+        $contract = LeaseContract::where('tenant_id', $tenant->id)
+            ->where('status', 'active')
+            ->with('bed.room')
+            ->latest()
+            ->first();
+
+        if (! $contract || ! $contract->bed) {
+            return response()->json(['room' => null, 'bed' => null]);
+        }
+
+        return response()->json([
+            'room' => [
+                'id' => $contract->bed->room->id,
+                'room_no' => $contract->bed->room->room_no,
+            ],
+            'bed' => [
+                'id' => $contract->bed->id,
+                'bed_label' => $contract->bed->bed_label,
+            ],
+        ]);
+    }
+
+    /**
      * Step 14: checks every active/expiring contract against today's date
      * and moves it into Expiring Soon (within 30 days of end_date) or
      * Expired (past end_date). Called at the top of every page/index load

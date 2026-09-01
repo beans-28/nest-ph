@@ -115,6 +115,7 @@
   .status-pill.overdue{ color:var(--status-occupied); }
   .status-pill.unpaid{ color:var(--orange); }
   .status-pill.partial{ color:var(--blue); }
+  .status-pill.pending{ color:var(--orange); }
   .due-overdue-note{ display:block; font-size:10px; color:var(--status-occupied); font-weight:700; margin-top:2px; }
 
   .pagination-row{ display:flex; align-items:center; gap:8px; padding:16px 16px; }
@@ -131,7 +132,7 @@
   .stmt-history-row .amt{ font-weight:700; margin-left:auto; }
   .stmt-history-empty{ color:var(--text-light); font-style:italic; font-size:12px; padding:10px 0; }
 
-  /* Record Cash Payment modal */
+  /* Record Cash Payment / Record Damage / Add Penalty / Waive modals */
   .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; align-items:center; justify-content:center; padding:20px; }
   .modal-overlay.open{ display:flex; }
   .modal-box{ background:#fff; border-radius:14px; width:100%; max-width:520px; max-height:88vh; overflow-y:auto; }
@@ -140,7 +141,8 @@
   .modal-body{ padding:22px 24px; }
   .modal-body .fld{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
   .modal-body label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
-  .modal-body input, .modal-body select{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); width:100%; }
+  .modal-body input, .modal-body select, .modal-body textarea{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); width:100%; }
+  .modal-body textarea{ min-height:80px; resize:vertical; }
   .modal-row2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .tenant-results{ border:1px solid var(--border); border-radius:8px; margin-top:6px; max-height:160px; overflow-y:auto; display:none; }
   .tenant-results.open{ display:block; }
@@ -244,8 +246,13 @@
         <div class="tabs-left">
           <div class="tab-item active" data-tab="overview">Billing Overview</div>
           <div class="tab-item" data-tab="pending">Pending Payment</div>
+          <div class="tab-item" data-tab="penalties">Penalties</div>
         </div>
-        <button class="btn primary" id="openRecordPaymentBtn">+ Record Payment Entry</button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn primary" id="openRecordPaymentBtn">+ Record Payment Entry</button>
+          <button class="btn primary" id="openRecordDamageBtn">+ Record Damage</button>
+          <button class="btn primary" id="openAddPenaltyBtn">+ Add Penalty</button>
+        </div>
       </div>
 
       <div id="overviewTab">
@@ -315,6 +322,40 @@
         </div>
       </div>
 
+      <div id="penaltiesTab" style="display:none;">
+        <div class="filters-row">
+          <input type="text" class="search-input" id="penaltySearchInput" placeholder="Search Tenants...">
+          <select id="penaltyTypeFilter">
+            <option value="">All Types</option>
+            <option value="damage">Damage</option>
+            <option value="manual">Manual</option>
+          </select>
+          <select id="penaltyStatusFilter">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="waived">Waived</option>
+          </select>
+        </div>
+
+        <div class="table-panel">
+          <table>
+            <thead>
+              <tr>
+                <th>Tenant</th>
+                <th>Room</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="penaltiesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -369,6 +410,101 @@
     <div class="modal-actions">
       <button class="btn primary" id="rpSubmitBtn" style="flex:1;">Record Payment</button>
       <button class="btn" id="rpCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="recordDamageModal">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Record Damage</h2></div>
+    <div class="modal-body">
+      <div class="fld">
+        <label for="rdTenantSearchInput">Tenant</label>
+        <input type="text" id="rdTenantSearchInput" placeholder="Search registered tenants by name...">
+        <div class="tenant-results" id="rdTenantResults"></div>
+        <div class="selected-tenant" id="rdSelectedTenant">
+          <span id="rdSelectedTenantName"></span>
+          <button type="button" id="rdClearTenantBtn">Change</button>
+        </div>
+      </div>
+
+      <div class="fld">
+        <label>Room / Bed</label>
+        <div id="rdRoomBedDisplay" style="padding:9px 11px;border:1px solid var(--border);border-radius:8px;font-size:12.5px;color:var(--text-mid);background:#f7f9f7;">Select a tenant first</div>
+      </div>
+
+      <div class="fld">
+        <label for="rdDescriptionInput">Description</label>
+        <textarea id="rdDescriptionInput" placeholder="Describe the damage..."></textarea>
+      </div>
+
+      <div class="modal-row2">
+        <div class="fld">
+          <label for="rdCostInput">Cost</label>
+          <input type="number" id="rdCostInput" step="0.01" min="0.01" placeholder="0.00">
+        </div>
+        <div class="fld">
+          <label for="rdDateInput">Date Incurred</label>
+          <input type="date" id="rdDateInput">
+        </div>
+      </div>
+
+      <div class="fld">
+        <label for="rdPhotoInput">Photo (optional)</label>
+        <input type="file" id="rdPhotoInput" accept=".jpg,.jpeg,.png">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="rdSubmitBtn" style="flex:1;">Record Damage</button>
+      <button class="btn" id="rdCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addPenaltyModal">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Add Penalty</h2></div>
+    <div class="modal-body">
+      <div class="fld">
+        <label for="apTenantSearchInput">Tenant</label>
+        <input type="text" id="apTenantSearchInput" placeholder="Search registered tenants by name...">
+        <div class="tenant-results" id="apTenantResults"></div>
+        <div class="selected-tenant" id="apSelectedTenant">
+          <span id="apSelectedTenantName"></span>
+          <button type="button" id="apClearTenantBtn">Change</button>
+        </div>
+      </div>
+
+      <div class="fld">
+        <label for="apDescriptionInput">Description</label>
+        <input type="text" id="apDescriptionInput" placeholder="e.g. Late curfew violation">
+      </div>
+
+      <div class="fld">
+        <label for="apAmountInput">Amount</label>
+        <input type="number" id="apAmountInput" step="0.01" min="0.01" placeholder="0.00">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="apSubmitBtn" style="flex:1;">Add Penalty</button>
+      <button class="btn" id="apCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="waivePenaltyModal">
+  <div class="modal-box">
+    <div class="modal-head"><h2>Waive Penalty</h2></div>
+    <div class="modal-body">
+      <p style="font-size:12.5px;color:var(--text-mid);margin:0 0 14px 0;">This penalty will be marked as waived. It stays on record and can be reinstated later if needed.</p>
+      <div class="fld">
+        <label for="waiveReasonInput">Reason</label>
+        <textarea id="waiveReasonInput" placeholder="Explain why this penalty is being waived..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn warn" id="waiveSubmitBtn" style="flex:1;">Confirm Waive</button>
+      <button class="btn" id="waiveCancelBtn">Cancel</button>
     </div>
   </div>
 </div>
@@ -452,6 +588,8 @@
       $('tabsRow').querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('active', x === t));
       $('overviewTab').style.display = t.dataset.tab === 'overview' ? 'block' : 'none';
       $('pendingTab').style.display = t.dataset.tab === 'pending' ? 'block' : 'none';
+      $('penaltiesTab').style.display = t.dataset.tab === 'penalties' ? 'block' : 'none';
+      if(t.dataset.tab === 'penalties') loadPenalties();
     });
   });
 
@@ -921,6 +1059,288 @@
       // overview balance, pending count) without duplicating the page's
       // computation logic client-side.
       setTimeout(() => window.location.reload(), 700);
+    } catch(e){ toast(e.message, true); }
+    this.disabled = false;
+  });
+
+  // ===== Penalties tab =====
+  let penalties = [];
+  let penaltySearch = '';
+  let penaltyTypeFilter = '';
+  let penaltyStatusFilter = '';
+  const TYPE_LABEL = { damage:'Damage', manual:'Manual', other:'Other' };
+
+  async function loadPenalties(){
+    $('penaltiesTableBody').innerHTML = '<tr class="empty-row"><td colspan="8">Loading…</td></tr>';
+    try {
+      penalties = await api('/penalties');
+      renderPenaltiesTable();
+    } catch(e){
+      $('penaltiesTableBody').innerHTML = `<tr class="empty-row"><td colspan="8">${esc(e.message)}</td></tr>`;
+    }
+  }
+
+  function penaltiesVisible(){
+    return penalties.filter(p => {
+      if(penaltyTypeFilter && p.type !== penaltyTypeFilter) return false;
+      if(penaltyStatusFilter && p.status !== penaltyStatusFilter) return false;
+      if(!penaltySearch) return true;
+      const hay = `${p.tenant?.full_name ?? ''}`.toLowerCase();
+      return hay.includes(penaltySearch);
+    });
+  }
+
+  function renderPenaltiesTable(){
+    const list = penaltiesVisible();
+
+    if(list.length === 0){
+      $('penaltiesTableBody').innerHTML = '<tr class="empty-row"><td colspan="8">No penalties found.</td></tr>';
+      return;
+    }
+
+    $('penaltiesTableBody').innerHTML = list.map(p => `
+      <tr>
+        <td>
+          <div class="tenant-cell">
+            <div class="avatar" style="background:${avatarColor(p.id)}">${esc(initials(p.tenant?.full_name))}</div>
+            <span class="tenant-name">${esc(p.tenant?.full_name ?? '—')}</span>
+          </div>
+        </td>
+        <td>${esc(p.room_no ?? '—')}</td>
+        <td>${esc(TYPE_LABEL[p.type] ?? p.type)}</td>
+        <td>${esc(p.description)}</td>
+        <td>${peso(p.amount)}</td>
+        <td>${p.created_at ? new Date(p.created_at).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—'}</td>
+        <td><span class="status-pill ${p.status === 'waived' ? 'paid' : 'pending'}">${p.status === 'waived' ? 'Waived' : 'Active'}</span></td>
+        <td>
+          <div class="action-cell">
+            ${p.damage_photo_url ? `<a class="btn sm" href="${p.damage_photo_url}" target="_blank" rel="noopener">Photo</a>` : ''}
+            ${p.status === 'active' ? `<button class="btn sm warn" data-waive="${p.id}">Waive</button>` : ''}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+
+    $('penaltiesTableBody').querySelectorAll('[data-waive]').forEach(btn => {
+      btn.addEventListener('click', () => openWaiveModal(Number(btn.dataset.waive)));
+    });
+  }
+
+  $('penaltySearchInput').addEventListener('input', function(){
+    penaltySearch = this.value.trim().toLowerCase();
+    renderPenaltiesTable();
+  });
+  $('penaltyTypeFilter').addEventListener('change', function(){
+    penaltyTypeFilter = this.value;
+    renderPenaltiesTable();
+  });
+  $('penaltyStatusFilter').addEventListener('change', function(){
+    penaltyStatusFilter = this.value;
+    renderPenaltiesTable();
+  });
+
+  // ===== Waive modal =====
+  let waivingPenaltyId = null;
+
+  function openWaiveModal(id){
+    waivingPenaltyId = id;
+    $('waiveReasonInput').value = '';
+    $('waivePenaltyModal').classList.add('open');
+  }
+  $('waiveCancelBtn').addEventListener('click', () => $('waivePenaltyModal').classList.remove('open'));
+
+  $('waiveSubmitBtn').addEventListener('click', async function(){
+    const reason = $('waiveReasonInput').value.trim();
+    if(!reason) return toast('A reason is required to waive a penalty.', true);
+
+    this.disabled = true;
+    try {
+      await api(`/penalties/${waivingPenaltyId}/waive`, {
+        method:'PATCH',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+      $('waivePenaltyModal').classList.remove('open');
+      toast('Penalty waived.');
+      loadPenalties();
+    } catch(e){ toast(e.message, true); }
+    this.disabled = false;
+  });
+
+  // ===== Record Damage modal =====
+  let rdSelectedTenantId = null;
+  let rdSelectedRoomId = null;
+  let rdSelectedBedId = null;
+  let rdTenantSearchTimer = null;
+
+  $('openRecordDamageBtn').addEventListener('click', () => {
+    resetRecordDamageModal();
+    $('recordDamageModal').classList.add('open');
+  });
+  $('rdCancelBtn').addEventListener('click', () => $('recordDamageModal').classList.remove('open'));
+
+  function resetRecordDamageModal(){
+    rdSelectedTenantId = null;
+    rdSelectedRoomId = null;
+    rdSelectedBedId = null;
+    $('rdTenantSearchInput').value = '';
+    $('rdTenantResults').classList.remove('open');
+    $('rdSelectedTenant').classList.remove('open');
+    $('rdRoomBedDisplay').textContent = 'Select a tenant first';
+    $('rdDescriptionInput').value = '';
+    $('rdCostInput').value = '';
+    $('rdDateInput').value = '';
+    $('rdPhotoInput').value = '';
+  }
+
+  $('rdTenantSearchInput').addEventListener('input', function(){
+    clearTimeout(rdTenantSearchTimer);
+    const q = this.value.trim();
+    rdTenantSearchTimer = setTimeout(async () => {
+      try {
+        const tenants = await api(`/lease-contracts/tenants/search?q=${encodeURIComponent(q)}`);
+        if(tenants.length === 0){
+          $('rdTenantResults').innerHTML = '<div class="tenant-result-item" style="color:var(--text-light);font-style:italic;">No matching tenants found.</div>';
+        } else {
+          $('rdTenantResults').innerHTML = tenants.map(t => `<div class="tenant-result-item" data-id="${t.id}" data-name="${esc(t.full_name)}">${esc(t.full_name)} <span style="color:var(--text-light);">\u00b7 ${esc(t.email || t.contact_number || '')}</span></div>`).join('');
+          $('rdTenantResults').querySelectorAll('[data-id]').forEach(item => {
+            item.addEventListener('click', async () => {
+              rdSelectedTenantId = Number(item.dataset.id);
+              $('rdSelectedTenantName').textContent = item.dataset.name;
+              $('rdSelectedTenant').classList.add('open');
+              $('rdTenantResults').classList.remove('open');
+              $('rdTenantSearchInput').value = '';
+              await loadTenantRoomBed(rdSelectedTenantId);
+            });
+          });
+        }
+        $('rdTenantResults').classList.add('open');
+      } catch(e){ /* silent */ }
+    }, 250);
+  });
+
+  $('rdClearTenantBtn').addEventListener('click', () => {
+    rdSelectedTenantId = null;
+    rdSelectedRoomId = null;
+    rdSelectedBedId = null;
+    $('rdSelectedTenant').classList.remove('open');
+    $('rdRoomBedDisplay').textContent = 'Select a tenant first';
+  });
+
+  async function loadTenantRoomBed(tenantId){
+    $('rdRoomBedDisplay').textContent = 'Loading…';
+    try {
+      const result = await api(`/tenants/${tenantId}/active-lease`);
+      if(!result.room || !result.bed){
+        rdSelectedRoomId = null;
+        rdSelectedBedId = null;
+        $('rdRoomBedDisplay').textContent = 'No active room/bed found for this tenant.';
+        return;
+      }
+      rdSelectedRoomId = result.room.id;
+      rdSelectedBedId = result.bed.id;
+      $('rdRoomBedDisplay').textContent = `Room ${result.room.room_no} — ${result.bed.bed_label}`;
+    } catch(e){
+      rdSelectedRoomId = null;
+      rdSelectedBedId = null;
+      $('rdRoomBedDisplay').textContent = 'Could not load room/bed for this tenant.';
+    }
+  }
+
+  $('rdSubmitBtn').addEventListener('click', async function(){
+    if(!rdSelectedTenantId) return toast('Select a tenant first.', true);
+    if(!$('rdDescriptionInput').value.trim()) return toast('Enter a description.', true);
+    if(!$('rdCostInput').value || Number($('rdCostInput').value) <= 0) return toast('Enter a valid cost.', true);
+    if(!$('rdDateInput').value) return toast('Pick the date the damage occurred.', true);
+
+    const form = new FormData();
+    form.append('tenant_id', rdSelectedTenantId);
+    if(rdSelectedRoomId) form.append('room_id', rdSelectedRoomId);
+    if(rdSelectedBedId) form.append('bed_id', rdSelectedBedId);
+    form.append('description', $('rdDescriptionInput').value.trim());
+    form.append('cost', $('rdCostInput').value);
+    form.append('date_incurred', $('rdDateInput').value);
+    const photo = $('rdPhotoInput').files[0];
+    if(photo) form.append('photo', photo);
+
+    this.disabled = true;
+    try {
+      await api('/damages', { method:'POST', body: form });
+      $('recordDamageModal').classList.remove('open');
+      toast('Damage recorded and penalty added.');
+      loadPenalties();
+    } catch(e){ toast(e.message, true); }
+    this.disabled = false;
+  });
+
+  // ===== Add Penalty modal =====
+  let apSelectedTenantId = null;
+  let apTenantSearchTimer = null;
+
+  $('openAddPenaltyBtn').addEventListener('click', () => {
+    resetAddPenaltyModal();
+    $('addPenaltyModal').classList.add('open');
+  });
+  $('apCancelBtn').addEventListener('click', () => $('addPenaltyModal').classList.remove('open'));
+
+  function resetAddPenaltyModal(){
+    apSelectedTenantId = null;
+    $('apTenantSearchInput').value = '';
+    $('apTenantResults').classList.remove('open');
+    $('apSelectedTenant').classList.remove('open');
+    $('apDescriptionInput').value = '';
+    $('apAmountInput').value = '';
+  }
+
+  $('apTenantSearchInput').addEventListener('input', function(){
+    clearTimeout(apTenantSearchTimer);
+    const q = this.value.trim();
+    apTenantSearchTimer = setTimeout(async () => {
+      try {
+        const tenants = await api(`/lease-contracts/tenants/search?q=${encodeURIComponent(q)}`);
+        if(tenants.length === 0){
+          $('apTenantResults').innerHTML = '<div class="tenant-result-item" style="color:var(--text-light);font-style:italic;">No matching tenants found.</div>';
+        } else {
+          $('apTenantResults').innerHTML = tenants.map(t => `<div class="tenant-result-item" data-id="${t.id}" data-name="${esc(t.full_name)}">${esc(t.full_name)} <span style="color:var(--text-light);">\u00b7 ${esc(t.email || t.contact_number || '')}</span></div>`).join('');
+          $('apTenantResults').querySelectorAll('[data-id]').forEach(item => {
+            item.addEventListener('click', () => {
+              apSelectedTenantId = Number(item.dataset.id);
+              $('apSelectedTenantName').textContent = item.dataset.name;
+              $('apSelectedTenant').classList.add('open');
+              $('apTenantResults').classList.remove('open');
+              $('apTenantSearchInput').value = '';
+            });
+          });
+        }
+        $('apTenantResults').classList.add('open');
+      } catch(e){ /* silent */ }
+    }, 250);
+  });
+
+  $('apClearTenantBtn').addEventListener('click', () => {
+    apSelectedTenantId = null;
+    $('apSelectedTenant').classList.remove('open');
+  });
+
+  $('apSubmitBtn').addEventListener('click', async function(){
+    if(!apSelectedTenantId) return toast('Select a tenant first.', true);
+    if(!$('apDescriptionInput').value.trim()) return toast('Enter a description.', true);
+    if(!$('apAmountInput').value || Number($('apAmountInput').value) <= 0) return toast('Enter a valid amount.', true);
+
+    this.disabled = true;
+    try {
+      await api('/penalties', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          tenant_id: apSelectedTenantId,
+          description: $('apDescriptionInput').value.trim(),
+          amount: $('apAmountInput').value,
+        }),
+      });
+      $('addPenaltyModal').classList.remove('open');
+      toast('Penalty added.');
+      loadPenalties();
     } catch(e){ toast(e.message, true); }
     this.disabled = false;
   });

@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\LeaseContractController;
 use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\ApplicationController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\PenaltyController;
+use App\Http\Controllers\Api\DamageController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
@@ -138,11 +140,18 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // the Blade page can call them directly like the other admin screens do.
     Route::get('/lease-contracts', [LeaseContractController::class, 'page'])->name('contracts.index');
     Route::post('/lease-contracts', [LeaseContractController::class, 'store']);
-    Route::get('/lease-contracts/tenants/search', [LeaseContractController::class, 'searchTenants']);
+     Route::get('/lease-contracts/tenants/search', [LeaseContractController::class, 'searchTenants']);
     Route::patch('/lease-contracts/{leaseContract}/renew', [LeaseContractController::class, 'renew']);
     Route::post('/lease-contracts/{leaseContract}/sign', [LeaseContractController::class, 'submitSigned']);
     Route::patch('/lease-contracts/{leaseContract}/not-applicable', [LeaseContractController::class, 'markNotApplicable']);
     Route::patch('/lease-contracts/{leaseContract}/terminate', [LeaseContractController::class, 'terminate']);
+    Route::get('/tenants/{tenant}/active-lease', [LeaseContractController::class, 'activeLeaseForTenant']);
+
+    // --- Penalties & Damages (Week 5, Wed + Thu) ---
+    Route::get('/penalties', [PenaltyController::class, 'index']);
+    Route::post('/penalties', [PenaltyController::class, 'store']);
+    Route::patch('/penalties/{penalty}/waive', [PenaltyController::class, 'waive']);
+    Route::post('/damages', [DamageController::class, 'store']);
 });
 
 /*

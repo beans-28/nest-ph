@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Tenant extends Model
 {
@@ -34,6 +35,17 @@ class Tenant extends Model
     public function contracts(): HasMany
     {
         return $this->hasMany(LeaseContract::class);
+    }
+
+    /**
+     * This tenant's currently active lease, if any. Added for the admin
+     * Penalties tab: lets the Record Damage form auto-load a tenant's
+     * Room/Bed once selected, without a separate lookup query scattered
+     * across controllers.
+     */
+    public function activeContract(): HasOne
+    {
+        return $this->hasOne(LeaseContract::class)->where('status', 'active')->latestOfMany();
     }
 
     public function billingStatements(): HasMany

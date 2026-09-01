@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class PenaltyController extends Controller
@@ -24,8 +25,12 @@ class PenaltyController extends Controller
             'status' => ['nullable', Rule::in(['active', 'waived'])],
         ]);
 
-        $query = Penalty::with(['tenant:id,full_name', 'damage:id,description,date_incurred', 'createdBy:id,name'])
-            ->latest();
+        $query = Penalty::with([
+            'tenant:id,full_name',
+            'tenant.activeContract.bed.room:id,room_no',
+            'damage:id,description,date_incurred,photo_path',
+            'createdBy:id,name',
+        ])->latest();
 
         if ($request->filled('tenant_id')) {
             $query->where('tenant_id', $request->input('tenant_id'));
@@ -34,9 +39,22 @@ class PenaltyController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        return response()->json($query->get());
-    }
+        // room_no and damage_photo_url are computed here (not stored columns)
+        // so the admin Penalties table can show them without a second
+        // request — same pattern as $bill->balance / $payment->proof_url
+        // elsewhere in this codebase.
+        return response()->json(
+            $query->get()->map(function ($penalty) {
+                $penalty->room_no = $penalty->tenant?->activeContract?->bed?->room?->room_no;
+                $penalty->damage_photo_url = $penalty->damage?->photo_path
+                    ? Storage::disk('public')->url($penalty->damage->photo_path)
+                    : null;
 
+                return $penalty;
+            })
+        );
+    }
+    
     /**
      * Admin: view a single penalty with its full audit trail.
      */

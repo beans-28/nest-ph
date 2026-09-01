@@ -456,6 +456,7 @@
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
   let tenantInfo = null;
   let allBills = [];
+  let billingSummary = null;
   let activeBill = null;
   let selectedMethod = null;
   let billingRowsShown = 5;
@@ -551,6 +552,7 @@
     try {
       const data = await api('/my/billing/bills');
       allBills = data.bills;
+      billingSummary = data.summary;
       renderMainView();
     } catch(e){
       document.getElementById('billingRows').innerHTML = `<tr><td colspan="8" class="empty-note">${e.message}</td></tr>`;
@@ -560,9 +562,14 @@
   function renderMainView(){
     const payable = allBills.filter(b => ['unpaid', 'partial', 'overdue'].includes(b.status));
     const current = payable[0] || null;
+    const unbilledPenalties = Number(billingSummary?.unbilled_penalties || 0);
+    const totalOwed = Number(billingSummary?.total_owed ?? (current ? current.balance : 0));
 
     if(current){
-      document.getElementById('mainBalanceAmount').textContent = peso(current.balance);
+      // Balance Due shows the full amount owed (bill balance + any active
+      // penalty not yet folded into a statement) — not just this bill's own
+      // total. Matches TenantPortalController::accountSummary().
+      document.getElementById('mainBalanceAmount').textContent = peso(totalOwed);
       document.getElementById('mainBalanceDue').textContent = `Due: ${fullDate(current.due_date)}`;
       document.getElementById('mainPayNowBtn').disabled = false;
 
@@ -572,13 +579,41 @@
         ['Utilities', 'utilities', current.utilities_amount],
         ['Wi-Fi', 'wifi', current.wifi_amount],
       ];
-      document.getElementById('breakdownRows').innerHTML = rows.map(([label, cls, amt]) => `
+      let breakdownHtml = rows.map(([label, cls, amt]) => `
         <div class="breakdown-row">
           <div class="breakdown-label">${label}</div>
           <div class="breakdown-track"><div class="breakdown-fill ${cls}" style="width:${Math.min(100, (amt / total) * 100)}%"></div></div>
           <div class="breakdown-amount">${peso(amt)}</div>
         </div>
       `).join('');
+
+      if(unbilledPenalties > 0){
+        breakdownHtml += `
+          <div class="breakdown-row">
+            <div class="breakdown-label">Penalties</div>
+            <div class="breakdown-track"><div class="breakdown-fill" style="width:100%;background:#c9962f;"></div></div>
+            <div class="breakdown-amount">${peso(unbilledPenalties)}</div>
+          </div>
+        `;
+      }
+
+      document.getElementById('breakdownRows').innerHTML = breakdownHtml;
+    } else if(totalOwed > 0){
+      // No billing statement is currently payable, but there's an active
+      // penalty sitting unbilled (see BillingController::foldPenaltiesInto()
+      // — it gets attached automatically on the next generated statement).
+      // Pay Now stays disabled since there's no statement yet to submit
+      // proof against.
+      document.getElementById('mainBalanceAmount').textContent = peso(totalOwed);
+      document.getElementById('mainBalanceDue').textContent = 'Outstanding penalty — added to your next bill';
+      document.getElementById('mainPayNowBtn').disabled = true;
+      document.getElementById('breakdownRows').innerHTML = `
+        <div class="breakdown-row">
+          <div class="breakdown-label">Penalties</div>
+          <div class="breakdown-track"><div class="breakdown-fill" style="width:100%;background:#c9962f;"></div></div>
+          <div class="breakdown-amount">${peso(unbilledPenalties)}</div>
+        </div>
+      `;
     } else {
       document.getElementById('mainBalanceAmount').textContent = peso(0);
       document.getElementById('mainBalanceDue').textContent = 'No outstanding balance';
