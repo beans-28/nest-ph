@@ -24,6 +24,12 @@ class BillingController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        // Table 23: catches any statement that's gone overdue with zero
+        // payment activity, which nothing else here would ever touch on its
+        // own. Same call PaymentController::page() makes -- kept in sync so
+        // "overdue" means the same thing everywhere it's displayed.
+        BillingStatement::syncOverdueStatuses();
+
         $request->validate([
             'tenant_id' => ['nullable', 'integer', 'exists:tenants,id'],
             'status' => ['nullable', Rule::in(['unpaid', 'partial', 'paid', 'overdue'])],
@@ -53,6 +59,8 @@ class BillingController extends Controller
      */
     public function show(BillingStatement $billingStatement): JsonResponse
     {
+        BillingStatement::syncOverdueStatuses();
+
         $billingStatement->load([
             'tenant',
             'contract.bed.room.floor',
@@ -159,7 +167,7 @@ class BillingController extends Controller
      *
      * One statement per monthly period. Due date is a grace period after the
      * period opens. Period rolls forward from the last statement's end + 1
-     * day, or the contract's start_date if none exists — and only once that
+     * day, or the contract's start_date if none exists -- and only once that
      * period has actually begun, so future months aren't billed early.
      */
     private function generateForContract(LeaseContract $contract): ?BillingStatement
@@ -208,7 +216,7 @@ class BillingController extends Controller
 
     /**
      * Splits this contract's floor's fixed monthly utility/wifi cost evenly
-     * among all tenants currently on active contracts on that same floor —
+     * among all tenants currently on active contracts on that same floor --
      * "the fixed utility charges among tenants sharing the same floor" per
      * the use case report. Falls back to 0/0 if the floor has no configured
      * cost, or (edge case) no active tenants to split it across.
@@ -264,9 +272,16 @@ class BillingController extends Controller
         return $penalties->count();
     }
 
+    /**
+     * FIXED: previously summed every payment regardless of status, meaning a
+     * tenant with a payment proof still awaiting admin review -- or even one
+     * that was rejected -- would show as partially or fully paid here before
+     * anyone actually approved anything. Now only counts approved payments,
+     * matching how PaymentController computes balance everywhere else.
+     */
     private function withBalance(BillingStatement $bill): BillingStatement
     {
-        $paid = $bill->payments->sum('amount_paid');
+        $paid = $bill->payments->where('status', 'approved')->sum('amount_paid');
         $bill->amount_paid = round($paid, 2);
         $bill->balance = round($bill->total_amount - $paid, 2);
 

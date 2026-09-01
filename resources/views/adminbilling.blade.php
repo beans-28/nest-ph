@@ -65,7 +65,8 @@
   .stat-sub{ font-size:11px; color:var(--status-occupied); font-weight:700; margin-top:2px; }
   .stat-sub.neutral{ color:var(--text-light); }
 
-  .tabs-row{ display:flex; gap:28px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+  .tabs-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; border-bottom:1px solid var(--border); margin-bottom:18px; }
+  .tabs-left{ display:flex; gap:28px; }
   .tab-item{ padding:10px 2px 14px; font-size:14px; font-weight:600; color:var(--text-light); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-1px; }
   .tab-item.active{ color:var(--green-accent); border-bottom-color:var(--green-accent); }
 
@@ -100,6 +101,9 @@
   .proof-thumb.pdf{ display:flex; align-items:center; justify-content:center; background:#fbfcfb; font-size:9px; font-weight:700; color:var(--text-light); }
   .action-cell{ display:flex; gap:5px; flex-wrap:nowrap; }
   .action-cell .btn{ padding:6px 10px; font-size:11px; white-space:nowrap; }
+  .eye-btn{ width:32px; height:32px; border-radius:7px; border:1px solid var(--border); background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
+  .eye-btn:hover{ background:#f7f9f7; border-color:var(--green-accent); color:var(--green-accent); }
+  .eye-btn svg{ width:15px; height:15px; flex-shrink:0; }
   .empty-row td{ text-align:center; color:var(--text-light); font-style:italic; padding:34px; white-space:normal; }
 
   .coming-soon{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:60px 20px; text-align:center; color:var(--text-light); }
@@ -215,8 +219,6 @@
       <div class="page-head">
         <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Billing and Payments</h1>
-        <div style="flex:1;"></div>
-        <button class="btn primary" id="openRecordPaymentBtn">+ Record Payment Entry</button>
       </div>
 
       <div class="stats-row">
@@ -239,8 +241,11 @@
       </div>
 
       <div class="tabs-row" id="tabsRow">
-        <div class="tab-item active" data-tab="overview">Billing Overview</div>
-        <div class="tab-item" data-tab="pending">Pending Payment</div>
+        <div class="tabs-left">
+          <div class="tab-item active" data-tab="overview">Billing Overview</div>
+          <div class="tab-item" data-tab="pending">Pending Payment</div>
+        </div>
+        <button class="btn primary" id="openRecordPaymentBtn">+ Record Payment Entry</button>
       </div>
 
       <div id="overviewTab">
