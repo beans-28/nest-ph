@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EscalationLog extends Model
 {
-    public $timestamps = false;
+    use HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -17,11 +18,6 @@ class EscalationLog extends Model
         'message_content',
         'status',
         'performed_by',
-        'created_at',
-    ];
-
-    protected $casts = [
-        'created_at' => 'datetime',
     ];
 
     public function tenant(): BelongsTo

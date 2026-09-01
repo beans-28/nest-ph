@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 01, 2026 at 07:50 PM
+-- Generation Time: Sep 01, 2026 at 08:13 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -271,7 +271,8 @@ CREATE TABLE `escalation_logs` (
   `message_content` text DEFAULT NULL,
   `status` enum('pending','sent','resolved') NOT NULL DEFAULT 'pending',
   `performed_by` bigint(20) UNSIGNED DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -504,7 +505,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (44, '2026_08_30_000005_add_type_to_billing_statements', 23),
 (45, '2026_08_30_000006_add_payment_numbers_to_dormitory_profile', 24),
 (46, '2026_09_01_000001_add_date_incurred_to_penalties_table', 25),
-(47, '2026_09_02_000001_add_tenant_id_status_index_to_billing_statements_table', 26);
+(47, '2026_09_02_000001_add_tenant_id_status_index_to_billing_statements_table', 26),
+(48, '2026_09_07_000001_add_updated_at_to_escalation_logs_table', 27);
 
 -- --------------------------------------------------------
 
@@ -1153,7 +1155,7 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `payments`
