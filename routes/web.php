@@ -167,6 +167,12 @@ Route::middleware(['auth', 'tenant', 'movein.check'])->group(function () {
         return view('tenantbilling');
     })->name('tenant.billing');
 
+    Route::get('/account', function (Illuminate\Http\Request $request) {
+        return view('tenantaccount', [
+            'tenant' => $request->attributes->get('tenant') ?? $request->user()->tenant,
+        ]);
+    })->name('tenant.account');
+
     // Use Case Report — Pay Move-In Fees (welcome + payment-type +
     // payment-method + payment/proof-upload screens; the admin review queue
     // is separate, not-yet-built work).

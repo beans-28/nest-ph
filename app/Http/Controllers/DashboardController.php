@@ -96,7 +96,7 @@ class DashboardController extends Controller
         $inProgressCount = 0;
 
         return view('tenantdashboard', compact(
-            'contract', 'balanceDue', 'nextDueDate', 'daysUntilDue',
+            'tenant', 'contract', 'balanceDue', 'nextDueDate', 'daysUntilDue',
             'recentBills', 'recentTickets', 'openTicketsCount', 'inProgressCount'
         ));
     }
