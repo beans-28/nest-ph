@@ -22,11 +22,13 @@ class Tenant extends Model
         'is_blacklisted',
         'status',
         'portal_restricted',
+        'escalation_paused',
     ];
 
     protected $casts = [
         'is_blacklisted' => 'boolean',
         'portal_restricted' => 'boolean',
+        'escalation_paused' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -69,4 +71,10 @@ class Tenant extends Model
     {
         return $this->hasMany(Damage::class);
     }
+
+    public function escalationLogs(): HasMany
+    {
+        return $this->hasMany(EscalationLog::class);
+    }
+
 }

@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\TenantPortalController;
 use App\Http\Controllers\VacancyController;
 use App\Http\Controllers\VrTourController;
 use App\Http\Controllers\TenantOnboardingController;
+use App\Http\Controllers\DelinquencyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -154,6 +155,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/penalties', [PenaltyController::class, 'store']);
     Route::patch('/penalties/{penalty}/waive', [PenaltyController::class, 'waive']);
     Route::post('/damages', [DamageController::class, 'store']);
+
+    // --- Delinquency Escalation (Week 6, Mon-Tue) ---
+    // Dashboard/tenant-list page plus Table 29's admin override action
+    // (Pause / Unpause / Reset to Stage 1 / Clear).
+    Route::get('/delinquency', [DelinquencyController::class, 'page'])->name('delinquency.index');
+    Route::post('/delinquency/{tenant}/override', [DelinquencyController::class, 'override']);
 });
 
 /*

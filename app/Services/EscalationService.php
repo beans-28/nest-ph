@@ -61,6 +61,10 @@ class EscalationService
             if (! $bill->tenant || $bill->tenant->is_blacklisted) {
                 continue; // Stage 6 is permanent (Table 28) -- nothing left to do.
             }
+            
+            if ($bill->tenant->escalation_paused) {
+                continue; // Table 29: admin has paused this tenant's escalation.
+            }
 
             $daysOverdue = (int) Carbon::parse($bill->due_date)->diffInDays(now(), false);
 
