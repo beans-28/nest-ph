@@ -8,8 +8,9 @@
 <style>
   :root{
     --green-dark:#3f6b4a; --green-darker:#345a3e; --green-mid:#4f7c57;
-    --green-sidebar-top:#46694e; --green-sidebar-bottom:#a8d4ab;
+    --green-sidebar-top:#33513c; --green-sidebar-bottom:#223a29;
     --green-accent:#3f6b4a; --green-btn:#3f6b4a; --green-btn-hover:#2f5439;
+    --logout-bg:#16241b; --logout-bg-hover:#0f1b13;
     --bg-page:#f4f6f4; --card-bg:#ffffff;
     --text-dark:#1f2a22; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e9e4;
     --pending-bg:#fbe9c8; --pending-text:#a4761a;
@@ -20,23 +21,85 @@
   html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
   .app{ display:flex; min-height:100vh; }
 
-  .sidebar{ width:220px; flex-shrink:0; background:linear-gradient(180deg, var(--green-sidebar-top) 0%, var(--green-sidebar-bottom) 100%); color:#eaf0ea; display:flex; flex-direction:column; padding:20px 0; }
-  .sidebar-logo{ display:flex; align-items:center; gap:8px; padding:0 20px 22px 20px; font-weight:700; font-size:17px; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:14px; }
-  .sidebar-logo .logo-mark{ width:18px; height:18px; border:2px solid #eaf0ea; display:inline-block; position:relative; }
-  .sidebar-logo .logo-mark::before, .sidebar-logo .logo-mark::after{ content:''; position:absolute; background:#eaf0ea; width:2px; height:14px; top:0; left:6px; }
-  .sidebar-section-label{ font-size:11px; text-transform:uppercase; letter-spacing:1px; color:rgba(234,240,234,0.55); padding:4px 20px 10px 20px; font-weight:600; }
-  .nav-list{ list-style:none; margin:0; padding:0; flex:1; }
-  .nav-item{ display:flex; align-items:center; gap:12px; padding:11px 20px; font-size:13.5px; color:rgba(234,240,234,0.78); cursor:pointer; border-left:3px solid transparent; }
-  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; }
-  .nav-item.active{ background:rgba(255,255,255,0.14); color:#fff; font-weight:600; border-left:3px solid #ffffff; }
-  .nav-item .icon svg{ width:16px; height:16px; }
-  .sidebar-footer{ padding:14px 20px 0 20px; border-top:1px solid rgba(255,255,255,0.12); margin-top:10px; }
+  /* ===== Sidebar: logo pinned at top, Log Out pinned at bottom, and only
+     the middle nav list scrolls if it doesn't fit (like textbee.dev's
+     sidebar). Collapsible via the hamburger button.
+
+     Redesign notes: the previous gradient faded from a mid green at the
+     top to a pale mint at the bottom. That's why "Delinquency" and Log Out
+     were hard to read and why no color choice for the Log Out button ever
+     looked "visible enough" -- the background under it was too light for
+     any dark text/icon to contrast against, and too close in lightness to
+     a light button to contrast the other way. The fix is to keep the
+     whole sidebar in a narrow, dark range so contrast stays consistent
+     top to bottom, and to give Log Out its own solid, distinctly darker
+     chip rather than a translucent overlay whose visibility depended on
+     what color was showing through it. ===== */
+  .sidebar{
+    width:220px; flex-shrink:0;
+    background:linear-gradient(180deg, var(--green-sidebar-top) 0%, var(--green-sidebar-bottom) 100%);
+    color:#eaf0ea; display:flex; flex-direction:column; padding:18px 0;
+    position:sticky; top:0; height:100vh; overflow:hidden;
+    box-shadow:2px 0 14px rgba(0,0,0,0.12);
+    transition:width 0.2s ease;
+  }
+  .sidebar-logo{ display:flex; align-items:center; gap:8px; padding:0 20px 18px 20px; font-weight:700; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:12px; white-space:nowrap; flex-shrink:0; }
+  .sidebar-logo .logo-mark{ width:16px; height:16px; border:2px solid #eaf0ea; display:inline-block; position:relative; flex-shrink:0; }
+  .sidebar-logo .logo-mark::before, .sidebar-logo .logo-mark::after{ content:''; position:absolute; background:#eaf0ea; width:2px; height:12px; top:0; left:5px; }
+  .sidebar-section-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:rgba(234,240,234,0.55); padding:4px 20px 8px 20px; font-weight:600; white-space:nowrap; flex-shrink:0; }
+
+  .nav-list{
+    list-style:none; margin:0; padding:0 0 8px 0; flex:1; min-height:0;
+    overflow-y:auto; overflow-x:hidden;
+    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.25) transparent;
+  }
+  .nav-list::-webkit-scrollbar{ width:5px; }
+  .nav-list::-webkit-scrollbar-track{ background:transparent; }
+  .nav-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.22); border-radius:10px; }
+
+  .nav-item{ display:flex; align-items:center; gap:11px; padding:9px 20px; font-size:13px; color:rgba(234,240,234,0.82); cursor:pointer; border-left:3px solid transparent; white-space:nowrap; flex-shrink:0; transition:background 0.12s ease, color 0.12s ease; }
+  .nav-item:hover{ background:rgba(255,255,255,0.08); color:#fff; }
+  .nav-item.active{ background:rgba(255,255,255,0.16); color:#fff; font-weight:600; border-left:3px solid #ffffff; }
+  .nav-item .icon svg{ width:15px; height:15px; flex-shrink:0; }
+  .sidebar-footer{ padding:14px 20px 2px 20px; border-top:1px solid rgba(255,255,255,0.12); margin-top:8px; flex-shrink:0; }
+
+  /* Log Out: a solid, distinctly darker chip rather than a translucent
+     overlay, so it reads clearly as its own button no matter how the
+     sidebar gradient shifts above it. */
+  .sidebar-footer .nav-item{ padding:10px 14px; border-radius:9px; background:var(--logout-bg); border-left:none; color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06); }
+  .sidebar-footer .nav-item:hover{ background:var(--logout-bg-hover); }
+  .sidebar-footer .nav-item .icon svg{ color:#fff; }
+
+  .sidebar.collapsed{ width:64px; }
+  .sidebar.collapsed .sidebar-logo{ justify-content:center; padding-left:0; padding-right:0; }
+  .sidebar.collapsed .sidebar-logo .logo-text{ display:none; }
+  .sidebar.collapsed .sidebar-section-label{ display:none; }
+  .sidebar.collapsed .nav-item{ justify-content:center; padding-left:0; padding-right:0; gap:0; }
+  .sidebar.collapsed .nav-item .label{ display:none; }
+  .sidebar.collapsed .sidebar-footer{ padding-left:10px; padding-right:10px; }
+  .sidebar.collapsed .sidebar-footer .nav-item{ padding:10px 0; }
+
+  /* Keyboard focus: these nav rows are divs, not native buttons/links, so
+     they need an explicit focus style and (in the script below) a
+     tabindex + Enter/Space handler to be usable without a mouse. */
+  .nav-item:focus-visible, .hamburger-icon:focus-visible, .topbar-icon:focus-visible, .back-arrow:focus-visible{
+    outline:2px solid #ffffff; outline-offset:-2px; border-radius:4px;
+  }
+  .topbar-icon:focus-visible{ outline-color:var(--green-darker); }
 
   .main{ flex:1; display:flex; flex-direction:column; min-width:0; }
-  .topbar{ display:flex; align-items:center; gap:16px; background:linear-gradient(90deg, #cfcdc4, var(--green-sidebar-top)); padding:16px 28px; }
-  .hamburger-icon{ color:#fff; cursor:pointer; }
+  .topbar{
+    display:flex; align-items:center; gap:16px;
+    background:linear-gradient(90deg, rgba(51,81,60,0.45), rgba(63,107,74,0.45));
+    backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%);
+    padding:16px 28px;
+    box-shadow:0 1px 0 rgba(0,0,0,0.08);
+    position:sticky; top:0; z-index:20;
+  }
+  .hamburger-icon{ width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; cursor:pointer; transition:background 0.12s ease; }
+  .hamburger-icon:hover{ background:rgba(255,255,255,0.14); }
   .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:14px; }
-  .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); display:flex; align-items:center; justify-content:center; color:var(--green-dark); cursor:pointer; }
+  .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.92); display:flex; align-items:center; justify-content:center; color:var(--green-dark); cursor:pointer; }
   .topbar-icon svg{ width:16px; height:16px; }
 
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
@@ -214,25 +277,24 @@
 <body>
 <div class="app">
 
-  <aside class="sidebar">
-    <div class="sidebar-logo"><span class="logo-mark"></span> NEST.PH</div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><span class="logo-mark"></span><span class="logo-text">NEST.PH</span></div>
     <div class="sidebar-section-label">Tenant View</div>
     <ul class="nav-list">
-      <li class="nav-item" data-href="{{ route('dashboard') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>Tenant Dashboard</li>
-      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></span>Ticket Module</li>
-      <li class="nav-item active" data-href="{{ route('tenant.billing') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>Billing and Payments</li>
-      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>Profile</li>
-      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>Delinquency</li>
+      <li class="nav-item" data-href="{{ route('dashboard') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span><span class="label">Tenant Dashboard</span></li>
+      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></span><span class="label">Ticket Module</span></li>
+      <li class="nav-item active" data-href="{{ route('tenant.billing') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span><span class="label">Billing and Payments</span></li>
+      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span><span class="label">Profile</span></li>
+      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span class="label">Delinquency</span></li>
     </ul>
-    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.4 5.6a9 9 0 11-12.8 0M12 3v8"/></svg></span>Log Out</div></div>
+    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.4 5.6a9 9 0 11-12.8 0M12 3v8"/></svg></span><span class="label">Log Out</span></div></div>
   </aside>
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger-icon"><svg width="20" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
+      <div class="hamburger-icon" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><svg width="20" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
       <div class="topbar-right">
         <div class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
-        <div class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8"/></svg></div>
       </div>
     </div>
 
@@ -240,7 +302,7 @@
 
       <div class="view active" id="viewMain">
         <div class="page-head">
-          <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+          <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
           <div class="page-head-text">
             <h1>Billing and Payments</h1>
             <p id="tenantSubtitle">Loading…</p>
@@ -472,6 +534,36 @@
       window.location.href = '/';
     });
   }
+
+  // Remember collapsed/expanded across page loads (each page is a full
+  // reload, not a single-page app, so this has to be localStorage rather
+  // than in-memory state) so the sidebar doesn't reset every time you
+  // navigate. Same key as the admin side, so the preference is shared.
+  const SIDEBAR_COLLAPSE_KEY = 'nestph_sidebar_collapsed';
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const sidebar = document.getElementById('sidebar');
+  if (hamburgerBtn && sidebar) {
+    if (localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1') {
+      sidebar.classList.add('collapsed');
+    }
+    hamburgerBtn.addEventListener('click', () => {
+      const collapsed = sidebar.classList.toggle('collapsed');
+      localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
+    });
+  }
+
+  // Sidebar links, the hamburger, Log Out, and the back-arrow are styled
+  // divs rather than native <button>/<a> elements, so pressing Enter or
+  // Space while one is focused wouldn't normally do anything. This makes
+  // them behave like real interactive controls for keyboard users.
+  document.querySelectorAll('[tabindex="0"]').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
 
   async function api(url, options = {}){
     const headers = Object.assign({ 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }, options.headers || {});
