@@ -21,10 +21,12 @@ class Tenant extends Model
         'emergency_contact_number',
         'is_blacklisted',
         'status',
+        'portal_restricted',
     ];
 
     protected $casts = [
         'is_blacklisted' => 'boolean',
+        'portal_restricted' => 'boolean',
     ];
 
     public function user(): BelongsTo

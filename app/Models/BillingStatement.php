@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\EscalationLog;
 
 class BillingStatement extends Model
 {
@@ -50,6 +51,11 @@ class BillingStatement extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'billing_id');
+    }
+
+    public function escalationLogs(): HasMany
+    {
+        return $this->hasMany(EscalationLog::class, 'billing_id');
     }
 
     /**
