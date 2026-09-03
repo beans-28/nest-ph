@@ -161,6 +161,16 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // (Pause / Unpause / Reset to Stage 1 / Clear).
     Route::get('/delinquency', [DelinquencyController::class, 'page'])->name('delinquency.index');
     Route::post('/delinquency/{tenant}/override', [DelinquencyController::class, 'override']);
+    Route::get('/delinquency/{tenant}/history', [DelinquencyController::class, 'history']);
+
+    // --- Delinquency Escalation (Week 6, Thu) ---
+    // Table 27 step 8 (download the system-generated Stage 5 demand
+    // letter) and Table 51 (admin-triggered Issue Eviction Notice, only
+    // available once a tenant has actually reached Stage 6/Blacklisted --
+    // see DelinquencyController::issueEvictionNotice() for the gate).
+    Route::get('/delinquency/{tenant}/demand-letter', [DelinquencyController::class, 'downloadDemandLetter']);
+    Route::post('/delinquency/{tenant}/eviction-notice', [DelinquencyController::class, 'issueEvictionNotice']);
+    Route::get('/delinquency/{tenant}/eviction-notice', [DelinquencyController::class, 'downloadEvictionNotice']);
 });
 
 /*

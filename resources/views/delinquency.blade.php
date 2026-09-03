@@ -96,9 +96,11 @@
   .filters-row .search-input{ flex:1; min-width:220px; border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-size:13px; font-family:var(--font-body); }
   .filters-row select{ border:1px solid var(--border); border-radius:8px; padding:11px 14px; font-size:13px; font-family:var(--font-body); background:#fff; color:var(--text-dark); }
   .table-panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; overflow-x:auto; }
-  table{ width:100%; border-collapse:collapse; min-width:900px; }
+  table{ width:100%; border-collapse:collapse; min-width:900px; table-layout:fixed; }
   thead th{ text-align:left; font-size:11px; font-weight:700; color:var(--text-mid); padding:14px 12px; border-bottom:1px solid var(--border); background:#fbfcfb; white-space:nowrap; }
+  thead th:not(:first-child){ text-align:center; }
   tbody td{ padding:12px; font-size:12.5px; border-bottom:1px solid #f0f2f0; vertical-align:middle; }
+  tbody td:not(:first-child){ text-align:center; }
   tbody tr:last-child td{ border-bottom:none; }
   tbody tr:hover{ background:#fbfcfb; }
   .tenant-cell{ display:flex; align-items:center; gap:10px; }
@@ -128,6 +130,7 @@
   .modal label{ display:block; font-size:12px; font-weight:700; margin:14px 0 6px 0; color:var(--text-dark); }
   .modal select, .modal textarea{ width:100%; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13px; font-family:var(--font-body); resize:vertical; }
   .modal textarea{ min-height:70px; }
+  .modal input[type="date"]{ width:100%; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13px; font-family:var(--font-body); }
   .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
   .modal-btn{ padding:9px 18px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; border:1px solid var(--border); }
   .modal-btn.cancel{ background:#fff; color:var(--text-mid); }
@@ -145,6 +148,38 @@
   .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:#243026; color:#fff; padding:12px 22px; border-radius:10px; font-size:13px; opacity:0; pointer-events:none; transition:.25s; z-index:80; }
   .toast.visible{ opacity:1; transform:translateX(-50%) translateY(0); }
   .toast.error{ background:#a8352c; }
+
+  .action-btns{ display:flex; gap:6px; justify-content:center; }
+  .history-modal{ width:520px; max-height:82vh; overflow-y:auto; }
+  .history-modal .modal-sub{ margin-bottom:14px; }
+  .history-tenant-flags{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .history-flag{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; }
+  .history-flag.blacklisted{ background:#ecebeb; color:#020202; }
+  .history-flag.paused{ background:#eee; color:#888; }
+  .timeline{ list-style:none; margin:0; padding:0; }
+  .timeline-item{ display:flex; gap:12px; padding:0 0 18px 0; }
+  .timeline-item:last-child{ padding-bottom:0; }
+  .timeline-dot-col{ display:flex; flex-direction:column; align-items:center; flex-shrink:0; }
+  .timeline-dot{ width:12px; height:12px; border-radius:50%; margin-top:3px; flex-shrink:0; }
+  .timeline-line{ width:2px; flex:1; background:var(--border); margin-top:4px; }
+  .timeline-body{ flex:1; padding-bottom:2px; }
+  .timeline-head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:3px; }
+  .timeline-stage{ font-size:12.5px; font-weight:700; }
+  .timeline-status{ font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:20px; text-transform:uppercase; letter-spacing:.3px; }
+  .timeline-status.resolved,.timeline-status.sent{ background:var(--status-vacant-bg); color:var(--green-accent); }
+  .timeline-status.pending{ background:#fdf5e9; color:#de6f13; }
+  .timeline-time{ font-size:11px; color:var(--text-light); margin-bottom:4px; }
+  .timeline-msg{ font-size:12px; color:var(--text-mid); line-height:1.5; background:#fbfcfb; border:1px solid var(--border); border-radius:8px; padding:8px 10px; }
+  .timeline-override-tag{ font-size:10px; font-weight:700; color:#5408da; background:#efe3ff; padding:2px 7px; border-radius:20px; }
+  .timeline-empty{ text-align:center; color:var(--text-light); font-style:italic; padding:30px 10px; }
+  .stub-actions{ display:flex; gap:10px; margin-top:18px; padding-top:16px; border-top:1px solid var(--border); }
+  .stub-btn{ flex:1; padding:10px 12px; border-radius:8px; font-size:12px; font-weight:700; border:1px dashed var(--border); background:#fbfcfb; color:var(--text-light); cursor:not-allowed; text-align:center; }
+  .action-btn-ready{ flex:1; padding:10px 12px; border-radius:8px; font-size:12px; font-weight:700; border:1px solid var(--green-btn); background:var(--green-btn); color:#fff; cursor:pointer; text-align:center; text-decoration:none; display:block; }
+  .action-btn-ready:hover{ background:var(--green-btn-hover); }
+  .action-btn-issue{ flex:1; padding:10px 12px; border-radius:8px; font-size:12px; font-weight:700; border:1px solid var(--status-occupied); background:var(--status-occupied); color:#fff; cursor:pointer; text-align:center; }
+  .eviction-form{ display:none; margin-top:14px; padding-top:14px; border-top:1px dashed var(--border); }
+  .eviction-form.open{ display:block; }
+  .history-actions{ display:flex; justify-content:flex-end; margin-top:18px; }
 
   @media (max-width: 1100px){ .stage-row{ grid-template-columns:repeat(3,1fr); } }
   @media (max-width: 640px){ .stage-row{ grid-template-columns:repeat(2,1fr); } }
@@ -235,6 +270,15 @@
 
       <div class="table-panel">
         <table>
+          <colgroup>
+            <col style="width:26%">
+            <col style="width:8%">
+            <col style="width:12%">
+            <col style="width:12%">
+            <col style="width:20%">
+            <col style="width:12%">
+            <col style="width:10%">
+          </colgroup>
           <thead>
             <tr>
               <th>Tenant</th><th>Room</th><th>Days Overdue</th><th>Total Balance</th><th>Escalation Stage</th><th>Last Payment</th><th>Actions</th>
@@ -280,6 +324,32 @@
   <div class="modal-actions">
     <button class="modal-btn cancel" id="modalCancel">Cancel</button>
     <button class="modal-btn confirm" id="modalConfirm">Apply Override</button>
+  </div>
+</div>
+
+<div class="modal history-modal" id="historyModal">
+  <h2 id="historyTenantName">Escalation History</h2>
+  <div class="modal-sub" id="historyTenantStage"></div>
+  <div class="history-tenant-flags" id="historyFlags"></div>
+
+  <ul class="timeline" id="historyTimeline"></ul>
+
+  <div class="stub-actions" id="historyActionsArea"></div>
+
+  <div class="eviction-form" id="evictionForm">
+    <label for="evictionReason">Reason for Eviction (required)</label>
+    <textarea id="evictionReason" placeholder="e.g. Non-payment of rent for over 30 days despite full escalation"></textarea>
+    <label for="evictionDate">Notice Date</label>
+    <input type="date" id="evictionDate">
+    <div class="modal-error" id="evictionError"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" id="evictionCancelBtn">Cancel</button>
+      <button class="modal-btn confirm" id="evictionConfirmBtn" style="background:var(--status-occupied);border-color:var(--status-occupied);">Confirm & Send Notice</button>
+    </div>
+  </div>
+
+  <div class="history-actions">
+    <button class="modal-btn cancel" id="historyCloseBtn">Close</button>
   </div>
 </div>
 
@@ -366,9 +436,14 @@
           <td><span class="stage-pill" style="background:${a.stage_bg};color:${a.stage_accent};">Stage ${a.stage} — ${esc(a.stage_name)}</span>${a.escalation_paused ? ' <span class="stage-pill" style="background:#eee;color:#888;">Paused</span>' : ''}</td>
           <td>${a.last_payment ? esc(a.last_payment) : '—'}</td>
           <td>
-            <button class="edit-btn" data-override="${a.id}" title="Override escalation (Table 29)">
-              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
-            </button>
+            <div class="action-btns">
+              <button class="edit-btn" data-history="${a.id}" title="View escalation history">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/></svg>
+              </button>
+              <button class="edit-btn" data-override="${a.id}" title="Override escalation (Table 29)">
+                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
+              </button>
+            </div>
           </td>
         </tr>
       `).join('');
@@ -376,6 +451,10 @@
 
     $('tableBody').querySelectorAll('[data-override]').forEach(btn => {
       btn.addEventListener('click', () => openOverrideModal(Number(btn.dataset.override)));
+    });
+
+    $('tableBody').querySelectorAll('[data-history]').forEach(btn => {
+      btn.addEventListener('click', () => openHistoryModal(Number(btn.dataset.history)));
     });
 
     $('tableSummary').textContent = all.length === 0
@@ -479,7 +558,7 @@
   }
 
   $('modalCancel').addEventListener('click', closeOverrideModal);
-  $('overlay').addEventListener('click', closeOverrideModal);
+  $('overlay').addEventListener('click', () => { closeOverrideModal(); closeHistoryModal(); });
 
   $('modalConfirm').addEventListener('click', async function(){
     if(this.disabled) return;
@@ -506,6 +585,152 @@
     } catch(e){
       $('modalError').textContent = e.message;
       $('modalError').style.display = 'block';
+    }
+    this.disabled = false;
+  });
+
+  let historyTenant = null;
+
+  async function openHistoryModal(tenantId){
+    $('historyTenantName').textContent = 'Loading...';
+    $('historyTenantStage').textContent = '';
+    $('historyFlags').innerHTML = '';
+    $('historyTimeline').innerHTML = '<li class="timeline-empty">Loading escalation history...</li>';
+    $('historyActionsArea').innerHTML = '';
+    $('evictionForm').classList.remove('open');
+    $('overlay').classList.add('open');
+    $('historyModal').classList.add('open');
+
+    try {
+      const res = await fetch(`/delinquency/${tenantId}/history`, { headers: { 'Accept':'application/json' } });
+      if(!res.ok) throw new Error('Could not load escalation history.');
+      const data = await res.json();
+      renderHistoryModal(data);
+    } catch(e){
+      $('historyTenantName').textContent = 'Escalation History';
+      $('historyTimeline').innerHTML = `<li class="timeline-empty">${esc(e.message)}</li>`;
+    }
+  }
+
+  function renderHistoryModal(data){
+    const t = data.tenant;
+    historyTenant = t;
+    $('historyTenantName').textContent = t.name;
+    $('historyTenantStage').textContent = `${t.room !== '—' ? 'Room ' + t.room + ' — ' : ''}Currently: Stage ${t.current_stage} — ${t.current_stage_name}`;
+
+    const flags = [];
+    if(t.is_blacklisted) flags.push('<span class="history-flag blacklisted">Blacklisted</span>');
+    if(t.escalation_paused) flags.push('<span class="history-flag paused">Escalation Paused</span>');
+    $('historyFlags').innerHTML = flags.join('');
+
+    renderHistoryActions(t);
+    $('evictionForm').classList.remove('open');
+
+    if(data.logs.length === 0){
+      $('historyTimeline').innerHTML = '<li class="timeline-empty">No escalation activity recorded for this tenant yet.</li>';
+      return;
+    }
+
+    $('historyTimeline').innerHTML = data.logs.map((log, i) => `
+      <li class="timeline-item">
+        <div class="timeline-dot-col">
+          <div class="timeline-dot" style="background:${log.stage_accent};"></div>
+          ${i < data.logs.length - 1 ? '<div class="timeline-line"></div>' : ''}
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-head">
+            <span class="timeline-stage">${log.is_override ? 'Admin Override' : 'Stage ' + log.stage + ' — ' + esc(log.stage_name)}</span>
+            <span class="timeline-status ${log.status}">${esc(log.status)}</span>
+            ${log.is_override ? '<span class="timeline-override-tag">Table 29</span>' : ''}
+          </div>
+          <div class="timeline-time">${esc(log.created_at || '')}${log.performed_by ? ' · by ' + esc(log.performed_by) : ''}</div>
+          ${timelineMessageLine(log)}
+        </div>
+      </li>
+    `).join('');
+  }
+
+  function timelineMessageLine(log){
+    // PDF-backed entries store a storage path in message_content -- never
+    // show that raw path to the admin, show a friendly line instead.
+    if(log.action_type === 'demand_letter_generated'){
+      return '<div class="timeline-msg">Formal demand letter generated and saved to this tenant\'s record.</div>';
+    }
+    if(log.action_type === 'eviction_notice_issued'){
+      return '<div class="timeline-msg">Eviction notice generated and dispatched via SMS.</div>';
+    }
+    return log.message_content ? `<div class="timeline-msg">${esc(log.message_content)}</div>` : '';
+  }
+
+  function renderHistoryActions(t){
+    let demandLetterHtml, evictionHtml;
+
+    if(t.demand_letter_ready){
+      demandLetterHtml = `<a class="action-btn-ready" href="/delinquency/${t.id}/demand-letter" target="_blank">View Demand Letter</a>`;
+    } else {
+      demandLetterHtml = `<div class="stub-btn" title="The system generates this automatically once Stage 5 is reached.">View Demand Letter (not yet generated)</div>`;
+    }
+
+    if(!t.is_blacklisted){
+      evictionHtml = `<div class="stub-btn" title="Only available once a tenant reaches Stage 6 (Blacklisted).">Issue Eviction Notice (available at Stage 6)</div>`;
+    } else if(t.eviction_notice_issued){
+      evictionHtml = `<a class="action-btn-ready" href="/delinquency/${t.id}/eviction-notice" target="_blank">View Eviction Notice</a>`;
+    } else {
+      evictionHtml = `<button type="button" class="action-btn-issue" id="openEvictionFormBtn">Issue Eviction Notice</button>`;
+    }
+
+    $('historyActionsArea').innerHTML = `<div class="stub-actions" style="border-top:none;padding-top:0;margin-top:0;">${demandLetterHtml}${evictionHtml}</div>`;
+
+    const openBtn = document.getElementById('openEvictionFormBtn');
+    if(openBtn){
+      openBtn.addEventListener('click', () => {
+        $('evictionReason').value = '';
+        $('evictionDate').value = new Date().toISOString().slice(0, 10);
+        $('evictionError').style.display = 'none';
+        $('evictionForm').classList.add('open');
+      });
+    }
+  }
+
+  function closeHistoryModal(){
+    $('overlay').classList.remove('open');
+    $('historyModal').classList.remove('open');
+    historyTenant = null;
+  }
+
+  $('historyCloseBtn').addEventListener('click', closeHistoryModal);
+
+  $('evictionCancelBtn').addEventListener('click', () => {
+    $('evictionForm').classList.remove('open');
+  });
+
+  $('evictionConfirmBtn').addEventListener('click', async function(){
+    if(this.disabled || !historyTenant) return;
+
+    const reason = $('evictionReason').value.trim();
+    const noticeDate = $('evictionDate').value;
+
+    if(!reason || !noticeDate){
+      $('evictionError').textContent = 'Both a reason and a notice date are required.';
+      $('evictionError').style.display = 'block';
+      return;
+    }
+
+    this.disabled = true;
+    try {
+      const res = await fetch(`/delinquency/${historyTenant.id}/eviction-notice`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'X-CSRF-TOKEN': csrf, 'Accept':'application/json' },
+        body: JSON.stringify({ reason, notice_date: noticeDate }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if(!res.ok) throw new Error(body.message || 'Could not issue eviction notice.');
+      toast(body.message || 'Eviction notice issued.');
+      $('evictionForm').classList.remove('open');
+      openHistoryModal(historyTenant.id); // refresh the modal in place
+    } catch(e){
+      $('evictionError').textContent = e.message;
+      $('evictionError').style.display = 'block';
     }
     this.disabled = false;
   });

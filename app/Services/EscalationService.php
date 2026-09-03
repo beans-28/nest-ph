@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\BillingStatement;
 use App\Models\EscalationLog;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class EscalationService
 {
@@ -324,6 +326,14 @@ class EscalationService
      * canProceedToStage6()), Stage 6 will correctly stay dormant until
      * Thursday's PDF work marks this row complete.
      */
+    /**
+     * Stage 5 -- Table 27: generates a real formal demand letter PDF,
+     * compiling the tenant's full escalation history, and saves it under
+     * storage/app/public/demand-letters/. Logs the stage as 'sent' once
+     * genuinely done, which is what unblocks Stage 6's completeness gate
+     * (canProceedToStage6()) -- no separate flag needed, the log status
+     * IS the gate.
+     */
     private function stage5DemandLetter(BillingStatement $bill): void
     {
         if ($this->isComplete($this->findLog($bill, 'demand_letter_generated'))) {
@@ -331,23 +341,37 @@ class EscalationService
         }
 
         $log = $this->findLog($bill, 'demand_letter_generated');
+        $tenant = $bill->tenant;
 
-        if (! $log) {
-            EscalationLog::create([
-                'tenant_id' => $bill->tenant_id,
-                'billing_id' => $bill->id,
-                'stage' => 5,
-                'action_type' => 'demand_letter_generated',
-                'status' => 'pending',
-            ]);
+        $history = $tenant->escalationLogs()->orderBy('created_at')->get();
 
-            Log::info('[escalation] Stage 5 reached: demand letter PDF generation not yet built, logged as pending', [
-                'tenant_id' => $bill->tenant_id,
-                'billing_id' => $bill->id,
-            ]);
-        }
-        // If a pending row already exists, leave it as-is -- nothing new to
-        // do until Thursday's real PDF generation updates it to 'sent'.
+        $pdf = Pdf::loadView('pdfs.demand-letter', [
+            'tenant' => $tenant,
+            'bill' => $bill,
+            'history' => $history,
+            'deadline' => now()->addDays(7)->format('F j, Y'),
+        ]);
+
+        $path = "demand-letters/{$tenant->id}_{$bill->id}.pdf";
+        Storage::disk('public')->put($path, $pdf->output());
+
+        // message_content stores the storage path (same field other stages
+        // use for SMS text) -- Table 27 needs no new schema, the admin page
+        // resolves this into a real download link, never shows the raw path.
+        $this->saveLog($log, [
+            'tenant_id' => $tenant->id,
+            'billing_id' => $bill->id,
+            'stage' => 5,
+            'action_type' => 'demand_letter_generated',
+            'message_content' => $path,
+            'status' => 'sent',
+        ]);
+
+        Log::info('[escalation] Stage 5: demand letter generated', [
+            'tenant_id' => $tenant->id,
+            'billing_id' => $bill->id,
+            'path' => $path,
+        ]);
     }
 
     /**
