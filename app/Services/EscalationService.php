@@ -316,23 +316,14 @@ class EscalationService
     }
 
     /**
-     * Stage 5 -- Table 27: a formal demand letter PDF, compiling the
-     * tenant's full escalation history. PDF generation isn't built yet
-     * (Thursday's task builds the Eviction Notice PDF -- the natural place
-     * to add this alongside it, since both are PDF-generation work). This
-     * logs the stage transition honestly as 'pending' rather than
-     * pretending a letter was generated when it wasn't. Because Stage 6
-     * requires this to reach 'sent'/'resolved' before it can fire (see
-     * canProceedToStage6()), Stage 6 will correctly stay dormant until
-     * Thursday's PDF work marks this row complete.
-     */
-    /**
      * Stage 5 -- Table 27: generates a real formal demand letter PDF,
-     * compiling the tenant's full escalation history, and saves it under
-     * storage/app/public/demand-letters/. Logs the stage as 'sent' once
-     * genuinely done, which is what unblocks Stage 6's completeness gate
-     * (canProceedToStage6()) -- no separate flag needed, the log status
-     * IS the gate.
+     * matching the approved Figma design (node 238:1945) -- balance
+     * breakdown table, highlighted deadline/blacklist dates, plus the
+     * full escalation history the use case requires (step 2). Saves it
+     * under storage/app/public/demand-letters/. Logs the stage as 'sent'
+     * once genuinely done, which is what unblocks Stage 6's completeness
+     * gate (canProceedToStage6()) -- no separate flag needed, the log
+     * status IS the gate.
      */
     private function stage5DemandLetter(BillingStatement $bill): void
     {
@@ -343,21 +334,35 @@ class EscalationService
         $log = $this->findLog($bill, 'demand_letter_generated');
         $tenant = $bill->tenant;
 
+        $bills = BillingStatement::where('tenant_id', $tenant->id)
+            ->where('status', 'overdue')
+            ->orderBy('billing_period_start')
+            ->get();
+
+        $totalOwed = (float) $bills->sum('total_amount');
+        $totalPenalties = (float) $bills->sum('penalty_amount');
+
         $history = $tenant->escalationLogs()->orderBy('created_at')->get();
+
+        $deadline = now()->addDays(7);
+        $blacklistDate = $deadline->copy()->addDay();
+
+        $dormName = \App\Models\DormitoryProfile::current()->dorm_name ?? 'NEST PH';
 
         $pdf = Pdf::loadView('pdfs.demand-letter', [
             'tenant' => $tenant,
-            'bill' => $bill,
+            'bills' => $bills,
+            'totalOwed' => $totalOwed,
+            'totalPenalties' => $totalPenalties,
             'history' => $history,
-            'deadline' => now()->addDays(7)->format('F j, Y'),
+            'deadline' => $deadline->format('F j, Y'),
+            'blacklistDate' => $blacklistDate->format('F j, Y'),
+            'dormName' => $dormName,
         ]);
 
         $path = "demand-letters/{$tenant->id}_{$bill->id}.pdf";
         Storage::disk('public')->put($path, $pdf->output());
 
-        // message_content stores the storage path (same field other stages
-        // use for SMS text) -- Table 27 needs no new schema, the admin page
-        // resolves this into a real download link, never shows the raw path.
         $this->saveLog($log, [
             'tenant_id' => $tenant->id,
             'billing_id' => $bill->id,
