@@ -17,6 +17,7 @@ use App\Http\Controllers\VacancyController;
 use App\Http\Controllers\VrTourController;
 use App\Http\Controllers\TenantOnboardingController;
 use App\Http\Controllers\DelinquencyController;
+use App\Http\Controllers\TenantDelinquencyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,15 +79,14 @@ Route::get('/passwords', function () {
 })->name('passwords');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'movein.check'])
+    ->middleware(['auth', 'movein.check', 'delinquency.check'])
     ->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'delinquency.check'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
 /*
 |--------------------------------------------------------------------------
 | ADMIN
@@ -179,9 +179,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'tenant', 'movein.check'])->group(function () {
-    Route::get('/billing', function () {
-        return view('tenantbilling');
+Route::middleware(['auth', 'tenant', 'movein.check', 'delinquency.check'])->group(function () {
+    Route::get('/billing', function (Illuminate\Http\Request $request) {
+        $tenant = $request->attributes->get('tenant') ?? $request->user()->tenant;
+
+        return view('tenantbilling', [
+            'portalRestricted' => (bool) $tenant->portal_restricted,
+        ]);
     })->name('tenant.billing');
 
     Route::get('/account', function (Illuminate\Http\Request $request) {
@@ -208,6 +212,10 @@ Route::middleware(['auth', 'tenant', 'movein.check'])->group(function () {
         Route::post('/bills/{billingStatement}/payment-proof', [TenantPortalController::class, 'submitProof'])->name('tenant.billing.payment-proof');
         Route::get('/penalties', [TenantPortalController::class, 'myPenalties']);
     });
+
+    // --- Delinquency Escalation (Week 6, Tenant Side) ---
+    Route::get('/my/delinquency', [TenantDelinquencyController::class, 'page'])->name('tenant.delinquency');
+    Route::get('/my/delinquency/demand-letter', [TenantDelinquencyController::class, 'downloadDemandLetter'])->name('tenant.delinquency.demand-letter');
 });
 
 require __DIR__.'/auth.php';

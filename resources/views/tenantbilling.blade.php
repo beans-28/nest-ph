@@ -103,6 +103,18 @@
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.92); display:flex; align-items:center; justify-content:center; color:var(--green-dark); cursor:pointer; }
   .topbar-icon svg{ width:16px; height:16px; }
 
+  /* ===== Portal-restricted takeover: same treatment as the Delinquency
+     page -- replaces the normal sidebar nav with a non-navigable lock
+     panel while portal_restricted is true, since those nav links would
+     just bounce a restricted tenant back here anyway. Log Out stays
+     available. ===== */
+  .sidebar.restricted-lock{ align-items:center; }
+  .lock-panel-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px 22px; text-align:center; }
+  .lock-icon-circle{ width:80px; height:80px; border-radius:50%; background:#c0463d; display:flex; align-items:center; justify-content:center; margin-bottom:24px; box-shadow:0 4px 10px rgba(0,0,0,0.25); flex-shrink:0; }
+  .lock-icon-circle svg{ width:36px; height:36px; color:#fff; }
+  .lock-panel-title{ color:#fff; font-size:18px; font-weight:800; margin:0 0 10px 0; line-height:1.3; letter-spacing:0.2px; }
+  .lock-panel-text{ color:rgba(255,255,255,0.85); font-size:12px; line-height:1.65; max-width:200px; }
+
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
   .page-head{ display:flex; align-items:flex-start; gap:12px; margin-bottom:20px; }
   .back-arrow{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; margin-top:2px; }
@@ -278,22 +290,38 @@
 <body>
 <div class="app">
 
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo"><span class="logo-mark"></span><span class="logo-text">NEST.PH</span></div>
-    <div class="sidebar-section-label">Tenant View</div>
-    <ul class="nav-list">
-      <li class="nav-item" data-href="{{ route('dashboard') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span><span class="label">Tenant Dashboard</span></li>
-      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></span><span class="label">Ticket Module</span></li>
-      <li class="nav-item active" data-href="{{ route('tenant.billing') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span><span class="label">Billing and Payments</span></li>
-      <li class="nav-item" data-href="{{ route('tenant.account') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span><span class="label">Profile</span></li>
-      <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span class="label">Delinquency</span></li>
-    </ul>
-    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.4 5.6a9 9 0 11-12.8 0M12 3v8"/></svg></span><span class="label">Log Out</span></div></div>
-  </aside>
+  @if($portalRestricted)
+    <aside class="sidebar restricted-lock" id="sidebar">
+      <div class="sidebar-logo"><span class="logo-mark"></span><span class="logo-text">NEST.PH</span></div>
+      <div class="lock-panel-body">
+        <div class="lock-icon-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+        </div>
+        <h2 class="lock-panel-title">PORTAL ACCESS<br>RESTRICTED</h2>
+        <p class="lock-panel-text">Your account access has been restricted due to unpaid balance. Please settle your balance to restore full access.</p>
+      </div>
+      <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.4 5.6a9 9 0 11-12.8 0M12 3v8"/></svg></span><span class="label">Log Out</span></div></div>
+    </aside>
+  @else
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-logo"><span class="logo-mark"></span><span class="logo-text">NEST.PH</span></div>
+      <div class="sidebar-section-label">Tenant View</div>
+      <ul class="nav-list">
+        <li class="nav-item" data-href="{{ route('dashboard') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span><span class="label">Tenant Dashboard</span></li>
+        <li class="nav-item"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></span><span class="label">Ticket Module</span></li>
+        <li class="nav-item active" data-href="{{ route('tenant.billing') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span><span class="label">Billing and Payments</span></li>
+        <li class="nav-item" data-href="{{ route('tenant.account') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span><span class="label">Profile</span></li>
+        <li class="nav-item" data-href="{{ route('tenant.delinquency') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span class="label">Delinquency</span></li>
+      </ul>
+      <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.4 5.6a9 9 0 11-12.8 0M12 3v8"/></svg></span><span class="label">Log Out</span></div></div>
+    </aside>
+  @endif
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger-icon" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><svg width="20" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
+      @unless($portalRestricted)
+        <div class="hamburger-icon" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><svg width="20" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
+      @endunless
       <div class="topbar-right">
         <span class="topbar-username" id="topbarUsername"></span>
         <div class="topbar-icon" data-href="{{ route('tenant.account') }}" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
@@ -304,7 +332,7 @@
 
       <div class="view active" id="viewMain">
         <div class="page-head">
-          <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+          <div class="back-arrow" data-href="{{ $portalRestricted ? route('tenant.delinquency') : route('dashboard') }}" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
           <div class="page-head-text">
             <h1>Billing and Payments</h1>
             <p id="tenantSubtitle">Loading…</p>

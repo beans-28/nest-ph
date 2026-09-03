@@ -246,7 +246,7 @@
       <div class="stage-row">
         @foreach($stageBreakdown as $s)
           <div class="stage-card" style="border-bottom-color:{{ $s['accent'] }};">
-            <div class="stage-badge" style="background:{{ $s['bg'] }}; color:{{ $s['accent'] }};">{{ $s['stage'] }}</div>
+            <div class="stage-badge" style="background:{{ $s['accent'] }}; color:{{ $s['text'] }};">{{ $s['stage'] }}</div>
             <div class="stage-name">{{ $s['name'] }}</div>
             <div class="stage-no">Stage {{ $s['stage'] }}</div>
             <div class="stage-nums">
@@ -433,7 +433,7 @@
           <td>${esc(a.room)}</td>
           <td class="days-cell">${a.days_overdue} day${a.days_overdue === 1 ? '' : 's'}</td>
           <td class="balance-cell">${peso(a.balance)}</td>
-          <td><span class="stage-pill" style="background:${a.stage_bg};color:${a.stage_accent};">Stage ${a.stage} — ${esc(a.stage_name)}</span>${a.escalation_paused ? ' <span class="stage-pill" style="background:#eee;color:#888;">Paused</span>' : ''}</td>
+          <td><span class="stage-pill" style="background:${a.stage_accent};color:${a.stage_text};">Stage ${a.stage} — ${esc(a.stage_name)}</span>${a.escalation_paused ? ' <span class="stage-pill" style="background:#eee;color:#888;">Paused</span>' : ''}</td>
           <td>${a.last_payment ? esc(a.last_payment) : '—'}</td>
           <td>
             <div class="action-btns">

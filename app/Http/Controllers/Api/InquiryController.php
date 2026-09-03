@@ -55,6 +55,30 @@ class InquiryController extends Controller
             ], 422);
         }
 
+        // Table 28 step 4: "System restricts the tenant from making future
+        // inquiry form submissions." This form is public/unauthenticated,
+        // so there's no session to check -- match against the submitted
+        // contact info against any blacklisted tenant's contact info
+        // instead. A soft match (same phone OR same email) is deliberate:
+        // a blacklisted tenant could otherwise dodge this by leaving one
+        // field blank.
+        $isBlacklisted = \App\Models\Tenant::where('is_blacklisted', true)
+            ->where(function ($q) use ($data) {
+                if (! empty($data['contact_number'])) {
+                    $q->orWhere('contact_number', $data['contact_number']);
+                }
+                if (! empty($data['email'])) {
+                    $q->orWhere('email', $data['email']);
+                }
+            })
+            ->exists();
+
+        if ($isBlacklisted) {
+            return response()->json([
+                'message' => 'We are unable to process inquiries from this contact information at this time.',
+            ], 403);
+        }
+
         $inquiry = Inquiry::create([
             'full_name' => $data['full_name'],
             'contact_number' => $data['contact_number'] ?? null,

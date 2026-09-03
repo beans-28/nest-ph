@@ -20,13 +20,18 @@ class DelinquencyController extends Controller
      * from the original prototype, which didn't correspond to any real
      * stage's actual behavior. Key = escalation_logs.stage.
      */
+    // Colors match the approved Figma frames exactly, same palette now
+    // used on the tenant side (TenantDelinquencyController::STAGES) --
+    // previously this used a different, unrelated scheme. 'text' is the
+    // stage-number/label color: dark green on the lighter early stages,
+    // white once the backgrounds get dark enough for white to read better.
     private const STAGES = [
-        1 => ['name' => 'Account Flagged', 'accent' => '#056d05', 'bg' => '#d7efd7'],
-        2 => ['name' => 'SMS Reminders', 'accent' => '#ffba52', 'bg' => '#ffecd0'],
-        3 => ['name' => 'Portal Restricted', 'accent' => '#ff7957', 'bg' => '#ffd4c9'],
-        4 => ['name' => 'Emergency Contact', 'accent' => '#cd0000', 'bg' => '#ffd0d0'],
-        5 => ['name' => 'Demand Letter', 'accent' => '#5408da', 'bg' => '#efe3ff'],
-        6 => ['name' => 'Blacklisted', 'accent' => '#020202', 'bg' => '#ecebeb'],
+        1 => ['name' => 'Account Flagged', 'accent' => '#ffec60', 'text' => '#004f0f'],
+        2 => ['name' => 'SMS Reminders', 'accent' => '#f87542', 'text' => '#004f0f'],
+        3 => ['name' => 'Portal Restricted', 'accent' => '#fe424b', 'text' => '#004f0f'],
+        4 => ['name' => 'Emergency Contact', 'accent' => '#a24346', 'text' => '#ffffff'],
+        5 => ['name' => 'Demand Letter', 'accent' => '#645d5d', 'text' => '#ffffff'],
+        6 => ['name' => 'Blacklisted', 'accent' => '#000000', 'text' => '#ffffff'],
     ];
 
     /**
@@ -71,7 +76,7 @@ class DelinquencyController extends Controller
                 'stage' => $stage,
                 'name' => $meta['name'],
                 'accent' => $meta['accent'],
-                'bg' => $meta['bg'],
+                'text' => $meta['text'],
                 'accounts' => $atThisStage->count(),
                 'total_balance' => $atThisStage->sum('balance'),
             ];
@@ -99,7 +104,7 @@ class DelinquencyController extends Controller
         $stage = (int) ($tenant->escalationLogs
             ->reject(fn (EscalationLog $log) => str_starts_with((string) $log->action_type, 'admin_override_'))
             ->max('stage') ?? 0);
-        $stageMeta = self::STAGES[$stage] ?? ['name' => 'Not Yet Flagged', 'accent' => '#9f9f9f', 'bg' => '#f0f0f0'];
+        $stageMeta = self::STAGES[$stage] ?? ['name' => 'Not Yet Flagged', 'accent' => '#9f9f9f', 'text' => '#5b6b60'];
 
         $lastPayment = $tenant->payments()->latest('created_at')->first();
 
@@ -115,7 +120,7 @@ class DelinquencyController extends Controller
             'stage' => $stage,
             'stage_name' => $stageMeta['name'],
             'stage_accent' => $stageMeta['accent'],
-            'stage_bg' => $stageMeta['bg'],
+            'stage_text' => $stageMeta['text'],
             'last_payment' => $lastPayment?->created_at?->format('M j, Y'),
             'is_blacklisted' => (bool) $tenant->is_blacklisted,
             'escalation_paused' => (bool) $tenant->escalation_paused,
