@@ -53,7 +53,13 @@ class RestrictDelinquentTenant
         $isAllowedByPath = $request->is('my/billing*') || $request->is('my/delinquency*');
 
         if (! $isAllowedByName && ! $isAllowedByPath) {
-            return redirect()->route('tenant.billing');
+            // A blacklisted tenant's default landing spot should be their
+            // status page, not Billing -- /billing itself now shows a
+            // dead-end takeover for them (Table 28: blacklisting is
+            // permanent, there's nothing left to pay toward), so bouncing
+            // them there first would just be a page they immediately have
+            // to click away from.
+            return redirect()->route($tenant->is_blacklisted ? 'tenant.delinquency' : 'tenant.billing');
         }
 
         return $next($request);

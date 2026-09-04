@@ -182,9 +182,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
 Route::middleware(['auth', 'tenant', 'movein.check', 'delinquency.check'])->group(function () {
     Route::get('/billing', function (Illuminate\Http\Request $request) {
         $tenant = $request->attributes->get('tenant') ?? $request->user()->tenant;
+        $dormProfile = \App\Models\DormitoryProfile::current();
 
         return view('tenantbilling', [
+            'tenant' => $tenant,
             'portalRestricted' => (bool) $tenant->portal_restricted,
+            'isBlacklisted' => (bool) $tenant->is_blacklisted,
+            'dormContactEmail' => $dormProfile->contact_email,
+            'dormContactNumber' => $dormProfile->contact_number,
         ]);
     })->name('tenant.billing');
 

@@ -285,9 +285,55 @@
   .modal-payment-row div{ display:flex; justify-content:space-between; margin-bottom:4px; }
   .modal-payment-row div span:first-child{ color:var(--text-light); }
   .modal-close-btn{ margin-top:10px; width:100%; background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; font-weight:600; cursor:pointer; }
+
+  /* ===== Stage 6 full takeover: same treatment as the Delinquency page --
+     a blacklisted tenant gets no billing UI at all, not even the lock
+     panel. Table 28 blacklisting is permanent, so there's nothing left to
+     pay toward from here; they're pointed at the full Delinquency status
+     page and Contact Admin instead. ===== */
+  .blacklist-page{ min-height:100vh; display:flex; flex-direction:column; background:linear-gradient(160deg, var(--green-sidebar-top) 0%, #2a221d 60%, var(--green-sidebar-bottom) 100%); }
+  .blacklist-topbar{ display:flex; align-items:center; padding:16px 28px; background:linear-gradient(90deg, rgba(51,81,60,0.45), rgba(63,107,74,0.45)); backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%); box-shadow:0 1px 0 rgba(0,0,0,0.08); }
+  .blacklist-topbar .topbar-username{ margin-left:auto; color:#fff; font-size:13.5px; font-weight:600; }
+  .blacklist-body{ flex:1; display:flex; align-items:center; justify-content:center; padding:60px 24px; }
+  .blacklist-content{ max-width:640px; text-align:center; }
+  .blacklist-lock-circle{ width:110px; height:110px; border-radius:50%; background:#c0463d; display:flex; align-items:center; justify-content:center; margin:0 auto 30px auto; box-shadow:0 6px 16px rgba(0,0,0,0.3); }
+  .blacklist-lock-circle svg{ width:52px; height:52px; color:#fff; }
+  .blacklist-headline{ color:#fff; font-size:24px; font-weight:900; line-height:1.3; margin:0 0 16px 0; }
+  .blacklist-subtext{ color:rgba(255,255,255,0.9); font-size:13.5px; line-height:1.7; margin:0 auto 26px auto; max-width:480px; }
+  .blacklist-actions{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .blacklist-contact-btn{ background:var(--green-mid); color:#fff; border:none; border-radius:8px; padding:13px 30px; font-size:13px; font-weight:700; letter-spacing:0.3px; cursor:pointer; text-decoration:none; display:inline-block; }
+  .blacklist-contact-btn:hover{ background:var(--green-dark); }
+  .blacklist-status-btn{ background:#fff; color:var(--green-darker); border:none; border-radius:8px; padding:13px 30px; font-size:13px; font-weight:700; letter-spacing:0.3px; cursor:pointer; text-decoration:none; display:inline-block; }
+  .blacklist-status-btn:hover{ background:#f0f0f0; }
+  .blacklist-logout-btn{ background:#c0463d; color:#fff; border:none; border-radius:8px; padding:13px 30px; font-size:13px; font-weight:700; letter-spacing:0.3px; cursor:pointer; }
+  .blacklist-logout-btn:hover{ background:#a8382f; }
 </style>
 </head>
 <body>
+
+@if($isBlacklisted)
+  <div class="blacklist-page">
+    <div class="blacklist-topbar">
+      <span class="topbar-username">{{ $tenant->full_name ?? 'Tenant' }}</span>
+    </div>
+    <div class="blacklist-body">
+      <div class="blacklist-content">
+        <div class="blacklist-lock-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+        </div>
+        <h1 class="blacklist-headline">Account Permanently Deactivated</h1>
+        <p class="blacklist-subtext">Your account has reached the final stage of delinquency escalation and has been blacklisted. Billing is no longer accessible here — please contact the dormitory administrator directly to settle your balance or resolve this.</p>
+        <div class="blacklist-actions">
+          <a class="blacklist-status-btn" href="{{ route('tenant.delinquency') }}">View Delinquency Status</a>
+          @if($dormContactEmail || $dormContactNumber)
+            <a class="blacklist-contact-btn" href="{{ $dormContactEmail ? 'mailto:'.$dormContactEmail : 'tel:'.$dormContactNumber }}">Contact Admin</a>
+          @endif
+          <button class="blacklist-logout-btn" id="logoutBtn" tabindex="0">Log Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+@else
 <div class="app">
 
   @if($portalRestricted)
@@ -542,6 +588,7 @@
     <button class="modal-close-btn" id="proofsModalClose">Close</button>
   </div>
 </div>
+@endif
 
 <script>
 (function(){
