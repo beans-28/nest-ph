@@ -56,7 +56,7 @@
   .sidebar.collapsed .sidebar-footer{ padding-left:10px; padding-right:10px; }
   .sidebar.collapsed .sidebar-footer .nav-item{ padding:9px 0; }
 
-  .main{ flex:1; display:flex; flex-direction:column; min-width:0; }
+  .main{ flex:1; display:flex; flex-direction:column; min-width:0; background:var(--bg-page); min-height:100vh; }
   .topbar{ display:flex; align-items:center; gap:16px; background:linear-gradient(90deg,var(--green-mid),var(--green-dark)); padding:14px 28px; position:sticky; top:0; z-index:20; }
   .hamburger{ width:20px; height:16px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; }
   .hamburger span{ display:block; height:2px; background:#eaf0ea; border-radius:2px; }
@@ -75,7 +75,7 @@
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); color:var(--green-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .topbar-icon svg{ width:16px; height:16px; }
 
-  .content{ padding:26px 34px 48px 34px; flex:1; max-width:1280px; }
+  .content{ padding:26px 34px 48px 34px; flex:1; width:100%; max-width:1400px; margin:0 auto; }
   .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
   .back-arrow{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
   .page-head h1{ font-size:19px; font-weight:700; margin:0; color:var(--green-accent); }
@@ -161,6 +161,14 @@
   .toast{ position:fixed; bottom:22px; right:22px; background:var(--green-accent); color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; display:none; z-index:99; box-shadow:0 6px 18px rgba(0,0,0,.2); }
   .toast.error{ background:var(--status-occupied); }
   .toast.visible{ display:block; }
+
+    @media (max-width: 900px){
+    .content{ padding:18px 16px 32px 16px; }
+    .filters-row{ flex-direction:column; align-items:stretch; }
+    .filters-row select, .filters-row .btn{ width:100%; margin-left:0 !important; }
+    .table-panel{ overflow-x:auto; }
+    table{ min-width:720px; }
+  }
 </style>
 </head>
 <body>
@@ -508,6 +516,7 @@
     statusFilter = this.value;
     page = 1;
     renderTable();
+  });
   $('tenantTypeFilter').addEventListener('change', function(){
     tenantTypeFilter = this.value;
     page = 1;
