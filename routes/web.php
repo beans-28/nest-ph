@@ -19,6 +19,7 @@ use App\Http\Controllers\TenantOnboardingController;
 use App\Http\Controllers\DelinquencyController;
 use App\Http\Controllers\TenantDelinquencyController;
 use App\Http\Controllers\TenantController;
+use App\Http\Controllers\Auth\PasswordResetCodeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +79,10 @@ Route::post('/admin/login', [AuthController::class, 'login']);
 Route::get('/passwords', function () {
     return view('passwords');
 })->name('passwords');
+
+Route::post('/password/send-code', [PasswordResetCodeController::class, 'send'])->name('password.code.send');
+Route::post('/password/verify-code', [PasswordResetCodeController::class, 'verify'])->name('password.code.verify');
+Route::post('/password/reset-code', [PasswordResetCodeController::class, 'reset'])->name('password.code.reset');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'movein.check', 'delinquency.check'])
