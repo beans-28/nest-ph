@@ -86,4 +86,9 @@ class Tenant extends Model
         return $this->hasMany(EscalationLog::class);
     }
 
+    public function deactivatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'deactivated_by');
+    }
+
 }

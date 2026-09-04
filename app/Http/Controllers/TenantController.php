@@ -74,6 +74,9 @@ class TenantController extends Controller
             'emergency_contact_number' => $tenant->emergency_contact_number,
             'status' => $tenant->status,
             'is_blacklisted' => (bool) $tenant->is_blacklisted,
+            'deactivation_reason' => $tenant->deactivation_reason,
+            'deactivated_at' => $this->formatDate($tenant->deactivated_at, 'M j, Y g:ia'),
+            'deactivated_by_name' => $tenant->deactivatedBy?->name,
             'id_document_url' => $this->publicUrlFor($tenant->id_document_path),
             'signed_contract_url' => $this->publicUrlFor($tenant->signed_contract_path),
             'contract' => $contract ? [
@@ -290,6 +293,7 @@ class TenantController extends Controller
                     'status' => 'archived',
                     'deactivation_reason' => $data['reason'],
                     'deactivated_at' => now(),
+                    'deactivated_by' => $request->user()?->id,
                 ]);
 
                 if ($tenant->user) {
@@ -317,6 +321,7 @@ class TenantController extends Controller
                 'status' => 'active',
                 'deactivation_reason' => null,
                 'deactivated_at' => null,
+                'deactivated_by' => null,
             ]);
 
             if ($tenant->user) {

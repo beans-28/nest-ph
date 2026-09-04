@@ -215,6 +215,14 @@
           <option value="pending_move_in_payment">Pending Move-In</option>
           <option value="archived">Archived</option>
         </select>
+                <select id="tenantTypeFilter">
+          <option value="">All Tenant Types</option>
+          <option value="student">Student</option>
+          <option value="working_student">Working Student</option>
+          <option value="full_time_employee">Full-time Employee</option>
+          <option value="part_time_employee">Part-time Employee</option>
+          <option value="transient_worker">Transient Worker</option>
+        </select>
         <button class="btn primary" id="openAddModalBtn" style="margin-left:auto;">+ Add New Tenant</button>
       </div>
 
@@ -373,6 +381,7 @@
 
   let search = '';
   let statusFilter = '';
+  let tenantTypeFilter = '';
   let page = 1;
   const PAGE_SIZE = 10;
 
@@ -428,6 +437,7 @@
   function visible(){
     return tenants.filter(t => {
       if(statusFilter && t.status !== statusFilter) return false;
+      if(tenantTypeFilter && t.tenant_type !== tenantTypeFilter) return false;
       if(!search) return true;
       const hay = `${t.full_name ?? ''} ${t.room_bed ?? ''}`.toLowerCase();
       return hay.includes(search);
@@ -496,6 +506,10 @@
   });
   $('statusFilter').addEventListener('change', function(){
     statusFilter = this.value;
+    page = 1;
+    renderTable();
+  $('tenantTypeFilter').addEventListener('change', function(){
+    tenantTypeFilter = this.value;
     page = 1;
     renderTable();
   });
