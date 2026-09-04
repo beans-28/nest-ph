@@ -6,6 +6,11 @@ use App\Models\Bed;
 use App\Models\BillingStatement;
 use App\Models\Floor;
 use Illuminate\Http\Request;
+use App\Models\Tenant;
+use App\Models\Payment;
+use App\Services\ActivityFeedService;
+use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DashboardController extends Controller
 {
@@ -26,6 +31,8 @@ class DashboardController extends Controller
 
     private function adminDashboard()
     {
+        BillingStatement::syncOverdueStatuses();
+
         $floors = Floor::with('rooms.beds')->orderBy('floor_number')->get();
 
         $occupancy = $floors->map(function ($floor) {
@@ -43,7 +50,79 @@ class DashboardController extends Controller
         $vacantBeds = $allBeds->where('status', 'vacant')->count();
         $vacancyRate = $totalBeds > 0 ? round(($vacantBeds / $totalBeds) * 100) : 0;
 
-        return view('admindashboard', compact('occupancy', 'vacancyRate', 'vacantBeds', 'totalBeds'));
+        // --- Total Tenants ---
+        $totalTenants = Tenant::where('status', 'active')->count();
+
+        // --- Revenue this month (approved payments only) ---
+        $now = now();
+        $revenueThisMonth = (float) Payment::where('status', 'approved')
+            ->whereYear('payment_date', $now->year)
+            ->whereMonth('payment_date', $now->month)
+            ->sum('amount_paid');
+
+        // --- Delinquent accounts (distinct tenants with an overdue bill) ---
+        $delinquentCount = BillingStatement::where('status', 'overdue')
+            ->distinct('tenant_id')
+            ->count('tenant_id');
+
+        // --- Worst overdue account, for the alert banner ---
+        $topDelinquent = null;
+        $worstBill = BillingStatement::where('status', 'overdue')
+            ->whereNotNull('due_date')
+            ->orderBy('due_date') // oldest due_date = most overdue
+            ->with('tenant.activeContract.bed.room')
+            ->first();
+
+        if ($worstBill && $worstBill->tenant) {
+            $room = $worstBill->tenant->activeContract?->bed?->room;
+
+            $topDelinquent = [
+                'name' => $worstBill->tenant->full_name,
+                'room_no' => $room?->room_no,
+                'days_overdue' => (int) Carbon::parse($worstBill->due_date)->diffInDays(now()),
+            ];
+        }
+
+        // --- Recent Activities preview: latest 10 from the full feed.
+        // See "View All" -> activityLog() below for the complete, paginated list.
+        $recentActivities = app(ActivityFeedService::class)->all()->take(10);
+
+        return view('admindashboard', compact(
+            'occupancy',
+            'vacancyRate',
+            'vacantBeds',
+            'totalBeds',
+            'totalTenants',
+            'revenueThisMonth',
+            'delinquentCount',
+            'topDelinquent',
+            'recentActivities'
+        ));
+    }
+
+    /**
+     * The full Activity Log page ("View All" from the dashboard's Recent
+     * Activities card). Pulls the same unified feed as the dashboard
+     * preview, but paginated instead of capped at 10.
+     */
+    public function activityLog(Request $request)
+    {
+        $perPage = 20;
+        $page = max(1, (int) $request->query('page', 1));
+
+        $all = app(ActivityFeedService::class)->all();
+
+        $items = $all->slice(($page - 1) * $perPage, $perPage)->values();
+
+        $activities = new LengthAwarePaginator(
+            $items,
+            $all->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
+        return view('activitylog', compact('activities'));
     }
 
     private function tenantDashboard(Request $request)

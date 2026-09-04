@@ -148,6 +148,7 @@
         .listing-favorite.active svg { fill: #e24149; stroke: #e24149; }
         .listing-body { padding: 14px 16px 16px; }
         .listing-price { color: #355e3d; font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+        .listing-room-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #6b6b6b; margin-bottom: 2px; }
         .listing-amenities { display: flex; flex-wrap: wrap; gap: 3px 14px; margin-bottom: 13px; }
         .listing-amenities span { font-size: 10px; font-weight: 700; letter-spacing: 0.03em; color: #292420; text-transform: uppercase; }
         .listing-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -188,6 +189,19 @@
         @media (max-width: 640px) {
             .status-grid { grid-template-columns: 1fr; }
             .legend { gap: 16px; }
+        }
+
+        /* Scales the whole page down uniformly on larger screens, where the
+           fixed px sizes above otherwise read a bit large relative to
+           available screen space (e.g. a 14" laptop at 100% zoom). Left
+           untouched on tablet/mobile widths, where the breakpoints above
+           already handle sizing appropriately. `zoom` (not
+           `transform: scale`) is used deliberately -- it recalculates
+           layout at the smaller size instead of just visually shrinking a
+           layout still sized for full scale, which is what avoids leftover
+           blank space or overflow. */
+        @media (min-width: 1025px) {
+            body { zoom: 0.85; }
         }
     </style>
 </head>
@@ -324,6 +338,7 @@
                             <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4 2.2C10.5 6.2 12 5 14 5c3.5 0 5 3.5 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
                         </div>
                         <div class="listing-body">
+                            <div class="listing-room-label">Room ${escapeHtml(room.room_no)}</div>
                             <div class="listing-price">${typeLabel} - ${formatPrice(room.price_per_bed)}/mo</div>
                             <div class="listing-amenities">${amenitiesHtml}</div>
                             <div class="listing-buttons">

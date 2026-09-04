@@ -179,6 +179,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/tenant-manager', [TenantController::class, 'store']);
     Route::post('/tenant-manager/{tenant}', [TenantController::class, 'update']);
     Route::post('/tenant-manager/{tenant}/status', [TenantController::class, 'setStatus']);
+
+    Route::get('/activity-log', [DashboardController::class, 'activityLog'])->name('activity-log.index');
 });
 
 /*

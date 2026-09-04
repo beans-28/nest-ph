@@ -48,6 +48,12 @@ class PublicController extends Controller
      * Aug 2026: now also eager-loads beds and photos so transformPublicRoom()
      * can expose per-bed status (for the Rooms page's room/bed status cards)
      * and listing photos (separate from the VR panorama) without N+1 queries.
+     *
+     * Default ordering (this update): floor, then room number, ascending.
+     * The previous default sorted by vacant-bed count descending, which
+     * reads as a random/arbitrary order to a visitor since the page has no
+     * sort control exposing that logic — floor-then-room-number is what
+     * people actually expect when browsing a room list.
      */
     public function rooms(Request $request): JsonResponse
     {
@@ -62,6 +68,7 @@ class PublicController extends Controller
             'floor:id,floor_number,floor_name',
             'beds:id,room_id,bed_label,status',
             'photos:id,room_id,path,sort_order',
+            'vrScenes:id,room_id,panorama_path,is_default',
         ])->withCount([
             'beds',
             'beds as vacant_beds_count' => fn ($q) => $q->where('status', 'vacant'),
@@ -78,14 +85,31 @@ class PublicController extends Controller
             $query->where('room_type', $request->input('room_type'));
         }
 
-        match ($request->input('sort', 'availability')) {
+        $sort = $request->input('sort', 'availability');
+
+        match ($sort) {
             'price_low' => $query->orderBy('monthly_rate'),
             'price_high' => $query->orderByDesc('monthly_rate'),
-            default => $query->orderByDesc('vacant_beds_count'),
+            // Default (floor, then room number) is sorted in PHP below,
+            // once relations/counts are already loaded -- doing it via a
+            // DB-level join here previously required a raw select('rooms.*')
+            // that silently wiped out withCount()'s own added select
+            // columns (select() replaces the select list rather than
+            // appending to it), which broke has_vr_tour for every room.
+            default => null,
         };
 
+        $rooms = $query->get();
+
+        if (! in_array($sort, ['price_low', 'price_high'], true)) {
+            $rooms = $rooms->sortBy([
+                [fn ($room) => $room->floor?->floor_number ?? 0, 'asc'],
+                [fn ($room) => (int) preg_replace('/\D/', '', (string) $room->room_no), 'asc'],
+            ])->values();
+        }
+
         return response()->json(
-            $query->get()->map(fn ($room) => $this->transformPublicRoom($room))->values()
+            $rooms->map(fn ($room) => $this->transformPublicRoom($room))->values()
         );
     }
 
@@ -103,6 +127,7 @@ class PublicController extends Controller
             'floor:id,floor_number,floor_name',
             'beds:id,room_id,bed_label,status',
             'photos:id,room_id,path,sort_order',
+            'vrScenes:id,room_id,panorama_path,is_default',
         ]);
 
         return response()->json($this->transformPublicRoom($room));
@@ -273,6 +298,18 @@ class PublicController extends Controller
      * URLs (photo_url / photo_urls) — needed for the Rooms page's room/bed
      * status cards and photo listing cards. See
      * 2026_08_29_000003_add_amenities_and_room_photos migration.
+     *
+     * photo_url fallback: if a room has no separate listing photo but does
+     * have a published VR tour, use that tour's default panorama as the
+     * thumbnail instead of leaving it blank.
+     *
+     * floor_label (this update): always "Floor {floor_number}", not
+     * floor_name. The admin Vacancy Monitoring page already displays floors
+     * this way (floor_name isn't editable anywhere in the current UI), so
+     * a stale/incorrect floor_name value was showing the wrong label here
+     * while the admin page showed the correct one. Flag to PELEA/BAGUI if
+     * custom floor names (e.g. "Ground Floor") should become a real,
+     * editable feature later.
      */
     private function transformPublicRoom(Room $room): array
     {
@@ -280,11 +317,20 @@ class PublicController extends Controller
         // not when the retired single vr_asset_path is set.
         $tourIsPublic = $room->vr_visibility === 'public' && $room->vr_scenes_count > 0;
 
+        $photoUrl = $room->photos->first()
+            ? Storage::disk('public')->url($room->photos->first()->path)
+            : null;
+
+        if (! $photoUrl && $tourIsPublic && $room->vrScenes->isNotEmpty()) {
+            $defaultScene = $room->vrScenes->firstWhere('is_default') ?? $room->vrScenes->first();
+            $photoUrl = Storage::disk('public')->url($defaultScene->panorama_path);
+        }
+
         return [
             'id' => $room->id,
             'room_no' => $room->room_no,
             'floor' => $room->floor?->floor_number,
-            'floor_label' => $room->floor?->floor_name ?: ('Floor ' . $room->floor?->floor_number),
+            'floor_label' => 'Floor ' . $room->floor?->floor_number,
             'room_type' => $room->room_type,
             'amenities' => $room->amenities ?? [],
             'monthly_rate' => $room->monthly_rate,
@@ -296,9 +342,7 @@ class PublicController extends Controller
                 'label' => $bed->bed_label,
                 'status' => $bed->status,
             ])->values(),
-            'photo_url' => $room->photos->first()
-                ? Storage::disk('public')->url($room->photos->first()->path)
-                : null,
+            'photo_url' => $photoUrl,
             'photo_urls' => $room->photos->map(
                 fn ($photo) => Storage::disk('public')->url($photo->path)
             )->values(),
@@ -379,7 +423,14 @@ class PublicController extends Controller
             'address' => $profile->address,
             'contactNumber' => $profile->contact_number,
             'contactEmail' => $profile->contact_email,
-            'hasPoliciesFile' => (bool) $profile->policies_file_path,
+            // The view uses this as both a truthy check ("has a file been
+            // uploaded?") and the actual iframe/download href -- it was
+            // previously only being passed a boolean (hasPoliciesFile),
+            // which the view never actually referenced, so $policiesFileUrl
+            // was always undefined.
+            'policiesFileUrl' => $profile->policies_file_path
+                ? route('public.dorminfo.file')
+                : null,
             'paymentsAndFees' => $profile->payments_and_fees,
             'houseRules' => $profile->house_rules,
             'checkoutProcedures' => $profile->checkout_procedures,

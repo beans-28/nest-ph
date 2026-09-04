@@ -193,22 +193,19 @@
 
       <div class="stats-row">
         <div class="stat-card">
-          <span class="placeholder-tag">Coming Soon</span>
           <div class="stat-card-head"><span class="stat-icon-dot red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>Total Tenants</div>
-          <div class="stat-value">—</div>
-          <div class="stat-sub">Needs Tenant Manager module</div>
+          <div class="stat-value">{{ $totalTenants }}</div>
+          <div class="stat-sub">Active tenants</div>
         </div>
         <div class="stat-card">
-          <span class="placeholder-tag">Coming Soon</span>
-          <div class="stat-card-head"><span class="stat-icon-dot blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>Revenue (This Month)</div>
-          <div class="stat-value">—</div>
-          <div class="stat-sub">Needs Billing &amp; Payments module</div>
+          <div class="stat-card-head"><span class="stat-icon-dot blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>Revenue ({{ now()->format('F') }})</div>
+          <div class="stat-value">₱{{ number_format($revenueThisMonth, 0) }}</div>
+          <div class="stat-sub">Approved payments this month</div>
         </div>
         <div class="stat-card">
-          <span class="placeholder-tag">Coming Soon</span>
           <div class="stat-card-head"><span class="stat-icon-dot teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>Delinquent</div>
-          <div class="stat-value">—</div>
-          <div class="stat-sub">Needs Delinquency module</div>
+          <div class="stat-value">{{ $delinquentCount }}</div>
+          <div class="stat-sub">{{ $delinquentCount === 1 ? 'account overdue' : 'accounts overdue' }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-card-head"><span class="stat-icon-dot green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>Vacancy Rate</div>
@@ -217,13 +214,15 @@
         </div>
       </div>
 
-      <div class="alert-banner">
-        <div class="alert-banner-text">
-          <strong>Delinquency alerts will appear here</strong>
-          <span>This banner will surface overdue accounts once the Delinquency module is built.</span>
+      @if($topDelinquent)
+        <div class="alert-banner">
+          <div class="alert-banner-text">
+            <strong>{{ $delinquentCount }} {{ $delinquentCount === 1 ? 'delinquent account needs' : 'delinquent accounts need' }} attention</strong>
+            <span>{{ $topDelinquent['name'] }}{{ $topDelinquent['room_no'] ? ' (Room ' . $topDelinquent['room_no'] . ')' : '' }} is {{ $topDelinquent['days_overdue'] }} days overdue. Immediate escalation recommended.</span>
+          </div>
+          <a href="{{ route('delinquency.index') }}" class="alert-review-btn" style="text-decoration:none;">Review</a>
         </div>
-        <button class="alert-review-btn" disabled style="opacity:0.6;cursor:not-allowed;">Review</button>
-      </div>
+      @endif
 
       <div class="dash-grid">
         <div>
@@ -254,12 +253,26 @@
 
         <div>
           <div class="dash-card">
-            <div class="dash-card-head"><h2>Recent Activities</h2></div>
+            <div class="dash-card-head"><h2>Recent Activities</h2><a href="{{ route('activity-log.index') }}" class="view-all" style="text-decoration:none;">View All</a></div>
             <div class="activity-tabs">ALL</div>
-            <div class="empty-note">
-              Activity log will appear here once Tenants, Billing, Delinquency, and Tickets are built.
-              <div class="tag">Coming Soon</div>
-            </div>
+            @if($recentActivities->isEmpty())
+              <div class="empty-note">No activity yet.</div>
+            @else
+              <table class="activity-table">
+                <thead>
+                  <tr><th>Date</th><th>Detail</th><th>Type</th></tr>
+                </thead>
+                <tbody>
+                  @foreach($recentActivities as $activity)
+                    <tr>
+                      <td>{{ \Carbon\Carbon::parse($activity['date'])->format('Y/m/d h:i A') }}</td>
+                      <td>{{ $activity['detail'] }}</td>
+                      <td class="type">{{ $activity['type'] }}</td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            @endif
           </div>
         </div>
       </div>
