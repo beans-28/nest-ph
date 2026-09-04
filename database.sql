@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 02, 2026 at 08:24 PM
+-- Generation Time: Sep 04, 2026 at 09:14 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -101,7 +101,10 @@ CREATE TABLE `applications` (
 
 INSERT INTO `applications` (`id`, `inquiry_id`, `tenant_id`, `full_name`, `birthdate`, `gender`, `nationality`, `medical_condition`, `occupation`, `school_company`, `school_company_address`, `contact_number`, `email`, `landline`, `home_address`, `emergency_contact_name`, `emergency_contact_number`, `emergency_contact_email`, `emergency_contact_landline`, `father_name`, `mother_name`, `bed_id`, `preferred_start_date`, `tenant_end_date`, `type_of_tenant`, `id_document_path`, `signed_contract_path`, `dpa_consent`, `status`, `rejection_reason`, `re_application_note`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
 (8, NULL, 13, 'adasdasdas', '2026-08-13', 'female', 'Filipino', 'None', 'adadasda', 'sdadasd', 'sadasdsd', '09223213123', 'adadas@gmail.com', NULL, 'asdadasdasd', 'asdsadasdasd', '092131231232', 'sadasdasdsad@gmail.com', NULL, 'asdads', 'dasdadasd', 34, '2026-09-02', '2026-11-26', 'student', 'application-documents/xdM4EJ5QZo9hWXroCtu3E6kfYOw0GqBkVdzXRbe5.jpg', 'application-documents/shhDmU4ZxvyXMhMj2ZAFmAxJl3STz2QCQBOSdNt6.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 06:16:41', '2026-08-31 10:04:14'),
-(9, NULL, 14, 'Test Tenant 1', '2026-08-12', 'female', 'Filipino', 'None', 'assadasdasddsa', 'sdadsd', 'sdadasd', '09778643524', 'testtenant1@gmail.com', NULL, 'asdasdasd', 'parents', '09573426732', 'parents@gmail.com', NULL, 'Father Parents', 'Mother Parents', 38, '2026-09-03', '2026-12-23', 'student', 'application-documents/uesfq0GVNL0tc8y3dFTloKnAIpePXiTGudlj3azU.jpg', 'application-documents/iY01Hw1mW8CceLrI5195ioAA0VOnRvrPSSK3K5ih.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 10:52:25', '2026-08-31 10:53:46');
+(9, NULL, 14, 'Test Tenant 1', '2026-08-12', 'female', 'Filipino', 'None', 'assadasdasddsa', 'sdadsd', 'sdadasd', '09778643524', 'testtenant1@gmail.com', NULL, 'asdasdasd', 'parents', '09573426732', 'parents@gmail.com', NULL, 'Father Parents', 'Mother Parents', 38, '2026-09-03', '2026-12-23', 'student', 'application-documents/uesfq0GVNL0tc8y3dFTloKnAIpePXiTGudlj3azU.jpg', 'application-documents/iY01Hw1mW8CceLrI5195ioAA0VOnRvrPSSK3K5ih.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 10:52:25', '2026-08-31 10:53:46'),
+(10, NULL, 25, 'Valid ID Check', '2005-06-04', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09867354632', 'validIDcheck@gmail.com', NULL, 'Pampanga', 'ID Mother', '09673526321', 'idparent@gmail.com', '23421', 'ID Father', 'ID Mother', 42, '2026-09-08', '2027-01-20', 'student', 'application-documents/w7J1TMMwHZFVd9utDat9ONw0oNcZSy4mOKuOWSL0.jpg', 'application-documents/mpENdhsErV3jGsQfbEALu6S4JVSPn4l9hIalA0bD.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 05:58:12', '2026-09-04 05:59:16'),
+(11, NULL, 26, 'Valid ID CheckTwo', '2008-07-04', 'male', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09273648212', 'validid2@gmail.com', NULL, 'Sta Mesa', 'Valid Mother', '09364729591', 'validmom@gmail.com', '133334', 'Valid Father', 'Valid Mother', 43, '2026-09-10', '2027-02-16', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:12:49', '2026-09-04 06:13:15'),
+(12, NULL, 27, 'Tenant Check One', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09362537482', 'tenantcheck1@gmail.com', NULL, 'asdasdads', 'Tenant Mother One', '097726373482', 'tenantmom1@gmail.com', '54213', 'Tenant Father One', 'Tenant Mother One', 39, '2026-09-05', '2027-01-16', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:49:48', '2026-09-04 06:50:33');
 
 -- --------------------------------------------------------
 
@@ -124,12 +127,16 @@ CREATE TABLE `beds` (
 
 INSERT INTO `beds` (`id`, `room_id`, `bed_label`, `status`, `created_at`, `updated_at`) VALUES
 (34, 16, 'Bed 1', 'occupied', '2026-08-30 18:57:43', '2026-09-01 10:56:54'),
-(35, 16, 'Bed 2', 'vacant', '2026-08-30 18:57:43', '2026-08-31 10:40:56'),
-(36, 16, 'Bed 3', 'vacant', '2026-08-30 18:57:43', '2026-08-30 18:57:43'),
+(35, 16, 'Bed 2', 'occupied', '2026-08-30 18:57:43', '2026-09-03 07:57:06'),
+(36, 16, 'Bed 3', 'occupied', '2026-08-30 18:57:43', '2026-09-03 11:13:25'),
 (38, 17, 'Bed 1', 'occupied', '2026-08-31 10:49:31', '2026-08-31 11:21:55'),
-(39, 17, 'Bed 2', 'vacant', '2026-08-31 10:49:31', '2026-08-31 10:49:31'),
-(40, 17, 'Bed 3', 'vacant', '2026-08-31 10:49:31', '2026-08-31 10:49:31'),
-(41, 17, 'Bed 4', 'vacant', '2026-08-31 10:49:31', '2026-08-31 10:49:31');
+(39, 17, 'Bed 2', 'occupied', '2026-08-31 10:49:31', '2026-09-04 06:53:18'),
+(40, 17, 'Bed 3', 'vacant', '2026-08-31 10:49:31', '2026-09-03 07:56:27'),
+(41, 17, 'Bed 4', 'vacant', '2026-08-31 10:49:31', '2026-09-03 07:56:27'),
+(42, 18, 'Bed 1', 'reserved', '2026-09-03 06:27:16', '2026-09-04 05:58:12'),
+(43, 18, 'Bed 2', 'occupied', '2026-09-03 06:27:16', '2026-09-04 06:20:12'),
+(44, 18, 'Bed 3', 'vacant', '2026-09-03 06:27:16', '2026-09-03 07:56:27'),
+(45, 18, 'Bed 4', 'vacant', '2026-09-03 06:27:16', '2026-09-03 06:27:16');
 
 -- --------------------------------------------------------
 
@@ -161,7 +168,12 @@ CREATE TABLE `billing_statements` (
 
 INSERT INTO `billing_statements` (`id`, `contract_id`, `tenant_id`, `type`, `billing_period_start`, `billing_period_end`, `due_date`, `base_rent`, `utilities_amount`, `wifi_amount`, `penalty_amount`, `total_amount`, `status`, `created_at`, `updated_at`) VALUES
 (5, 14, 13, 'move_in', '2026-09-02', '2026-09-02', '2026-09-02', 10000.00, 0.00, 0.00, 0.00, 10000.00, 'paid', '2026-08-31 10:04:14', '2026-09-01 10:56:54'),
-(6, 15, 14, 'move_in', '2026-09-03', '2026-09-03', '2026-09-03', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-08-31 10:53:46', '2026-08-31 11:21:55');
+(6, 15, 14, 'move_in', '2026-09-03', '2026-09-03', '2026-09-03', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-08-31 10:53:46', '2026-08-31 11:21:55'),
+(15, 24, 23, 'monthly', '2026-07-24', '2026-08-23', '2026-08-24', 4000.00, 300.00, 200.00, 150.00, 4650.00, 'overdue', '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(16, 25, 24, 'monthly', '2026-08-01', '2026-08-31', '2026-08-23', 5000.00, 0.00, 0.00, 500.00, 5500.00, 'overdue', '2026-09-03 11:25:35', '2026-09-03 13:11:01'),
+(17, 26, 25, 'move_in', '2026-09-08', '2026-09-08', '2026-09-08', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'unpaid', '2026-09-04 05:59:16', '2026-09-04 05:59:16'),
+(18, 27, 26, 'move_in', '2026-09-10', '2026-09-10', '2026-09-10', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'paid', '2026-09-04 06:13:15', '2026-09-04 06:20:12'),
+(19, 28, 27, 'move_in', '2026-09-05', '2026-09-05', '2026-09-05', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-09-04 06:50:33', '2026-09-04 06:53:18');
 
 -- --------------------------------------------------------
 
@@ -264,6 +276,27 @@ CREATE TABLE `escalation_logs` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `escalation_logs`
+--
+
+INSERT INTO `escalation_logs` (`id`, `tenant_id`, `billing_id`, `stage`, `action_type`, `message_content`, `status`, `performed_by`, `created_at`, `updated_at`) VALUES
+(43, 23, 15, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(44, 23, 15, 2, 'sms_reminder_day1', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(45, 23, 15, 2, 'sms_reminder_day3', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(46, 23, 15, 2, 'sms_reminder_day7', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(47, 23, 15, 3, 'portal_restricted', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(48, 23, 15, 4, 'emergency_contact_notified', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(49, 23, 15, 5, 'demand_letter_generated', 'demand-letters/23_15.pdf', 'sent', NULL, '2026-09-03 07:58:15', '2026-09-03 07:58:15'),
+(89, 24, 16, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-03 13:11:01', '2026-09-03 13:11:01'),
+(90, 24, 16, 2, 'sms_reminder_day1', '[TEST SEED — not actually sent] Reminder: overdue balance.', 'sent', NULL, '2026-09-03 13:11:01', '2026-09-03 13:11:01'),
+(91, 24, 16, 2, 'sms_reminder_day3', '[TEST SEED — not actually sent] Reminder: overdue balance.', 'sent', NULL, '2026-09-03 13:11:01', '2026-09-03 13:11:01'),
+(92, 24, 16, 2, 'sms_reminder_day7', '[TEST SEED — not actually sent] URGENT: overdue balance.', 'sent', NULL, '2026-09-03 13:11:01', '2026-09-03 13:11:01'),
+(93, 24, 16, 3, 'portal_restricted', '[TEST SEED — not actually sent] Portal access restricted.', 'sent', NULL, '2026-09-03 13:11:01', '2026-09-03 13:11:01'),
+(94, 24, 16, 4, 'emergency_contact_notified', '[TEST SEED — not actually sent] Emergency contact notified.', 'sent', NULL, '2026-09-03 13:11:01', '2026-09-03 13:11:01'),
+(95, 24, 16, 5, 'demand_letter_generated', 'demand-letters/(test-seed-no-real-pdf).pdf', 'sent', NULL, '2026-09-03 13:11:01', '2026-09-03 13:11:01'),
+(96, 24, 16, 6, 'delinquent_blacklisted', NULL, 'resolved', NULL, '2026-09-03 13:11:01', '2026-09-03 13:11:01');
 
 -- --------------------------------------------------------
 
@@ -409,7 +442,12 @@ CREATE TABLE `lease_contracts` (
 
 INSERT INTO `lease_contracts` (`id`, `application_id`, `tenant_id`, `bed_id`, `inquiry_id`, `start_date`, `end_date`, `monthly_rate`, `discount_amount`, `esign_status`, `signed_document_url`, `signed_at`, `status`, `termination_reason`, `terminated_at`, `last_renewed_at`, `last_renewed_by`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
 (14, 8, 13, 34, NULL, '2026-09-02', '2026-11-26', 5000.00, NULL, 'signed', 'signed-contracts/5FYVdnBPMocx6j22WH29lux4n25icoqRuQRrEhkW.pdf', '2026-08-31 16:00:00', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:04:14', '2026-09-01 11:57:42'),
-(15, 9, 14, 38, NULL, '2026-09-03', '2026-12-23', 2125.00, NULL, 'signed', 'signed-contracts/mezX8KAOVqUaMIzhmsqxuYfocP0dJcPPNPnklwW6.pdf', '2026-08-31 16:00:00', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:53:46', '2026-09-01 11:23:04');
+(15, 9, 14, 38, NULL, '2026-09-03', '2026-12-23', 2125.00, NULL, 'signed', 'signed-contracts/mezX8KAOVqUaMIzhmsqxuYfocP0dJcPPNPnklwW6.pdf', '2026-08-31 16:00:00', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:53:46', '2026-09-01 11:23:04'),
+(24, NULL, 23, 35, NULL, '2026-07-03', NULL, 4000.00, NULL, 'pending', NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(25, NULL, 24, 36, NULL, '2026-07-03', NULL, 5000.00, NULL, 'signed', NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-03 11:13:25', '2026-09-03 11:13:25'),
+(26, 10, 25, 42, NULL, '2026-09-08', '2027-01-20', 1625.00, NULL, 'signed', 'signed-contracts/kWCtNSE2guatuGtBSxT21hhi4yGq7NrJvElRnlXE.pdf', '2026-09-04 06:02:02', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 05:59:16', '2026-09-04 06:02:02'),
+(27, 11, 26, 43, NULL, '2026-09-10', '2027-02-16', 1625.00, NULL, 'pending', NULL, NULL, 'pending', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 06:13:15', '2026-09-04 06:13:15'),
+(28, 12, 27, 39, NULL, '2026-09-05', '2027-01-16', 2125.00, NULL, 'signed', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', '2026-09-04 06:50:33', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 06:50:33', '2026-09-04 06:50:33');
 
 -- --------------------------------------------------------
 
@@ -500,7 +538,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (49, '2026_09_08_000001_add_portal_restricted_to_tenants_table', 28),
 (50, '2026_09_08_000002_add_billing_id_action_type_index_to_escalation_logs_table', 29),
 (51, '2026_09_08_000003_add_status_due_date_index_to_billing_statements_table', 29),
-(52, '2026_09_08_000004_add_escalation_paused_to_tenants_table', 30);
+(52, '2026_09_08_000004_add_escalation_paused_to_tenants_table', 30),
+(53, '2026_09_04_134402_add_profile_fields_to_tenants_table', 31),
+(54, '2026_09_04_140701_change_tenant_type_to_string_on_tenants_table', 32);
 
 -- --------------------------------------------------------
 
@@ -556,7 +596,10 @@ CREATE TABLE `payments` (
 
 INSERT INTO `payments` (`id`, `billing_id`, `tenant_id`, `amount_paid`, `payment_method`, `reference_number`, `payment_date`, `status`, `proof_path`, `notes`, `review_notes`, `reviewed_by`, `reviewed_at`, `recorded_by`, `created_at`) VALUES
 (3, 5, 13, 10000.00, 'gcash', '1234 5467 8162', '2026-08-31', 'approved', 'payment-proofs/ypW8WoUCXSEIwMVyWEXnv1tTS7hIyxZv3itPcP6G.png', 'Time of payment: 18:19. Here po', NULL, 3, '2026-09-01 10:56:54', NULL, '2026-08-31 10:19:22'),
-(4, 6, 14, 4250.00, 'gcash', '1234 5467 8161', '2026-08-31', 'approved', 'payment-proofs/Mi8dv1TOqcEKFhjqS8y37ACZbze4b233k0yVoikl.png', 'Time of payment: 18:56. sadasd', NULL, 3, '2026-08-31 11:21:55', NULL, '2026-08-31 10:56:26');
+(4, 6, 14, 4250.00, 'gcash', '1234 5467 8161', '2026-08-31', 'approved', 'payment-proofs/Mi8dv1TOqcEKFhjqS8y37ACZbze4b233k0yVoikl.png', 'Time of payment: 18:56. sadasd', NULL, 3, '2026-08-31 11:21:55', NULL, '2026-08-31 10:56:26'),
+(5, 17, 25, 3250.00, 'gcash', '1234 5467 8163', '2026-09-04', 'pending', 'payment-proofs/OzbHZkJeSFxSM89zLztosYAY4SjhnJMT2nL8Y9YL.png', 'Time of payment: 14:00. paid', NULL, NULL, NULL, NULL, '2026-09-04 06:00:36'),
+(6, 18, 26, 3250.00, 'gcash', '1234 5467 8165', '2026-09-04', 'approved', 'payment-proofs/CBnUuknJf3uSv95dRLtFY0woh0Cy8uBuhBgLsPz8.png', 'Time of payment: 14:14. paid', NULL, 3, '2026-09-04 06:20:12', NULL, '2026-09-04 06:14:10'),
+(7, 19, 27, 4250.00, 'gcash', '1234 5467 8176', '2026-09-04', 'approved', 'payment-proofs/aj8kAipxg9LVurlIRYX9fchoMdHg91AFuGEDk4ch.png', 'Time of payment: 14:51.', NULL, 3, '2026-09-04 06:53:18', NULL, '2026-09-04 06:51:48');
 
 -- --------------------------------------------------------
 
@@ -674,8 +717,9 @@ CREATE TABLE `rooms` (
 --
 
 INSERT INTO `rooms` (`id`, `floor_id`, `room_no`, `room_type`, `amenities`, `monthly_rate`, `status`, `vr_asset_path`, `vr_caption`, `vr_visibility`, `created_at`, `updated_at`) VALUES
-(16, 3, '1', 'Standard', '[]', 5000.00, 'available', NULL, NULL, 'draft', '2026-08-30 18:57:43', '2026-08-30 18:57:43'),
-(17, 3, '2', 'Standard', '[]', 8500.00, 'available', NULL, NULL, 'draft', '2026-08-31 10:49:31', '2026-08-31 10:49:31');
+(16, 3, '1', 'Standard', '[]', 5000.00, 'full', NULL, NULL, 'draft', '2026-08-30 18:57:43', '2026-09-03 11:13:25'),
+(17, 3, '2', 'Standard', '[]', 8500.00, 'available', NULL, NULL, 'draft', '2026-08-31 10:49:31', '2026-09-03 07:56:27'),
+(18, 3, '3', 'Standard', '[]', 6500.00, 'available', NULL, NULL, 'draft', '2026-09-03 06:27:16', '2026-09-03 06:27:16');
 
 -- --------------------------------------------------------
 
@@ -712,8 +756,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('2Q2u45rIgFM9F75eIe5ZykFKZ2a0YmshnQQAcEkP', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiT2dQQ0RNUlJDVXZyUkppeTZ0WjlPSFdXSE93cmZLMER3dllnNExSOCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kZWxpbnF1ZW5jeSI7czo1OiJyb3V0ZSI7czoxNzoiZGVsaW5xdWVuY3kuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1788373381),
-('H6qg51cbaBWAcrH4nuffIo3Dg0LR0UXLUA376XLI', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMlNWZEhGbkZydThmODVGWXNxM25xU1A1RFFVUDhuRktrMHowYWpFdyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788372518);
+('33paZXAhK38i5SNrVjbRQiEVNyuzqobx7LithUx1', 23, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRnI2NjZwOUMxa3ptRENtQUx5R3JvZWVNUFlMekRma0tBcGpYZ3RwYSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6OToiZGFzaGJvYXJkIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MjM7fQ==', 1788504871),
+('gtyGLsF4dIq8UMv3EbK1WspjRRC71wCjlrIUJb7o', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWFBEM3NnMzhqUENxZ1dVbzRJMVN3T21lNXBqc0RQU25sajQxckU4ZyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788500420);
 
 -- --------------------------------------------------------
 
@@ -729,7 +773,14 @@ CREATE TABLE `tenants` (
   `email` varchar(150) DEFAULT NULL,
   `emergency_contact_name` varchar(150) DEFAULT NULL,
   `emergency_contact_number` varchar(20) DEFAULT NULL,
+  `date_of_birth` date DEFAULT NULL,
+  `home_address` varchar(255) DEFAULT NULL,
+  `tenant_type` varchar(30) DEFAULT NULL,
+  `id_document_path` varchar(255) DEFAULT NULL,
+  `signed_contract_path` varchar(255) DEFAULT NULL,
   `status` enum('pending_move_in_payment','active','archived') NOT NULL DEFAULT 'pending_move_in_payment',
+  `deactivation_reason` varchar(500) DEFAULT NULL,
+  `deactivated_at` timestamp NULL DEFAULT NULL,
   `is_blacklisted` tinyint(1) NOT NULL DEFAULT 0,
   `portal_restricted` tinyint(1) NOT NULL DEFAULT 0,
   `escalation_paused` tinyint(1) NOT NULL DEFAULT 0,
@@ -741,9 +792,14 @@ CREATE TABLE `tenants` (
 -- Dumping data for table `tenants`
 --
 
-INSERT INTO `tenants` (`id`, `user_id`, `full_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `status`, `is_blacklisted`, `portal_restricted`, `escalation_paused`, `created_at`, `updated_at`) VALUES
-(13, 18, 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', 'active', 0, 0, 0, '2026-08-31 10:04:14', '2026-09-01 10:56:54'),
-(14, 19, 'Test Tenant 1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', 'active', 0, 0, 0, '2026-08-31 10:53:46', '2026-08-31 11:21:55');
+INSERT INTO `tenants` (`id`, `user_id`, `full_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `date_of_birth`, `home_address`, `tenant_type`, `id_document_path`, `signed_contract_path`, `status`, `deactivation_reason`, `deactivated_at`, `is_blacklisted`, `portal_restricted`, `escalation_paused`, `created_at`, `updated_at`) VALUES
+(13, 18, 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, 0, 0, 0, '2026-08-31 10:04:14', '2026-09-01 10:56:54'),
+(14, 19, 'Test Tenant 1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, 0, 0, 0, '2026-08-31 10:53:46', '2026-08-31 11:21:55'),
+(23, NULL, 'Test Delinquent - Stage 5 Only', '00000000000', 'test.delinquent.stage5only@nestph.test', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, 0, 1, 0, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(24, 20, 'Delinquency Test Tenant', '09171234567', 'delinquency.test@nestph.test', 'Test Emergency Contact', '09179876543', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, 1, 1, 0, '2026-09-03 11:13:24', '2026-09-03 13:11:01'),
+(25, 21, 'Valid ID Check', '09867354632', 'validIDcheck@gmail.com', 'ID Mother', '09673526321', NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, 0, 0, 0, '2026-09-04 05:59:16', '2026-09-04 05:59:16'),
+(26, 22, 'Valid ID CheckTwo', '09273648212', 'validid2@gmail.com', 'Valid Mother', '09364729591', '2008-07-04', 'Sta Mesa', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 'active', NULL, NULL, 0, 0, 0, '2026-09-04 06:13:15', '2026-09-04 06:20:12'),
+(27, 23, 'Tenant Check One', '09362537482', 'tenantcheck1@gmail.com', 'Tenant Mother One', '097726373482', '2026-09-01', 'asdasdads', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 'active', NULL, NULL, 0, 0, 0, '2026-09-04 06:50:33', '2026-09-04 06:53:18');
 
 -- --------------------------------------------------------
 
@@ -775,7 +831,11 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `ro
 (9, 'John Dela Cruz', 'delacruz@gmail.com', NULL, '$2y$12$k3PCXiSoLTXe4G3NnIT24eaeQtjFdK3ckRw0kMS71z5IYiu.Jjt9a', 1, 1, NULL, '2026-08-30 06:11:32', '2026-08-30 06:11:32'),
 (10, 'Carla Bugasto', 'carla@gmail.com', NULL, '$2y$12$zpurO4Udqsfep0Dga16Emuuo29pZblCvUUzyuZS1V0tFID9ToKEm2', 1, 1, NULL, '2026-08-30 19:05:31', '2026-08-30 19:05:31'),
 (18, 'adasdasdas', 'adadas@gmail.com', NULL, '$2y$12$jYvF.c77Jy9w5.7rMNqogeHuWorg/.ULCOXujNRuZeDdZ24d1/yn2', 1, 1, NULL, '2026-08-31 10:04:14', '2026-08-31 10:04:14'),
-(19, 'Test Tenant 1', 'testtenant1@gmail.com', NULL, '$2y$12$3B5WRI0MHOAO5U/p7mPhR.QeXvj.ZEQvZiubtg9/h1.J0wY/V8UoG', 1, 1, NULL, '2026-08-31 10:53:46', '2026-08-31 10:53:46');
+(19, 'Test Tenant 1', 'testtenant1@gmail.com', NULL, '$2y$12$3B5WRI0MHOAO5U/p7mPhR.QeXvj.ZEQvZiubtg9/h1.J0wY/V8UoG', 1, 1, NULL, '2026-08-31 10:53:46', '2026-08-31 10:53:46'),
+(20, 'Delinquency Test Tenant', 'delinquency.test@nestph.test', NULL, '$2y$12$Cs/NIVuc..mH3dMtzC4y6eM1g/Cidfim9eTipl3jefYr6XgQ34S7O', 1, 1, NULL, '2026-09-03 11:13:24', '2026-09-03 13:11:01'),
+(21, 'Valid ID Check', 'validIDcheck@gmail.com', NULL, '$2y$12$2Jut6k1qH/hlL0YX9zdste2jp9SN/AjlAWPHnrWJlsKdRtCaAghCG', 1, 1, NULL, '2026-09-04 05:59:16', '2026-09-04 05:59:16'),
+(22, 'Valid ID CheckTwo', 'validid2@gmail.com', NULL, '$2y$12$wmUAZqRpGFnyrEU4mHMV5OPW5MDbmSU47lIhy6VGEXD5fK4UY2PWu', 1, 1, NULL, '2026-09-04 06:13:15', '2026-09-04 06:35:23'),
+(23, 'Tenant Check One', 'tenantcheck1@gmail.com', NULL, '$2y$12$86PWBv4cs27dKuFh9BiyFe1AYppLjEp3PHkd3CYXoUitpBBmI6lwi', 1, 1, NULL, '2026-09-04 06:50:33', '2026-09-04 06:50:33');
 
 -- --------------------------------------------------------
 
@@ -1081,19 +1141,19 @@ ALTER TABLE `admin_privileges`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `beds`
 --
 ALTER TABLE `beds`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `billing_statements`
 --
 ALTER TABLE `billing_statements`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `damages`
@@ -1111,7 +1171,7 @@ ALTER TABLE `dormitory_profile`
 -- AUTO_INCREMENT for table `escalation_logs`
 --
 ALTER TABLE `escalation_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1141,7 +1201,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `lease_contracts`
 --
 ALTER TABLE `lease_contracts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `maintenance_tickets`
@@ -1153,13 +1213,13 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `penalties`
@@ -1189,7 +1249,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `room_photos`
@@ -1201,13 +1261,13 @@ ALTER TABLE `room_photos`
 -- AUTO_INCREMENT for table `tenants`
 --
 ALTER TABLE `tenants`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `vr_hotspots`
