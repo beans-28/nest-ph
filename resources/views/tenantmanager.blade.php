@@ -108,7 +108,7 @@
   .status-text.active{ color:var(--status-vacant); }
   .status-text.delinquent{ color:var(--status-occupied); }
   .status-text.pending_move_in_payment{ color:var(--status-maintenance); }
-  .status-text.archived{ color:var(--text-light); }
+  .status-text.inactive{ color:var(--text-light); }
 
   .row-actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .row-actions .btn{ padding:8px 14px; }
@@ -221,7 +221,7 @@
           <option value="active">Active</option>
           <option value="delinquent">Delinquent</option>
           <option value="pending_move_in_payment">Pending Move-In</option>
-          <option value="archived">Archived</option>
+          <option value="inactive">Inactive</option>
         </select>
                 <select id="tenantTypeFilter">
           <option value="">All Tenant Types</option>
@@ -327,7 +327,9 @@
           <select id="editTenantType">
             <option value="">Select type</option>
             <option value="student">Student</option>
-            <option value="employee">Employee</option>
+            <option value="working_student">Working Student</option>
+            <option value="full_time_employee">Full-time Employee</option>
+            <option value="part_time_employee">Part-time Employee</option>
             <option value="transient_worker">Transient Worker</option>
           </select>
         </div>
@@ -363,7 +365,7 @@
         <label for="statusSelect">New Status</label>
         <select id="statusSelect">
           <option value="active">Active</option>
-          <option value="archived">Archived (Deactivate)</option>
+          <option value="inactive">Inactive (Deactivate)</option>
         </select>
       </div>
       <div class="fld" id="statusReasonFld" style="display:none;">
@@ -394,7 +396,7 @@
   const PAGE_SIZE = 10;
 
   const $ = id => document.getElementById(id);
-  const STATUS_LABEL = { active:'Active', delinquent:'Delinquent', pending_move_in_payment:'Pending Move-In', archived:'Archived' };
+  const STATUS_LABEL = { active:'Active', delinquent:'Delinquent', pending_move_in_payment:'Pending Move-In', inactive:'Inactive' };
 
   document.querySelectorAll('[data-href]').forEach(el => {
     el.addEventListener('click', () => { window.location.href = el.dataset.href; });
@@ -579,6 +581,15 @@
           ${t.id_document_url ? `<a class="doc-link" href="${t.id_document_url}" target="_blank">View Valid ID</a>` : '<span class="v empty-v">No valid ID on file</span>'}
           ${t.signed_contract_url ? `<a class="doc-link" href="${t.signed_contract_url}" target="_blank">View Signed Contract</a>` : ''}
         </div>
+        ${t.status === 'inactive' ? `
+        <div class="sec">
+          <h3>Deactivation Record</h3>
+          <div class="kv">
+            <div><div class="k">Reason</div>${val(t.deactivation_reason)}</div>
+            <div><div class="k">Date</div>${val(t.deactivated_at)}</div>
+            <div><div class="k">Deactivated By</div>${val(t.deactivated_by_name)}</div>
+          </div>
+        </div>` : ''}
       `;
     } catch(e){
       $('drawerBody').innerHTML = `<p style="color:var(--status-occupied);">${esc(e.message)}</p>`;
@@ -600,6 +611,7 @@
     $('addIdDocument').value = '';
     $('addSignedContract').value = '';
     $('addRoomSelect').innerHTML = '<option value="">Loading rooms…</option>';
+    $('addRoomSelect').disabled = false;
     $('addBedSelect').innerHTML = '<option value="">Select a room first</option>';
   }
 
@@ -607,8 +619,23 @@
     fetch('/public-api/rooms')
       .then(r => r.json())
       .then(rooms => {
+        // Table 15, step 6: only rooms with at least one vacant bed should
+        // be selectable, and the dropdown should show room type. If
+        // nothing at all is available, show "No Available Rooms" rather
+        // than an empty-looking dropdown.
+        const available = rooms.filter(r => (r.beds || []).some(b => b.status === 'vacant'));
+        if(available.length === 0){
+          roomSelect.innerHTML = '<option value="">No Available Rooms</option>';
+          roomSelect.disabled = true;
+          return;
+        }
+        roomSelect.disabled = false;
         roomSelect.innerHTML = '<option value="">Select a room</option>' +
-          rooms.map(r => `<option value="${r.id}">${esc(r.room_no)}</option>`).join('');
+          available.map(r => {
+            const vacantCount = (r.beds || []).filter(b => b.status === 'vacant').length;
+            const type = r.room_type ? ` (${esc(r.room_type)})` : '';
+            return `<option value="${r.id}">Room ${esc(r.room_no)}${type} — ${vacantCount} bed${vacantCount === 1 ? '' : 's'} available</option>`;
+          }).join('');
       })
       .catch(() => { roomSelect.innerHTML = '<option value="">Could not load rooms</option>'; });
 
@@ -620,7 +647,7 @@
         .then(beds => {
           bedSelect.innerHTML = beds.length
             ? '<option value="">Select a bed</option>' + beds.map(b => `<option value="${b.id}">${esc(b.bed_label)}</option>`).join('')
-            : '<option value="">No vacant beds in this room</option>';
+            : '<option value="">No Available Rooms</option>';
         })
         .catch(() => { bedSelect.innerHTML = '<option value="">Could not load beds</option>'; });
     };
@@ -731,13 +758,13 @@
     const t = tenants.find(x => x.id === id);
     $('statusModalError').classList.remove('visible');
     $('statusTenantId').value = id;
-    $('statusSelect').value = t && t.status === 'archived' ? 'active' : 'archived';
-    $('statusReasonFld').style.display = $('statusSelect').value === 'archived' ? 'block' : 'none';
+    $('statusSelect').value = t && t.status === 'inactive' ? 'active' : 'inactive';
+    $('statusReasonFld').style.display = $('statusSelect').value === 'inactive' ? 'block' : 'none';
     $('statusReason').value = '';
     $('statusModal').classList.add('open');
   }
   $('statusSelect').addEventListener('change', function(){
-    $('statusReasonFld').style.display = this.value === 'archived' ? 'block' : 'none';
+    $('statusReasonFld').style.display = this.value === 'inactive' ? 'block' : 'none';
   });
   $('cancelStatusBtn').addEventListener('click', () => $('statusModal').classList.remove('open'));
 
@@ -746,7 +773,7 @@
     errEl.classList.remove('visible');
     const status = $('statusSelect').value;
     const reason = $('statusReason').value.trim();
-    if(status === 'archived' && !reason){
+    if(status === 'inactive' && !reason){
       errEl.textContent = 'A reason is required to deactivate this account.';
       errEl.classList.add('visible');
       return;

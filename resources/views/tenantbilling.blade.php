@@ -285,6 +285,9 @@
   .modal-payment-row div{ display:flex; justify-content:space-between; margin-bottom:4px; }
   .modal-payment-row div span:first-child{ color:var(--text-light); }
   .modal-close-btn{ margin-top:10px; width:100%; background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:13px; font-weight:600; cursor:pointer; }
+  .toast{ position:fixed; bottom:22px; right:22px; background:var(--green-dark); color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; display:none; z-index:99; box-shadow:0 6px 18px rgba(0,0,0,.2); max-width:320px; }
+  .toast.error{ background:#c0463d; }
+  .toast.visible{ display:block; }
 
   /* ===== Stage 6 full takeover: same treatment as the Delinquency page --
      a blacklisted tenant gets no billing UI at all, not even the lock
@@ -657,6 +660,14 @@
     return '₱' + Number(n ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  function toast(msg, isError){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.toggle('error', !!isError);
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 3500);
+  }
+
   function monthLabel(d){
     if(!d) return '—';
     return new Date(d).toLocaleDateString('en-PH', { year: 'numeric', month: 'short' });
@@ -776,7 +787,6 @@
       // proof against.
       document.getElementById('mainBalanceAmount').textContent = peso(totalOwed);
       document.getElementById('mainBalanceDue').textContent = 'Outstanding penalty — added to your next bill';
-      document.getElementById('mainPayNowBtn').disabled = true;
       document.getElementById('breakdownRows').innerHTML = `
         <div class="breakdown-row">
           <div class="breakdown-label">Penalties</div>
@@ -787,7 +797,6 @@
     } else {
       document.getElementById('mainBalanceAmount').textContent = peso(0);
       document.getElementById('mainBalanceDue').textContent = 'No outstanding balance';
-      document.getElementById('mainPayNowBtn').disabled = true;
       document.getElementById('breakdownRows').innerHTML = '<div class="empty-note">Nothing due right now.</div>';
     }
 
@@ -840,7 +849,14 @@
 
   document.getElementById('mainPayNowBtn').addEventListener('click', () => {
     const payable = allBills.filter(b => ['unpaid', 'partial', 'overdue'].includes(b.status));
-    if(payable[0]) startPaymentFlow(payable[0].id);
+    const unbilledPenalties = Number(billingSummary?.unbilled_penalties || 0);
+    if(payable[0]){
+      startPaymentFlow(payable[0].id);
+    } else if(unbilledPenalties > 0){
+      toast("You have a pending penalty, but it's not on a payable statement yet. It will be added automatically to your next bill.");
+    } else {
+      toast('You have no outstanding balance to pay right now.');
+    }
   });
 
   function startPaymentFlow(billId){
@@ -1035,6 +1051,8 @@
   }catch(e){ /* ignore demo errors */ }
 })();
 </script>
+
+<div class="toast" id="toast"></div>
 
 </body>
 </html>
