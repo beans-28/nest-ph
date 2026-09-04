@@ -364,6 +364,11 @@ class ApplicationController extends Controller
             $discountAmount = $data['discount_amount'] ?? 0;
             $monthlyRate = max(0, $baseRate - $discountAmount);
 
+            // Bug fix: the applicant already signed and uploaded their
+            // contract during Apply for Occupancy (Table 13, step 6) —
+            // this was previously ignored, forcing the admin to re-upload
+            // the exact same document again on Lease Management before the
+            // contract could go Active. Now it's carried straight over.
             $contract = LeaseContract::create([
                 'application_id' => $application->id,
                 'tenant_id' => $tenant->id,
@@ -375,8 +380,10 @@ class ApplicationController extends Controller
                 'end_date' => $data['end_date'] ?? $application->tenant_end_date ?? null,
                 'monthly_rate' => $monthlyRate,
                 'discount_amount' => $data['discount_amount'] ?? null,
-                'esign_status' => 'pending',
-                'status' => 'pending', // becomes 'active' once the contract is signed
+                'esign_status' => $application->signed_contract_path ? 'signed' : 'pending',
+                'signed_document_url' => $application->signed_contract_path,
+                'signed_at' => $application->signed_contract_path ? now() : null,
+                'status' => $application->signed_contract_path ? 'active' : 'pending',
                 'created_by' => $request->user()?->id,
                 'approved_by' => $request->user()?->id,
             ]);
@@ -712,6 +719,14 @@ class ApplicationController extends Controller
             'email' => $application->email,
             'emergency_contact_name' => $application->emergency_contact_name,
             'emergency_contact_number' => $application->emergency_contact_number,
+            // Bug fix: these five were being silently dropped on approval --
+            // they exist on the application (from the online form) but were
+            // never carried over onto the tenant record itself.
+            'date_of_birth' => $application->birthdate,
+            'home_address' => $application->home_address,
+            'tenant_type' => $application->type_of_tenant,
+            'id_document_path' => $application->id_document_path,
+            'signed_contract_path' => $application->signed_contract_path,
             'status' => 'pending_move_in_payment',
         ]);
 

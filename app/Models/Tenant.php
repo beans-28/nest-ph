@@ -23,12 +23,21 @@ class Tenant extends Model
         'status',
         'portal_restricted',
         'escalation_paused',
+        'date_of_birth',
+        'home_address',
+        'tenant_type',
+        'id_document_path',
+        'signed_contract_path',
+        'deactivation_reason',
+        'deactivated_at',
     ];
 
     protected $casts = [
         'is_blacklisted' => 'boolean',
         'portal_restricted' => 'boolean',
         'escalation_paused' => 'boolean',
+        'date_of_birth' => 'date',
+        'deactivated_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

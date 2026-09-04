@@ -30,3 +30,25 @@ Artisan::command('inspire', function () {
 Schedule::call(function () {
     app(BillingController::class)->generate(new \Illuminate\Http\Request());
 })->daily();
+
+/**
+ * Use Case Report Tables 23-28 (Delinquency Escalation): overdue tenants
+ * should advance through the SMS/portal-restriction/blacklist ladder
+ * automatically each day, not only when someone runs the command by hand.
+ *
+ * Same inert-without-a-real-cron situation as the billing schedule above --
+ * see that comment for local dev options (schedule:work, or a real cron
+ * entry on deployment).
+ *
+ * IMPORTANT — read before this ever actually runs on a live schedule:
+ * EscalationService::DAYS_PER_STAGE is still set to 1 (a placeholder for
+ * fast local testing/demo). Once this is wired to a real cron on a real
+ * server, that constant is what decides how fast a genuinely overdue tenant
+ * gets SMS'd, portal-restricted, and blacklisted -- 1 day per stage means a
+ * tenant who misses a payment could be fully blacklisted in about a week.
+ * This MUST be revisited with a real policy decision (see
+ * app/Services/EscalationService.php) before deploying anywhere tenants
+ * actually see it -- don't let this schedule entry go live with the
+ * placeholder value still in place.
+ */
+Schedule::command('escalation:process')->daily();

@@ -18,6 +18,7 @@ use App\Http\Controllers\VrTourController;
 use App\Http\Controllers\TenantOnboardingController;
 use App\Http\Controllers\DelinquencyController;
 use App\Http\Controllers\TenantDelinquencyController;
+use App\Http\Controllers\TenantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -171,6 +172,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/delinquency/{tenant}/demand-letter', [DelinquencyController::class, 'downloadDemandLetter']);
     Route::post('/delinquency/{tenant}/eviction-notice', [DelinquencyController::class, 'issueEvictionNotice']);
     Route::get('/delinquency/{tenant}/eviction-notice', [DelinquencyController::class, 'downloadEvictionNotice']);
+
+    // --- Tenant Manager (Manage Tenant Records / Add New Tenant / Deactivate) ---
+    Route::get('/tenant-manager', [TenantController::class, 'page'])->name('tenant-manager.index');
+    Route::get('/tenant-manager/{tenant}', [TenantController::class, 'show']);
+    Route::post('/tenant-manager', [TenantController::class, 'store']);
+    Route::post('/tenant-manager/{tenant}', [TenantController::class, 'update']);
+    Route::post('/tenant-manager/{tenant}/status', [TenantController::class, 'setStatus']);
 });
 
 /*

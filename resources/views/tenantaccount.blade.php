@@ -337,7 +337,9 @@
           banner.classList.add('visible', 'error');
         }
       } else {
-        banner.textContent = 'Something went wrong. Please try again.';
+        let data = {};
+        try { data = await res.json(); } catch (e) { /* not JSON, ignore */ }
+        banner.textContent = data.message || `Something went wrong (error ${res.status}). Please try again.`;
         banner.classList.add('visible', 'error');
       }
     } catch (err) {
