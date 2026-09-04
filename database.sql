@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 04, 2026 at 09:14 AM
+-- Generation Time: Sep 04, 2026 at 09:46 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -540,7 +540,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (51, '2026_09_08_000003_add_status_due_date_index_to_billing_statements_table', 29),
 (52, '2026_09_08_000004_add_escalation_paused_to_tenants_table', 30),
 (53, '2026_09_04_134402_add_profile_fields_to_tenants_table', 31),
-(54, '2026_09_04_140701_change_tenant_type_to_string_on_tenants_table', 32);
+(54, '2026_09_04_140701_change_tenant_type_to_string_on_tenants_table', 32),
+(55, '2026_09_04_153627_add_deactivated_by_to_tenants_table', 33);
 
 -- --------------------------------------------------------
 
@@ -756,8 +757,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('33paZXAhK38i5SNrVjbRQiEVNyuzqobx7LithUx1', 23, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRnI2NjZwOUMxa3ptRENtQUx5R3JvZWVNUFlMekRma0tBcGpYZ3RwYSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6OToiZGFzaGJvYXJkIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MjM7fQ==', 1788504871),
-('gtyGLsF4dIq8UMv3EbK1WspjRRC71wCjlrIUJb7o', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWFBEM3NnMzhqUENxZ1dVbzRJMVN3T21lNXBqc0RQU25sajQxckU4ZyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788500420);
+('6hpqdYUvLeMynkip8ff8kgnN3LX8SCECwjv2jfYZ', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiUWptakw1Zk5MQThXZ2U5TTJQdUh1cnhNRWZ6YVR4bjdNWXdzekI4ZyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90ZW5hbnQtbWFuYWdlciI7czo1OiJyb3V0ZSI7czoyMDoidGVuYW50LW1hbmFnZXIuaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1788507846);
 
 -- --------------------------------------------------------
 
@@ -781,6 +781,7 @@ CREATE TABLE `tenants` (
   `status` enum('pending_move_in_payment','active','archived') NOT NULL DEFAULT 'pending_move_in_payment',
   `deactivation_reason` varchar(500) DEFAULT NULL,
   `deactivated_at` timestamp NULL DEFAULT NULL,
+  `deactivated_by` bigint(20) UNSIGNED DEFAULT NULL,
   `is_blacklisted` tinyint(1) NOT NULL DEFAULT 0,
   `portal_restricted` tinyint(1) NOT NULL DEFAULT 0,
   `escalation_paused` tinyint(1) NOT NULL DEFAULT 0,
@@ -792,14 +793,14 @@ CREATE TABLE `tenants` (
 -- Dumping data for table `tenants`
 --
 
-INSERT INTO `tenants` (`id`, `user_id`, `full_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `date_of_birth`, `home_address`, `tenant_type`, `id_document_path`, `signed_contract_path`, `status`, `deactivation_reason`, `deactivated_at`, `is_blacklisted`, `portal_restricted`, `escalation_paused`, `created_at`, `updated_at`) VALUES
-(13, 18, 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, 0, 0, 0, '2026-08-31 10:04:14', '2026-09-01 10:56:54'),
-(14, 19, 'Test Tenant 1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, 0, 0, 0, '2026-08-31 10:53:46', '2026-08-31 11:21:55'),
-(23, NULL, 'Test Delinquent - Stage 5 Only', '00000000000', 'test.delinquent.stage5only@nestph.test', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, 0, 1, 0, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(24, 20, 'Delinquency Test Tenant', '09171234567', 'delinquency.test@nestph.test', 'Test Emergency Contact', '09179876543', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, 1, 1, 0, '2026-09-03 11:13:24', '2026-09-03 13:11:01'),
-(25, 21, 'Valid ID Check', '09867354632', 'validIDcheck@gmail.com', 'ID Mother', '09673526321', NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, 0, 0, 0, '2026-09-04 05:59:16', '2026-09-04 05:59:16'),
-(26, 22, 'Valid ID CheckTwo', '09273648212', 'validid2@gmail.com', 'Valid Mother', '09364729591', '2008-07-04', 'Sta Mesa', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 'active', NULL, NULL, 0, 0, 0, '2026-09-04 06:13:15', '2026-09-04 06:20:12'),
-(27, 23, 'Tenant Check One', '09362537482', 'tenantcheck1@gmail.com', 'Tenant Mother One', '097726373482', '2026-09-01', 'asdasdads', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 'active', NULL, NULL, 0, 0, 0, '2026-09-04 06:50:33', '2026-09-04 06:53:18');
+INSERT INTO `tenants` (`id`, `user_id`, `full_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `date_of_birth`, `home_address`, `tenant_type`, `id_document_path`, `signed_contract_path`, `status`, `deactivation_reason`, `deactivated_at`, `deactivated_by`, `is_blacklisted`, `portal_restricted`, `escalation_paused`, `created_at`, `updated_at`) VALUES
+(13, 18, 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:04:14', '2026-09-01 10:56:54'),
+(14, 19, 'Test Tenant 1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:53:46', '2026-08-31 11:21:55'),
+(23, NULL, 'Test Delinquent - Stage 5 Only', '00000000000', 'test.delinquent.stage5only@nestph.test', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, NULL, 0, 1, 0, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
+(24, 20, 'Delinquency Test Tenant', '09171234567', 'delinquency.test@nestph.test', 'Test Emergency Contact', '09179876543', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 1, 1, 0, '2026-09-03 11:13:24', '2026-09-03 13:11:01'),
+(25, 21, 'Valid ID Check', '09867354632', 'validIDcheck@gmail.com', 'ID Mother', '09673526321', NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 05:59:16', '2026-09-04 05:59:16'),
+(26, 22, 'Valid ID CheckTwo', '09273648212', 'validid2@gmail.com', 'Valid Mother', '09364729591', '2008-07-04', 'Sta Mesa', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:13:15', '2026-09-04 06:20:12'),
+(27, 23, 'Tenant Check One', '09362537482', 'tenantcheck1@gmail.com', 'Tenant Mother One', '097726373482', '2026-09-01', 'asdasdads', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:50:33', '2026-09-04 06:53:18');
 
 -- --------------------------------------------------------
 
@@ -1102,7 +1103,8 @@ ALTER TABLE `sessions`
 --
 ALTER TABLE `tenants`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `tenants_user_id_foreign` (`user_id`);
+  ADD KEY `tenants_user_id_foreign` (`user_id`),
+  ADD KEY `tenants_deactivated_by_foreign` (`deactivated_by`);
 
 --
 -- Indexes for table `users`
@@ -1213,7 +1215,7 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1401,6 +1403,7 @@ ALTER TABLE `room_photos`
 -- Constraints for table `tenants`
 --
 ALTER TABLE `tenants`
+  ADD CONSTRAINT `tenants_deactivated_by_foreign` FOREIGN KEY (`deactivated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `tenants_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
