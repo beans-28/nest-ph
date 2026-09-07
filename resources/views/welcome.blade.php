@@ -120,7 +120,7 @@
         .stat-card { display: flex; flex-direction: column; align-items: center; gap: 10px; }
         .stat-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: var(--ink-alt); }
         .stat-icon svg { width: 100%; height: 100%; }
-        .stat-value { font-size: 17px; font-weight: 700; color: var(--ink-alt); }
+                .stat-value { font-size: 17px; font-weight: 700; color: var(--ink-alt); min-height: 42px; display: flex; align-items: center; justify-content: center; line-height: 1.2; text-align: center; }
         .stat-label { font-size: 12.5px; color: var(--ink-alt); }
 
         .why-section {
@@ -208,6 +208,9 @@
             .footer-columns { grid-template-columns: 1fr; }
             .footer-bottom { flex-direction: column; align-items: flex-start; }
         }
+        .footer-badge img{ width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0; }
+        .about-contact-note{ text-align: center; margin-top: 32px; font-size: 13px; color: rgba(255,255,255,0.85); }
+        .about-contact-note a{ color: #fff; font-weight: 600; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -232,26 +235,28 @@
     <div class="page-wrap">
     <section class="hero">
         <div class="hero-text">
-            <h1>Study hard, make friends, and live your NEST life.</h1>
-            <p>Every great mind needs a secure, comfortable place to hatch their biggest ideas. Welcome to a student living experience that prioritizes your well-being, safety, and academic focus. Whether you are retreating to your room after a long day of classes, collaborating with peers in our shared lounges, or simply taking a moment to breathe, you will find that everything you need is right here. Build your foundation, connect with your fellow residents, and make this space your ultimate sanctuary.</p>
+                        <h1>Welcome to {{ $dormName ?? 'NEST.PH' }}!</h1>
+            <p>{{ $description ?? 'Every great mind needs a secure, comfortable place to hatch their biggest ideas. Welcome to a student living experience that prioritizes your well-being, safety, and academic focus.' }}</p>
             <div class="hero-buttons">
                 <a href="{{ route('public.rooms') }}" class="btn btn-green btn-lg">Browse Rooms</a>
                 <a href="{{ route('public.vr') }}" class="btn btn-outline-green btn-lg">VR Tour</a>
             </div>
         </div>
         <div class="hero-image">
-            {{-- Placeholder image slot — replace with the dorm's real photo asset --}}
+            @if($coverPhotoUrl)
+                <img src="{{ $coverPhotoUrl }}" alt="{{ $dormName }}">
+            @endif
         </div>
     </section>
 
     <section class="stats-bar textured">
         <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="">
-        <h2>Find your room at Pureza Station</h2>
-        <p class="sub">Browse available beds, take a 360&deg; virtual tour, and reserve online</p>
+        <h2>Find your room at {{ $dormName ?? 'NEST.PH' }}</h2>
+        <p class="sub">Browse available beds, take a 360&deg; virtual tour, and apply online!</p>
         <div class="stats-row">
             <div class="stat-card">
                 <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></div>
-                <div class="stat-value">250+</div>
+                <div class="stat-value">{{ $happyTenantsCount }}+</div>
                 <div class="stat-label">Happy Tenants</div>
             </div>
             <div class="stat-card">
@@ -261,7 +266,7 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"/></svg></div>
-                <div class="stat-value">AC, WIFI, CR</div>
+                <div class="stat-value">{{ $availableResources ?: 'AC, WIFI, CR' }}</div>
                 <div class="stat-label">Available Resources</div>
             </div>
             <div class="stat-card">
@@ -281,14 +286,18 @@
     <section class="about-section textured">
         <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="">
         <div class="about-header">
-            <div class="eyebrow">We don't just offer a room; we offer a smart living experience powered by our custom Dormitory Management System.</div>
-            <h2>About Us: Your Home in the Heart of Santa Mesa</h2>
+            <div class="eyebrow">Powered by NEST.PH, a smarter web app for dormitory living and management</div>
+            <h2>About NEST.PH</h2>
         </div>
 
         <div class="feature-grid">
             <div class="feature">
-                <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
-                <p><strong>Real-Time Announcements:</strong> Stay updated with instant notifications about dorm events, maintenance schedules, or guest policies directly on your dashboard.</p>
+                <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="8" width="20" height="9" rx="4"/><circle cx="8" cy="12.5" r="2"/><circle cx="16" cy="12.5" r="2"/><path d="M12 8V5a3 3 0 00-3-3H7"/></svg></div>
+                <p><strong>360&deg; VR Room Viewing:</strong> Walk through real rooms and common areas in immersive 360&deg; from any device. See the actual space, layout, and lighting before you commit, with no guesswork and no wasted trips.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><path d="M12 8v4M12 15h.01"/></svg></div>
+                <p><strong>Smart Delinquency Escalation:</strong> Automated reminders and a clear, staged notice process keep accounts on track, giving tenants fair warning and dorm owners a system that runs itself instead of chasing payments by hand.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg></div>
@@ -298,21 +307,9 @@
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
                 <p><strong>Digital Maintenance Requests:</strong> Got a leaking faucet or a busted lightbulb? Submit a maintenance ticket directly through the NEST.PH portal and track its resolution status in real-time.</p>
             </div>
-            <div class="feature">
-                <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 11l7-7 7 7M5 10v9a1 1 0 001 1h3v-6h4v6h3a1 1 0 001-1v-9"/></svg></div>
-                <p><strong>VR Room Viewing Module:</strong> Don't have time to visit in person? Put on a headset or use your screen to walk through our rooms and facilities in full 360-degree Virtual Reality. Get a realistic feel for room dimensions and setups before making a decision.</p>
-            </div>
         </div>
 
-        <div class="about-actions">
-            <a href="{{ route('public.dorminfo') }}" class="btn btn-green btn-lg">More Information</a>
-            <a href="#" class="btn btn-green btn-lg">Rate Us</a>
-        </div>
-        <div class="about-footnote">
-            RENTAL RATES<br>
-            PAYMENT SCHEDULES<br>
-            RULES AND REGULATIONS
-        </div>
+        <p class="about-contact-note">Want NEST.PH for your own dormitory? Contact us at thenestphils@gmail.com.</p>
     </section>
 
     <footer>
@@ -349,9 +346,16 @@
                 </div>
             </div>
             <div>
+                @if($isBirVerified)
                 <div class="footer-badge">
-                    Registered with the Bureau of Internal Revenue &middot; BIR 2026
+                    @if($birRegistrationImageUrl)
+                        <img src="{{ $birRegistrationImageUrl }}" alt="">
+                    @else
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M20 6L9 17l-5-5"/></svg>
+                    @endif
+                    <span>Registered with the Bureau of Internal Revenue</span>
                 </div>
+                @endif
             </div>
         </div>
 

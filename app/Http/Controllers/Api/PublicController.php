@@ -31,9 +31,21 @@ class PublicController extends Controller
         return view('welcome', [
             'availableBeds' => $availableBeds,
             'dormName' => $profile->dorm_name,
+            'description' => $profile->description,
             'contactNumber' => $profile->contact_number,
             'contactEmail' => $profile->contact_email,
             'address' => $profile->address,
+            'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
+            'isBirVerified' => $profile->isBirVerified(),
+            'birRegistrationImageUrl' => $this->isImageFile($profile->bir_registration_path)
+                ? Storage::disk('public')->url($profile->bir_registration_path)
+                : null,
+            'happyTenantsCount' => \App\Models\Tenant::count(),
+            'availableResources' => \App\Models\DormitoryAmenity::where('is_enabled', true)
+                ->orderBy('sort_order')
+                ->pluck('label')
+                ->take(2)
+                ->implode(', '),
         ]);
     }
 
@@ -423,11 +435,13 @@ class PublicController extends Controller
             'address' => $profile->address,
             'contactNumber' => $profile->contact_number,
             'contactEmail' => $profile->contact_email,
-            // The view uses this as both a truthy check ("has a file been
-            // uploaded?") and the actual iframe/download href -- it was
-            // previously only being passed a boolean (hasPoliciesFile),
-            // which the view never actually referenced, so $policiesFileUrl
-            // was always undefined.
+            'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
+            'isBirVerified' => $profile->isBirVerified(),
+            'birRegistrationImageUrl' => $this->isImageFile($profile->bir_registration_path)
+                ? Storage::disk('public')->url($profile->bir_registration_path)
+                : null,
+            'amenitiesList' => \App\Models\DormitoryAmenity::where('is_enabled', true)->orderBy('sort_order')->get(),
+            'houseRulesList' => \App\Models\DormitoryHouseRule::orderBy('sort_order')->orderBy('id')->get(),
             'policiesFileUrl' => $profile->policies_file_path
                 ? route('public.dorminfo.file')
                 : null,
@@ -467,5 +481,12 @@ class PublicController extends Controller
             $profile->policies_file_path,
             'Dormitory-Policies-and-Rules.pdf'
         );
+    }
+
+    private function isImageFile(?string $path): bool
+    {
+        if (! $path) return false;
+        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        return in_array($ext, ['png', 'jpg', 'jpeg', 'webp']);
     }
 }

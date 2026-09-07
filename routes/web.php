@@ -20,6 +20,7 @@ use App\Http\Controllers\DelinquencyController;
 use App\Http\Controllers\TenantDelinquencyController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\Auth\PasswordResetCodeController;
+use App\Http\Controllers\DormitoryProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -186,6 +187,20 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/tenant-manager/{tenant}/status', [TenantController::class, 'setStatus']);
 
     Route::get('/activity-log', [DashboardController::class, 'activityLog'])->name('activity-log.index');
+
+    // --- Dormitory Profile (Manage Dormitory Profile, Table 39) ---
+    Route::get('/dormitory-profile', [DormitoryProfileController::class, 'page'])->name('dormitory-profile.index');
+    Route::post('/dormitory-profile', [DormitoryProfileController::class, 'updateProfile'])->name('dormitory-profile.update');
+    Route::post('/dormitory-profile/cover-photo', [DormitoryProfileController::class, 'uploadCoverPhoto'])->name('dormitory-profile.cover-photo');
+    Route::post('/dormitory-profile/policies-file', [DormitoryProfileController::class, 'uploadPoliciesFile'])->name('dormitory-profile.policies-file');
+    Route::post('/dormitory-profile/business-permit', [DormitoryProfileController::class, 'uploadBusinessPermit'])->name('dormitory-profile.business-permit');
+    Route::delete('/dormitory-profile/business-permit', [DormitoryProfileController::class, 'deleteBusinessPermit']);
+    Route::post('/dormitory-profile/bir-registration', [DormitoryProfileController::class, 'uploadBirRegistration'])->name('dormitory-profile.bir-registration');
+    Route::delete('/dormitory-profile/bir-registration', [DormitoryProfileController::class, 'deleteBirRegistration']);
+    Route::post('/dormitory-profile/amenities/{amenity}/toggle', [DormitoryProfileController::class, 'toggleAmenity']);
+    Route::post('/dormitory-profile/house-rules', [DormitoryProfileController::class, 'storeHouseRule'])->name('dormitory-profile.house-rules.store');
+    Route::patch('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'updateHouseRule']);
+    Route::delete('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'destroyHouseRule']);
 });
 
 /*

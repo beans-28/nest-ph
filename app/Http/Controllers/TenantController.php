@@ -22,7 +22,7 @@ use Illuminate\Validation\Rule;
 
 class TenantController extends Controller
 {
-    private const TENANT_TYPES = ['student', 'employee', 'transient_worker'];
+    private const TENANT_TYPES = ['student', 'working_student', 'full_time_employee', 'part_time_employee', 'transient_worker'];
 
     /**
      * Tenant Manager admin page — Table 14 (Manage Tenant Records).
@@ -265,12 +265,12 @@ class TenantController extends Controller
     public function setStatus(Request $request, Tenant $tenant): JsonResponse
     {
         $data = $request->validate([
-            'status' => ['required', Rule::in(['active', 'archived'])],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
             'reason' => ['nullable', 'string', 'max:500'],
         ]);
 
-        if ($data['status'] === 'archived') {
-            if ($tenant->status === 'archived') {
+        if ($data['status'] === 'inactive') {
+            if ($tenant->status === 'inactive') {
                 return response()->json(['message' => 'This tenant is already deactivated.'], 409);
             }
 
@@ -288,9 +288,9 @@ class TenantController extends Controller
                 ], 409);
             }
 
-            DB::transaction(function () use ($tenant, $data) {
+            DB::transaction(function () use ($tenant, $data, $request) {
                 $tenant->update([
-                    'status' => 'archived',
+                    'status' => 'inactive',
                     'deactivation_reason' => $data['reason'],
                     'deactivated_at' => now(),
                     'deactivated_by' => $request->user()?->id,
@@ -361,8 +361,8 @@ class TenantController extends Controller
 
     private function deriveStatus(Tenant $tenant, $overdueTenantIds): string
     {
-        if ($tenant->status === 'archived') {
-            return 'archived';
+        if ($tenant->status === 'inactive') {
+            return 'inactive';
         }
 
         if ($tenant->is_blacklisted || $overdueTenantIds->contains($tenant->id)) {

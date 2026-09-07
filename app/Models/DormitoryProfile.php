@@ -17,6 +17,8 @@ class DormitoryProfile extends Model
         'logo_path',
         'policies_file_path',
         'contract_template_path',
+        'business_permit_path',
+        'bir_registration_path',
         'gcash_number',
         'bdo_account_number',
         'payments_and_fees',
@@ -34,5 +36,17 @@ class DormitoryProfile extends Model
         return static::first() ?? new static([
             'dorm_name' => 'NEST.PH',
         ]);
+    }
+
+    /**
+     * Use Case Report — Manage Dormitory Profile (Table 39): uploading BIR
+     * Registration credentials is what triggers the public "BIR Registration
+     * Seal/Badge" per RMC No. 038-2026. There's no separate boolean column
+     * for this on purpose — the presence of the file IS the flag, so it can
+     * never drift out of sync with whether a document is actually on file.
+     */
+    public function isBirVerified(): bool
+    {
+        return (bool) $this->bir_registration_path;
     }
 }

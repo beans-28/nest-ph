@@ -123,6 +123,21 @@
             .info-header { flex-direction: column; align-items: flex-start; }
             .doc-frame { height: 70vh; }
         }
+
+        .listing-card{ background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,0.25); margin-bottom:24px; }
+        .listing-cover{ width:100%; height:220px; background:#e2e6e2; }
+        .listing-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+        .listing-body{ padding:24px 28px; }
+        .listing-badge{ display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #e2e6e2; border-radius:8px; padding:10px 14px; color:#292420; font-size:11.5px; font-weight:600; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .listing-badge svg{ width:16px; height:16px; color:#194e19; flex-shrink:0; }
+        .listing-section-label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#5b6b60; margin:16px 0 10px 0; }
+        .listing-section-label:first-of-type{ margin-top:0; }
+        .listing-amenities{ display:flex; flex-wrap:wrap; gap:10px; }
+        .listing-amenity{ display:flex; align-items:center; gap:6px; background:#f4f7f4; border-radius:8px; padding:7px 12px; font-size:12px; color:#33393c; }
+        .listing-amenity svg{ width:15px; height:15px; color:#194e19; }
+        .listing-rules{ list-style:disc; padding-left:20px; margin:0; }
+        .listing-rules li{ font-size:13px; color:#33393c; line-height:1.8; }
+        .listing-badge img{ width:24px; height:24px; border-radius:4px; object-fit:cover; flex-shrink:0; }
     </style>
 </head>
 <body>
@@ -145,6 +160,44 @@
 
     <div class="page-wrap">
     <div class="info-wrap">
+        @if($coverPhotoUrl || $amenitiesList->count() || $houseRulesList->count())
+        <div class="listing-card">
+            @if($coverPhotoUrl)
+                <div class="listing-cover"><img src="{{ $coverPhotoUrl }}" alt="{{ $dormName }}"></div>
+            @endif
+            <div class="listing-body">
+                @if($isBirVerified)
+                    <div class="listing-badge">
+                        @if($birRegistrationImageUrl)
+                            <img src="{{ $birRegistrationImageUrl }}" alt="">
+                        @else
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                        @endif
+                        <span>Registered with the Bureau of Internal Revenue</span>
+                    </div>
+                @endif
+                @if($amenitiesList->count())
+                    <div class="listing-section-label">Amenities</div>
+                    <div class="listing-amenities">
+                        @foreach($amenitiesList as $amenity)
+                            <div class="listing-amenity" title="{{ $amenity->label }}">
+                                @include('partials-amenity-icon', ['key' => $amenity->key])
+                                <span>{{ $amenity->label }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+                @if($houseRulesList->count())
+                    <div class="listing-section-label">House Rules</div>
+                    <ul class="listing-rules">
+                        @foreach($houseRulesList as $rule)
+                            <li>{{ $rule->rule_text }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+        @endif
         <div class="info-header">
             <div class="info-header-text">
                 <h1>{{ $dormName ?? 'NEST.PH' }} — Dorm Info</h1>

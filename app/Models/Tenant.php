@@ -30,6 +30,7 @@ class Tenant extends Model
         'signed_contract_path',
         'deactivation_reason',
         'deactivated_at',
+        'deactivated_by',
     ];
 
     protected $casts = [
