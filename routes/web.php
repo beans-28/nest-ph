@@ -22,6 +22,7 @@ use App\Http\Controllers\TenantController;
 use App\Http\Controllers\Auth\PasswordResetCodeController;
 use App\Http\Controllers\DormitoryProfileController;
 use App\Http\Controllers\AdminPrivilegeController;
+use App\Http\Controllers\TicketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -186,6 +187,11 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/tenant-manager', [TenantController::class, 'store']);
     Route::post('/tenant-manager/{tenant}', [TenantController::class, 'update']);
     Route::post('/tenant-manager/{tenant}/status', [TenantController::class, 'setStatus']);
+
+    // --- Tickets (View and Manage Tickets / Priority / Escalation — Tables 34, 40, 41) ---
+    Route::get('/tickets', [TicketController::class, 'page'])->name('tickets.index');
+    Route::get('/tickets/{ticket}', [TicketController::class, 'show']);
+    Route::patch('/tickets/{ticket}', [TicketController::class, 'update']);
 
     Route::get('/activity-log', [DashboardController::class, 'activityLog'])->name('activity-log.index');
 

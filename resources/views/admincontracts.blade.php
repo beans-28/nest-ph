@@ -844,7 +844,7 @@
     { label: 'Billing and Payments', href: '{{ route('payments.index') }}' },
     { label: 'Delinquency', href: null },
     { label: 'Vacancy Monitor', href: '{{ route('admin.addfloor') }}' },
-    { label: 'Tickets', href: null },
+    { label: 'Tickets', href: '{{ route('tickets.index') }}' },
     { label: 'Applications', href: '{{ route('applications.index') }}' },
     { label: 'Inquiries', href: '{{ route('inquiries.index') }}' },
     { label: 'VR Management', href: '{{ route('vr.index') }}' },
