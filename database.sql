@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 07, 2026 at 09:51 AM
+-- Generation Time: Sep 07, 2026 at 05:42 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,28 @@ SET time_zone = "+00:00";
 --
 -- Database: `nestph_local`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_access_logs`
+--
+
+CREATE TABLE `admin_access_logs` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `performed_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `action` enum('granted','privileges_updated','revoked') NOT NULL,
+  `note` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `admin_access_logs`
+--
+
+INSERT INTO `admin_access_logs` (`id`, `user_id`, `performed_by`, `action`, `note`, `created_at`) VALUES
+(1, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_billing, view_reports', '2026-09-07 13:09:41');
 
 -- --------------------------------------------------------
 
@@ -527,14 +549,15 @@ CREATE TABLE `maintenance_tickets` (
   `tenant_id` bigint(20) UNSIGNED NOT NULL,
   `bed_id` bigint(20) UNSIGNED DEFAULT NULL,
   `title` varchar(150) NOT NULL,
-  `category` enum('electrical','plumbing','furniture','cleanliness','other') NOT NULL DEFAULT 'other',
-  `description` text DEFAULT NULL,
-  `attachment_url` varchar(255) DEFAULT NULL,
-  `status` enum('open','in_progress','resolved','closed') NOT NULL DEFAULT 'open',
+  `category` enum('billing_payment_concern','electrical_issue','plumbing_water_emergency','security_concern','structural_damage','safety_security','fire_safety_hazard','maintenance_repairs','facilities_amenities','administrative_leasing_concern','account_access_issue','noise_roommate_concern','suggestion_feedback') NOT NULL,
+  `description` text NOT NULL,
+  `attachment_path` varchar(255) DEFAULT NULL,
+  `priority` enum('urgent','non_urgent') DEFAULT NULL,
+  `status` enum('open','seen','in_progress','resolved','rejected') NOT NULL DEFAULT 'open',
   `assigned_to` bigint(20) UNSIGNED DEFAULT NULL,
-  `submitted_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `resolved_at` timestamp NULL DEFAULT NULL,
-  `resolved_by` bigint(20) UNSIGNED DEFAULT NULL
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -612,7 +635,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (56, '2026_09_04_185202_rename_archived_to_inactive_on_tenants_table', 34),
 (57, '2026_09_09_000001_create_dormitory_amenities_table', 35),
 (58, '2026_09_09_000002_create_dormitory_house_rules_table', 35),
-(59, '2026_09_09_000003_add_business_documents_to_dormitory_profile_table', 35);
+(59, '2026_09_09_000003_add_business_documents_to_dormitory_profile_table', 35),
+(60, '2026_09_07_050000_create_admin_access_logs_table', 36),
+(61, '2026_09_07_000003_rebuild_maintenance_tickets_table', 37),
+(62, '2026_09_07_000004_create_ticket_replies_table', 37);
 
 -- --------------------------------------------------------
 
@@ -833,6 +859,10 @@ CREATE TABLE `sessions` (
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
 ('DT63mEmbm8Tk4i2gkWvC2PfbK3yhECAN6NO0tsUq', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQjNlNHM5SkZQMWFmNlRWYWxQaExzRlFIdHA0UXNTSmFtWVhRemZlYSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788762183),
 ('ErVwLxrcDrsm6UL3DpJvsaIy6TFcVFJljacgD4Gc', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZko2YWJjRnhZNW1odngzT3k3a2RQNDRtYzU2UVo1MnQ3T0JLeW1STCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788762184),
+('GAmY3iBhEfIkVroG8jh6eoVJItySdi80Tycz1iue', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMkF4Y0plcTNiaGZqUk9SM2ZRNzRJNXNDWDhVSkVjNWNaS2hydTQxTyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90aWNrZXRzIjtzOjU6InJvdXRlIjtzOjEzOiJ0aWNrZXRzLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzt9', 1788795645),
+('mVJTfcS78w4CtPb9I2deR2Cd1pNSXoFX9f7aFydS', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZjYzSTd0MWxGVWt5emt1SjhySzRYUUd6QzZPQjNLZ2F4WDBPSGF4diI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788786755),
+('Od56D4kcYmaVIp5976RkdyQ62aZngzDhPJO6Ib4B', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiemhZSFltSll2aTZQQUtJZnU0eExBdjBDalphRmtVZTdpYkMwMjF3cyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788786246),
+('sHEbGJbdXwWexnMBk0tA37SQIBxXYZYCtiUU5vtD', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiN3Rla2ZqSGFHSk5Galh5cTBpR2VWNWJlbVRhaUVJVm4xNnUxVmVobSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788786246),
 ('ZkK6bFb4TlZxO5IFV1OPuv0IEgJ47kpAigMr2dOx', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibXU1cHJ5Mm9OS042RXgweDdSaTVTVGh1RjB5S2p2VEhTTHJCZGhWbSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzt9', 1788767415);
 
 -- --------------------------------------------------------
@@ -880,6 +910,20 @@ INSERT INTO `tenants` (`id`, `user_id`, `full_name`, `contact_number`, `email`, 
 (28, 24, 'Tenant Check Two', '09546374234', 'tenantcheck2@gmail.com', 'Tenant Mother Two', '0936474328', '2026-09-01', 'San Sebastian', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 10:42:06', '2026-09-04 10:44:34'),
 (29, 25, 'Add New Tenant Test', '09264536782', 'addnewtenant@gmail.com', 'Add New Mom', '09665438732', '2004-07-07', 'Commonwealth, Quezon City', 'student', 'tenant-documents/BIMDbxuna9NH8pTN5NO9usN43u1m7POb9IQDWrBG.jpg', 'tenant-documents/y6WIdA8dDS01fDE62sJHGrUWyTDvI9xjMVhoyve9.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 11:14:43', '2026-09-04 11:14:43'),
 (30, 26, 'Beans Lope', '09289811408', 'vincelopez@gmail.com', 'Arlene Lopez', '09289811476', '2014-02-07', 'Manila', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 12:38:43', '2026-09-04 12:41:58');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ticket_replies`
+--
+
+CREATE TABLE `ticket_replies` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `ticket_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `message` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -981,6 +1025,14 @@ INSERT INTO `vr_scenes` (`id`, `room_id`, `title`, `panorama_path`, `is_default`
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `admin_access_logs`
+--
+ALTER TABLE `admin_access_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `admin_access_logs_user_id_foreign` (`user_id`),
+  ADD KEY `admin_access_logs_performed_by_foreign` (`performed_by`);
 
 --
 -- Indexes for table `admin_privileges`
@@ -1125,8 +1177,7 @@ ALTER TABLE `maintenance_tickets`
   ADD PRIMARY KEY (`id`),
   ADD KEY `maintenance_tickets_tenant_id_foreign` (`tenant_id`),
   ADD KEY `maintenance_tickets_bed_id_foreign` (`bed_id`),
-  ADD KEY `maintenance_tickets_assigned_to_foreign` (`assigned_to`),
-  ADD KEY `maintenance_tickets_resolved_by_foreign` (`resolved_by`);
+  ADD KEY `maintenance_tickets_assigned_to_foreign` (`assigned_to`);
 
 --
 -- Indexes for table `migrations`
@@ -1222,6 +1273,14 @@ ALTER TABLE `tenants`
   ADD KEY `tenants_deactivated_by_foreign` (`deactivated_by`);
 
 --
+-- Indexes for table `ticket_replies`
+--
+ALTER TABLE `ticket_replies`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `ticket_replies_ticket_id_foreign` (`ticket_id`),
+  ADD KEY `ticket_replies_user_id_foreign` (`user_id`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -1247,6 +1306,12 @@ ALTER TABLE `vr_scenes`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `admin_access_logs`
+--
+ALTER TABLE `admin_access_logs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `admin_privileges`
@@ -1342,7 +1407,7 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1393,6 +1458,12 @@ ALTER TABLE `tenants`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
+-- AUTO_INCREMENT for table `ticket_replies`
+--
+ALTER TABLE `ticket_replies`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
@@ -1413,6 +1484,13 @@ ALTER TABLE `vr_scenes`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `admin_access_logs`
+--
+ALTER TABLE `admin_access_logs`
+  ADD CONSTRAINT `admin_access_logs_performed_by_foreign` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `admin_access_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `admin_privileges`
@@ -1486,7 +1564,6 @@ ALTER TABLE `lease_contracts`
 ALTER TABLE `maintenance_tickets`
   ADD CONSTRAINT `maintenance_tickets_assigned_to_foreign` FOREIGN KEY (`assigned_to`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `maintenance_tickets_bed_id_foreign` FOREIGN KEY (`bed_id`) REFERENCES `beds` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `maintenance_tickets_resolved_by_foreign` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `maintenance_tickets_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
 
 --
@@ -1532,6 +1609,13 @@ ALTER TABLE `room_photos`
 ALTER TABLE `tenants`
   ADD CONSTRAINT `tenants_deactivated_by_foreign` FOREIGN KEY (`deactivated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `tenants_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `ticket_replies`
+--
+ALTER TABLE `ticket_replies`
+  ADD CONSTRAINT `ticket_replies_ticket_id_foreign` FOREIGN KEY (`ticket_id`) REFERENCES `maintenance_tickets` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `ticket_replies_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `users`
