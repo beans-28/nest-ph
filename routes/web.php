@@ -21,6 +21,7 @@ use App\Http\Controllers\TenantDelinquencyController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\Auth\PasswordResetCodeController;
 use App\Http\Controllers\DormitoryProfileController;
+use App\Http\Controllers\AdminPrivilegeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -201,6 +202,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/dormitory-profile/house-rules', [DormitoryProfileController::class, 'storeHouseRule'])->name('dormitory-profile.house-rules.store');
     Route::patch('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'updateHouseRule']);
     Route::delete('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'destroyHouseRule']);
+
+});
+
+Route::middleware(['auth', 'admin', 'privileges'])->group(function () {
+    Route::get('/admin-privileges', [AdminPrivilegeController::class, 'index'])->name('admin-privileges.index');
+    Route::post('/admin-privileges', [AdminPrivilegeController::class, 'store'])->name('admin-privileges.store');
+    Route::patch('/admin-privileges/{user}/privileges', [AdminPrivilegeController::class, 'updatePrivileges'])->name('admin-privileges.privileges.update');
+    Route::patch('/admin-privileges/{user}/revoke', [AdminPrivilegeController::class, 'revoke'])->name('admin-privileges.revoke');
 });
 
 /*

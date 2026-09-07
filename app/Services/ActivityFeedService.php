@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AdminAccessLog;
 use App\Models\Application;
 use App\Models\Damage;
 use App\Models\EscalationLog;
@@ -29,6 +30,7 @@ class ActivityFeedService
             ->concat($this->leaseContractEvents())
             ->concat($this->penaltyEvents())
             ->concat($this->damageEvents())
+            ->concat($this->adminAccessEvents())
             ->sortByDesc('date')
             ->values();
     }
@@ -199,5 +201,29 @@ class ActivityFeedService
                 'type' => 'Damage',
                 'admin' => $this->actorName($d->created_by),
             ]);
+    }
+
+    private function adminAccessEvents(): Collection
+    {
+        return AdminAccessLog::with('user:id,name')
+            ->latest('created_at')
+            ->take(self::PER_SOURCE_LIMIT)
+            ->get()
+            ->map(function ($log) {
+                $name = $log->user?->name ?? 'An admin account';
+                $label = match ($log->action) {
+                    'granted' => "Granted admin access to {$name}",
+                    'privileges_updated' => "Updated admin privileges for {$name}",
+                    'revoked' => "Revoked admin access from {$name}",
+                    default => "{$name} — admin access updated",
+                };
+
+                return [
+                    'date' => $log->created_at,
+                    'detail' => $label,
+                    'type' => 'Admin Access',
+                    'admin' => $this->actorName($log->performed_by),
+                ];
+            });
     }
 }

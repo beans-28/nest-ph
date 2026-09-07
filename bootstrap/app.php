@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant' => \App\Http\Middleware\EnsureUserIsTenant::class,
             'movein.check' => \App\Http\Middleware\RedirectPendingMoveInTenant::class,
             'delinquency.check' => \App\Http\Middleware\RestrictDelinquentTenant::class,
+            'privileges' => \App\Http\Middleware\EnsureCanManagePrivileges::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
