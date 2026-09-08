@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 07, 2026 at 05:42 PM
+-- Generation Time: Sep 08, 2026 at 07:42 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -551,7 +551,7 @@ CREATE TABLE `maintenance_tickets` (
   `title` varchar(150) NOT NULL,
   `category` enum('billing_payment_concern','electrical_issue','plumbing_water_emergency','security_concern','structural_damage','safety_security','fire_safety_hazard','maintenance_repairs','facilities_amenities','administrative_leasing_concern','account_access_issue','noise_roommate_concern','suggestion_feedback') NOT NULL,
   `description` text NOT NULL,
-  `attachment_path` varchar(255) DEFAULT NULL,
+  `attachment_paths` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`attachment_paths`)),
   `priority` enum('urgent','non_urgent') DEFAULT NULL,
   `status` enum('open','seen','in_progress','resolved','rejected') NOT NULL DEFAULT 'open',
   `assigned_to` bigint(20) UNSIGNED DEFAULT NULL,
@@ -559,6 +559,13 @@ CREATE TABLE `maintenance_tickets` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `maintenance_tickets`
+--
+
+INSERT INTO `maintenance_tickets` (`id`, `tenant_id`, `bed_id`, `title`, `category`, `description`, `attachment_paths`, `priority`, `status`, `assigned_to`, `resolved_at`, `created_at`, `updated_at`) VALUES
+(1, 30, 41, 'Faulty outlet', 'electrical_issue', 'Outlet near bed 2 is faulty', '[\"ticket-attachments\\/YSjp9c3pd6BMqGnSRgM3aR9vnArYsWczH9qlzFtn.jpg\",\"ticket-attachments\\/zSVYgiskuekYI41w0k2b36HbEnIf92cp8kcEJ4yV.png\"]', 'urgent', 'in_progress', 3, NULL, '2026-09-08 05:30:48', '2026-09-08 05:35:55');
 
 -- --------------------------------------------------------
 
@@ -638,7 +645,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (59, '2026_09_09_000003_add_business_documents_to_dormitory_profile_table', 35),
 (60, '2026_09_07_050000_create_admin_access_logs_table', 36),
 (61, '2026_09_07_000003_rebuild_maintenance_tickets_table', 37),
-(62, '2026_09_07_000004_create_ticket_replies_table', 37);
+(62, '2026_09_07_000004_create_ticket_replies_table', 37),
+(63, '2026_09_08_000005_add_tenant_id_to_ticket_replies_table', 38),
+(64, '2026_09_08_000006_convert_ticket_attachment_to_multiple', 39);
 
 -- --------------------------------------------------------
 
@@ -857,13 +866,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('DT63mEmbm8Tk4i2gkWvC2PfbK3yhECAN6NO0tsUq', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQjNlNHM5SkZQMWFmNlRWYWxQaExzRlFIdHA0UXNTSmFtWVhRemZlYSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788762183),
-('ErVwLxrcDrsm6UL3DpJvsaIy6TFcVFJljacgD4Gc', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZko2YWJjRnhZNW1odngzT3k3a2RQNDRtYzU2UVo1MnQ3T0JLeW1STCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788762184),
-('GAmY3iBhEfIkVroG8jh6eoVJItySdi80Tycz1iue', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMkF4Y0plcTNiaGZqUk9SM2ZRNzRJNXNDWDhVSkVjNWNaS2hydTQxTyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90aWNrZXRzIjtzOjU6InJvdXRlIjtzOjEzOiJ0aWNrZXRzLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzt9', 1788795645),
-('mVJTfcS78w4CtPb9I2deR2Cd1pNSXoFX9f7aFydS', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZjYzSTd0MWxGVWt5emt1SjhySzRYUUd6QzZPQjNLZ2F4WDBPSGF4diI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788786755),
-('Od56D4kcYmaVIp5976RkdyQ62aZngzDhPJO6Ib4B', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiemhZSFltSll2aTZQQUtJZnU0eExBdjBDalphRmtVZTdpYkMwMjF3cyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788786246),
-('sHEbGJbdXwWexnMBk0tA37SQIBxXYZYCtiUU5vtD', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiN3Rla2ZqSGFHSk5Galh5cTBpR2VWNWJlbVRhaUVJVm4xNnUxVmVobSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1788786246),
-('ZkK6bFb4TlZxO5IFV1OPuv0IEgJ47kpAigMr2dOx', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibXU1cHJ5Mm9OS042RXgweDdSaTVTVGh1RjB5S2p2VEhTTHJCZGhWbSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzt9', 1788767415);
+('1egAZnSdp0FMYluECIfEGc2iw3F0Uqhjmq10OzoU', 26, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiemFmM1h3b0xWWnZvWTZCYjdOTDZFdTM3QkpnRmVGSFo2VHJjTFlqRiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6OToiZGFzaGJvYXJkIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MjY7fQ==', 1788845972);
 
 -- --------------------------------------------------------
 
@@ -921,9 +924,18 @@ CREATE TABLE `ticket_replies` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `ticket_id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `tenant_id` bigint(20) UNSIGNED DEFAULT NULL,
   `message` text NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `ticket_replies`
+--
+
+INSERT INTO `ticket_replies` (`id`, `ticket_id`, `user_id`, `tenant_id`, `message`, `created_at`) VALUES
+(1, 1, 3, NULL, 'Gagawin na ni manong mamaya', '2026-09-08 05:35:43'),
+(2, 1, NULL, 30, 'oke poo', '2026-09-08 05:38:57');
 
 -- --------------------------------------------------------
 
@@ -1278,7 +1290,8 @@ ALTER TABLE `tenants`
 ALTER TABLE `ticket_replies`
   ADD PRIMARY KEY (`id`),
   ADD KEY `ticket_replies_ticket_id_foreign` (`ticket_id`),
-  ADD KEY `ticket_replies_user_id_foreign` (`user_id`);
+  ADD KEY `ticket_replies_user_id_foreign` (`user_id`),
+  ADD KEY `ticket_replies_tenant_id_foreign` (`tenant_id`);
 
 --
 -- Indexes for table `users`
@@ -1401,13 +1414,13 @@ ALTER TABLE `lease_contracts`
 -- AUTO_INCREMENT for table `maintenance_tickets`
 --
 ALTER TABLE `maintenance_tickets`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=63;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1461,7 +1474,7 @@ ALTER TABLE `tenants`
 -- AUTO_INCREMENT for table `ticket_replies`
 --
 ALTER TABLE `ticket_replies`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -1614,6 +1627,7 @@ ALTER TABLE `tenants`
 -- Constraints for table `ticket_replies`
 --
 ALTER TABLE `ticket_replies`
+  ADD CONSTRAINT `ticket_replies_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `ticket_replies_ticket_id_foreign` FOREIGN KEY (`ticket_id`) REFERENCES `maintenance_tickets` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `ticket_replies_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
