@@ -12,7 +12,8 @@ class MaintenanceTicket extends Model
 {
     use HasFactory;
 
-    /** Figma "drop down type" (node 994-5004). Flagged for BAGUI vs Table 33. */
+    /** Figma "drop down type" (node 994-5004). Broader than Table 33's
+     * "Maintenance Request / Concern / Feedback" -- flagged for BAGUI. */
     public const CATEGORIES = [
         'billing_payment_concern' => 'Billing & Payment Concern',
         'electrical_issue' => 'Electrical Issue',
@@ -29,7 +30,8 @@ class MaintenanceTicket extends Model
         'suggestion_feedback' => 'Suggestion / Feedback',
     ];
 
-    /** Figma "drop down status" (node 882-3246). Flagged for BAGUI vs Table 34. */
+    /** Figma "drop down status" (node 882-3246). Adds Seen/Rejected beyond
+     * Table 34's literal Open/In Progress/Resolved -- flagged for BAGUI. */
     public const STATUSES = [
         'open' => 'Open',
         'seen' => 'Seen',
@@ -53,13 +55,16 @@ class MaintenanceTicket extends Model
     public const URGENT_OVERDUE_HOURS = 24;
     public const NON_URGENT_OVERDUE_DAYS = 3;
 
+    /** Submit Ticket form allows up to 5 photos per ticket. */
+    public const MAX_ATTACHMENTS = 5;
+
     protected $fillable = [
         'tenant_id',
         'bed_id',
         'title',
         'category',
         'description',
-        'attachment_path',
+        'attachment_paths',
         'priority',
         'status',
         'assigned_to',
@@ -67,6 +72,7 @@ class MaintenanceTicket extends Model
     ];
 
     protected $casts = [
+        'attachment_paths' => 'array',
         'resolved_at' => 'datetime',
     ];
 
@@ -90,11 +96,13 @@ class MaintenanceTicket extends Model
         return $this->hasMany(TicketReply::class, 'ticket_id');
     }
 
-    public function getAttachmentUrlAttribute(): ?string
+    /** Array of public Storage URLs, one per uploaded photo. */
+    public function getAttachmentUrlsAttribute(): array
     {
-        return $this->attachment_path
-            ? Storage::disk('public')->url($this->attachment_path)
-            : null;
+        return collect($this->attachment_paths ?? [])
+            ->map(fn ($path) => Storage::disk('public')->url($path))
+            ->values()
+            ->all();
     }
 
     public function getCategoryLabelAttribute(): string
@@ -112,12 +120,6 @@ class MaintenanceTicket extends Model
         return $this->priority ? (self::PRIORITIES[$this->priority] ?? $this->priority) : null;
     }
 
-    /**
-     * Table 41: red "Overdue" badge once past the priority's threshold.
-     * False for an unclassified ticket (no priority yet) or an already
-     * resolved/rejected one -- postcondition says both indicators are
-     * removed once resolved.
-     */
     public function isOverdue(): bool
     {
         if (! $this->priority || in_array($this->status, ['resolved', 'rejected'], true)) {
@@ -132,10 +134,6 @@ class MaintenanceTicket extends Model
         return $hoursElapsed >= $thresholdHours;
     }
 
-    /**
-     * Table 41: "Unresolved for N days" running count below each open
-     * ticket card. Null once resolved/rejected.
-     */
     public function unresolvedForHumans(): ?string
     {
         if (in_array($this->status, ['resolved', 'rejected'], true)) {

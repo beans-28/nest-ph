@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Services\ActivityFeedService;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\MaintenanceTicket;
 
 class DashboardController extends Controller
 {
@@ -167,12 +168,13 @@ class DashboardController extends Controller
             'status' => $b->status,
         ])->values();
 
-        // No ticketing system built yet (Week 7 scope) — the dashboard
-        // template already has an empty-state fallback for this, so an
-        // empty collection here is honest, not a placeholder hack.
-        $recentTickets = collect();
-        $openTicketsCount = 0;
-        $inProgressCount = 0;
+        $recentTickets = MaintenanceTicket::where('tenant_id', $tenant->id)
+            ->latest('created_at')
+            ->take(5)
+            ->get();
+
+        $openTicketsCount = MaintenanceTicket::where('tenant_id', $tenant->id)->where('status', 'open')->count();
+        $inProgressCount = MaintenanceTicket::where('tenant_id', $tenant->id)->where('status', 'in_progress')->count();
 
         return view('tenantdashboard', compact(
             'tenant', 'contract', 'balanceDue', 'nextDueDate', 'daysUntilDue',

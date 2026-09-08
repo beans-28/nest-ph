@@ -66,7 +66,7 @@ class TicketController extends Controller
             $this->transformRow($ticket),
             [
                 'description' => $ticket->description,
-                'attachment_url' => $ticket->attachment_url,
+                'attachment_urls' => $ticket->attachment_urls,
                 'replies' => $ticket->replies->map(fn ($r) => [
                     'id' => $r->id,
                     'message' => $r->message,

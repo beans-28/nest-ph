@@ -23,6 +23,7 @@ use App\Http\Controllers\Auth\PasswordResetCodeController;
 use App\Http\Controllers\DormitoryProfileController;
 use App\Http\Controllers\AdminPrivilegeController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\TenantTicketController;
 
 /*
 |--------------------------------------------------------------------------
@@ -266,6 +267,10 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'delinquency.check'])->grou
     // --- Delinquency Escalation (Week 6, Tenant Side) ---
     Route::get('/my/delinquency', [TenantDelinquencyController::class, 'page'])->name('tenant.delinquency');
     Route::get('/my/delinquency/demand-letter', [TenantDelinquencyController::class, 'downloadDemandLetter'])->name('tenant.delinquency.demand-letter');
+
+    Route::get('/my/tickets', [TenantTicketController::class, 'page'])->name('tenant.tickets');
+    Route::post('/my/tickets', [TenantTicketController::class, 'store']);
+    Route::post('/my/tickets/{ticket}/reply', [TenantTicketController::class, 'reply']);
 });
 
 require __DIR__.'/auth.php';

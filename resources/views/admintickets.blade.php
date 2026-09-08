@@ -55,19 +55,19 @@
 
   /* ===== Main / Topbar ===== */
   .main{ flex:1; min-width:0; }
-  .topbar{ position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--border); padding:14px 24px; display:flex; align-items:center; gap:16px; }
-  .hamburger{ width:34px; height:34px; border-radius:8px; border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; flex-shrink:0; }
-  .hamburger span{ width:15px; height:2px; background:var(--text-mid); display:block; }
-  .search-box{ position:relative; flex:1; max-width:340px; display:flex; align-items:center; gap:8px; background:#f7f9f7; border:1px solid var(--border); border-radius:9px; padding:8px 12px; }
-  .search-box svg{ width:15px; height:15px; color:var(--text-light); flex-shrink:0; }
-  .search-box input{ border:none; outline:none; background:transparent; font-size:13px; font-family:var(--font-body); flex:1; }
-  .search-results{ position:absolute; top:calc(100% + 6px); left:0; right:0; background:#fff; border:1px solid var(--border); border-radius:9px; box-shadow:0 10px 24px rgba(0,0,0,0.1); display:none; overflow:hidden; z-index:30; }
+  .topbar{ display:flex; align-items:center; gap:16px; background:linear-gradient(90deg, var(--green-mid), var(--green-dark)); padding:14px 28px; position:sticky; top:0; z-index:20; }
+  .topbar .hamburger{ width:20px; height:16px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; }
+  .topbar .hamburger span{ display:block; height:2px; background:#eaf0ea; border-radius:2px; }
+  .search-box{ position:relative; flex:1; max-width:420px; display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.92); border-radius:8px; padding:9px 14px; }
+  .search-box svg{ width:15px; height:15px; color:#8a9690; flex-shrink:0; }
+  .search-box input{ border:none; outline:none; background:transparent; font-size:13.5px; width:100%; color:var(--text-dark); }
+  .search-results{ position:absolute; top:calc(100% + 8px); left:0; right:0; background:var(--card-bg); border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 26px rgba(20,30,20,0.14); max-height:280px; overflow-y:auto; z-index:50; display:none; }
   .search-results.visible{ display:block; }
-  .search-results a, .search-results .search-empty, .search-results .search-disabled{ display:block; padding:9px 14px; font-size:12.5px; color:var(--text-dark); text-decoration:none; }
-  .search-results a:hover{ background:#f7f9f7; }
+  .search-results a, .search-results .search-empty, .search-results .search-disabled{ display:block; padding:10px 14px; font-size:13px; color:var(--text-dark); text-decoration:none; cursor:pointer; }
+  .search-results a:hover{ background:#f3f6f3; }
   .search-results .search-empty, .search-results .search-disabled{ color:var(--text-light); font-style:italic; }
-  .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:12px; }
-  .topbar-icon{ width:34px; height:34px; border-radius:50%; background:#f7f9f7; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-mid); cursor:pointer; }
+  .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:18px; }
+  .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); color:var(--green-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .topbar-icon svg{ width:16px; height:16px; }
 
   .content{ padding:28px 32px 48px 32px; flex:1; }
@@ -115,6 +115,9 @@
   .priority-select.urgent{ color:var(--status-occupied); border-color:#f2cfcc; background:var(--status-occupied-bg); font-weight:700; }
   .ac-assigned{ font-size:11.5px; color:var(--text-light); }
 
+  .lightbox{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:90; align-items:center; justify-content:center; padding:30px; }
+  .lightbox.open{ display:flex; }
+  .lightbox img{ max-width:100%; max-height:100%; border-radius:8px; }
   .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; align-items:center; justify-content:center; padding:20px; }
   .modal-overlay.open{ display:flex; }
   .modal-box{ background:#fff; border-radius:14px; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; }
@@ -125,7 +128,7 @@
   .modal-body{ padding:22px 24px; }
   .modal-body .mb-desc{ font-size:13px; color:var(--text-mid); line-height:1.6; margin-bottom:16px; }
   .modal-body .mb-attachment{ margin-bottom:16px; }
-  .modal-body .mb-attachment img{ max-width:100%; border-radius:10px; border:1px solid var(--border); }
+  .modal-body .mb-attachment img{ width:88px; height:88px; object-fit:cover; border-radius:8px; border:1px solid var(--border); cursor:pointer; }
   .modal-body .fld{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
   .modal-body label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
   .modal-body select, .modal-body textarea{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); width:100%; }
@@ -238,7 +241,9 @@
     </div>
     <div class="modal-body">
       <div class="mb-desc" id="mDesc"></div>
-      <div class="mb-attachment" id="mAttachment" style="display:none;"><img id="mAttachmentImg" alt="Attachment"></div>
+            <div class="mb-attachment" id="mAttachment" style="display:none;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="mAttachmentGrid"></div>
+      </div>
 
       <div class="fld">
         <label>Assign to</label>
@@ -267,6 +272,8 @@
   </div>
 </div>
 
+<div class="lightbox" id="lightbox"><img id="lightboxImg" alt=""></div>
+
 <div class="toast" id="toast"></div>
 
 <script type="application/json" id="tickets-data">{!! json_encode($tickets) !!}</script>
@@ -292,6 +299,8 @@
     await fetch('/logout', { method:'POST', headers:{ 'X-CSRF-TOKEN': csrf } });
     window.location.href = '/';
   });
+
+  $('lightbox').addEventListener('click', () => $('lightbox').classList.remove('open'));
 
   function toast(msg, isError){
     const el = $('toast');
@@ -398,13 +407,18 @@
       $('mTitle').textContent = detail.title;
       $('mDesc').textContent = detail.description;
 
-      if(detail.attachment_url){
+      if(detail.attachment_urls && detail.attachment_urls.length){
         $('mAttachment').style.display = 'block';
-        $('mAttachmentImg').src = detail.attachment_url;
+        $('mAttachmentGrid').innerHTML = detail.attachment_urls.map(u => `<img src="${u}" alt="Attachment" data-lightbox="${u}">`).join('');
+        document.querySelectorAll('#mAttachmentGrid [data-lightbox]').forEach(img => {
+          img.addEventListener('click', () => {
+            $('lightboxImg').src = img.dataset.lightbox;
+            $('lightbox').classList.add('open');
+          });
+        });
       } else {
         $('mAttachment').style.display = 'none';
       }
-
       $('mAssignSelect').innerHTML = '<option value="">Unassigned</option>' +
         detail.assignable_admins.map(a => `<option value="${a.id}" ${a.id === detail.assigned_to ? 'selected' : ''}>${esc(a.name)}</option>`).join('');
 
