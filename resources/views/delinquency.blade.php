@@ -180,6 +180,12 @@
   .eviction-form{ display:none; margin-top:14px; padding-top:14px; border-top:1px dashed var(--border); }
   .eviction-form.open{ display:block; }
   .history-actions{ display:flex; justify-content:flex-end; margin-top:18px; }
+  .testing-tools-toggle{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:var(--text-dark); background:none; border:none; cursor:pointer; padding:6px 2px; margin-bottom:14px; }
+  .testing-tools-toggle:hover{ color:#000; }
+  .testing-tools-toggle svg{ width:13px; height:13px; transition:transform .2s ease; flex-shrink:0; }
+  .testing-tools-toggle.open svg{ transform:rotate(90deg); }
+  .testing-tools-panel{ display:none; }
+  .testing-tools-panel.open{ display:block; }
 
   @media (max-width: 1100px){ .stage-row{ grid-template-columns:repeat(3,1fr); } }
   @media (max-width: 640px){ .stage-row{ grid-template-columns:repeat(2,1fr); } }
@@ -293,8 +299,11 @@
       </div>
 
       @env('local')
-      <div class="section-title">Testing Tools</div>
-      <div class="table-panel" style="padding:16px;">
+      <button type="button" class="testing-tools-toggle" id="testingToolsToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        <span>Testing Tools</span>
+      </button>
+      <div class="table-panel testing-tools-panel" id="testingToolsPanel" style="padding:16px;">
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
           <select id="testTenantSelect" style="padding:8px 10px;border:1px solid #ddd;border-radius:6px;min-width:260px;">
             <option value="">Loading tenants...</option>
@@ -756,6 +765,16 @@
     }
     this.disabled = false;
   });
+
+  // --- Testing Tools toggle ---
+  const testingToggle = document.getElementById('testingToolsToggle');
+  const testingPanel = document.getElementById('testingToolsPanel');
+  if (testingToggle && testingPanel) {
+    testingToggle.addEventListener('click', () => {
+      const isOpen = testingPanel.classList.toggle('open');
+      testingToggle.classList.toggle('open', isOpen);
+    });
+  }
 
   // --- Testing Tools panel ---
   // Lives in this same script block (not the sidebar-collapse one below)

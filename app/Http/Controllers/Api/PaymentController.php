@@ -309,6 +309,14 @@ class PaymentController extends Controller
 
         $billingStatement->refresh();
 
+        // Same fix as approveProof() above -- a cash payment can settle a
+        // bill just as fully as an approved online proof, so it needs the
+        // same immediate resolution instead of waiting for the next
+        // escalation:process sweep.
+        if ($billingStatement->status === 'paid') {
+            app(\App\Services\EscalationService::class)->resolveSettledEscalations();
+        }
+
         // Use Case Report — Pay Move-In Fees, step 6.1: if this payment fully
         // settled a move-in fee, occupy the bed and activate the tenant.
         // Cash payments go through this same activation path as approved
@@ -428,9 +436,25 @@ class PaymentController extends Controller
             ]);
 
             $this->resyncStatementStatus($statement);
+
+            if ($statement->status === 'paid') {
+                app(\App\Services\EscalationService::class)->resolveSettledEscalations();
+            }
         });
 
         $statement->refresh();
+
+        // Table 23-26's own exception paths ("if payment is received,
+        // cancel remaining reminders / lift restriction / close the
+        // escalation") previously only ran on the next escalation:process
+        // sweep -- meaning a tenant could pay in full, drop off the admin's
+        // Delinquent Accounts list immediately, and STILL see their portal
+        // locked until the next cron tick. Resolving it right here, the
+        // moment a payment actually settles the bill, closes that gap.
+        // Safe/idempotent to call even when nothing needs resolving.
+        if ($statement->status === 'paid') {
+            app(\App\Services\EscalationService::class)->resolveSettledEscalations();
+        }
 
         // Use Case Report — Pay Move-In Fees, step 6.1: verifying payment on
         // a move-in fee is what actually occupies the bed and activates the

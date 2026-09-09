@@ -76,6 +76,21 @@ class DelinquencyTestingController extends Controller
                 'escalation_paused' => false,
             ]);
 
+            // Testing-only: also push the underlying bill's due date into
+            // the future and mark it 'unpaid' again, so the tenant
+            // actually disappears from the Delinquent Accounts list and
+            // "Days Overdue" resets to zero. Table 29's real Reset
+            // deliberately leaves the bill alone (a genuinely-still-unpaid
+            // tenant should keep showing as overdue) -- but for a
+            // testing/demo reset, the point is a clean slate, so this is
+            // a different, deliberately more destructive action.
+            BillingStatement::where('tenant_id', $tenant->id)
+                ->where('status', 'overdue')
+                ->update([
+                    'due_date' => now()->addDays(30),
+                    'status' => 'unpaid',
+                ]);
+
             return response()->json(['message' => "{$tenant->full_name} reset to Stage 0 — Not Delinquent."]);
         }
 
