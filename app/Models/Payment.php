@@ -32,6 +32,9 @@ class Payment extends Model
         'amount_paid' => 'decimal:2',
         'payment_date' => 'date',
         'reviewed_at' => 'datetime',
+        'created_at' => 'datetime', // $timestamps = false above disables Laravel's
+        // automatic created_at casting — same fix already applied to
+        // TicketReply / PenaltyAuditLog / AdminAccessLog for the same reason.
     ];
 
     public function billingStatement(): BelongsTo

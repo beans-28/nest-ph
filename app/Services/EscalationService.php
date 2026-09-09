@@ -83,6 +83,38 @@ class EscalationService
         return $processed;
     }
 
+        /**
+     * Testing/demo helper (Admin "Testing Tools" panel): runs the exact
+     * same stage logic as processAll(), but scoped to ONE billing
+     * statement instead of every overdue bill in the system. Lets an
+     * admin push a single test tenant through the ladder on demand
+     * without waiting for the scheduler and without touching every other
+     * tenant's records. Not part of any use case table (23-29) — purely
+     * a testing convenience that reuses the real stage methods, so the
+     * behavior being demoed is genuine.
+     */
+    public function processBillingStatement(BillingStatement $bill): void
+    {
+        BillingStatement::syncOverdueStatuses();
+        $bill->refresh();
+
+        if ($bill->status !== 'overdue' || ! $bill->tenant) {
+            return;
+        }
+
+        if ($bill->tenant->is_blacklisted || $bill->tenant->escalation_paused) {
+            return;
+        }
+
+        $daysOverdue = (int) Carbon::parse($bill->due_date)->diffInDays(now(), false);
+
+        if ($daysOverdue < 0) {
+            return;
+        }
+
+        $this->advance($bill, $daysOverdue);
+    }
+
     /**
      * Applies every stage this tenant now qualifies for, in order. Each
      * stage's own method internally decides whether it's already complete,

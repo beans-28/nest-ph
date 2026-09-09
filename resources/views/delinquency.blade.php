@@ -263,7 +263,7 @@
         <select id="stageFilter">
           <option value="">All Stages</option>
           @foreach($stageBreakdown as $s)
-            <option value="{{ $s['stage'] }}">Stage {{ $s['stage'] }} — {{ $s['name'] }}</option>
+            <option value="{{ $s['stage'] }}">Stage {{ $s['stage'] }}: {{ $s['name'] }}</option>
           @endforeach
         </select>
       </div>
@@ -291,6 +291,28 @@
           <div class="pagination" id="pagination"></div>
         </div>
       </div>
+
+      @env('local')
+      <div class="section-title">Testing Tools</div>
+      <div class="table-panel" style="padding:16px;">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+          <select id="testTenantSelect" style="padding:8px 10px;border:1px solid #ddd;border-radius:6px;min-width:260px;">
+            <option value="">Loading tenants...</option>
+          </select>
+          <span id="testTenantStage" style="font-size:13px;color:#666;"></span>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="modal-btn cancel" data-test-stage="0">Reset (Stage 0)</button>
+          <button type="button" class="modal-btn confirm" data-test-stage="1">Stage 1</button>
+          <button type="button" class="modal-btn confirm" data-test-stage="2">Stage 2</button>
+          <button type="button" class="modal-btn confirm" data-test-stage="3">Stage 3</button>
+          <button type="button" class="modal-btn confirm" data-test-stage="4">Stage 4</button>
+          <button type="button" class="modal-btn confirm" data-test-stage="5">Stage 5</button>
+          <button type="button" class="modal-btn confirm" data-test-stage="6">Stage 6</button>
+        </div>
+      </div>
+      @endenv
+
     </div>
   </div>
 </div>
@@ -302,10 +324,10 @@
 
   <label for="overrideAction">Action</label>
   <select id="overrideAction">
-    <option value="pause">Pause — give the tenant more time</option>
-    <option value="unpause">Unpause — resume normal escalation</option>
-    <option value="clear">Clear — resolve current items, lift restrictions</option>
-    <option value="reset">Reset — erase escalation history</option>
+    <option value="pause">Pause: give the tenant more time</option>
+    <option value="unpause">Unpause: resume normal escalation</option>
+    <option value="clear">Clear: resolve current items, lift restrictions</option>
+    <option value="reset">Reset: erase escalation history</option>
   </select>
 
   <div class="action-explain" id="actionExplain"></div>
@@ -433,7 +455,7 @@
           <td>${esc(a.room)}</td>
           <td class="days-cell">${a.days_overdue} day${a.days_overdue === 1 ? '' : 's'}</td>
           <td class="balance-cell">${peso(a.balance)}</td>
-          <td><span class="stage-pill" style="background:${a.stage_accent};color:${a.stage_text};">Stage ${a.stage} — ${esc(a.stage_name)}</span>${a.escalation_paused ? ' <span class="stage-pill" style="background:#eee;color:#888;">Paused</span>' : ''}</td>
+          <td><span class="stage-pill" style="background:${a.stage_accent};color:${a.stage_text};">Stage ${a.stage}: ${esc(a.stage_name)}</span>${a.escalation_paused ? ' <span class="stage-pill" style="background:#eee;color:#888;">Paused</span>' : ''}</td>
           <td>${a.last_payment ? esc(a.last_payment) : '—'}</td>
           <td>
             <div class="action-btns">
@@ -542,7 +564,7 @@
     if(!account) return;
     overrideTenantId = tenantId;
     $('modalTenantName').textContent = account.name;
-    $('modalTenantStage').textContent = `Currently: Stage ${account.stage} — ${account.stage_name}${account.escalation_paused ? ' (Paused)' : ''}`;
+    $('modalTenantStage').textContent = `Currently: Stage ${account.stage}: ${account.stage_name}${account.escalation_paused ? ' (Paused)' : ''}`;
     $('overrideAction').value = account.escalation_paused ? 'unpause' : 'pause';
     $('overrideReason').value = '';
     $('modalError').style.display = 'none';
@@ -616,7 +638,7 @@
     const t = data.tenant;
     historyTenant = t;
     $('historyTenantName').textContent = t.name;
-    $('historyTenantStage').textContent = `${t.room !== '—' ? 'Room ' + t.room + ' — ' : ''}Currently: Stage ${t.current_stage} — ${t.current_stage_name}`;
+    $('historyTenantStage').textContent = `${t.room !== '—' ? 'Room ' + t.room + ' · ' : ''}Currently: Stage ${t.current_stage}: ${t.current_stage_name}`;
 
     const flags = [];
     if(t.is_blacklisted) flags.push('<span class="history-flag blacklisted">Blacklisted</span>');
@@ -639,7 +661,7 @@
         </div>
         <div class="timeline-body">
           <div class="timeline-head">
-            <span class="timeline-stage">${log.is_override ? 'Admin Override' : 'Stage ' + log.stage + ' — ' + esc(log.stage_name)}</span>
+            <span class="timeline-stage">${log.is_override ? 'Admin Override' : 'Stage ' + log.stage + ': ' + esc(log.stage_name)}</span>
             <span class="timeline-status ${log.status}">${esc(log.status)}</span>
             ${log.is_override ? '<span class="timeline-override-tag">Table 29</span>' : ''}
           </div>
@@ -734,6 +756,70 @@
     }
     this.disabled = false;
   });
+
+  // --- Testing Tools panel ---
+  // Lives in this same script block (not the sidebar-collapse one below)
+  // so it shares scope with esc()/toast()/csrf defined above.
+  const testSelect = document.getElementById('testTenantSelect');
+  if (testSelect) {
+    let testTenants = [];
+
+    async function loadTestTenants() {
+      testSelect.innerHTML = '<option value="">Loading tenants...</option>';
+      try {
+        const res = await fetch('/delinquency-testing/tenants', { headers: { 'Accept': 'application/json' } });
+        const text = await res.text();
+
+        let body;
+        try {
+          body = JSON.parse(text);
+        } catch (parseErr) {
+          console.error('Testing Tools: non-JSON response', text.slice(0, 300));
+          throw new Error(`Server returned status ${res.status} instead of tenant data.`);
+        }
+
+        if (!res.ok) {
+          throw new Error(body.message || `Server returned status ${res.status}.`);
+        }
+
+        testTenants = body.tenants || [];
+        testSelect.innerHTML = testTenants.length
+          ? testTenants.map(t => `<option value="${t.id}">${esc(t.name)}: Stage ${t.stage}${t.is_blacklisted ? ' (Blacklisted)' : ''}</option>`).join('')
+          : '<option value="">No active tenants found</option>';
+      } catch (e) {
+        testSelect.innerHTML = '<option value="">Could not load tenants</option>';
+        toast(e.message, true);
+      }
+    }
+
+    loadTestTenants();
+
+    document.querySelectorAll('[data-test-stage]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const tenantId = testSelect.value;
+        if (!tenantId) { toast('Pick a tenant first.', true); return; }
+
+        const stage = btn.dataset.testStage;
+        btn.disabled = true;
+        try {
+          const res = await fetch(`/delinquency-testing/${tenantId}/escalate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+            body: JSON.stringify({ stage: Number(stage) }),
+          });
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(body.message || 'Could not escalate tenant.');
+          toast(body.message || 'Done.');
+          await loadTestTenants();
+          location.reload(); // refresh the main Delinquent Accounts table too
+        } catch (e) {
+          toast(e.message, true);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    });
+  }
 
   renderTable();
 })();

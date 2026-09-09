@@ -24,6 +24,7 @@ use App\Http\Controllers\DormitoryProfileController;
 use App\Http\Controllers\AdminPrivilegeController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TenantTicketController;
+use App\Http\Controllers\DelinquencyTestingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -172,6 +173,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/delinquency', [DelinquencyController::class, 'page'])->name('delinquency.index');
     Route::post('/delinquency/{tenant}/override', [DelinquencyController::class, 'override']);
     Route::get('/delinquency/{tenant}/history', [DelinquencyController::class, 'history']);
+    // --- Delinquency Escalation Testing Tools (dev/demo only, not a manuscript use case) ---
+    Route::get('/delinquency-testing/tenants', [DelinquencyTestingController::class, 'index']);
+    Route::post('/delinquency-testing/{tenant}/escalate', [DelinquencyTestingController::class, 'escalate']);
 
     // --- Delinquency Escalation (Week 6, Thu) ---
     // Table 27 step 8 (download the system-generated Stage 5 demand
