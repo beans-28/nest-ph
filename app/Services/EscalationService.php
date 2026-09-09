@@ -25,8 +25,15 @@ class EscalationService
      */
     private const DAYS_PER_STAGE = 1;
 
-    /** Stage 2 SMS reminder days -- fixed by Table 24, not editable here. */
-    private const STAGE_2_DAYS = [1, 3, 7];
+    /**
+     * Stage 2 SMS reminder days. Table 24 literally specifies Day 1, 3, 7
+     * -- shifted to 2/4/7 so Stage 1 (account flagged) and Stage 2's first
+     * reminder never land in the same engine run, while keeping fairly
+     * even spacing between reminders and Day 7 as the "full week" urgent
+     * final notice. Deliberate team decision, not an oversight -- flagged
+     * for BAGUI to reflect in the manuscript alongside DAYS_PER_STAGE.
+     */
+    private const STAGE_2_DAYS = [2, 4, 7];
 
     /** A log row in this status counts as "this action actually succeeded." */
     private const COMPLETE_STATUSES = ['sent', 'resolved'];
