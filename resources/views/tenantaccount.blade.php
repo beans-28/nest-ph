@@ -19,9 +19,6 @@
   html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
   .app{ display:flex; min-height:100vh; }
 
-  /* ===== Sidebar: logo pinned at top, Log Out pinned at bottom, and only
-     the middle nav list scrolls if it doesn't fit. Collapsible via the
-     hamburger button. Same shell as tenantdashboard/tenantbilling. ===== */
   .sidebar{
     width:220px; flex-shrink:0;
     background:linear-gradient(180deg, var(--green-sidebar-top) 0%, var(--green-sidebar-bottom) 100%);
@@ -90,9 +87,6 @@
   .page-head-text h1{ font-size:19px; font-weight:700; margin:0; color:var(--green-accent); }
   .page-head-text p{ font-size:12.5px; color:var(--text-mid); margin:2px 0 0 0; }
 
-  /* ===== Tabs — only one exists today (Change Password); the row is
-     built to take more without restructuring once profile-info editing
-     (Use Case Table 10) is actually built. ===== */
   .tabs-row{ display:flex; gap:8px; margin-bottom:20px; }
   .tab-pill{ padding:9px 18px; border-radius:20px; font-size:12.5px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:#fff; color:var(--text-mid); }
   .tab-pill.active{ background:var(--green-dark); color:#fff; border-color:var(--green-dark); }
@@ -227,10 +221,6 @@
     });
   }
 
-  // Remember collapsed/expanded across page loads (each page is a full
-  // reload, not a single-page app, so this has to be localStorage rather
-  // than in-memory state) so the sidebar doesn't reset every time you
-  // navigate. Same key as the rest of the site, so the preference is shared.
   const SIDEBAR_COLLAPSE_KEY = 'nestph_sidebar_collapsed';
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const sidebar = document.getElementById('sidebar');
@@ -244,10 +234,6 @@
     });
   }
 
-  // Sidebar links, the hamburger, Log Out, and the back-arrow are styled
-  // divs rather than native <button>/<a> elements, so pressing Enter or
-  // Space while one is focused wouldn't normally do anything. This makes
-  // them behave like real interactive controls for keyboard users.
   document.querySelectorAll('[tabindex="0"]').forEach(el => {
     el.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -257,7 +243,6 @@
     });
   });
 
-  // ===== Change Password =====
   const EYE_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
   const EYE_CLOSED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0112 19c-7 0-11-7-11-7a20.3 20.3 0 015.06-5.94M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 7 11 7a20.3 20.3 0 01-3.22 4.39M14.12 14.12a3 3 0 11-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
 
@@ -296,8 +281,6 @@
     e.preventDefault();
     clearErrors();
 
-    // Check the confirmation matches before even hitting the server --
-    // no reason to make a round trip for a mismatch we can catch locally.
     if (newInput.value !== confirmInput.value) {
       showFieldError(confirmError, 'New password and confirmation do not match.');
       return;

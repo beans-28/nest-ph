@@ -102,4 +102,8 @@ class Tenant extends Model
         return $this->belongsTo(User::class, 'deactivated_by');
     }
 
+    public function review(): HasOne
+    {
+        return $this->hasOne(Review::class);
+    }
 }

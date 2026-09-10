@@ -27,6 +27,7 @@ class PublicController extends Controller
         ])->get()->sum('vacant_beds_count');
 
         $profile = DormitoryProfile::current();
+        $reviewStats = \App\Models\Review::aggregate();
 
         return view('welcome', [
             'availableBeds' => $availableBeds,
@@ -46,6 +47,8 @@ class PublicController extends Controller
                 ->pluck('label')
                 ->take(2)
                 ->implode(', '),
+            'averageRating' => $reviewStats['average'],
+            'reviewCount' => $reviewStats['count'],
         ]);
     }
 
@@ -429,6 +432,11 @@ class PublicController extends Controller
     {
         $profile = DormitoryProfile::current();
 
+        // Reviews & Ratings (Table 42) — the full breakdown bar + individual
+        // review list live here, on the "listing" page, rather than the
+        // homepage, which only carries the lightweight average+count teaser.
+        $reviewStats = \App\Models\Review::aggregate();
+
         return view('publicdorminfo', [
             'dormName' => $profile->dorm_name,
             'description' => $profile->description,
@@ -448,6 +456,14 @@ class PublicController extends Controller
             'paymentsAndFees' => $profile->payments_and_fees,
             'houseRules' => $profile->house_rules,
             'checkoutProcedures' => $profile->checkout_procedures,
+            'averageRating' => $reviewStats['average'],
+            'reviewCount' => $reviewStats['count'],
+            'reviewBreakdown' => \App\Models\Review::breakdown(),
+            'reviews' => \App\Models\Review::where('is_approved', true)
+                ->with('tenant')
+                ->latest()
+                ->take(20)
+                ->get(),
         ]);
     }
 

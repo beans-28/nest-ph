@@ -25,6 +25,8 @@ use App\Http\Controllers\AdminPrivilegeController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\TenantTicketController;
 use App\Http\Controllers\DelinquencyTestingController;
+use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\TenantMoveOutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -90,10 +92,10 @@ Route::post('/password/verify-code', [PasswordResetCodeController::class, 'verif
 Route::post('/password/reset-code', [PasswordResetCodeController::class, 'reset'])->name('password.code.reset');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'movein.check', 'delinquency.check'])
+    ->middleware(['auth', 'movein.check', 'moveout.check', 'delinquency.check'])
     ->name('dashboard');
 
-Route::middleware(['auth', 'delinquency.check'])->group(function () {
+Route::middleware(['auth', 'moveout.check', 'delinquency.check'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -229,7 +231,7 @@ Route::middleware(['auth', 'admin', 'privileges'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'tenant', 'movein.check', 'delinquency.check'])->group(function () {
+Route::middleware(['auth', 'tenant', 'movein.check', 'moveout.check', 'delinquency.check'])->group(function () {
     Route::get('/billing', function (Illuminate\Http\Request $request) {
         $tenant = $request->attributes->get('tenant') ?? $request->user()->tenant;
         $dormProfile = \App\Models\DormitoryProfile::current();
@@ -275,6 +277,9 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'delinquency.check'])->grou
     Route::get('/my/tickets', [TenantTicketController::class, 'page'])->name('tenant.tickets');
     Route::post('/my/tickets', [TenantTicketController::class, 'store']);
     Route::post('/my/tickets/{ticket}/reply', [TenantTicketController::class, 'reply']);
+
+    Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::get('/moved-out', [TenantMoveOutController::class, 'show'])->name('tenant.moveout');
 });
 
 require __DIR__.'/auth.php';

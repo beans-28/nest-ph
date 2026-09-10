@@ -261,8 +261,8 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21 7.5 13.5 2 9h7z"/></svg></div>
-                <div class="stat-value">5</div>
-                <div class="stat-label">Star Ratings</div>
+                <div class="stat-value">{{ $reviewCount > 0 ? number_format($averageRating, 1) : 'New' }}</div>
+                <div class="stat-label">{{ $reviewCount > 0 ? $reviewCount . ' ' . \Illuminate\Support\Str::plural('Review', $reviewCount) : 'No Reviews Yet' }}</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"/></svg></div>

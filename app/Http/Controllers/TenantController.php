@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use App\Services\TextbeeService;
 
 class TenantController extends Controller
 {
@@ -332,6 +333,31 @@ class TenantController extends Controller
                     }
                 }
             });
+
+            // Table 43 trigger: "the system marks a tenant's status as
+            // Moved Out, which triggers an SMS/system notification
+            // prompting the tenant to leave a review." Sent outside the
+            // transaction so a slow/unreachable SMS gateway never holds
+            // the DB lock -- same pattern as the eviction notice send.
+            //
+            // Deliberately skipped for blacklisted tenants: Stage 6
+            // blacklisting never touches tenants.status on its own, so
+            // reaching this line with is_blacklisted still true means an
+            // admin evicted someone and is now separately deactivating
+            // their record -- not a normal move-out, and not something
+            // we want to thank them for.
+            if (! $tenant->is_blacklisted) {
+                $reviewUrl = route('tenant.account');
+                $reviewSmsMessage = "Hi {$tenant->first_name}, you've been marked as moved out from "
+                    . TextbeeService::BRAND_NAME . '. Thank you for staying with us! '
+                    . "Log in to your account at {$reviewUrl} to leave a quick review of your stay.";
+
+                $sent = app(TextbeeService::class)->send($tenant->contact_number ?? '', $reviewSmsMessage);
+
+                Log::info('[reviews] Move-out review SMS ' . ($sent ? 'sent' : 'failed'), [
+                    'tenant_id' => $tenant->id,
+                ]);
+            }
 
             $message = 'Tenant account deactivated successfully.';
         } else {

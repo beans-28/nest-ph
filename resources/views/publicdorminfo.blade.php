@@ -138,6 +138,30 @@
         .listing-rules{ list-style:disc; padding-left:20px; margin:0; }
         .listing-rules li{ font-size:13px; color:#33393c; line-height:1.8; }
         .listing-badge img{ width:24px; height:24px; border-radius:4px; object-fit:cover; flex-shrink:0; }
+                .reviews-card{ background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,0.25); margin-bottom:24px; padding:24px 28px; }
+        .reviews-summary{ display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start; margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid #e2e6e2; }
+        .reviews-score{ text-align:center; flex-shrink:0; }
+        .reviews-score .score-num{ font-size:42px; font-weight:900; color:#194e19; line-height:1; }
+        .reviews-score .score-stars{ color:#f5b301; font-size:18px; margin:6px 0 4px; letter-spacing:2px; }
+        .reviews-score .score-count{ font-size:12px; color:#5b6b60; }
+        .reviews-breakdown{ flex:1; min-width:200px; display:flex; flex-direction:column; gap:6px; justify-content:center; }
+        .breakdown-row{ display:flex; align-items:center; gap:10px; font-size:12px; color:#5b6b60; }
+        .breakdown-row .star-label{ width:38px; flex-shrink:0; }
+        .breakdown-row .bar-track{ flex:1; height:8px; background:#eef2ee; border-radius:6px; overflow:hidden; }
+                .breakdown-row .bar-fill{ display:block; height:100%; background:#f5b301; border-radius:6px; }
+        .breakdown-row .bar-count{ width:26px; text-align:right; flex-shrink:0; color:#33393c; }
+        .reviews-list{ display:flex; flex-direction:column; gap:18px; }
+        .review-item{ padding-bottom:18px; border-bottom:1px solid #eef2ee; }
+        .review-item:last-child{ border-bottom:none; padding-bottom:0; }
+        .review-item-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }
+        .review-item-name{ font-weight:700; font-size:13px; color:#292420; }
+        .review-item-date{ font-size:11.5px; color:#8a9690; }
+        .review-item-stars{ color:#f5b301; font-size:13px; margin-bottom:6px; letter-spacing:1px; }
+        .review-item-comment{ font-size:13px; color:#33393c; line-height:1.7; }
+        .reviews-empty{ text-align:center; padding:24px 10px; color:#5b6b60; font-size:13px; }
+        @media (max-width: 640px) {
+            .reviews-summary{ flex-direction:column; align-items:center; text-align:center; }
+        }
     </style>
 </head>
 <body>
@@ -198,6 +222,50 @@
             </div>
         </div>
         @endif
+
+        <div class="reviews-card">
+            <div class="listing-section-label" style="margin-top:0;">Ratings &amp; Reviews</div>
+
+            @if($reviewCount > 0)
+                <div class="reviews-summary">
+                    <div class="reviews-score">
+                        <div class="score-num">{{ number_format($averageRating, 1) }}</div>
+                        <div class="score-stars">{{ str_repeat('★', (int) round($averageRating)) }}{{ str_repeat('☆', 5 - (int) round($averageRating)) }}</div>
+                        <div class="score-count">{{ $reviewCount }} {{ \Illuminate\Support\Str::plural('review', $reviewCount) }}</div>
+                    </div>
+                    <div class="reviews-breakdown">
+                        @foreach($reviewBreakdown as $row)
+                            <div class="breakdown-row">
+                                <span class="star-label">{{ $row['star'] }} star</span>
+                                <span class="bar-track"><span class="bar-fill" style="width: {{ $row['percent'] }}%;"></span></span>
+                                <span class="bar-count">{{ $row['count'] }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="reviews-list">
+                    @foreach($reviews as $review)
+                        <div class="review-item">
+                            <div class="review-item-head">
+                                <span class="review-item-name">
+                                    {{ $review->tenant->first_name ?? 'Former Tenant' }}
+                                    {{ $review->tenant && $review->tenant->last_name ? substr($review->tenant->last_name, 0, 1) . '.' : '' }}
+                                </span>
+                                <span class="review-item-date">{{ $review->created_at->format('M Y') }}</span>
+                            </div>
+                            <div class="review-item-stars">{{ str_repeat('★', $review->rating) }}{{ str_repeat('☆', 5 - $review->rating) }}</div>
+                            @if($review->comment)
+                                <div class="review-item-comment">{{ $review->comment }}</div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="reviews-empty">No reviews yet — be the first former tenant to share your experience!</div>
+            @endif
+        </div>
+
         <div class="info-header">
             <div class="info-header-text">
                 <h1>{{ $dormName ?? 'NEST.PH' }} — Dorm Info</h1>

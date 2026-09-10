@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 08, 2026 at 07:42 AM
+-- Generation Time: Sep 10, 2026 at 10:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -83,7 +83,8 @@ CREATE TABLE `applications` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `inquiry_id` bigint(20) UNSIGNED DEFAULT NULL,
   `tenant_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `full_name` varchar(150) NOT NULL,
+  `first_name` varchar(100) DEFAULT NULL,
+  `last_name` varchar(100) DEFAULT NULL,
   `birthdate` date DEFAULT NULL,
   `gender` varchar(20) DEFAULT NULL,
   `nationality` varchar(60) DEFAULT NULL,
@@ -121,14 +122,15 @@ CREATE TABLE `applications` (
 -- Dumping data for table `applications`
 --
 
-INSERT INTO `applications` (`id`, `inquiry_id`, `tenant_id`, `full_name`, `birthdate`, `gender`, `nationality`, `medical_condition`, `occupation`, `school_company`, `school_company_address`, `contact_number`, `email`, `landline`, `home_address`, `emergency_contact_name`, `emergency_contact_number`, `emergency_contact_email`, `emergency_contact_landline`, `father_name`, `mother_name`, `bed_id`, `preferred_start_date`, `tenant_end_date`, `type_of_tenant`, `id_document_path`, `signed_contract_path`, `dpa_consent`, `status`, `rejection_reason`, `re_application_note`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
-(8, NULL, 13, 'adasdasdas', '2026-08-13', 'female', 'Filipino', 'None', 'adadasda', 'sdadasd', 'sadasdsd', '09223213123', 'adadas@gmail.com', NULL, 'asdadasdasd', 'asdsadasdasd', '092131231232', 'sadasdasdsad@gmail.com', NULL, 'asdads', 'dasdadasd', 34, '2026-09-02', '2026-11-26', 'student', 'application-documents/xdM4EJ5QZo9hWXroCtu3E6kfYOw0GqBkVdzXRbe5.jpg', 'application-documents/shhDmU4ZxvyXMhMj2ZAFmAxJl3STz2QCQBOSdNt6.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 06:16:41', '2026-08-31 10:04:14'),
-(9, NULL, 14, 'Test Tenant 1', '2026-08-12', 'female', 'Filipino', 'None', 'assadasdasddsa', 'sdadsd', 'sdadasd', '09778643524', 'testtenant1@gmail.com', NULL, 'asdasdasd', 'parents', '09573426732', 'parents@gmail.com', NULL, 'Father Parents', 'Mother Parents', 38, '2026-09-03', '2026-12-23', 'student', 'application-documents/uesfq0GVNL0tc8y3dFTloKnAIpePXiTGudlj3azU.jpg', 'application-documents/iY01Hw1mW8CceLrI5195ioAA0VOnRvrPSSK3K5ih.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 10:52:25', '2026-08-31 10:53:46'),
-(10, NULL, 25, 'Valid ID Check', '2005-06-04', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09867354632', 'validIDcheck@gmail.com', NULL, 'Pampanga', 'ID Mother', '09673526321', 'idparent@gmail.com', '23421', 'ID Father', 'ID Mother', 42, '2026-09-08', '2027-01-20', 'student', 'application-documents/w7J1TMMwHZFVd9utDat9ONw0oNcZSy4mOKuOWSL0.jpg', 'application-documents/mpENdhsErV3jGsQfbEALu6S4JVSPn4l9hIalA0bD.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 05:58:12', '2026-09-04 05:59:16'),
-(11, NULL, 26, 'Valid ID CheckTwo', '2008-07-04', 'male', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09273648212', 'validid2@gmail.com', NULL, 'Sta Mesa', 'Valid Mother', '09364729591', 'validmom@gmail.com', '133334', 'Valid Father', 'Valid Mother', 43, '2026-09-10', '2027-02-16', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:12:49', '2026-09-04 06:13:15'),
-(12, NULL, 27, 'Tenant Check One', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09362537482', 'tenantcheck1@gmail.com', NULL, 'asdasdads', 'Tenant Mother One', '097726373482', 'tenantmom1@gmail.com', '54213', 'Tenant Father One', 'Tenant Mother One', 39, '2026-09-05', '2027-01-16', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:49:48', '2026-09-04 06:50:33'),
-(13, NULL, 28, 'Tenant Check Two', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'pup', 'Sta. mesa', '09546374234', 'tenantcheck2@gmail.com', '34231', 'San Sebastian', 'Tenant Mother Two', '0936474328', 'tenantmom2@gmail.com', '44312', 'Tenant Father Two', 'Tenant Mother 2', 40, '2026-09-05', '2026-12-16', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 10:39:58', '2026-09-04 10:42:06'),
-(14, NULL, 30, 'Beans Lope', '2014-02-07', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09289811408', 'vincelopez@gmail.com', NULL, 'Manila', 'Arlene Lopez', '09289811476', 'arlenelopez@gmail.com', '21212', 'Larry Lopez', 'Arlene Lopez', 41, '2026-09-10', '2026-12-15', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 12:38:04', '2026-09-04 12:38:43');
+INSERT INTO `applications` (`id`, `inquiry_id`, `tenant_id`, `first_name`, `last_name`, `birthdate`, `gender`, `nationality`, `medical_condition`, `occupation`, `school_company`, `school_company_address`, `contact_number`, `email`, `landline`, `home_address`, `emergency_contact_name`, `emergency_contact_number`, `emergency_contact_email`, `emergency_contact_landline`, `father_name`, `mother_name`, `bed_id`, `preferred_start_date`, `tenant_end_date`, `type_of_tenant`, `id_document_path`, `signed_contract_path`, `dpa_consent`, `status`, `rejection_reason`, `re_application_note`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
+(8, NULL, 13, 'adasdasdas', 'adasdasdas', '2026-08-13', 'female', 'Filipino', 'None', 'adadasda', 'sdadasd', 'sadasdsd', '09223213123', 'adadas@gmail.com', NULL, 'asdadasdasd', 'asdsadasdasd', '092131231232', 'sadasdasdsad@gmail.com', NULL, 'asdads', 'dasdadasd', 34, '2026-09-02', '2026-11-26', 'student', 'application-documents/xdM4EJ5QZo9hWXroCtu3E6kfYOw0GqBkVdzXRbe5.jpg', 'application-documents/shhDmU4ZxvyXMhMj2ZAFmAxJl3STz2QCQBOSdNt6.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 06:16:41', '2026-09-10 05:56:47'),
+(9, NULL, 14, 'Test Tenant', '1', '2026-08-12', 'female', 'Filipino', 'None', 'assadasdasddsa', 'sdadsd', 'sdadasd', '09778643524', 'testtenant1@gmail.com', NULL, 'asdasdasd', 'parents', '09573426732', 'parents@gmail.com', NULL, 'Father Parents', 'Mother Parents', 38, '2026-09-03', '2026-12-23', 'student', 'application-documents/uesfq0GVNL0tc8y3dFTloKnAIpePXiTGudlj3azU.jpg', 'application-documents/iY01Hw1mW8CceLrI5195ioAA0VOnRvrPSSK3K5ih.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 10:52:25', '2026-09-10 05:56:47'),
+(10, NULL, 25, 'Valid ID', 'Check', '2005-06-04', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09867354632', 'validIDcheck@gmail.com', NULL, 'Pampanga', 'ID Mother', '09673526321', 'idparent@gmail.com', '23421', 'ID Father', 'ID Mother', 42, '2026-09-08', '2027-01-20', 'student', 'application-documents/w7J1TMMwHZFVd9utDat9ONw0oNcZSy4mOKuOWSL0.jpg', 'application-documents/mpENdhsErV3jGsQfbEALu6S4JVSPn4l9hIalA0bD.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 05:58:12', '2026-09-10 05:56:47'),
+(11, NULL, 26, 'Valid ID', 'CheckTwo', '2008-07-04', 'male', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09273648212', 'validid2@gmail.com', NULL, 'Sta Mesa', 'Valid Mother', '09364729591', 'validmom@gmail.com', '133334', 'Valid Father', 'Valid Mother', 43, '2026-09-10', '2027-02-16', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:12:49', '2026-09-10 05:56:47'),
+(12, NULL, 27, 'Tenant Check', 'One', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09362537482', 'tenantcheck1@gmail.com', NULL, 'asdasdads', 'Tenant Mother One', '097726373482', 'tenantmom1@gmail.com', '54213', 'Tenant Father One', 'Tenant Mother One', 39, '2026-09-05', '2027-01-16', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:49:48', '2026-09-10 05:56:47'),
+(13, NULL, 28, 'Tenant Check', 'Two', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'pup', 'Sta. mesa', '09546374234', 'tenantcheck2@gmail.com', '34231', 'San Sebastian', 'Tenant Mother Two', '0936474328', 'tenantmom2@gmail.com', '44312', 'Tenant Father Two', 'Tenant Mother 2', 40, '2026-09-05', '2026-12-16', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 10:39:58', '2026-09-10 05:56:47'),
+(14, NULL, 30, 'Beans', 'Lope', '2014-02-07', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09289811408', 'vincelopez@gmail.com', NULL, 'Manila', 'Arlene Lopez', '09289811476', 'arlenelopez@gmail.com', '21212', 'Larry Lopez', 'Arlene Lopez', 41, '2026-09-10', '2026-12-15', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 12:38:04', '2026-09-10 05:56:47'),
+(15, NULL, 31, 'Shayne', 'Bagui', '2004-08-13', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta. Mesa', '09212408565', 'shaynebagui@gmail.com', '121342', 'Sta Mesa Road 4 block 1234', 'Marie Bagui', '09212408568', 'mariebagui@gmail.com', NULL, 'Father Bagui', 'Marie Bagui', 46, '2026-09-12', '2026-12-19', 'student', 'application-documents/7kDFU28JRBf080PHvgF2ZpC9eRTi3KyWArsakZ2g.jpg', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-10 01:14:28', '2026-09-10 05:56:47');
 
 -- --------------------------------------------------------
 
@@ -156,12 +158,12 @@ INSERT INTO `beds` (`id`, `room_id`, `bed_label`, `status`, `created_at`, `updat
 (38, 17, 'Bed 1', 'occupied', '2026-08-31 10:49:31', '2026-08-31 11:21:55'),
 (39, 17, 'Bed 2', 'occupied', '2026-08-31 10:49:31', '2026-09-04 06:53:18'),
 (40, 17, 'Bed 3', 'occupied', '2026-08-31 10:49:31', '2026-09-04 10:44:34'),
-(41, 17, 'Bed 4', 'occupied', '2026-08-31 10:49:31', '2026-09-04 12:41:58'),
+(41, 17, 'Bed 4', 'vacant', '2026-08-31 10:49:31', '2026-09-10 07:41:45'),
 (42, 18, 'Bed 1', 'reserved', '2026-09-03 06:27:16', '2026-09-04 05:58:12'),
 (43, 18, 'Bed 2', 'occupied', '2026-09-03 06:27:16', '2026-09-04 06:20:12'),
 (44, 18, 'Bed 3', 'occupied', '2026-09-03 06:27:16', '2026-09-04 11:14:43'),
 (45, 18, 'Bed 4', 'vacant', '2026-09-03 06:27:16', '2026-09-03 06:27:16'),
-(46, 19, 'Bed 1', 'vacant', '2026-09-04 13:04:53', '2026-09-04 13:05:06'),
+(46, 19, 'Bed 1', 'occupied', '2026-09-04 13:04:53', '2026-09-10 01:30:05'),
 (47, 19, 'Bed 2', 'vacant', '2026-09-04 13:04:53', '2026-09-04 13:04:53'),
 (48, 19, 'Bed 3', 'vacant', '2026-09-04 13:04:53', '2026-09-04 13:04:53'),
 (49, 19, 'Bed 4', 'vacant', '2026-09-04 13:04:53', '2026-09-04 13:04:53');
@@ -199,11 +201,14 @@ INSERT INTO `billing_statements` (`id`, `contract_id`, `tenant_id`, `type`, `bil
 (6, 15, 14, 'move_in', '2026-09-03', '2026-09-03', '2026-09-03', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-08-31 10:53:46', '2026-08-31 11:21:55'),
 (15, 24, 23, 'monthly', '2026-07-24', '2026-08-23', '2026-08-24', 4000.00, 300.00, 200.00, 150.00, 4650.00, 'overdue', '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
 (16, 25, 24, 'monthly', '2026-08-01', '2026-08-31', '2026-08-24', 5000.00, 0.00, 0.00, 500.00, 5500.00, 'overdue', '2026-09-03 11:25:35', '2026-09-04 12:57:10'),
-(17, 26, 25, 'move_in', '2026-09-08', '2026-09-08', '2026-09-08', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'unpaid', '2026-09-04 05:59:16', '2026-09-04 05:59:16'),
+(17, 26, 25, 'move_in', '2026-09-08', '2026-09-08', '2026-09-08', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'overdue', '2026-09-04 05:59:16', '2026-09-09 07:46:31'),
 (18, 27, 26, 'move_in', '2026-09-10', '2026-09-10', '2026-09-10', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'paid', '2026-09-04 06:13:15', '2026-09-04 06:20:12'),
 (19, 28, 27, 'move_in', '2026-09-05', '2026-09-05', '2026-09-05', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-09-04 06:50:33', '2026-09-04 06:53:18'),
 (20, 29, 28, 'move_in', '2026-09-05', '2026-09-05', '2026-09-05', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-09-04 10:42:06', '2026-09-04 10:44:34'),
-(21, 31, 30, 'move_in', '2026-09-10', '2026-09-10', '2026-09-10', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-09-04 12:38:43', '2026-09-04 12:41:58');
+(21, 31, 30, 'move_in', '2026-09-10', '2026-09-10', '2026-09-10', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-09-04 12:38:43', '2026-09-04 12:41:58'),
+(22, 30, 29, 'monthly', '2026-08-09', '2026-09-09', '2026-08-29', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-09 12:05:23', '2026-09-09 12:34:55'),
+(23, 32, 31, 'move_in', '2026-09-12', '2026-09-12', '2026-09-12', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'paid', '2026-09-10 01:26:19', '2026-09-10 01:30:04'),
+(24, 32, 31, 'monthly', '2026-08-10', '2026-09-10', '2026-09-03', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-10 01:48:02', '2026-09-10 01:49:01');
 
 -- --------------------------------------------------------
 
@@ -340,7 +345,7 @@ CREATE TABLE `dormitory_profile` (
 --
 
 INSERT INTO `dormitory_profile` (`id`, `dorm_name`, `description`, `address`, `contact_number`, `contact_email`, `logo_path`, `policies_file_path`, `contract_template_path`, `business_permit_path`, `bir_registration_path`, `gcash_number`, `bdo_account_number`, `payments_and_fees`, `house_rules`, `checkout_procedures`, `created_at`, `updated_at`) VALUES
-(1, 'Pureza Station Dormitory', 'Pureza Station Dormitory has been a trusted home for students and young professionals since 1996. Just a 5-minute walk from PUP and the Pureza LRT Station, we offer clean, secure, and affordable rooms designed for easy, comfortable living close to school and work.', 'Pureza Station, Manila', '0917-893-2970', 'dormitorypurezastation@gmail.com', 'dormitory-profile/yYzcKk7O16Id6prPIyO47BJJlqGqSHs3EY1fNhes.jpg', 'policies/test.pdf', 'contracts/dormitory-contract.pdf', NULL, 'dormitory-profile/legitimacy/5sPbbKzi1OrwF8CRR2KFtur4qQtUgSCjbdJuJ6sr.png', NULL, NULL, 'Rent may be paid in cash, GCash, or bank deposit (BDO).\n\nTenancy is subject to a three-month minimum. Tenants must provide the start\nand end date of their stay upon registration.\n\nUpon registration, new tenants pay a reservation fee composed of a security\ndeposit (one month, refundable for a 3-month contract) and one month advance\nrent. The reservation fee is non-refundable if the tenant cancels or checks\nout earlier than the three-month minimum. The deposit is returned within\n2–3 weeks after the check-out date.\n\nRent is due every 1st day of the month. For GCash or bank deposit, payment\nconfirmation must be sent to the dormitory\'s official contact channels.\n\nTenants are granted a 3-day grace period for late rent payments. Beyond the\ngrace period, a 10% penalty fee applies. Failure to pay within one month\nresults in a notice of eviction for non-payment.\n\nTenants wishing to extend their stay must give at least 1 month notice.\nMove-out requires at least 2 weeks notice; move-out schedule is end of month.', 'Alcoholic beverages, smoking, and vaping are not allowed on dormitory premises.\n\nWashing of clothes is not allowed; a laundry service is available outside.\n\nTenants are responsible for keeping common areas clean after use, and must\npromptly report any damages or issues to maintenance staff.\n\nTenants must pay for any loss or damage to dormitory property caused by\nthemselves or their guests, at the cost of the damage (minimum ₱500).\n\nOnly registered tenants may enter the rooms. Visitors may be entertained at\nthe receiving area.\n\nHazardous goods (gas, cooking stoves, flammable fuels, firearms) are strictly\nprohibited; violation carries a ₱500 fine and may be reported to authorities.\nDrugs and illegal substances are strictly prohibited and will be reported.\n\nSilence should be observed at all times out of consideration for other tenants.\nTreat fellow tenants and staff with respect — harassment, discrimination, or\nbullying will not be tolerated.\n\nManagement is not responsible for losses or injuries occurring on the premises.\nTenants should exercise care and diligence at all times.\n\nDoors and windows must be closed when using the air-conditioner. When leaving,\nturn off all faucets, showers, lights, air conditioners, and appliances, and\nlock the door. Lost or damaged keys cost ₱50 to replace.\n\nA strict NO PETS policy is enforced.\n\nCurfew hours: 11PM – 4AM. Aircon schedule: 10PM – 5AM.', 'Advanced notice: Residents planning to check out must give written notice at\nleast two weeks before their intended departure date.\n\nRoom inspection: A staff member will inspect the room/bed before check-out to\nassess damages or cleanliness issues. Rooms should be clean before inspection.\n\nDamages and repairs: Residents are responsible for damage beyond normal wear\nand tear, and will be charged for repairs or replacements.\n\nFurniture and equipment: All dormitory-provided furniture and equipment must\nbe present and in good condition. Missing or damaged items incur charges.\n\nCleanliness: Rooms must be left in move-in condition, with all personal\nbelongings removed and shared areas cleaned.\n\nTrash disposal: Dispose of all trash and recyclables in designated bins.\n\nKey return: Room keys must be returned upon check-out. Failure to return keys\nmay result in a fine.\n\nCheck-out time: Residents must vacate by 2:00 PM on the check-out date.\n\nFinal settlement: After inspection, the security deposit is returned minus any\ndeductions for damages or outstanding charges, within two weeks of check-out.', '2026-08-27 12:47:03', '2026-09-07 07:29:52');
+(1, 'Pureza Station Dormitory', 'Pureza Station Dormitory has been a trusted home for students and young professionals since 1996. Just a 5-minute walk from PUP and the Pureza LRT Station, we offer clean, secure, and affordable rooms designed for easy, comfortable living close to school and work.', 'Pureza Station, Manila', '0917-893-2970', 'dormitorypurezastation@gmail.com', 'dormitory-profile/yYzcKk7O16Id6prPIyO47BJJlqGqSHs3EY1fNhes.jpg', 'dormitory-profile/JU08CTcqjUS5XJqlZKb7DemhpAryCiQObz8Xy0vp.pdf', 'contracts/dormitory-contract.pdf', NULL, 'dormitory-profile/legitimacy/5sPbbKzi1OrwF8CRR2KFtur4qQtUgSCjbdJuJ6sr.png', NULL, NULL, 'Rent may be paid in cash, GCash, or bank deposit (BDO).\n\nTenancy is subject to a three-month minimum. Tenants must provide the start\nand end date of their stay upon registration.\n\nUpon registration, new tenants pay a reservation fee composed of a security\ndeposit (one month, refundable for a 3-month contract) and one month advance\nrent. The reservation fee is non-refundable if the tenant cancels or checks\nout earlier than the three-month minimum. The deposit is returned within\n2–3 weeks after the check-out date.\n\nRent is due every 1st day of the month. For GCash or bank deposit, payment\nconfirmation must be sent to the dormitory\'s official contact channels.\n\nTenants are granted a 3-day grace period for late rent payments. Beyond the\ngrace period, a 10% penalty fee applies. Failure to pay within one month\nresults in a notice of eviction for non-payment.\n\nTenants wishing to extend their stay must give at least 1 month notice.\nMove-out requires at least 2 weeks notice; move-out schedule is end of month.', 'Alcoholic beverages, smoking, and vaping are not allowed on dormitory premises.\n\nWashing of clothes is not allowed; a laundry service is available outside.\n\nTenants are responsible for keeping common areas clean after use, and must\npromptly report any damages or issues to maintenance staff.\n\nTenants must pay for any loss or damage to dormitory property caused by\nthemselves or their guests, at the cost of the damage (minimum ₱500).\n\nOnly registered tenants may enter the rooms. Visitors may be entertained at\nthe receiving area.\n\nHazardous goods (gas, cooking stoves, flammable fuels, firearms) are strictly\nprohibited; violation carries a ₱500 fine and may be reported to authorities.\nDrugs and illegal substances are strictly prohibited and will be reported.\n\nSilence should be observed at all times out of consideration for other tenants.\nTreat fellow tenants and staff with respect — harassment, discrimination, or\nbullying will not be tolerated.\n\nManagement is not responsible for losses or injuries occurring on the premises.\nTenants should exercise care and diligence at all times.\n\nDoors and windows must be closed when using the air-conditioner. When leaving,\nturn off all faucets, showers, lights, air conditioners, and appliances, and\nlock the door. Lost or damaged keys cost ₱50 to replace.\n\nA strict NO PETS policy is enforced.\n\nCurfew hours: 11PM – 4AM. Aircon schedule: 10PM – 5AM.', 'Advanced notice: Residents planning to check out must give written notice at\nleast two weeks before their intended departure date.\n\nRoom inspection: A staff member will inspect the room/bed before check-out to\nassess damages or cleanliness issues. Rooms should be clean before inspection.\n\nDamages and repairs: Residents are responsible for damage beyond normal wear\nand tear, and will be charged for repairs or replacements.\n\nFurniture and equipment: All dormitory-provided furniture and equipment must\nbe present and in good condition. Missing or damaged items incur charges.\n\nCleanliness: Rooms must be left in move-in condition, with all personal\nbelongings removed and shared areas cleaned.\n\nTrash disposal: Dispose of all trash and recyclables in designated bins.\n\nKey return: Room keys must be returned upon check-out. Failure to return keys\nmay result in a fine.\n\nCheck-out time: Residents must vacate by 2:00 PM on the check-out date.\n\nFinal settlement: After inspection, the security deposit is returned minus any\ndeductions for damages or outstanding charges, within two weeks of check-out.', '2026-08-27 12:47:03', '2026-09-09 12:14:44');
 
 -- --------------------------------------------------------
 
@@ -380,7 +385,11 @@ INSERT INTO `escalation_logs` (`id`, `tenant_id`, `billing_id`, `stage`, `action
 (132, 24, 16, 3, 'portal_restricted', '[TEST SEED — not actually sent] Portal access restricted.', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
 (133, 24, 16, 4, 'emergency_contact_notified', '[TEST SEED — not actually sent] Emergency contact notified.', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
 (134, 24, 16, 5, 'demand_letter_generated', 'demand-letters/(test-seed-no-real-pdf).pdf', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(135, 24, 16, 6, 'delinquent_blacklisted', NULL, 'resolved', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10');
+(135, 24, 16, 6, 'delinquent_blacklisted', NULL, 'resolved', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
+(150, 31, 24, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-10 01:48:02', '2026-09-10 01:48:02'),
+(151, 31, 24, 2, 'sms_reminder_day2', 'Reminder: Your account with NEST PH is now 2 day(s) overdue. Outstanding balance (incl. penalties): PHP 1,625.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-10 01:49:05', '2026-09-10 01:49:05'),
+(152, 31, 24, 2, 'sms_reminder_day4', 'Reminder: Your account with NEST PH is now 4 day(s) overdue. Outstanding balance (incl. penalties): PHP 1,625.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-10 01:49:07', '2026-09-10 01:49:07'),
+(153, 31, 24, 2, 'sms_reminder_day7', 'URGENT: Your account with NEST PH is now 7 day(s) overdue. Outstanding balance (incl. penalties): PHP 1,625.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-10 01:49:09', '2026-09-10 01:49:09');
 
 -- --------------------------------------------------------
 
@@ -455,7 +464,8 @@ INSERT INTO `inquiries` (`id`, `full_name`, `contact_number`, `email`, `room_id`
 (3, 'Vince Lopez', '09289811405', 'vincehh28@gmail.com', NULL, 'Up to ilan yung pede sa room po?', 'hello! up to 4', '2026-08-30 05:17:57', 3, 'Standard', 1, 'contacted', '2026-08-30 05:15:43', '2026-08-30 05:17:57'),
 (4, 'John Wick', '09289811405', 'johnwick@gmail.com', NULL, 'may aso po ba d2?', 'wala ssob', '2026-08-30 05:27:02', 3, NULL, 1, 'contacted', '2026-08-30 05:25:58', '2026-08-30 05:27:02'),
 (5, 'Tung Tung', '09289811405', 'tungtungsahur@gmail.com', NULL, 'hey', NULL, NULL, NULL, 'Standard', 1, 'new', '2026-08-30 05:30:35', '2026-08-30 05:30:35'),
-(6, 'Beans Lopez', '09289811407', 'vincelopez@gmail.com', 18, 'How is the faucet', 'good', '2026-09-04 12:33:34', 3, 'Standard', 1, 'closed', '2026-09-04 12:32:33', '2026-09-04 13:05:38');
+(6, 'Beans Lopez', '09289811407', 'vincelopez@gmail.com', 18, 'How is the faucet', 'good', '2026-09-04 12:33:34', 3, 'Standard', 1, 'closed', '2026-09-04 12:32:33', '2026-09-04 13:05:38'),
+(7, 'Shayne Bagui', '09289811408', 'shaynebagui@gmail.com', 17, 'How is the water pressure??', 'goods lang po', '2026-09-10 01:01:20', 3, 'Standard', 1, 'contacted', '2026-09-10 00:58:57', '2026-09-10 01:01:20');
 
 -- --------------------------------------------------------
 
@@ -536,7 +546,8 @@ INSERT INTO `lease_contracts` (`id`, `application_id`, `tenant_id`, `bed_id`, `i
 (28, 12, 27, 39, NULL, '2026-09-05', '2027-01-16', 2125.00, NULL, 'signed', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', '2026-09-04 06:50:33', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 06:50:33', '2026-09-04 06:50:33'),
 (29, 13, 28, 40, NULL, '2026-09-05', '2026-12-16', 2125.00, NULL, 'signed', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', '2026-09-04 10:42:06', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 10:42:06', '2026-09-04 10:42:06'),
 (30, NULL, 29, 44, NULL, '2026-09-05', '2027-01-10', 1625.00, NULL, 'signed', 'tenant-documents/y6WIdA8dDS01fDE62sJHGrUWyTDvI9xjMVhoyve9.pdf', '2026-09-04 11:14:43', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 11:14:43', '2026-09-04 11:14:43'),
-(31, 14, 30, 41, NULL, '2026-09-10', '2026-12-15', 2125.00, NULL, 'signed', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', '2026-09-04 12:38:43', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 12:38:43', '2026-09-04 12:38:43');
+(31, 14, 30, 41, NULL, '2026-09-10', '2026-12-15', 2125.00, NULL, 'signed', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', '2026-09-04 12:38:43', 'terminated', 'Moved out', '2026-09-10 07:41:45', NULL, NULL, 3, 3, '2026-09-04 12:38:43', '2026-09-10 07:41:45'),
+(32, 15, 31, 46, NULL, '2026-09-12', '2026-12-19', 1625.00, NULL, 'signed', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', '2026-09-10 01:26:19', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-10 01:26:19', '2026-09-10 01:26:19');
 
 -- --------------------------------------------------------
 
@@ -565,7 +576,7 @@ CREATE TABLE `maintenance_tickets` (
 --
 
 INSERT INTO `maintenance_tickets` (`id`, `tenant_id`, `bed_id`, `title`, `category`, `description`, `attachment_paths`, `priority`, `status`, `assigned_to`, `resolved_at`, `created_at`, `updated_at`) VALUES
-(1, 30, 41, 'Faulty outlet', 'electrical_issue', 'Outlet near bed 2 is faulty', '[\"ticket-attachments\\/YSjp9c3pd6BMqGnSRgM3aR9vnArYsWczH9qlzFtn.jpg\",\"ticket-attachments\\/zSVYgiskuekYI41w0k2b36HbEnIf92cp8kcEJ4yV.png\"]', 'urgent', 'in_progress', 3, NULL, '2026-09-08 05:30:48', '2026-09-08 05:35:55');
+(1, 30, 41, 'Faulty outlet', 'electrical_issue', 'Outlet near bed 2 is faulty', '[\"ticket-attachments\\/YSjp9c3pd6BMqGnSRgM3aR9vnArYsWczH9qlzFtn.jpg\",\"ticket-attachments\\/zSVYgiskuekYI41w0k2b36HbEnIf92cp8kcEJ4yV.png\"]', 'non_urgent', 'in_progress', 3, NULL, '2026-09-08 05:30:48', '2026-09-09 11:55:13');
 
 -- --------------------------------------------------------
 
@@ -647,7 +658,11 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (61, '2026_09_07_000003_rebuild_maintenance_tickets_table', 37),
 (62, '2026_09_07_000004_create_ticket_replies_table', 37),
 (63, '2026_09_08_000005_add_tenant_id_to_ticket_replies_table', 38),
-(64, '2026_09_08_000006_convert_ticket_attachment_to_multiple', 39);
+(64, '2026_09_08_000006_convert_ticket_attachment_to_multiple', 39),
+(65, '2026_09_10_135502_split_full_name_on_applications_table', 40),
+(66, '2026_09_10_135507_split_full_name_on_tenants_table', 40),
+(67, '2026_09_10_135740_drop_full_name_columns', 41),
+(68, '2026_09_10_150536_create_reviews_table', 42);
 
 -- --------------------------------------------------------
 
@@ -708,7 +723,8 @@ INSERT INTO `payments` (`id`, `billing_id`, `tenant_id`, `amount_paid`, `payment
 (6, 18, 26, 3250.00, 'gcash', '1234 5467 8165', '2026-09-04', 'approved', 'payment-proofs/CBnUuknJf3uSv95dRLtFY0woh0Cy8uBuhBgLsPz8.png', 'Time of payment: 14:14. paid', NULL, 3, '2026-09-04 06:20:12', NULL, '2026-09-04 06:14:10'),
 (7, 19, 27, 4250.00, 'gcash', '1234 5467 8176', '2026-09-04', 'approved', 'payment-proofs/aj8kAipxg9LVurlIRYX9fchoMdHg91AFuGEDk4ch.png', 'Time of payment: 14:51.', NULL, 3, '2026-09-04 06:53:18', NULL, '2026-09-04 06:51:48'),
 (8, 20, 28, 4250.00, 'gcash', '1234 5467 7283', '2026-09-04', 'approved', 'payment-proofs/BzBFZyMM9H6hS6QHZrDtoXTd5KyRh7jXUF5EKmBt.png', 'Time of payment: 18:43. paid', NULL, 3, '2026-09-04 10:44:34', NULL, '2026-09-04 10:43:57'),
-(9, 21, 30, 4250.00, 'gcash', '1234 5467 8077', '2026-09-04', 'approved', 'payment-proofs/ttdolxcRraCutBfbEnmzpOFUBLgvilh0fMO3DEky.png', 'Time of payment: 20:40. paid', NULL, 3, '2026-09-04 12:41:58', NULL, '2026-09-04 12:41:07');
+(9, 21, 30, 4250.00, 'gcash', '1234 5467 8077', '2026-09-04', 'approved', 'payment-proofs/ttdolxcRraCutBfbEnmzpOFUBLgvilh0fMO3DEky.png', 'Time of payment: 20:40. paid', NULL, 3, '2026-09-04 12:41:58', NULL, '2026-09-04 12:41:07'),
+(10, 23, 31, 3250.00, 'gcash', '1234 5678 7632', '2026-09-10', 'approved', 'payment-proofs/DfXZGKpGxS9ECRJS9zXbAsffRy6IfTMELC21vLrt.png', 'Time of payment: 09:28. paid', NULL, 3, '2026-09-10 01:30:04', NULL, '2026-09-10 01:29:21');
 
 -- --------------------------------------------------------
 
@@ -784,6 +800,29 @@ CREATE TABLE `personal_access_tokens` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `reviews`
+--
+
+CREATE TABLE `reviews` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `tenant_id` bigint(20) UNSIGNED NOT NULL,
+  `rating` tinyint(3) UNSIGNED NOT NULL,
+  `comment` text DEFAULT NULL,
+  `is_approved` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `reviews`
+--
+
+INSERT INTO `reviews` (`id`, `tenant_id`, `rating`, `comment`, `is_approved`, `created_at`, `updated_at`) VALUES
+(1, 30, 5, 'Nice staff, spacious room, nice privacy.', 1, '2026-09-10 08:06:35', '2026-09-10 08:06:35');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `roles`
 --
 
@@ -827,7 +866,7 @@ CREATE TABLE `rooms` (
 
 INSERT INTO `rooms` (`id`, `floor_id`, `room_no`, `room_type`, `amenities`, `monthly_rate`, `status`, `vr_asset_path`, `vr_caption`, `vr_visibility`, `created_at`, `updated_at`) VALUES
 (16, 3, '1', 'Standard', '[]', 5000.00, 'full', NULL, 'Living Area', 'public', '2026-08-30 18:57:43', '2026-09-04 12:00:16'),
-(17, 3, '2', 'Standard', '[]', 8500.00, 'full', NULL, 'Random Caption', 'public', '2026-08-31 10:49:31', '2026-09-04 13:08:47'),
+(17, 3, '2', 'Standard', '[]', 8500.00, 'available', NULL, 'Random Caption', 'public', '2026-08-31 10:49:31', '2026-09-10 07:41:45'),
 (18, 3, '3', 'Standard', '[]', 6500.00, 'available', NULL, NULL, 'draft', '2026-09-03 06:27:16', '2026-09-03 06:27:16'),
 (19, 11, '5', 'Standard', '[]', 6500.00, 'available', NULL, NULL, 'draft', '2026-09-04 13:04:53', '2026-09-04 13:04:53');
 
@@ -866,7 +905,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('1egAZnSdp0FMYluECIfEGc2iw3F0Uqhjmq10OzoU', 26, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiemFmM1h3b0xWWnZvWTZCYjdOTDZFdTM3QkpnRmVGSFo2VHJjTFlqRiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO3M6NToicm91dGUiO3M6OToiZGFzaGJvYXJkIjt9czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MjY7fQ==', 1788845972);
+('ZrUkG3L1buOdtJaBmLgCbREBCoxhXPzACePiYnci', 26, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiaWQwRjRHZ2JlT2xyNEFtcW43cmtvMXBqSWFwdDJlVGlTOW1hSEF0VSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kb3JtLWluZm8vcG9saWNpZXMtZmlsZSI7czo1OiJyb3V0ZSI7czoyMDoicHVibGljLmRvcm1pbmZvLmZpbGUiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToyNjt9', 1789028796);
 
 -- --------------------------------------------------------
 
@@ -877,7 +916,8 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 CREATE TABLE `tenants` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `full_name` varchar(150) NOT NULL,
+  `first_name` varchar(100) DEFAULT NULL,
+  `last_name` varchar(100) DEFAULT NULL,
   `contact_number` varchar(20) DEFAULT NULL,
   `email` varchar(150) DEFAULT NULL,
   `emergency_contact_name` varchar(150) DEFAULT NULL,
@@ -902,17 +942,18 @@ CREATE TABLE `tenants` (
 -- Dumping data for table `tenants`
 --
 
-INSERT INTO `tenants` (`id`, `user_id`, `full_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `date_of_birth`, `home_address`, `tenant_type`, `id_document_path`, `signed_contract_path`, `status`, `deactivation_reason`, `deactivated_at`, `deactivated_by`, `is_blacklisted`, `portal_restricted`, `escalation_paused`, `created_at`, `updated_at`) VALUES
-(13, 18, 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:04:14', '2026-09-01 10:56:54'),
-(14, 19, 'Test Tenant 1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:53:46', '2026-08-31 11:21:55'),
-(23, NULL, 'Test Delinquent - Stage 5 Only', '00000000000', 'test.delinquent.stage5only@nestph.test', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, NULL, 0, 1, 0, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(24, 20, 'Delinquency Test Tenant', '09171234567', 'delinquency.test@nestph.test', 'Test Emergency Contact', '09179876543', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 1, 1, 0, '2026-09-03 11:13:24', '2026-09-04 12:57:10'),
-(25, 21, 'Valid ID Check', '09867354632', 'validIDcheck@gmail.com', 'ID Mother', '09673526321', NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 05:59:16', '2026-09-04 05:59:16'),
-(26, 22, 'Valid ID CheckTwo', '09273648212', 'validid2@gmail.com', 'Valid Mother', '09364729591', '2008-07-04', 'Sta Mesa', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:13:15', '2026-09-04 06:20:12'),
-(27, 23, 'Tenant Check One', '09362537482', 'tenantcheck1@gmail.com', 'Tenant Mother One', '097726373482', '2026-09-01', 'asdasdads', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:50:33', '2026-09-04 06:53:18'),
-(28, 24, 'Tenant Check Two', '09546374234', 'tenantcheck2@gmail.com', 'Tenant Mother Two', '0936474328', '2026-09-01', 'San Sebastian', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 10:42:06', '2026-09-04 10:44:34'),
-(29, 25, 'Add New Tenant Test', '09264536782', 'addnewtenant@gmail.com', 'Add New Mom', '09665438732', '2004-07-07', 'Commonwealth, Quezon City', 'student', 'tenant-documents/BIMDbxuna9NH8pTN5NO9usN43u1m7POb9IQDWrBG.jpg', 'tenant-documents/y6WIdA8dDS01fDE62sJHGrUWyTDvI9xjMVhoyve9.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 11:14:43', '2026-09-04 11:14:43'),
-(30, 26, 'Beans Lope', '09289811408', 'vincelopez@gmail.com', 'Arlene Lopez', '09289811476', '2014-02-07', 'Manila', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 12:38:43', '2026-09-04 12:41:58');
+INSERT INTO `tenants` (`id`, `user_id`, `first_name`, `last_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `date_of_birth`, `home_address`, `tenant_type`, `id_document_path`, `signed_contract_path`, `status`, `deactivation_reason`, `deactivated_at`, `deactivated_by`, `is_blacklisted`, `portal_restricted`, `escalation_paused`, `created_at`, `updated_at`) VALUES
+(13, 18, 'adasdasdas', 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:04:14', '2026-09-10 05:56:50'),
+(14, 19, 'Test Tenant', '1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:53:46', '2026-09-10 05:56:50'),
+(23, NULL, 'Test Delinquent - Stage 5', 'Only', '00000000000', 'test.delinquent.stage5only@nestph.test', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, NULL, 0, 1, 0, '2026-09-03 07:57:06', '2026-09-10 05:56:51'),
+(24, 20, 'Delinquency Test', 'Tenant', '09171234567', 'delinquency.test@nestph.test', 'Test Emergency Contact', '09179876543', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 1, 1, 0, '2026-09-03 11:13:24', '2026-09-10 05:56:51'),
+(25, 21, 'Valid ID', 'Check', '09867354632', 'validIDcheck@gmail.com', 'ID Mother', '09673526321', NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 05:59:16', '2026-09-10 05:56:51'),
+(26, 22, 'Valid ID', 'CheckTwo', '09273648212', 'validid2@gmail.com', 'Valid Mother', '09364729591', '2008-07-04', 'Sta Mesa', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:13:15', '2026-09-10 05:56:51'),
+(27, 23, 'Tenant Check', 'One', '09362537482', 'tenantcheck1@gmail.com', 'Tenant Mother One', '097726373482', '2026-09-01', 'asdasdads', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:50:33', '2026-09-10 05:56:51'),
+(28, 24, 'Tenant Check', 'Two', '09546374234', 'tenantcheck2@gmail.com', 'Tenant Mother Two', '0936474328', '2026-09-01', 'San Sebastian', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 10:42:06', '2026-09-10 05:56:51'),
+(29, 25, 'Add New Tenant', 'Test', '09389703563', 'addnewtenant@gmail.com', 'Add New Mom', '09613571155', '2004-07-07', 'Commonwealth, Quezon City', 'student', 'tenant-documents/BIMDbxuna9NH8pTN5NO9usN43u1m7POb9IQDWrBG.jpg', 'tenant-documents/y6WIdA8dDS01fDE62sJHGrUWyTDvI9xjMVhoyve9.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 11:14:43', '2026-09-10 05:56:51'),
+(30, 26, 'Beans', 'Lopez', '09613571155', 'vincelopez@gmail.com', 'Arlene Lopez', '09289811476', '2014-02-07', 'Manila', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 'inactive', 'Moved out', '2026-09-10 07:41:45', 3, 0, 0, 0, '2026-09-04 12:38:43', '2026-09-10 07:41:45'),
+(31, 27, 'Shayne', 'Bagui', '09212408565', 'shaynebagui@gmail.com', 'Marie Bagui', '09212408568', '2004-08-13', 'Sta Mesa Road 4 block 1234', 'student', 'application-documents/7kDFU28JRBf080PHvgF2ZpC9eRTi3KyWArsakZ2g.jpg', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-10 01:26:19', '2026-09-10 05:56:51');
 
 -- --------------------------------------------------------
 
@@ -974,7 +1015,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `ro
 (23, 'Tenant Check One', 'tenantcheck1@gmail.com', NULL, '$2y$12$86PWBv4cs27dKuFh9BiyFe1AYppLjEp3PHkd3CYXoUitpBBmI6lwi', 1, 1, NULL, '2026-09-04 06:50:33', '2026-09-04 06:50:33'),
 (24, 'Tenant Check Two', 'tenantcheck2@gmail.com', NULL, '$2y$12$Yi2.thry2D2YtJ5.NErnTuiqQ2.60wRs641QBQL5HCWc9J69yzZxC', 1, 1, NULL, '2026-09-04 10:42:06', '2026-09-04 10:48:21'),
 (25, 'Add New Tenant Test', 'addnewtenant@gmail.com', NULL, '$2y$12$uB/Cd3nK3uQgwpTkY5.mD.JimwhakCbZhpn2cruMjERuLS9/nn4FW', 1, 1, NULL, '2026-09-04 11:14:43', '2026-09-04 11:14:43'),
-(26, 'Beans Lope', 'vincelopez@gmail.com', NULL, '$2y$12$8gVdwj6Ze5HMYOAPWkKdHOXdsOVdzmRQgFRkyxzo2jv4QHj3MrvfS', 1, 1, NULL, '2026-09-04 12:38:43', '2026-09-04 12:44:18');
+(26, 'Beans Lopez', 'vincelopez@gmail.com', NULL, '$2y$12$8gVdwj6Ze5HMYOAPWkKdHOXdsOVdzmRQgFRkyxzo2jv4QHj3MrvfS', 1, 0, NULL, '2026-09-04 12:38:43', '2026-09-10 07:41:45'),
+(27, 'Shayne Bagui', 'shaynebagui@gmail.com', NULL, '$2y$12$D0VwVxLqAmTXZjI3hInM6uaWiU2.x.sIVbkOOKGvBU0Mkavdd3IqW', 1, 1, NULL, '2026-09-10 01:26:19', '2026-09-10 01:26:19');
 
 -- --------------------------------------------------------
 
@@ -1247,6 +1289,13 @@ ALTER TABLE `personal_access_tokens`
   ADD KEY `personal_access_tokens_expires_at_index` (`expires_at`);
 
 --
+-- Indexes for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `reviews_tenant_id_unique` (`tenant_id`);
+
+--
 -- Indexes for table `roles`
 --
 ALTER TABLE `roles`
@@ -1336,7 +1385,7 @@ ALTER TABLE `admin_privileges`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `beds`
@@ -1348,7 +1397,7 @@ ALTER TABLE `beds`
 -- AUTO_INCREMENT for table `billing_statements`
 --
 ALTER TABLE `billing_statements`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `damages`
@@ -1378,7 +1427,7 @@ ALTER TABLE `dormitory_profile`
 -- AUTO_INCREMENT for table `escalation_logs`
 --
 ALTER TABLE `escalation_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=154;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1396,7 +1445,7 @@ ALTER TABLE `floors`
 -- AUTO_INCREMENT for table `inquiries`
 --
 ALTER TABLE `inquiries`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -1408,7 +1457,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `lease_contracts`
 --
 ALTER TABLE `lease_contracts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `maintenance_tickets`
@@ -1420,13 +1469,13 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `penalties`
@@ -1445,6 +1494,12 @@ ALTER TABLE `penalty_audit_logs`
 --
 ALTER TABLE `personal_access_tokens`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `reviews`
+--
+ALTER TABLE `reviews`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -1468,7 +1523,7 @@ ALTER TABLE `room_photos`
 -- AUTO_INCREMENT for table `tenants`
 --
 ALTER TABLE `tenants`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `ticket_replies`
@@ -1480,7 +1535,7 @@ ALTER TABLE `ticket_replies`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `vr_hotspots`
@@ -1603,6 +1658,12 @@ ALTER TABLE `penalties`
 ALTER TABLE `penalty_audit_logs`
   ADD CONSTRAINT `penalty_audit_logs_penalty_id_foreign` FOREIGN KEY (`penalty_id`) REFERENCES `penalties` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `penalty_audit_logs_performed_by_foreign` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD CONSTRAINT `reviews_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `rooms`

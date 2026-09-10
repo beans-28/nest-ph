@@ -44,6 +44,8 @@ class RestrictDelinquentTenant
             'tenant.billing',
             'tenant.delinquency',
             'tenant.billing.payment-proof',
+            'tenant.moveout',
+            'reviews.store',
             'logout',
         ];
 
