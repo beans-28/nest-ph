@@ -47,7 +47,7 @@ class ActivityFeedService
     private function paymentEvents(): Collection
     {
         return Payment::where('status', 'approved')
-            ->with('tenant:id,full_name')
+            ->with('tenant:id,first_name,last_name')
             ->latest('created_at')
             ->take(self::PER_SOURCE_LIMIT)
             ->get()
@@ -61,7 +61,7 @@ class ActivityFeedService
 
     private function escalationEvents(): Collection
     {
-        return EscalationLog::with('tenant:id,full_name')
+        return EscalationLog::with('tenant:id,first_name,last_name')
             ->latest('created_at')
             ->take(self::PER_SOURCE_LIMIT)
             ->get()
@@ -117,7 +117,7 @@ class ActivityFeedService
 
     private function leaseContractEvents(): Collection
     {
-        $contracts = LeaseContract::with('tenant:id,full_name')
+        $contracts = LeaseContract::with('tenant:id,first_name,last_name')
             ->latest('created_at')
             ->take(self::PER_SOURCE_LIMIT)
             ->get();
@@ -167,7 +167,7 @@ class ActivityFeedService
 
     private function penaltyEvents(): Collection
     {
-        return PenaltyAuditLog::with('penalty.tenant:id,full_name')
+        return PenaltyAuditLog::with('penalty.tenant:id,first_name,last_name')
             ->latest('created_at')
             ->take(self::PER_SOURCE_LIMIT)
             ->get()
@@ -191,7 +191,7 @@ class ActivityFeedService
 
     private function damageEvents(): Collection
     {
-        return Damage::with('tenant:id,full_name')
+        return Damage::with('tenant:id,first_name,last_name')
             ->latest('created_at')
             ->take(self::PER_SOURCE_LIMIT)
             ->get()

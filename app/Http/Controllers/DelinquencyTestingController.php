@@ -38,7 +38,8 @@ class DelinquencyTestingController extends Controller
     {
         $tenants = Tenant::where('status', 'active')
             ->with('escalationLogs')
-            ->orderBy('full_name')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
             ->get()
             ->map(function (Tenant $tenant) {
                 $stage = (int) ($tenant->escalationLogs

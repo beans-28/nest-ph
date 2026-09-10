@@ -138,6 +138,15 @@
   .ticket-title .time{ margin-left:auto; font-size:11px; font-weight:500; color:var(--text-light); }
   .ticket-desc{ font-size:12px; color:var(--text-mid); margin-top:4px; }
   .ticket-meta{ font-size:11px; color:var(--text-light); margin-top:6px; }
+  .ticket-status-pill{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:3px 8px; border-radius:20px; }
+  .ticket-status-pill.status-open{ background:#dbe6f7; color:#3f66c9; }
+  .ticket-status-pill.status-seen{ background:#e9defa; color:#6a5bcf; }
+  .ticket-status-pill.status-in-progress{ background:#f6ecd6; color:#c9962f; }
+  .ticket-priority-pill{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:3px 8px; border-radius:20px; margin-left:6px; }
+  .ticket-priority-pill.priority-urgent{ background:#f7d9d7; color:#c0463d; }
+  .ticket-priority-pill.priority-non-urgent{ background:#d9f2dd; color:#3f7a4a; }
+  .ticket-overdue-pill{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:3px 8px; border-radius:20px; margin-left:6px; background:#f7d9d7; color:#a3372e; }
+  .ticket-summary-row{ font-size:11px; color:var(--text-light); margin-top:10px; text-align:right; }
 
   .activity-tabs{ font-size:11.5px; color:var(--green-accent); font-weight:600; margin-bottom:10px; }
   table.activity-table{ width:100%; border-collapse:collapse; }
@@ -243,10 +252,30 @@
           </div>
 
           <div class="dash-card">
-            <div class="dash-card-head"><h2>Tickets</h2><span class="view-all">View All</span></div>
-            <div class="empty-note">
-              WIP
-            </div>
+            <div class="dash-card-head"><h2>Tickets</h2><a href="{{ route('tickets.index') }}" class="view-all" style="text-decoration:none;">View All</a></div>
+            @if($recentTickets->isEmpty())
+              <div class="empty-note">No open tickets right now.</div>
+            @else
+              @foreach($recentTickets as $ticket)
+                <div class="ticket-item">
+                  <div class="ticket-title">
+                    {{ $ticket['title'] }}
+                    <span class="time">{{ $ticket['submitted_at'] }}</span>
+                  </div>
+                  <div class="ticket-desc">{{ $ticket['tenant_name'] ?? 'Unknown tenant' }}{{ $ticket['room_no'] ? ' — Room ' . $ticket['room_no'] : '' }}</div>
+                  <div class="ticket-meta">
+                    <span class="ticket-status-pill status-{{ str_replace(' ', '-', strtolower($ticket['status_label'])) }}">{{ $ticket['status_label'] }}</span>
+                    @if($ticket['priority_label'])
+                      <span class="ticket-priority-pill priority-{{ str_replace(' ', '-', strtolower($ticket['priority_label'])) }}">{{ $ticket['priority_label'] }}</span>
+                    @endif
+                    @if($ticket['is_overdue'])
+                      <span class="ticket-overdue-pill">Overdue</span>
+                    @endif
+                  </div>
+                </div>
+              @endforeach
+              <div class="ticket-summary-row">{{ $openTicketsCount }} open · {{ $inProgressTicketsCount }} in progress @if($overdueTicketsCount > 0)· {{ $overdueTicketsCount }} overdue @endif</div>
+            @endif
           </div>
         </div>
 

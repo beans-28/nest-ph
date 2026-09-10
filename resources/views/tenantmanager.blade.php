@@ -323,7 +323,10 @@
     <div class="modal-body">
       <div class="modal-error" id="editModalError"></div>
       <input type="hidden" id="editTenantId">
-      <div class="fld"><label for="editFullName">Full Name</label><input type="text" id="editFullName"></div>
+      <div class="modal-row2">
+        <div class="fld"><label for="editFirstName">First Name</label><input type="text" id="editFirstName"></div>
+        <div class="fld"><label for="editLastName">Last Name</label><input type="text" id="editLastName"></div>
+      </div>
       <div class="modal-row2">
         <div class="fld"><label for="editDob">Date of Birth</label><input type="date" id="editDob"></div>
         <div class="fld"><label for="editTenantType">Tenant Type</label>
@@ -609,7 +612,7 @@
 
   function resetAddModal(){
     $('addModalError').classList.remove('visible');
-    ['addFullName','addDob','addHomeAddress','addContactNumber','addEmail','addEmergencyName','addEmergencyNumber','addStartDate','addEndDate'].forEach(id => $(id).value = '');
+    ['addFirstName','addLastName','addDob','addHomeAddress','addContactNumber','addEmail','addEmergencyName','addEmergencyNumber','addStartDate','addEndDate'].forEach(id => $(id).value = '');
     $('addTenantType').value = '';
     $('addIdDocument').value = '';
     $('addSignedContract').value = '';
@@ -660,7 +663,8 @@
     const errEl = $('addModalError');
     errEl.classList.remove('visible');
 
-    if(!$('addFullName').value.trim()) return showAddError('Full name is required.');
+    if(!$('addFirstName').value.trim()) return showAddError('First name is required.');
+    if(!$('addLastName').value.trim()) return showAddError('Last name is required.');
     if(!$('addEmail').value.trim()) return showAddError('Email address is required.');
     if(!$('addIdDocument').files[0]) return showAddError('A valid ID upload is required.');
     if(!$('addBedSelect').value) return showAddError('Select a bedspace.');
@@ -724,11 +728,13 @@
   $('submitEditBtn').addEventListener('click', async function(){
     const errEl = $('editModalError');
     errEl.classList.remove('visible');
-    if(!$('editFullName').value.trim()) return showEditError('Full name is required.');
+    if(!$('editFirstName').value.trim()) return showEditError('First name is required.');
+    if(!$('editLastName').value.trim()) return showEditError('Last name is required.');
     if(!$('editEmail').value.trim()) return showEditError('Email address is required.');
 
     const form = new FormData();
-    form.append('full_name', $('editFullName').value.trim());
+    form.append('first_name', $('editFirstName').value.trim());
+    form.append('last_name', $('editLastName').value.trim());
     form.append('date_of_birth', $('editDob').value);
     form.append('tenant_type', $('editTenantType').value);
     form.append('home_address', $('editHomeAddress').value.trim());

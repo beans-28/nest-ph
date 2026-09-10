@@ -37,7 +37,7 @@ class BillingController extends Controller
         ]);
 
         $query = BillingStatement::with([
-            'tenant:id,full_name,email,contact_number',
+            'tenant:id,first_name,last_name,email,contact_number',
             'contract:id,bed_id,monthly_rate',
             'payments',
         ])->latest('due_date');

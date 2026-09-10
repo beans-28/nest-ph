@@ -88,6 +88,42 @@ class DashboardController extends Controller
         // See "View All" -> activityLog() below for the complete, paginated list.
         $recentActivities = app(ActivityFeedService::class)->all()->take(10);
 
+        // --- Tickets card (was a "WIP" placeholder) ---
+        // Pull every ticket that isn't closed out yet, same 'open'/'in_progress'
+        // status convention TicketController::page() already uses for its own
+        // stat strip, so the numbers here always match the real /tickets page.
+        $openTickets = MaintenanceTicket::with(['tenant.activeContract.bed.room', 'bed.room'])
+            ->whereNotIn('status', ['resolved', 'rejected'])
+            ->latest('created_at')
+            ->get();
+
+        $openTicketsCount = $openTickets->where('status', 'open')->count();
+        $inProgressTicketsCount = $openTickets->where('status', 'in_progress')->count();
+        $overdueTicketsCount = $openTickets->filter(fn (MaintenanceTicket $t) => $t->isOverdue())->count();
+
+        // Overdue tickets bubble to the top (sortByDesc is a stable sort, so
+        // the newest-first ordering from latest() is preserved within each
+        // group), then capped to the 3 the card actually has room for.
+        $recentTickets = $openTickets
+            ->sortByDesc(fn (MaintenanceTicket $t) => $t->isOverdue() ? 1 : 0)
+            ->take(3)
+            ->map(function (MaintenanceTicket $t) {
+                $room = $t->bed?->room ?? $t->tenant?->activeContract?->bed?->room;
+
+                return [
+                    'id' => $t->id,
+                    'title' => $t->title,
+                    'tenant_name' => $t->tenant?->full_name,
+                    'room_no' => $room?->room_no,
+                    'category_label' => $t->category_label,
+                    'status_label' => $t->status_label,
+                    'priority_label' => $t->priority_label,
+                    'is_overdue' => $t->isOverdue(),
+                    'submitted_at' => $t->created_at->diffForHumans(),
+                ];
+            })
+            ->values();
+
         return view('admindashboard', compact(
             'occupancy',
             'vacancyRate',
@@ -97,7 +133,11 @@ class DashboardController extends Controller
             'revenueThisMonth',
             'delinquentCount',
             'topDelinquent',
-            'recentActivities'
+            'recentActivities',
+            'recentTickets',
+            'openTicketsCount',
+            'inProgressTicketsCount',
+            'overdueTicketsCount'
         ));
     }
 

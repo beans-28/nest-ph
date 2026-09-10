@@ -26,7 +26,7 @@ class PenaltyController extends Controller
         ]);
 
         $query = Penalty::with([
-            'tenant:id,full_name',
+            'tenant:id,first_name,last_name',
             'tenant.activeContract.bed.room:id,room_no',
             'damage:id,description,date_incurred,photo_path',
             'createdBy:id,name',

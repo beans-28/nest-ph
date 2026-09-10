@@ -33,7 +33,7 @@ class PaymentController extends Controller
         BillingStatement::syncOverdueStatuses();
 
         $pending = Payment::with([
-            'tenant:id,full_name',
+            'tenant:id,first_name,last_name',
             'billingStatement:id,contract_id,type,billing_period_start,total_amount',
             'billingStatement.contract:id,bed_id',
             'billingStatement.contract.bed:id,room_id',
@@ -52,7 +52,7 @@ class PaymentController extends Controller
         // system (Table 19) -- this reuses the same BillingStatement/Payment
         // tables rather than duplicating that generation logic here.
         $overview = BillingStatement::with([
-            'tenant:id,full_name',
+            'tenant:id,first_name,last_name',
             'contract:id,bed_id',
             'contract.bed:id,room_id',
             'contract.bed.room:id,room_no,room_type',
@@ -222,7 +222,7 @@ class PaymentController extends Controller
         ]);
 
         $query = Payment::with([
-            'tenant:id,full_name',
+            'tenant:id,first_name,last_name',
             'billingStatement:id,billing_period_start,billing_period_end,due_date,total_amount,status',
             'recordedBy:id,name',
             'reviewedBy:id,name',

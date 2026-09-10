@@ -36,7 +36,7 @@ class LeaseContractController extends Controller
         $this->syncExpiringAndExpired();
 
         $contracts = LeaseContract::with([
-            'tenant:id,full_name',
+            'tenant:id,first_name,last_name',
             'bed:id,room_id,bed_label,status',
             'bed.room:id,room_no',
         ])->latest()->get();
@@ -68,10 +68,10 @@ class LeaseContractController extends Controller
         $this->syncExpiringAndExpired();
 
         $query = LeaseContract::with([
-            'tenant:id,full_name,email,contact_number',
+            'tenant:id,first_name,last_name,email,contact_number',
             'bed:id,room_id,bed_label,status',
             'bed.room:id,room_no,room_type,monthly_rate',
-            'application:id,full_name,status',
+            'application:id,first_name,last_name,status',
         ])->latest();
 
         if ($request->filled('status')) {
@@ -103,14 +103,19 @@ class LeaseContractController extends Controller
         $q = trim((string) $request->input('q', ''));
 
         $tenants = Tenant::query()
-            ->when($q !== '', fn ($query) => $query->where('full_name', 'like', "%{$q}%"))
-            ->orderBy('full_name')
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($inner) use ($q) {
+                    $inner->where('first_name', 'like', "%{$q}%")
+                        ->orWhere('last_name', 'like', "%{$q}%");
+                });
+            })
+            ->orderBy('last_name')
+            ->orderBy('first_name')
             ->limit(15)
-            ->get(['id', 'full_name', 'email', 'contact_number']);
+            ->get(['id', 'first_name', 'last_name', 'email', 'contact_number']);
 
         return response()->json($tenants);
     }
-
     /**
      * Admin: manually add a lease contract for an already-registered tenant.
      * Use Case Report steps 3–8 — this is the standalone contract-creation
