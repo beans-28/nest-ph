@@ -45,7 +45,8 @@ class ApplicationController extends Controller
         $data = $request->validate([
             'inquiry_id' => ['nullable', 'integer', 'exists:inquiries,id'],
 
-            'full_name' => ['required', 'string', 'max:150'],
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
             'birthdate' => ['nullable', 'date', 'before:today'],
             'gender' => ['nullable', 'string', 'max:20'],
             'nationality' => ['nullable', 'string', 'max:60'],
@@ -129,7 +130,8 @@ class ApplicationController extends Controller
                 'inquiry_id' => $data['inquiry_id'] ?? null,
                 'tenant_id' => null,
 
-                'full_name' => $data['full_name'],
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
                 'birthdate' => $data['birthdate'] ?? null,
                 'gender' => $data['gender'] ?? null,
                 'nationality' => $data['nationality'] ?? null,
@@ -219,7 +221,7 @@ class ApplicationController extends Controller
             'bed:id,room_id,bed_label,status',
             'bed.room:id,room_no,room_type,monthly_rate',
             'inquiry:id,full_name,status',
-            'tenant:id,full_name',
+            'tenant:id,first_name,last_name',
         ])->latest();
 
         if ($request->filled('status')) {
@@ -714,7 +716,8 @@ class ApplicationController extends Controller
 
         $tenant = Tenant::create([
             'user_id' => $tenantUser?->id,
-            'full_name' => $application->full_name,
+            'first_name' => $application->first_name,
+            'last_name' => $application->last_name,
             'contact_number' => $application->contact_number,
             'email' => $application->email,
             'emergency_contact_name' => $application->emergency_contact_name,

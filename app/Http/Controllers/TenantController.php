@@ -35,8 +35,12 @@ class TenantController extends Controller
 
         $overdueTenantIds = BillingStatement::where('status', 'overdue')->pluck('tenant_id');
 
+        // full_name is a computed accessor now (first_name + last_name),
+        // not a real column, so it can't be used in orderBy() -- sort on
+        // the real columns instead.
         $tenants = Tenant::with(['activeContract.bed.room'])
-            ->orderBy('full_name')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
             ->get();
 
         $rows = $tenants->map(fn (Tenant $tenant) => $this->transformRow($tenant, $overdueTenantIds))->values();
@@ -65,6 +69,8 @@ class TenantController extends Controller
         return response()->json([
             'id' => $tenant->id,
             'full_name' => $tenant->full_name,
+            'first_name' => $tenant->first_name,
+            'last_name' => $tenant->last_name,
             'email' => $tenant->email,
             'contact_number' => $tenant->contact_number,
             'date_of_birth' => $this->formatDate($tenant->date_of_birth),
@@ -100,7 +106,8 @@ class TenantController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'full_name' => ['required', 'string', 'max:150'],
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
             'date_of_birth' => ['nullable', 'date'],
             'home_address' => ['nullable', 'string', 'max:255'],
             'contact_number' => ['nullable', 'string', 'max:20'],
@@ -136,8 +143,12 @@ class TenantController extends Controller
             $tenantRole = Role::firstOrCreate(['role_name' => 'tenant']);
             $temporaryPassword = Str::random(12);
 
+            // The `users` table only has a single `name` column -- there is
+            // no first_name/last_name there, so we combine them here rather
+            // than passing fields User doesn't have (Eloquent would have
+            // silently dropped them anyway since they're not in $fillable).
             $user = User::create([
-                'name' => $data['full_name'],
+                'name' => trim($data['first_name'].' '.$data['last_name']),
                 'email' => $data['email'],
                 'password' => Hash::make($temporaryPassword),
                 'role_id' => $tenantRole->id,
@@ -146,7 +157,8 @@ class TenantController extends Controller
 
             $tenant = Tenant::create([
                 'user_id' => $user->id,
-                'full_name' => $data['full_name'],
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
                 'contact_number' => $data['contact_number'] ?? null,
                 'email' => $data['email'],
                 'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
@@ -212,7 +224,8 @@ class TenantController extends Controller
     public function update(Request $request, Tenant $tenant): JsonResponse
     {
         $data = $request->validate([
-            'full_name' => ['required', 'string', 'max:150'],
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
             'date_of_birth' => ['nullable', 'date'],
             'home_address' => ['nullable', 'string', 'max:255'],
             'contact_number' => ['nullable', 'string', 'max:20'],
@@ -238,8 +251,13 @@ class TenantController extends Controller
 
         // Keeps the login account's name/email in sync with the tenant
         // record, so the portal login and this page never drift apart.
+        // `users` only has a single `name` column, so combine first/last
+        // here rather than writing fields that don't exist on User.
         if ($tenant->user) {
-            $tenant->user->update(['name' => $data['full_name'], 'email' => $data['email']]);
+            $tenant->user->update([
+                'name' => trim($data['first_name'].' '.$data['last_name']),
+                'email' => $data['email'],
+            ]);
         }
 
         return response()->json([

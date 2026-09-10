@@ -313,9 +313,13 @@
                 <div class="step-card active" id="step-1" data-step="1">
                     <h3>Personal Information</h3>
                     <div class="field-row">
-                        <div class="field full">
-                            <label>Full Name <span class="req">*</span></label>
-                            <input type="text" id="full_name" required>
+                        <div class="field">
+                            <label>First Name <span class="req">*</span></label>
+                            <input type="text" id="first_name" required>
+                        </div>
+                        <div class="field">
+                            <label>Last Name <span class="req">*</span></label>
+                            <input type="text" id="last_name" required>
                         </div>
                     </div>
                     <div class="field-row">
@@ -718,7 +722,7 @@
             part_time_employee: 'Part-time Employee',
         }[checkedRadioValue('type_of_tenant')] || '';
 
-        setSummary('sum_full_name', val('full_name'));
+        setSummary('sum_full_name', (val('first_name') + ' ' + val('last_name')).trim());
         setSummary('sum_birthdate', formatDate(val('birthdate')));
         setSummary('sum_gender', capitalize(val('gender')));
         setSummary('sum_nationality', val('nationality'));
@@ -815,7 +819,8 @@
         button.classList.add('loading');
 
         const formData = new FormData();
-        formData.append('full_name', val('full_name'));
+        formData.append('first_name', val('first_name'));
+        formData.append('last_name', val('last_name'));
         formData.append('birthdate', val('birthdate'));
         formData.append('gender', val('gender'));
         formData.append('nationality', val('nationality'));

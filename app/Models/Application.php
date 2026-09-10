@@ -16,7 +16,8 @@ class Application extends Model
         'tenant_id',
 
         // Personal information
-        'full_name',
+        'first_name',
+        'last_name',
         'birthdate',
         'gender',
         'nationality',
@@ -61,6 +62,15 @@ class Application extends Model
         'tenant_end_date' => 'date',
         'dpa_consent' => 'boolean',
     ];
+
+    protected $appends = ['full_name'];
+
+    public function getFullNameAttribute(): string
+    {
+        $parts = array_filter([$this->first_name, $this->last_name]);
+
+        return $parts ? implode(' ', $parts) : '(no name on record)';
+    }
 
     public function inquiry(): BelongsTo
     {

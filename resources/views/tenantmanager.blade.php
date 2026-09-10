@@ -270,7 +270,10 @@
       <div class="modal-error" id="addModalError"></div>
 
       <div class="modal-section-title">Personal Information</div>
-      <div class="fld"><label for="addFullName">Full Name</label><input type="text" id="addFullName"></div>
+      <div class="modal-row2">
+        <div class="fld"><label for="addFirstName">First Name</label><input type="text" id="addFirstName"></div>
+        <div class="fld"><label for="addLastName">Last Name</label><input type="text" id="addLastName"></div>
+      </div>
       <div class="modal-row2">
         <div class="fld"><label for="addDob">Date of Birth</label><input type="date" id="addDob"></div>
         <div class="fld"><label for="addTenantType">Tenant Type</label>
@@ -664,7 +667,8 @@
     if(!$('addStartDate').value || !$('addEndDate').value) return showAddError('Set both the lease start and end dates.');
 
     const form = new FormData();
-    form.append('full_name', $('addFullName').value.trim());
+    form.append('first_name', $('addFirstName').value.trim());
+    form.append('last_name', $('addLastName').value.trim());
     form.append('date_of_birth', $('addDob').value);
     form.append('tenant_type', $('addTenantType').value);
     form.append('home_address', $('addHomeAddress').value.trim());
@@ -701,7 +705,8 @@
       const t = await api(`/tenant-manager/${id}`);
       $('editModalError').classList.remove('visible');
       $('editTenantId').value = t.id;
-      $('editFullName').value = t.full_name ?? '';
+      $('editFirstName').value = t.first_name ?? '';
+      $('editLastName').value = t.last_name ?? '';
       $('editDob').value = t.date_of_birth ?? '';
       $('editTenantType').value = t.tenant_type ?? '';
       $('editHomeAddress').value = t.home_address ?? '';

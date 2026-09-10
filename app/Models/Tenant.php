@@ -14,7 +14,8 @@ class Tenant extends Model
 
     protected $fillable = [
         'user_id',
-        'full_name',
+        'first_name',
+        'last_name',
         'contact_number',
         'email',
         'emergency_contact_name',
@@ -40,6 +41,15 @@ class Tenant extends Model
         'date_of_birth' => 'date',
         'deactivated_at' => 'datetime',
     ];
+
+    protected $appends = ['full_name'];
+
+    public function getFullNameAttribute(): string
+    {
+        $parts = array_filter([$this->first_name, $this->last_name]);
+
+        return $parts ? implode(' ', $parts) : '(no name on record)';
+    }
 
     public function user(): BelongsTo
     {
