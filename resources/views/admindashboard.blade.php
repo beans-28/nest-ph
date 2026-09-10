@@ -245,8 +245,7 @@
           <div class="dash-card">
             <div class="dash-card-head"><h2>Tickets</h2><span class="view-all">View All</span></div>
             <div class="empty-note">
-              No tickets yet — the Ticketing module hasn't been built.
-              <div class="tag">Coming Soon</div>
+              WIP
             </div>
           </div>
         </div>
