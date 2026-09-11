@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ApplicationController extends Controller
 {
@@ -77,6 +78,7 @@ class ApplicationController extends Controller
             // submission if [contract acceptance] is missing." Validated
             // server-side, same as dpa_consent below — a client-side-only
             // checkbox can be bypassed by calling this endpoint directly.
+            'signed_contract_path' => ['nullable', 'string', 'max:255'],
             'contract_acceptance' => ['required', 'accepted'],
 
             'dpa_consent' => ['required', 'accepted'],
@@ -120,9 +122,24 @@ class ApplicationController extends Controller
             ? $request->file('id_document')->store('application-documents', 'public')
             : null;
 
-        $signedContractPath = $request->hasFile('signed_contract')
-            ? $request->file('signed_contract')->store('application-documents', 'public')
-            : null;
+        // Path B e-sign flow: the applicant already generated and stored a
+        // signed contract PDF via signContract() above. That path is
+        // trusted here since it only ever points at a file this same
+        // controller just wrote to storage. A raw file upload is kept as a
+        // fallback for anyone whose browser can't run the signature pad.
+        $signedContractPath = $request->filled('signed_contract_path')
+                && Storage::disk('public')->exists($request->input('signed_contract_path'))
+            ? $request->input('signed_contract_path')
+            : ($request->hasFile('signed_contract')
+                ? $request->file('signed_contract')->store('application-documents', 'public')
+                : null);
+
+        if (! $signedContractPath) {
+            return response()->json([
+                'message' => 'Please review and sign the contract before submitting your application.',
+                'errors' => ['signed_contract_path' => ['The contract must be signed first.']],
+            ], 422);
+        }
 
         $application = DB::transaction(function () use ($data, $bed, $idDocumentPath, $signedContractPath) {
             $application = Application::create([
@@ -762,5 +779,102 @@ class ApplicationController extends Controller
     private function notify(string $event, array $payload): void
     {
         Log::info("[notification stub] {$event}", $payload);
+    }
+
+        /**
+     * Path B e-sign flow: streams a live preview of the contract filled
+     * with whatever the applicant has typed so far. No signature yet.
+     */
+    public function previewContract(Request $request)
+    {
+        $viewData = $this->contractViewData($this->validateContractData($request));
+
+        $pdf = Pdf::loadView('pdfs.lease-contract', $viewData);
+
+        return $pdf->stream('NEST-PH-Lease-Contract-Preview.pdf');
+    }
+
+    /**
+     * Path B e-sign flow: renders the final contract with the drawn
+     * signature embedded, saves it to storage, and hands back the path so
+     * the application submission can reference it instead of a file
+     * upload.
+     */
+    public function signContract(Request $request): JsonResponse
+    {
+        $contractData = $this->validateContractData($request);
+
+        $signature = $request->validate([
+            'signature_image' => ['required', 'string'],
+        ])['signature_image'];
+
+        if (! preg_match('/^data:image\/png;base64,/', $signature)) {
+            return response()->json([
+                'message' => 'Something went wrong reading the signature. Please try signing again.',
+            ], 422);
+        }
+
+        $viewData = $this->contractViewData($contractData);
+        $viewData['signatureDataUrl'] = $signature;
+
+        $pdf = Pdf::loadView('pdfs.lease-contract', $viewData);
+
+        $path = 'application-documents/signed-contracts/' . Str::uuid() . '.pdf';
+        Storage::disk('public')->put($path, $pdf->output());
+
+        return response()->json([
+            'message' => 'Contract signed.',
+            'signed_contract_path' => $path,
+            'preview_url' => Storage::disk('public')->url($path),
+            'signed_at' => now()->format('F j, Y'),
+        ]);
+    }
+
+    private function validateContractData(Request $request): array
+    {
+        $data = $request->validate([
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['required', 'string', 'max:100'],
+            'contact_number' => ['nullable', 'string', 'max:20'],
+            'email' => ['nullable', 'email', 'max:150'],
+            'emergency_contact_name' => ['nullable', 'string', 'max:150'],
+            'emergency_contact_number' => ['nullable', 'string', 'max:20'],
+            'emergency_contact_relation' => ['nullable', 'string', 'max:50'],
+            'bed_id' => ['nullable', 'integer', 'exists:beds,id'],
+            'preferred_start_date' => ['nullable', 'date'],
+            'tenant_end_date' => ['nullable', 'date'],
+        ]);
+
+        $bed = ! empty($data['bed_id'])
+            ? Bed::with('room.floor')->find($data['bed_id'])
+            : null;
+
+        $data['bed'] = $bed;
+
+        return $data;
+    }
+
+    private function contractViewData(array $data): array
+    {
+        return [
+            'fullName' => trim($data['first_name'] . ' ' . $data['last_name']),
+            'contactNumber' => $data['contact_number'] ?? null,
+            'email' => $data['email'] ?? null,
+            'emergencyContactName' => $data['emergency_contact_name'] ?? null,
+            'emergencyContactNumber' => $data['emergency_contact_number'] ?? null,
+            'emergencyContactRelation' => $data['emergency_contact_relation'] ?? null,
+            'floorLabel' => $data['bed']?->room?->floor?->floor_number,
+            'roomNo' => $data['bed']?->room?->room_no,
+            'bedLabel' => $data['bed']?->bed_label,
+            'monthlyRate' => $data['bed']?->room?->perBedRate(),
+            'moveInDate' => ! empty($data['preferred_start_date'])
+                ? \Carbon\Carbon::parse($data['preferred_start_date'])->format('F j, Y')
+                : null,
+            'moveOutDate' => ! empty($data['tenant_end_date'])
+                ? \Carbon\Carbon::parse($data['tenant_end_date'])->format('F j, Y')
+                : null,
+            'todayDate' => now()->format('F j, Y'),
+            'signatureDataUrl' => null,
+        ];
     }
 }

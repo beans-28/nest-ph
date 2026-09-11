@@ -46,9 +46,22 @@ class TenantController extends Controller
 
         $rows = $tenants->map(fn (Tenant $tenant) => $this->transformRow($tenant, $overdueTenantIds))->values();
 
+        // Matches DashboardController's "Total Tenants" definition exactly:
+        // truly occupying a room right now. That means status is 'active'
+        // or 'delinquent' (delinquent tenants are still living there, just
+        // behind on payment) -- explicitly NOT 'pending_move_in_payment'
+        // (no occupancy yet, hence "Not Assigned" rooms) and NOT
+        // blacklisted (barred, no longer counted as an occupant).
+        // Matches DashboardController's "Total Tenants" definition exactly:
+        // real tenants.status is 'active' (not 'pending_move_in_payment',
+        // not 'inactive') and not blacklisted.
+        $activeCount = $rows->filter(
+            fn ($row) => $row['raw_status'] === 'active' && ! $row['is_blacklisted']
+        )->count();
+
         return view('tenantmanager', [
             'tenants' => $rows,
-            'totalCount' => $tenants->count(),
+            'totalCount' => $activeCount,
         ]);
     }
 
@@ -397,8 +410,18 @@ class TenantController extends Controller
             'contact_number' => $tenant->contact_number,
             'room_bed' => $room ? "Room {$room->room_no} - {$bed->bed_label}" : null,
             'date_started' => $contract?->start_date ? Carbon::parse($contract->start_date)->format('M Y') : null,
+            'date_started_raw' => $contract?->start_date ? Carbon::parse($contract->start_date)->format('Y-m-d') : null,
+            'contract_created_raw' => $contract?->created_at?->toIso8601String(),
             'monthly_rate' => $contract?->monthly_rate,
             'status' => $this->deriveStatus($tenant, $overdueTenantIds),
+            // The real tenants.status column, kept separate from the
+            // derived display label above -- deriveStatus() can label a
+            // pending-move-in tenant "delinquent" (an overdue move-in fee,
+            // say) even though they've never actually occupied a room.
+            // Counting who genuinely occupies a room needs this raw value,
+            // not the display label.
+            'raw_status' => $tenant->status,
+            'is_blacklisted' => (bool) $tenant->is_blacklisted,
             'tenant_type' => $tenant->tenant_type,
         ];
     }

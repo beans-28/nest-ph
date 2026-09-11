@@ -223,13 +223,21 @@
           <option value="pending_move_in_payment">Pending Move-In</option>
           <option value="inactive">Inactive</option>
         </select>
-                <select id="tenantTypeFilter">
+        <select id="tenantTypeFilter">
           <option value="">All Tenant Types</option>
           <option value="student">Student</option>
           <option value="working_student">Working Student</option>
           <option value="full_time_employee">Full-time Employee</option>
           <option value="part_time_employee">Part-time Employee</option>
           <option value="transient_worker">Transient Worker</option>
+        </select>
+        <select id="sortFilter">
+          <option value="date_started_desc">Sort: Latest Date Started</option>
+          <option value="date_started_asc">Sort: Oldest Date Started</option>
+          <option value="name_asc">Sort: Name (A to Z)</option>
+          <option value="name_desc">Sort: Name (Z to A)</option>
+          <option value="rent_desc">Sort: Rent (High to Low)</option>
+          <option value="rent_asc">Sort: Rent (Low to High)</option>
         </select>
         <button class="btn primary" id="openAddModalBtn" style="margin-left:auto;">+ Add New Tenant</button>
       </div>
@@ -398,8 +406,38 @@
   let search = '';
   let statusFilter = '';
   let tenantTypeFilter = '';
+  let sortBy = 'date_started_desc';
   let page = 1;
   const PAGE_SIZE = 10;
+
+  // Combines the lease start date with the contract's created_at time of
+  // day, so two tenants who started on the same calendar date still sort
+  // by which record was actually created first/most recently, not just
+  // left in whatever order the database happened to return them.
+  function dateStartedSortValue(t){
+    if(!t.date_started_raw) return null;
+    const datePart = new Date(t.date_started_raw + 'T00:00:00').getTime();
+    const timeOfDay = t.contract_created_raw ? (new Date(t.contract_created_raw).getTime() % 86400000) : 0;
+    return datePart + timeOfDay;
+  }
+
+  function compareTenants(a, b){
+    if(sortBy === 'name_asc') return (a.full_name || '').localeCompare(b.full_name || '');
+    if(sortBy === 'name_desc') return (b.full_name || '').localeCompare(a.full_name || '');
+    if(sortBy === 'rent_desc') return (parseFloat(b.monthly_rate) || 0) - (parseFloat(a.monthly_rate) || 0);
+    if(sortBy === 'rent_asc') return (parseFloat(a.monthly_rate) || 0) - (parseFloat(b.monthly_rate) || 0);
+
+    // date_started_desc / date_started_asc -- tenants with no active
+    // contract (no start date at all) always sort to the very end,
+    // regardless of direction, rather than clumping unpredictably at
+    // whichever end -Infinity/Infinity math would put them.
+    const av = dateStartedSortValue(a);
+    const bv = dateStartedSortValue(b);
+    if(av === null && bv === null) return 0;
+    if(av === null) return 1;
+    if(bv === null) return -1;
+    return sortBy === 'date_started_asc' ? av - bv : bv - av;
+  }
 
   const $ = id => document.getElementById(id);
   const STATUS_LABEL = { active:'Active', delinquent:'Delinquent', pending_move_in_payment:'Pending Move-In', inactive:'Inactive' };
@@ -457,7 +495,11 @@
       if(!search) return true;
       const hay = `${t.full_name ?? ''} ${t.room_bed ?? ''}`.toLowerCase();
       return hay.includes(search);
-    });
+    }).sort(compareTenants);
+  }
+
+  function countActiveTenants(){
+    return tenants.filter(t => t.raw_status === 'active' && !t.is_blacklisted).length;
   }
 
   function renderTable(){
@@ -467,7 +509,7 @@
     const start = (page - 1) * PAGE_SIZE;
     const pageItems = all.slice(start, start + PAGE_SIZE);
 
-    $('pageSub').textContent = `${tenants.length} Tenants across all floors`;
+    $('pageSub').textContent = `${countActiveTenants()} Tenants across all floors`;
 
     if(pageItems.length === 0){
       $('tableBody').innerHTML = '<tr class="empty-row"><td colspan="6">No records found.</td></tr>';
@@ -527,6 +569,11 @@
   });
   $('tenantTypeFilter').addEventListener('change', function(){
     tenantTypeFilter = this.value;
+    page = 1;
+    renderTable();
+  });
+  $('sortFilter').addEventListener('change', function(){
+    sortBy = this.value;
     page = 1;
     renderTable();
   });

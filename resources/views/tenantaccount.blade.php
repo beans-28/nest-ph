@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Account Settings</title>
+<title>NEST.PH — My Profile</title>
 <style>
   :root{
     --green-dark:#3f6b4a; --green-darker:#345a3e; --green-mid:#4f7c57;
@@ -91,10 +91,49 @@
   .tab-pill{ padding:9px 18px; border-radius:20px; font-size:12.5px; font-weight:600; cursor:pointer; border:1px solid var(--border); background:#fff; color:var(--text-mid); }
   .tab-pill.active{ background:var(--green-dark); color:#fff; border-color:var(--green-dark); }
 
-  .settings-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:28px 30px; max-width:520px; }
+  .tab-panel{ display:none; }
+  .tab-panel.active{ display:block; }
+
+  .settings-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:28px 30px; max-width:640px; }
   .settings-card h2{ font-size:16px; font-weight:700; margin:0 0 6px 0; color:var(--text-dark); }
   .settings-card .intro{ font-size:12.5px; color:var(--text-mid); line-height:1.6; margin-bottom:24px; }
 
+  /* ===== Profile tab ===== */
+  .request-edit-banner{
+    display:flex; align-items:center; gap:14px; justify-content:space-between;
+    background:#eaf3ec; border:1px solid #cfe3d2; border-radius:12px;
+    padding:14px 18px; margin-bottom:22px; max-width:640px;
+  }
+  .request-edit-banner p{ margin:0; font-size:12.5px; color:var(--text-dark); line-height:1.5; }
+  .request-edit-banner p strong{ color:var(--green-accent); }
+  .request-edit-btn{
+    flex-shrink:0; background:var(--green-btn); color:#fff; border:none; border-radius:8px;
+    padding:9px 16px; font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap;
+    text-decoration:none; display:inline-block; transition:background 0.15s ease;
+  }
+  .request-edit-btn:hover{ background:var(--green-btn-hover); }
+
+  .profile-section{ margin-bottom:26px; }
+  .profile-section:last-child{ margin-bottom:0; }
+  .profile-section-title{
+    font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;
+    color:var(--green-accent); margin:0 0 14px 0; padding-bottom:8px; border-bottom:1px solid var(--border);
+  }
+  .info-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:16px 28px; }
+  .info-item label{ display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-light); font-weight:600; margin-bottom:4px; }
+  .info-item .value{ font-size:14px; color:var(--text-dark); font-weight:500; }
+  .info-item .value.muted{ color:var(--text-light); font-weight:400; font-style:italic; }
+
+  .lease-actions{ margin-top:16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .btn-outline-sm{
+    display:inline-flex; align-items:center; gap:6px; border:1px solid var(--green-dark); color:var(--green-dark);
+    background:#fff; border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:700;
+    text-decoration:none; cursor:pointer; transition:background 0.15s ease, color 0.15s ease;
+  }
+  .btn-outline-sm:hover{ background:var(--green-dark); color:#fff; }
+  .muted-note{ font-size:12px; color:var(--text-light); margin:0; line-height:1.5; }
+
+  /* ===== Change Password tab ===== */
   .pw-form-group{ margin-bottom:20px; }
   .pw-form-group label{ display:block; font-size:12.5px; font-weight:600; color:var(--green-accent); margin-bottom:7px; }
   .pw-input-wrap{ position:relative; }
@@ -119,6 +158,11 @@
   .pw-submit-btn .spinner{ display:none; width:13px; height:13px; border:2px solid rgba(255,255,255,0.35); border-top:2px solid #fff; border-radius:50%; animation:pwspin 0.8s linear infinite; margin-right:8px; vertical-align:-2px; }
   .pw-submit-btn.loading .spinner{ display:inline-block; }
   @keyframes pwspin{ to{ transform:rotate(360deg); } }
+
+  @media (max-width: 640px){
+    .info-grid{ grid-template-columns:1fr; }
+    .request-edit-banner{ flex-direction:column; align-items:flex-start; }
+  }
 </style>
 </head>
 <body>
@@ -150,55 +194,153 @@
       <div class="page-head">
         <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <div class="page-head-text">
-          <h1>Account Settings</h1>
-          <p>{{ $tenant->full_name ?? 'Tenant' }}</p>
+          <h1>My Profile</h1>
+          <p>{{ $tenant->full_name ?? 'Tenant' }}@if($contract?->bed?->room?->room_no) &middot; Room {{ $contract->bed->room->room_no }}@endif</p>
         </div>
       </div>
 
       <div class="tabs-row">
-        <div class="tab-pill active">Change Password</div>
+        <div class="tab-pill active" data-panel="profilePanel">Profile</div>
+        <div class="tab-pill" data-panel="passwordPanel">Change Password</div>
       </div>
 
-      <div class="settings-card">
-        <h2>Change Password</h2>
-        <p class="intro">Update the password you use to log in. Choose something you don't use anywhere else.</p>
+      {{-- ===== PROFILE TAB ===== --}}
+      <div class="tab-panel active" id="profilePanel">
 
-        <div class="form-banner" id="formBanner"></div>
+        <div class="request-edit-banner">
+          <p>This information is view-only. <strong>Spotted something wrong, or need it updated?</strong> Submit a ticket and an admin will make the change for you.</p>
+          <a href="{{ route('tenant.tickets') }}" class="request-edit-btn">Submit a Ticket</a>
+        </div>
 
-        <form id="changePasswordForm" autocomplete="off">
-          <div class="pw-form-group">
-            <label for="currentPassword">Current Password</label>
-            <div class="pw-input-wrap">
-              <input id="currentPassword" type="password" placeholder="Enter current password" autocomplete="current-password" required>
-              <button type="button" class="pw-toggle" data-target="currentPassword" aria-label="Show password"></button>
+        <div class="settings-card">
+
+          <div class="profile-section">
+            <h3 class="profile-section-title">Personal Information</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Full Name</label>
+                <div class="value">{{ $tenant->full_name ?? '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Email</label>
+                <div class="value">{{ $tenant->email ?? '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Contact Number</label>
+                <div class="value">{{ $tenant->contact_number ?? '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Date of Birth</label>
+                <div class="value">{{ $tenant->date_of_birth ? \Carbon\Carbon::parse($tenant->date_of_birth)->format('M j, Y') : '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Home Address</label>
+                <div class="value">{{ $tenant->home_address ?? '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Tenant Type</label>
+                <div class="value">{{ $tenant->tenant_type ? ucwords(str_replace('_', ' ', $tenant->tenant_type)) : '—' }}</div>
+              </div>
             </div>
-            <div class="field-error" id="currentPasswordError"></div>
           </div>
 
-          <div class="pw-form-group">
-            <label for="newPassword">New Password</label>
-            <div class="pw-input-wrap">
-              <input id="newPassword" type="password" placeholder="Enter new password" autocomplete="new-password" minlength="8" required>
-              <button type="button" class="pw-toggle" data-target="newPassword" aria-label="Show password"></button>
+          <div class="profile-section">
+            <h3 class="profile-section-title">Emergency Contact</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Name</label>
+                <div class="value">{{ $tenant->emergency_contact_name ?? '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Contact Number</label>
+                <div class="value">{{ $tenant->emergency_contact_number ?? '—' }}</div>
+              </div>
             </div>
-            <div class="field-error" id="newPasswordError"></div>
-          </div>
-          <div class="pw-hint">At least 8 characters.</div>
-
-          <div class="pw-form-group">
-            <label for="confirmPassword">Confirm New Password</label>
-            <div class="pw-input-wrap">
-              <input id="confirmPassword" type="password" placeholder="Re-enter new password" autocomplete="new-password" minlength="8" required>
-              <button type="button" class="pw-toggle" data-target="confirmPassword" aria-label="Show password"></button>
-            </div>
-            <div class="field-error" id="confirmPasswordError"></div>
           </div>
 
-          <button type="submit" class="pw-submit-btn" id="submitBtn">
-            <span class="spinner"></span>
-            <span class="btn-text">Update Password</span>
-          </button>
-        </form>
+          <div class="profile-section">
+            <h3 class="profile-section-title">Room &amp; Lease</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Room</label>
+                <div class="value">{{ $contract?->bed?->room?->room_no ?? '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Bed</label>
+                <div class="value">{{ $contract?->bed?->bed_label ?? '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Lease Start</label>
+                <div class="value">{{ $contract?->start_date ? \Carbon\Carbon::parse($contract->start_date)->format('M j, Y') : '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Lease End</label>
+                <div class="value">{{ $contract?->end_date ? \Carbon\Carbon::parse($contract->end_date)->format('M j, Y') : '—' }}</div>
+              </div>
+              <div class="info-item">
+                <label>Monthly Rate</label>
+                <div class="value">{{ $contract ? '₱' . number_format($contract->monthly_rate, 2) : '—' }}</div>
+              </div>
+            </div>
+
+            <div class="lease-actions">
+              @if($contractDocumentUrl)
+                <a href="{{ $contractDocumentUrl }}" target="_blank" rel="noopener" class="btn-outline-sm">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  View Lease Contract
+                </a>
+              @else
+                <p class="muted-note">Your signed lease contract hasn't been uploaded to your account yet. If you believe this is a mistake, submit a ticket to ask the admin about it.</p>
+              @endif
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {{-- ===== CHANGE PASSWORD TAB ===== --}}
+      <div class="tab-panel" id="passwordPanel">
+        <div class="settings-card">
+          <h2>Change Password</h2>
+          <p class="intro">Update the password you use to log in. Choose something you don't use anywhere else.</p>
+
+          <div class="form-banner" id="formBanner"></div>
+
+          <form id="changePasswordForm" autocomplete="off">
+            <div class="pw-form-group">
+              <label for="currentPassword">Current Password</label>
+              <div class="pw-input-wrap">
+                <input id="currentPassword" type="password" placeholder="Enter current password" autocomplete="current-password" required>
+                <button type="button" class="pw-toggle" data-target="currentPassword" aria-label="Show password"></button>
+              </div>
+              <div class="field-error" id="currentPasswordError"></div>
+            </div>
+
+            <div class="pw-form-group">
+              <label for="newPassword">New Password</label>
+              <div class="pw-input-wrap">
+                <input id="newPassword" type="password" placeholder="Enter new password" autocomplete="new-password" minlength="8" required>
+                <button type="button" class="pw-toggle" data-target="newPassword" aria-label="Show password"></button>
+              </div>
+              <div class="field-error" id="newPasswordError"></div>
+            </div>
+            <div class="pw-hint">At least 8 characters.</div>
+
+            <div class="pw-form-group">
+              <label for="confirmPassword">Confirm New Password</label>
+              <div class="pw-input-wrap">
+                <input id="confirmPassword" type="password" placeholder="Re-enter new password" autocomplete="new-password" minlength="8" required>
+                <button type="button" class="pw-toggle" data-target="confirmPassword" aria-label="Show password"></button>
+              </div>
+              <div class="field-error" id="confirmPasswordError"></div>
+            </div>
+
+            <button type="submit" class="pw-submit-btn" id="submitBtn">
+              <span class="spinner"></span>
+              <span class="btn-text">Update Password</span>
+            </button>
+          </form>
+        </div>
       </div>
 
     </div>
@@ -243,6 +385,18 @@
     });
   });
 
+  // ===== Tabs (Profile / Change Password) =====
+  document.querySelectorAll('.tab-pill').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab-pill').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById(tab.dataset.panel);
+      if (panel) panel.classList.add('active');
+    });
+  });
+
+  // ===== Change Password form =====
   const EYE_OPEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
   const EYE_CLOSED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0112 19c-7 0-11-7-11-7a20.3 20.3 0 015.06-5.94M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 7 11 7a20.3 20.3 0 01-3.22 4.39M14.12 14.12a3 3 0 11-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
 

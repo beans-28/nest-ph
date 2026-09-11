@@ -25,7 +25,10 @@ Route::get('/public/rooms', [PublicRoomController::class, 'index']);
 // Week 4 — prospective tenants submit these from the public site
 Route::post('/inquiries', [InquiryController::class, 'store']);
 Route::post('/applications', [ApplicationController::class, 'store']);
-Route::post('/applications/status-check', [ApplicationController::class, 'checkStatus']);
+Route::post('/applications/contract-preview', [ApplicationController::class, 'previewContract']);
+Route::post('/applications/contract-sign', [ApplicationController::class, 'signContract']);
+Route::post('/applications/contract-preview', [ApplicationController::class, 'previewContract']);
+Route::post('/applications/contract-sign', [ApplicationController::class, 'signContract']);
 
 /*
 |--------------------------------------------------------------------------

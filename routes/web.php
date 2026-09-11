@@ -246,8 +246,27 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'moveout.check', 'delinquen
     })->name('tenant.billing');
 
     Route::get('/account', function (Illuminate\Http\Request $request) {
+        $tenant = $request->attributes->get('tenant') ?? $request->user()->tenant;
+        $tenant->load('activeContract.bed.room.floor');
+
+        $contract = $tenant->activeContract;
+
+        // Prefer the lease's own signed document; fall back to the
+        // tenant's onboarding-signed contract if the lease itself
+        // hasn't had one uploaded yet.
+        $contractDocumentPath = null;
+        if ($contract && $contract->esign_status === 'signed' && $contract->signed_document_url) {
+            $contractDocumentPath = $contract->signed_document_url;
+        } elseif ($tenant->signed_contract_path) {
+            $contractDocumentPath = $tenant->signed_contract_path;
+        }
+
         return view('tenantaccount', [
-            'tenant' => $request->attributes->get('tenant') ?? $request->user()->tenant,
+            'tenant' => $tenant,
+            'contract' => $contract,
+            'contractDocumentUrl' => $contractDocumentPath
+                ? \Illuminate\Support\Facades\Storage::disk('public')->url($contractDocumentPath)
+                : null,
         ]);
     })->name('tenant.account');
 

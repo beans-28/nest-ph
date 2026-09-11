@@ -181,17 +181,9 @@
         .crc-btn {
             display: inline-flex; align-items: center; background: #567357; color: #fff; font-weight: 700;
             font-size: 12.5px; padding: 10px 20px; border-radius: 7px; text-decoration: none;
+            border: none; cursor: pointer;
         }
         .crc-btn.secondary { background: #fff; color: #567357; border: 1px solid #a6b69f; }
-        .crc-unavailable {
-            background: #fdf0f0; border: 1px solid #f3cccc; color: #b3261e; border-radius: 8px;
-            padding: 11px 14px; font-size: 12.5px; line-height: 1.6; margin-bottom: 16px;
-        }
-        .crc-checkbox {
-            display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: #4b5f4c;
-            line-height: 1.6; padding-top: 14px; border-top: 1px solid #eef1ee;
-        }
-        .crc-checkbox input { margin-top: 2px; accent-color: #567357; width: 15px; height: 15px; flex-shrink: 0; }
 
         .step-actions { display: flex; justify-content: space-between; gap: 16px; margin-top: 28px; }
         .btn-nav {
@@ -219,7 +211,7 @@
         }
         .form-error.visible { display: block; }
 
-        /* Step 4 — verify summary (redesigned: structured cards, not a text block) */
+        /* Step 4 — verify summary */
         .verify-card {
             background: #fff; border: 1px solid #e2e6e3; border-radius: 12px;
             padding: 24px 28px; margin-bottom: 18px;
@@ -266,6 +258,71 @@
             .step-label { display: none; }
             .step-actions { flex-direction: column-reverse; }
         }
+
+        /* ===== Contract e-sign modal ===== */
+        .contract-signed-status {
+            display: flex; align-items: center; gap: 8px; margin-top: 12px;
+            font-size: 12.5px; color: #194e19; font-weight: 600;
+        }
+        .contract-signed-status svg { width: 15px; height: 15px; flex-shrink: 0; }
+        .contract-signed-status a { color: #194e19; text-decoration: underline; font-weight: 600; }
+
+        .contract-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(20, 26, 22, 0.55);
+            z-index: 100; align-items: center; justify-content: center; padding: 20px;
+        }
+        .contract-modal-overlay.open { display: flex; }
+        .contract-modal {
+            background: #fff; border-radius: 14px; width: min(760px, 100%);
+            max-height: 92vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .contract-modal-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 22px; border-bottom: 1px solid #e5e9e4;
+        }
+        .contract-modal-head h3 { margin: 0; font-size: 15.5px; color: #194e19; }
+        .contract-modal-close { background: none; border: none; font-size: 22px; color: #8a9690; cursor: pointer; line-height: 1; }
+        .contract-modal-body { padding: 18px 22px; overflow-y: auto; flex: 1; }
+
+        .contract-preview-frame {
+            width: 100%; height: 360px; border: 1px solid #e5e9e4; border-radius: 8px; background: #f4f6f4;
+        }
+        .contract-preview-loading {
+            display: flex; align-items: center; justify-content: center; height: 360px;
+            font-size: 12.5px; color: #5b6b60;
+        }
+
+        .signature-pad-label { font-size: 12.5px; font-weight: 600; color: #194e19; margin: 18px 0 8px; }
+        .signature-pad-wrap {
+            border: 1px solid #d8dde3; border-radius: 8px; background: #fff; position: relative;
+        }
+        #signatureCanvas { width: 100%; height: 150px; display: block; touch-action: none; cursor: crosshair; }
+        .signature-pad-hint {
+            position: absolute; bottom: 8px; left: 12px; right: 12px; border-top: 1px solid #eceff0;
+            font-size: 10.5px; color: #b6bcb9; pointer-events: none;
+        }
+        .signature-pad-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
+        .signature-clear-btn {
+            background: none; border: 1px solid #d8dde3; border-radius: 6px; padding: 6px 12px;
+            font-size: 11.5px; color: #5b6b60; cursor: pointer;
+        }
+
+        .contract-agree-row {
+            display: flex; gap: 9px; align-items: flex-start; font-size: 12.5px; color: #262e36;
+            line-height: 1.55; margin-top: 16px;
+        }
+        .contract-agree-row input { margin-top: 3px; accent-color: #194e19; width: 15px; height: 15px; flex-shrink: 0; }
+
+        .contract-modal-foot {
+            display: flex; justify-content: flex-end; gap: 10px; padding: 14px 22px;
+            border-top: 1px solid #e5e9e4;
+        }
+        .contract-modal-foot button {
+            padding: 10px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+        }
+        .contract-modal-cancel { background: #fff; border: 1px solid #d8dde3; color: #5b6b60; }
+        .contract-modal-sign { background: #194e19; border: none; color: #fff; }
+        .contract-modal-sign:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -487,25 +544,24 @@
                                 <div class="contract-review-head">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
                                     <div>
-                                        <div class="crc-title">Review the Dormitory Contract</div>
-                                        <div class="crc-sub">Read the full terms before signing. Download a copy to print, sign, and scan.</div>
+                                        <div class="crc-title">Review and Sign the Dormitory Contract</div>
+                                        <div class="crc-sub">Read the terms, then sign right here. No printing or scanning needed.</div>
                                     </div>
                                 </div>
 
-                                @if($hasContractTemplate)
-                                    <div class="contract-review-actions">
-                                        <a href="{{ route('public.apply.contract') }}" target="_blank" rel="noopener" class="crc-btn">View Contract</a>
-                                        <a href="{{ route('public.apply.contract.download') }}" class="crc-btn secondary">Download Contract</a>
-                                    </div>
-                                @else
-                                    <div class="crc-unavailable">The contract document hasn't been uploaded yet. Please check back soon, or contact the dormitory directly before applying.</div>
-                                @endif
+                                <div class="contract-review-actions">
+                                    <button type="button" class="crc-btn" id="openContractModalBtn">Review &amp; Sign Contract</button>
+                                </div>
 
-                                <label class="crc-checkbox">
-                                    <input type="checkbox" id="contract_acceptance" required>
-                                    <span>I have reviewed and downloaded a copy of the dormitory contract.</span>
-                                </label>
+                                <div class="contract-signed-status" id="contractSignedStatus" style="display:none;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                                    <span>Contract signed on <span id="contractSignedDate"></span>.</span>
+                                    <a href="#" id="viewSignedContractLink" target="_blank" rel="noopener">View signed copy</a>
+                                </div>
                             </div>
+
+                            <input type="hidden" id="contract_acceptance" value="0">
+                            <input type="hidden" id="signed_contract_path" value="">
                         </div>
                     </div>
 
@@ -517,18 +573,11 @@
                                 <span class="placeholder" id="idPlaceholder">Add file (JPG, PNG, or PDF)</span>
                             </div>
                         </div>
-                        <div class="field">
-                            <label>Signed Contract <span class="req">*</span></label>
-                            <div class="file-drop" id="contractDrop">
-                                <input type="file" id="signed_contract" accept=".jpg,.jpeg,.png,.pdf" required>
-                                <span class="placeholder" id="contractPlaceholder">Upload the contract you just signed</span>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="step-actions">
                         <button type="button" class="btn-nav secondary" onclick="goBack(3)">BACK</button>
-                        <button type="button" class="btn-nav primary" onclick="goNext(3)">NEXT</button>
+                        <button type="button" class="btn-nav primary" onclick="goNextFromStep3()">NEXT</button>
                     </div>
                 </div>
 
@@ -581,7 +630,7 @@
                                 <div class="summary-item"><span class="label">Bed</span><span class="value" id="sum_bed"></span></div>
                                 <div class="summary-item"><span class="label">Type of Tenant</span><span class="value" id="sum_tenant_type"></span></div>
                                 <div class="summary-item"><span class="label">ID File</span><span class="value" id="sum_id_file"></span></div>
-                                <div class="summary-item"><span class="label">Signed Contract File</span><span class="value" id="sum_contract_file"></span></div>
+                                <div class="summary-item"><span class="label">Signed Contract</span><span class="value" id="sum_contract_file"></span></div>
                             </div>
                         </div>
                     </div>
@@ -615,6 +664,37 @@
             </div>
         </div>
     </div>
+    </div>
+
+    <div class="contract-modal-overlay" id="contractModalOverlay">
+        <div class="contract-modal">
+            <div class="contract-modal-head">
+                <h3>Review &amp; Sign Contract</h3>
+                <button type="button" class="contract-modal-close" id="closeContractModalBtn">&times;</button>
+            </div>
+            <div class="contract-modal-body">
+                <div class="contract-preview-loading" id="contractPreviewLoading">Preparing your contract...</div>
+                <iframe class="contract-preview-frame" id="contractPreviewFrame" style="display:none;"></iframe>
+
+                <div class="signature-pad-label">Draw your signature below</div>
+                <div class="signature-pad-wrap">
+                    <canvas id="signatureCanvas"></canvas>
+                    <div class="signature-pad-hint">Sign above this line</div>
+                </div>
+                <div class="signature-pad-actions">
+                    <button type="button" class="signature-clear-btn" id="clearSignatureBtn">Clear</button>
+                </div>
+
+                <label class="contract-agree-row">
+                    <input type="checkbox" id="contractAgreeCheckbox">
+                    <span>I have read and agree to all terms of this Lease Contract.</span>
+                </label>
+            </div>
+            <div class="contract-modal-foot">
+                <button type="button" class="contract-modal-cancel" id="cancelContractModalBtn">Cancel</button>
+                <button type="button" class="contract-modal-sign" id="confirmSignBtn" disabled>Sign Contract</button>
+            </div>
+        </div>
     </div>
 
 <script>
@@ -657,7 +737,6 @@
         document.querySelectorAll('.step-card').forEach(c => c.classList.remove('active'));
         document.getElementById('step-' + step).classList.add('active');
 
-        // Update the 3-dot tracker for steps 1–3; steps 4/5 leave it on the last state.
         const trackStep = Math.min(step, 3);
         document.querySelectorAll('.step-dot').forEach(dot => {
             const n = parseInt(dot.dataset.dot, 10);
@@ -754,15 +833,12 @@
         setSummary('sum_bed', bedText);
         setSummary('sum_tenant_type', tenantTypeLabel);
         setSummary('sum_id_file', document.getElementById('id_document').files[0]?.name);
-        setSummary('sum_contract_file', document.getElementById('signed_contract').files[0]?.name);
+        setSummary('sum_contract_file', document.getElementById('signed_contract_path').value ? 'Signed electronically' : 'Not signed yet');
     }
 
     // ===== File drop labels =====
     document.getElementById('id_document').addEventListener('change', function () {
         document.getElementById('idPlaceholder').textContent = this.files[0]?.name || 'Add file (JPG, PNG, or PDF)';
-    });
-    document.getElementById('signed_contract').addEventListener('change', function () {
-        document.getElementById('contractPlaceholder').textContent = this.files[0]?.name || 'Add file (JPG, PNG, or PDF)';
     });
 
     // ===== Room -> Bed cascading dropdowns =====
@@ -851,12 +927,11 @@
         formData.append('type_of_tenant', checkedRadioValue('type_of_tenant'));
 
         const idFile = document.getElementById('id_document').files[0];
-        const contractFile = document.getElementById('signed_contract').files[0];
         if (idFile) formData.append('id_document', idFile);
-        if (contractFile) formData.append('signed_contract', contractFile);
+        formData.append('signed_contract_path', document.getElementById('signed_contract_path').value);
 
         formData.append('dpa_consent', document.getElementById('dpa_consent').checked ? '1' : '0');
-        formData.append('contract_acceptance', document.getElementById('contract_acceptance').checked ? '1' : '0');
+        formData.append('contract_acceptance', document.getElementById('contract_acceptance').value === '1' ? '1' : '0');
 
         fetch('/api/applications', {
             method: 'POST',
@@ -903,5 +978,204 @@
     });
 </script>
 
+<script>
+(function(){
+    function val(id){ return document.getElementById(id)?.value || ''; }
+
+    function goNextFromStep3(){
+        if (!document.getElementById('signed_contract_path').value) {
+            alert('Please review and sign the contract before continuing.');
+            return;
+        }
+        goNext(3);
+    }
+    window.goNextFromStep3 = goNextFromStep3;
+
+    function collectContractFields(){
+        return {
+            first_name: val('first_name'),
+            last_name: val('last_name'),
+            contact_number: val('contact_number'),
+            email: val('email'),
+            emergency_contact_name: val('emergency_contact_name'),
+            emergency_contact_number: val('emergency_contact_number'),
+            emergency_contact_relation: val('emergency_contact_relation'),
+            bed_id: document.getElementById('bed_select')?.value || '',
+            preferred_start_date: val('preferred_start_date'),
+            tenant_end_date: val('tenant_end_date'),
+        };
+    }
+
+    const overlay = document.getElementById('contractModalOverlay');
+    const loading = document.getElementById('contractPreviewLoading');
+    const frame = document.getElementById('contractPreviewFrame');
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    const agreeCheckbox = document.getElementById('contractAgreeCheckbox');
+    const signBtn = document.getElementById('confirmSignBtn');
+    let hasSignature = false;
+    let drawing = false;
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    function updateBounds(p){
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+    }
+
+    function resetSignature(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hasSignature = false;
+        minX = Infinity; minY = Infinity; maxX = -Infinity; maxY = -Infinity;
+    }
+
+    function getTrimmedSignatureDataUrl(){
+        if (!hasSignature || minX === Infinity) return canvas.toDataURL('image/png');
+
+        const ratio = window.devicePixelRatio || 1;
+        const padding = 10;
+        const sx = Math.max(0, (minX - padding) * ratio);
+        const sy = Math.max(0, (minY - padding) * ratio);
+        const sw = Math.min(canvas.width - sx, (maxX - minX + padding * 2) * ratio);
+        const sh = Math.min(canvas.height - sy, (maxY - minY + padding * 2) * ratio);
+
+        const trimmed = document.createElement('canvas');
+        trimmed.width = sw;
+        trimmed.height = sh;
+        trimmed.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+
+        return trimmed.toDataURL('image/png');
+    }
+
+    function resizeCanvas(){
+        const ratio = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * ratio;
+        canvas.height = rect.height * ratio;
+        ctx.scale(ratio, ratio);
+        ctx.strokeStyle = '#1f2a22';
+        ctx.lineWidth = 2;
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+    }
+
+    function getPos(e){
+        const rect = canvas.getBoundingClientRect();
+        const point = e.touches ? e.touches[0] : e;
+        return { x: point.clientX - rect.left, y: point.clientY - rect.top };
+    }
+
+    function startDraw(e){
+        drawing = true;
+        hasSignature = true;
+        const p = getPos(e);
+        updateBounds(p);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        updateSignButtonState();
+        e.preventDefault();
+    }
+    function moveDraw(e){
+        if (!drawing) return;
+        const p = getPos(e);
+        updateBounds(p);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+        e.preventDefault();
+    }
+    function endDraw(){ drawing = false; }
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', moveDraw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseleave', endDraw);
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('touchmove', moveDraw);
+    canvas.addEventListener('touchend', endDraw);
+
+    document.getElementById('clearSignatureBtn').addEventListener('click', () => {
+        resetSignature();
+        updateSignButtonState();
+    });
+
+    function updateSignButtonState(){
+        signBtn.disabled = !(hasSignature && agreeCheckbox.checked);
+    }
+    agreeCheckbox.addEventListener('change', updateSignButtonState);
+
+    document.getElementById('openContractModalBtn').addEventListener('click', async () => {
+        if (!val('first_name') || !val('last_name') || !document.getElementById('bed_select')?.value) {
+            alert('Please fill in your name and select a room/bed before reviewing the contract.');
+            return;
+        }
+
+        overlay.classList.add('open');
+        loading.style.display = 'flex';
+        frame.style.display = 'none';
+        resizeCanvas();
+        resetSignature();
+        updateSignButtonState();
+
+        try {
+            const res = await fetch('/api/applications/contract-preview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify(collectContractFields()),
+            });
+            if (!res.ok) throw new Error('Could not load the contract preview.');
+            const blob = await res.blob();
+            frame.src = URL.createObjectURL(blob);
+            loading.style.display = 'none';
+            frame.style.display = 'block';
+        } catch (err) {
+            loading.textContent = 'Could not load the contract preview. Please close this and try again.';
+        }
+    });
+
+    function closeModal(){ overlay.classList.remove('open'); }
+    document.getElementById('closeContractModalBtn').addEventListener('click', closeModal);
+    document.getElementById('cancelContractModalBtn').addEventListener('click', closeModal);
+
+    signBtn.addEventListener('click', async () => {
+        signBtn.disabled = true;
+        signBtn.textContent = 'Signing...';
+
+        try {
+            const payload = collectContractFields();
+            payload.signature_image = getTrimmedSignatureDataUrl();
+
+            const res = await fetch('/api/applications/contract-sign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Something went wrong while signing.');
+
+            document.getElementById('signed_contract_path').value = data.signed_contract_path;
+            document.getElementById('contract_acceptance').value = '1';
+            document.getElementById('contractSignedDate').textContent = data.signed_at;
+            document.getElementById('viewSignedContractLink').href = data.preview_url;
+            document.getElementById('contractSignedStatus').style.display = 'flex';
+
+            closeModal();
+        } catch (err) {
+            alert(err.message);
+        }
+
+        signBtn.disabled = false;
+        signBtn.textContent = 'Sign Contract';
+        updateSignButtonState();
+    });
+})();
+</script>
 </body>
 </html>

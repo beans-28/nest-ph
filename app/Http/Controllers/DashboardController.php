@@ -52,7 +52,13 @@ class DashboardController extends Controller
         $vacancyRate = $totalBeds > 0 ? round(($vacantBeds / $totalBeds) * 100) : 0;
 
         // --- Total Tenants ---
-        $totalTenants = Tenant::where('status', 'active')->count();
+        // Blacklisted tenants (Stage 6) keep status = 'active' on the
+        // tenants table -- blacklisting never touches that column -- so
+        // they have to be excluded here explicitly, same fix as the
+        // Tenant Manager page's headline count.
+        $totalTenants = Tenant::where('status', 'active')
+            ->where('is_blacklisted', false)
+            ->count();
 
         // --- Revenue this month (approved payments only) ---
         $now = now();
@@ -61,10 +67,14 @@ class DashboardController extends Controller
             ->whereMonth('payment_date', $now->month)
             ->sum('amount_paid');
 
-        // --- Delinquent accounts (distinct tenants with an overdue bill) ---
-        $delinquentCount = BillingStatement::where('status', 'overdue')
-            ->distinct('tenant_id')
-            ->count('tenant_id');
+        // --- Delinquent accounts: overdue right now, OR permanently
+        // blacklisted (Stage 6) even if their triggering bill has since
+        // been settled or cleared -- matches how DelinquencyController's
+        // own page defines who belongs on that list, so this card's
+        // number and the real Delinquency page never disagree.
+        $overdueTenantIds = BillingStatement::where('status', 'overdue')->pluck('tenant_id');
+        $blacklistedTenantIds = Tenant::where('is_blacklisted', true)->pluck('id');
+        $delinquentCount = $overdueTenantIds->merge($blacklistedTenantIds)->unique()->count();
 
         // --- Worst overdue account, for the alert banner ---
         $topDelinquent = null;
