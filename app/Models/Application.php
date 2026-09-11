@@ -37,8 +37,7 @@ class Application extends Model
         'emergency_contact_number',
         'emergency_contact_email',
         'emergency_contact_landline',
-        'father_name',
-        'mother_name',
+        'emergency_contact_relation',
 
         // Room information
         'bed_id',

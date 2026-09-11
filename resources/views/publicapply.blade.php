@@ -418,13 +418,20 @@
                         </div>
                     </div>
                     <div class="field-row">
-                        <div class="field">
-                            <label>Father's Name <span class="req">*</span></label>
-                            <input type="text" id="father_name" required>
-                        </div>
-                        <div class="field">
-                            <label>Mother's Name <span class="req">*</span></label>
-                            <input type="text" id="mother_name" required>
+                        <div class="field full">
+                            <label>Relation to Tenant <span class="req">*</span></label>
+                            <select id="emergency_contact_relation" required>
+                                <option value="">Select</option>
+                                <option value="parent">Parent</option>
+                                <option value="grandparent">Grandparent</option>
+                                <option value="sibling">Sibling</option>
+                                <option value="child">Child</option>
+                                <option value="spouse">Spouse</option>
+                                <option value="relative">Relative</option>
+                                <option value="guardian">Guardian</option>
+                                <option value="friend">Friend</option>
+                                <option value="other">Other</option>
+                            </select>
                         </div>
                     </div>
 
@@ -561,8 +568,7 @@
                                 <div class="summary-item"><span class="label">Cellphone No.</span><span class="value" id="sum_emergency_contact_number"></span></div>
                                 <div class="summary-item"><span class="label">Email</span><span class="value" id="sum_emergency_contact_email"></span></div>
                                 <div class="summary-item"><span class="label">Landline</span><span class="value" id="sum_emergency_contact_landline"></span></div>
-                                <div class="summary-item"><span class="label">Father's Name</span><span class="value" id="sum_father_name"></span></div>
-                                <div class="summary-item"><span class="label">Mother's Name</span><span class="value" id="sum_mother_name"></span></div>
+                                <div class="summary-item"><span class="label">Relation to Tenant</span><span class="value" id="sum_emergency_contact_relation"></span></div>
                             </div>
                         </div>
 
@@ -740,8 +746,7 @@
         setSummary('sum_emergency_contact_number', val('emergency_contact_number'));
         setSummary('sum_emergency_contact_email', val('emergency_contact_email'));
         setSummary('sum_emergency_contact_landline', val('emergency_contact_landline'));
-        setSummary('sum_father_name', val('father_name'));
-        setSummary('sum_mother_name', val('mother_name'));
+        setSummary('sum_emergency_contact_relation', capitalize(val('emergency_contact_relation')));
 
         setSummary('sum_start_date', formatDate(val('preferred_start_date')));
         setSummary('sum_end_date', formatDate(val('tenant_end_date')));
@@ -838,8 +843,7 @@
         formData.append('emergency_contact_number', val('emergency_contact_number'));
         formData.append('emergency_contact_email', val('emergency_contact_email'));
         formData.append('emergency_contact_landline', val('emergency_contact_landline'));
-        formData.append('father_name', val('father_name'));
-        formData.append('mother_name', val('mother_name'));
+        formData.append('emergency_contact_relation', val('emergency_contact_relation'));
 
         formData.append('bed_id', bedSelect.value);
         formData.append('preferred_start_date', val('preferred_start_date'));

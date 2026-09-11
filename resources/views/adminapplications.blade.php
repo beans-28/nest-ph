@@ -415,8 +415,7 @@
         <div class="kv">
           <div><div class="k">Name</div>${val(a.emergency_contact_name)}</div>
           <div><div class="k">Cellphone</div>${val(a.emergency_contact_number)}</div>
-          <div><div class="k">Father's name</div>${val(a.father_name)}</div>
-          <div><div class="k">Mother's name</div>${val(a.mother_name)}</div>
+          <div><div class="k">Relation to tenant</div>${val(a.emergency_contact_relation)}</div>
         </div>
       </div>
 

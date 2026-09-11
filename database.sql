@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 10, 2026 at 10:27 AM
+-- Generation Time: Sep 11, 2026 at 03:22 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -100,8 +100,7 @@ CREATE TABLE `applications` (
   `emergency_contact_number` varchar(20) DEFAULT NULL,
   `emergency_contact_email` varchar(150) DEFAULT NULL,
   `emergency_contact_landline` varchar(20) DEFAULT NULL,
-  `father_name` varchar(150) DEFAULT NULL,
-  `mother_name` varchar(150) DEFAULT NULL,
+  `emergency_contact_relation` varchar(50) DEFAULT NULL,
   `bed_id` bigint(20) UNSIGNED NOT NULL,
   `preferred_start_date` date DEFAULT NULL,
   `tenant_end_date` date DEFAULT NULL,
@@ -122,15 +121,15 @@ CREATE TABLE `applications` (
 -- Dumping data for table `applications`
 --
 
-INSERT INTO `applications` (`id`, `inquiry_id`, `tenant_id`, `first_name`, `last_name`, `birthdate`, `gender`, `nationality`, `medical_condition`, `occupation`, `school_company`, `school_company_address`, `contact_number`, `email`, `landline`, `home_address`, `emergency_contact_name`, `emergency_contact_number`, `emergency_contact_email`, `emergency_contact_landline`, `father_name`, `mother_name`, `bed_id`, `preferred_start_date`, `tenant_end_date`, `type_of_tenant`, `id_document_path`, `signed_contract_path`, `dpa_consent`, `status`, `rejection_reason`, `re_application_note`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
-(8, NULL, 13, 'adasdasdas', 'adasdasdas', '2026-08-13', 'female', 'Filipino', 'None', 'adadasda', 'sdadasd', 'sadasdsd', '09223213123', 'adadas@gmail.com', NULL, 'asdadasdasd', 'asdsadasdasd', '092131231232', 'sadasdasdsad@gmail.com', NULL, 'asdads', 'dasdadasd', 34, '2026-09-02', '2026-11-26', 'student', 'application-documents/xdM4EJ5QZo9hWXroCtu3E6kfYOw0GqBkVdzXRbe5.jpg', 'application-documents/shhDmU4ZxvyXMhMj2ZAFmAxJl3STz2QCQBOSdNt6.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 06:16:41', '2026-09-10 05:56:47'),
-(9, NULL, 14, 'Test Tenant', '1', '2026-08-12', 'female', 'Filipino', 'None', 'assadasdasddsa', 'sdadsd', 'sdadasd', '09778643524', 'testtenant1@gmail.com', NULL, 'asdasdasd', 'parents', '09573426732', 'parents@gmail.com', NULL, 'Father Parents', 'Mother Parents', 38, '2026-09-03', '2026-12-23', 'student', 'application-documents/uesfq0GVNL0tc8y3dFTloKnAIpePXiTGudlj3azU.jpg', 'application-documents/iY01Hw1mW8CceLrI5195ioAA0VOnRvrPSSK3K5ih.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 10:52:25', '2026-09-10 05:56:47'),
-(10, NULL, 25, 'Valid ID', 'Check', '2005-06-04', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09867354632', 'validIDcheck@gmail.com', NULL, 'Pampanga', 'ID Mother', '09673526321', 'idparent@gmail.com', '23421', 'ID Father', 'ID Mother', 42, '2026-09-08', '2027-01-20', 'student', 'application-documents/w7J1TMMwHZFVd9utDat9ONw0oNcZSy4mOKuOWSL0.jpg', 'application-documents/mpENdhsErV3jGsQfbEALu6S4JVSPn4l9hIalA0bD.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 05:58:12', '2026-09-10 05:56:47'),
-(11, NULL, 26, 'Valid ID', 'CheckTwo', '2008-07-04', 'male', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09273648212', 'validid2@gmail.com', NULL, 'Sta Mesa', 'Valid Mother', '09364729591', 'validmom@gmail.com', '133334', 'Valid Father', 'Valid Mother', 43, '2026-09-10', '2027-02-16', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:12:49', '2026-09-10 05:56:47'),
-(12, NULL, 27, 'Tenant Check', 'One', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09362537482', 'tenantcheck1@gmail.com', NULL, 'asdasdads', 'Tenant Mother One', '097726373482', 'tenantmom1@gmail.com', '54213', 'Tenant Father One', 'Tenant Mother One', 39, '2026-09-05', '2027-01-16', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:49:48', '2026-09-10 05:56:47'),
-(13, NULL, 28, 'Tenant Check', 'Two', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'pup', 'Sta. mesa', '09546374234', 'tenantcheck2@gmail.com', '34231', 'San Sebastian', 'Tenant Mother Two', '0936474328', 'tenantmom2@gmail.com', '44312', 'Tenant Father Two', 'Tenant Mother 2', 40, '2026-09-05', '2026-12-16', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 10:39:58', '2026-09-10 05:56:47'),
-(14, NULL, 30, 'Beans', 'Lope', '2014-02-07', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09289811408', 'vincelopez@gmail.com', NULL, 'Manila', 'Arlene Lopez', '09289811476', 'arlenelopez@gmail.com', '21212', 'Larry Lopez', 'Arlene Lopez', 41, '2026-09-10', '2026-12-15', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 12:38:04', '2026-09-10 05:56:47'),
-(15, NULL, 31, 'Shayne', 'Bagui', '2004-08-13', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta. Mesa', '09212408565', 'shaynebagui@gmail.com', '121342', 'Sta Mesa Road 4 block 1234', 'Marie Bagui', '09212408568', 'mariebagui@gmail.com', NULL, 'Father Bagui', 'Marie Bagui', 46, '2026-09-12', '2026-12-19', 'student', 'application-documents/7kDFU28JRBf080PHvgF2ZpC9eRTi3KyWArsakZ2g.jpg', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-10 01:14:28', '2026-09-10 05:56:47');
+INSERT INTO `applications` (`id`, `inquiry_id`, `tenant_id`, `first_name`, `last_name`, `birthdate`, `gender`, `nationality`, `medical_condition`, `occupation`, `school_company`, `school_company_address`, `contact_number`, `email`, `landline`, `home_address`, `emergency_contact_name`, `emergency_contact_number`, `emergency_contact_email`, `emergency_contact_landline`, `emergency_contact_relation`, `bed_id`, `preferred_start_date`, `tenant_end_date`, `type_of_tenant`, `id_document_path`, `signed_contract_path`, `dpa_consent`, `status`, `rejection_reason`, `re_application_note`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
+(8, NULL, 13, 'adasdasdas', 'adasdasdas', '2026-08-13', 'female', 'Filipino', 'None', 'adadasda', 'sdadasd', 'sadasdsd', '09223213123', 'adadas@gmail.com', NULL, 'asdadasdasd', 'asdsadasdasd', '092131231232', 'sadasdasdsad@gmail.com', NULL, NULL, 34, '2026-09-02', '2026-11-26', 'student', 'application-documents/xdM4EJ5QZo9hWXroCtu3E6kfYOw0GqBkVdzXRbe5.jpg', 'application-documents/shhDmU4ZxvyXMhMj2ZAFmAxJl3STz2QCQBOSdNt6.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 06:16:41', '2026-09-10 05:56:47'),
+(9, NULL, 14, 'Test Tenant', '1', '2026-08-12', 'female', 'Filipino', 'None', 'assadasdasddsa', 'sdadsd', 'sdadasd', '09778643524', 'testtenant1@gmail.com', NULL, 'asdasdasd', 'parents', '09573426732', 'parents@gmail.com', NULL, NULL, 38, '2026-09-03', '2026-12-23', 'student', 'application-documents/uesfq0GVNL0tc8y3dFTloKnAIpePXiTGudlj3azU.jpg', 'application-documents/iY01Hw1mW8CceLrI5195ioAA0VOnRvrPSSK3K5ih.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 10:52:25', '2026-09-10 05:56:47'),
+(10, NULL, 25, 'Valid ID', 'Check', '2005-06-04', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09867354632', 'validIDcheck@gmail.com', NULL, 'Pampanga', 'ID Mother', '09673526321', 'idparent@gmail.com', '23421', NULL, 42, '2026-09-08', '2027-01-20', 'student', 'application-documents/w7J1TMMwHZFVd9utDat9ONw0oNcZSy4mOKuOWSL0.jpg', 'application-documents/mpENdhsErV3jGsQfbEALu6S4JVSPn4l9hIalA0bD.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 05:58:12', '2026-09-10 05:56:47'),
+(11, NULL, 26, 'Valid ID', 'CheckTwo', '2008-07-04', 'male', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09273648212', 'validid2@gmail.com', NULL, 'Sta Mesa', 'Valid Mother', '09364729591', 'validmom@gmail.com', '133334', NULL, 43, '2026-09-10', '2027-02-16', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:12:49', '2026-09-10 05:56:47'),
+(12, NULL, 27, 'Tenant Check', 'One', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09362537482', 'tenantcheck1@gmail.com', NULL, 'asdasdads', 'Tenant Mother One', '097726373482', 'tenantmom1@gmail.com', '54213', NULL, 39, '2026-09-05', '2027-01-16', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:49:48', '2026-09-10 05:56:47'),
+(13, NULL, 28, 'Tenant Check', 'Two', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'pup', 'Sta. mesa', '09546374234', 'tenantcheck2@gmail.com', '34231', 'San Sebastian', 'Tenant Mother Two', '0936474328', 'tenantmom2@gmail.com', '44312', NULL, 40, '2026-09-05', '2026-12-16', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 10:39:58', '2026-09-10 05:56:47'),
+(14, NULL, 30, 'Beans', 'Lope', '2014-02-07', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09289811408', 'vincelopez@gmail.com', NULL, 'Manila', 'Arlene Lopez', '09289811476', 'arlenelopez@gmail.com', '21212', NULL, 41, '2026-09-10', '2026-12-15', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 12:38:04', '2026-09-10 05:56:47'),
+(15, NULL, 31, 'Shayne', 'Bagui', '2004-08-13', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta. Mesa', '09212408565', 'shaynebagui@gmail.com', '121342', 'Sta Mesa Road 4 block 1234', 'Marie Bagui', '09212408568', 'mariebagui@gmail.com', NULL, NULL, 46, '2026-09-12', '2026-12-19', 'student', 'application-documents/7kDFU28JRBf080PHvgF2ZpC9eRTi3KyWArsakZ2g.jpg', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-10 01:14:28', '2026-09-10 05:56:47');
 
 -- --------------------------------------------------------
 
@@ -662,7 +661,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (65, '2026_09_10_135502_split_full_name_on_applications_table', 40),
 (66, '2026_09_10_135507_split_full_name_on_tenants_table', 40),
 (67, '2026_09_10_135740_drop_full_name_columns', 41),
-(68, '2026_09_10_150536_create_reviews_table', 42);
+(68, '2026_09_10_150536_create_reviews_table', 42),
+(69, '2026_09_11_211439_remove_parent_fields_add_emergency_relation_to_applications', 43);
 
 -- --------------------------------------------------------
 
@@ -905,6 +905,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
+('HKsXLrzGz6LuGUra9qIkixkXQiVmkV24mDxSY1Xp', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoianM3S0xQdndhV0lHQ1RZSW5XME5mUkV3V3JmeWoycURFbHNRT2ZBbiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789132231),
+('is2DpxfYbwh4JpVZx6j4u8AlFc9vlRFPLvygj0dG', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWWVpdzczM0ZDSUw2c1J1akRwcTVYRkJUd1ZzQURxbGNkc2tTVGhvQiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9wdWJsaWMtYXBpL3Jvb21zIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1789132713),
 ('ZrUkG3L1buOdtJaBmLgCbREBCoxhXPzACePiYnci', 26, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiaWQwRjRHZ2JlT2xyNEFtcW43cmtvMXBqSWFwdDJlVGlTOW1hSEF0VSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDU6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kb3JtLWluZm8vcG9saWNpZXMtZmlsZSI7czo1OiJyb3V0ZSI7czoyMDoicHVibGljLmRvcm1pbmZvLmZpbGUiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToyNjt9', 1789028796);
 
 -- --------------------------------------------------------
@@ -1469,7 +1471,7 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
 -- AUTO_INCREMENT for table `payments`
