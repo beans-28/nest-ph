@@ -222,7 +222,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/dormitory-profile/house-rules', [DormitoryProfileController::class, 'storeHouseRule'])->name('dormitory-profile.house-rules.store');
     Route::patch('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'updateHouseRule']);
     Route::delete('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'destroyHouseRule']);
-
 });
 
 Route::middleware(['auth', 'admin', 'privileges'])->group(function () {
