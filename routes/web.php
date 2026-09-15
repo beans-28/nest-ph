@@ -27,6 +27,7 @@ use App\Http\Controllers\TenantTicketController;
 use App\Http\Controllers\DelinquencyTestingController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TenantMoveOutController;
+use App\Http\Controllers\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -201,6 +202,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/tickets/{ticket}', [TicketController::class, 'update']);
 
     Route::get('/activity-log', [DashboardController::class, 'activityLog'])->name('activity-log.index');
+
+    // --- Reports (Table 37 — Generate Reports) ---
+    Route::get('/reports', [ReportController::class, 'page'])->name('reports.index');
+    Route::get('/reports/occupancy', [ReportController::class, 'occupancy']);
+    Route::get('/reports/financial', [ReportController::class, 'financial']);
+    Route::get('/reports/export', [ReportController::class, 'export']);
 
     // --- Dormitory Profile (Manage Dormitory Profile, Table 39) ---
     Route::get('/dormitory-profile', [DormitoryProfileController::class, 'page'])->name('dormitory-profile.index');
