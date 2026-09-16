@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 11, 2026 at 05:04 PM
+-- Generation Time: Sep 16, 2026 at 04:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -72,6 +72,50 @@ INSERT INTO `admin_privileges` (`id`, `user_id`, `granted_by`, `privilege_name`,
 (8, 2, NULL, 'manage_rooms', '2026-07-25 06:12:00'),
 (9, 2, NULL, 'manage_billing', '2026-07-25 06:12:00'),
 (10, 2, NULL, 'view_reports', '2026-07-25 06:12:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `announcements`
+--
+
+CREATE TABLE `announcements` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `body` text NOT NULL,
+  `comments_restricted` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `announcements`
+--
+
+INSERT INTO `announcements` (`id`, `user_id`, `body`, `comments_restricted`, `created_at`, `updated_at`) VALUES
+(1, 3, 'ss', 0, '2026-09-16 13:35:39', '2026-09-16 13:54:05');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `announcement_comments`
+--
+
+CREATE TABLE `announcement_comments` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `announcement_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `tenant_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `body` text NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `announcement_comments`
+--
+
+INSERT INTO `announcement_comments` (`id`, `announcement_id`, `user_id`, `tenant_id`, `body`, `created_at`) VALUES
+(4, 1, NULL, 32, 'hey', '2026-09-16 13:52:10');
 
 -- --------------------------------------------------------
 
@@ -152,14 +196,14 @@ CREATE TABLE `beds` (
 --
 
 INSERT INTO `beds` (`id`, `room_id`, `bed_label`, `status`, `created_at`, `updated_at`) VALUES
-(34, 16, 'Bed 1', 'occupied', '2026-08-30 18:57:43', '2026-09-01 10:56:54'),
+(34, 16, 'Bed 1', 'vacant', '2026-08-30 18:57:43', '2026-09-15 12:47:32'),
 (35, 16, 'Bed 2', 'occupied', '2026-08-30 18:57:43', '2026-09-03 07:57:06'),
 (36, 16, 'Bed 3', 'occupied', '2026-08-30 18:57:43', '2026-09-03 11:13:25'),
 (38, 17, 'Bed 1', 'occupied', '2026-08-31 10:49:31', '2026-08-31 11:21:55'),
 (39, 17, 'Bed 2', 'occupied', '2026-08-31 10:49:31', '2026-09-04 06:53:18'),
 (40, 17, 'Bed 3', 'occupied', '2026-08-31 10:49:31', '2026-09-04 10:44:34'),
 (41, 17, 'Bed 4', 'vacant', '2026-08-31 10:49:31', '2026-09-10 07:41:45'),
-(42, 18, 'Bed 1', 'reserved', '2026-09-03 06:27:16', '2026-09-04 05:58:12'),
+(42, 18, 'Bed 1', 'occupied', '2026-09-03 06:27:16', '2026-09-15 12:47:06'),
 (43, 18, 'Bed 2', 'occupied', '2026-09-03 06:27:16', '2026-09-04 06:20:12'),
 (44, 18, 'Bed 3', 'occupied', '2026-09-03 06:27:16', '2026-09-04 11:14:43'),
 (45, 18, 'Bed 4', 'vacant', '2026-09-03 06:27:16', '2026-09-03 06:27:16'),
@@ -538,7 +582,7 @@ CREATE TABLE `lease_contracts` (
 --
 
 INSERT INTO `lease_contracts` (`id`, `application_id`, `tenant_id`, `bed_id`, `inquiry_id`, `start_date`, `end_date`, `monthly_rate`, `discount_amount`, `esign_status`, `signed_document_url`, `signed_at`, `status`, `termination_reason`, `terminated_at`, `last_renewed_at`, `last_renewed_by`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
-(14, 8, 13, 34, NULL, '2026-09-02', '2026-11-26', 5000.00, NULL, 'signed', 'signed-contracts/5FYVdnBPMocx6j22WH29lux4n25icoqRuQRrEhkW.pdf', '2026-08-31 16:00:00', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:04:14', '2026-09-01 11:57:42'),
+(14, 8, 13, 34, NULL, '2026-09-02', '2026-11-26', 5000.00, NULL, 'signed', 'signed-contracts/5FYVdnBPMocx6j22WH29lux4n25icoqRuQRrEhkW.pdf', '2026-08-31 16:00:00', 'terminated', 'Move-out recorded (Table 16).', '2026-09-14 16:00:00', NULL, NULL, 3, 3, '2026-08-31 10:04:14', '2026-09-15 12:47:32'),
 (15, 9, 14, 38, NULL, '2026-09-03', '2026-12-23', 2125.00, NULL, 'signed', 'signed-contracts/mezX8KAOVqUaMIzhmsqxuYfocP0dJcPPNPnklwW6.pdf', '2026-08-31 16:00:00', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:53:46', '2026-09-01 11:23:04'),
 (24, NULL, 23, 35, NULL, '2026-07-03', NULL, 4000.00, NULL, 'pending', NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
 (25, NULL, 24, 36, NULL, '2026-07-03', NULL, 5000.00, NULL, 'signed', NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-03 11:13:25', '2026-09-03 11:13:25'),
@@ -665,7 +709,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (66, '2026_09_10_135507_split_full_name_on_tenants_table', 40),
 (67, '2026_09_10_135740_drop_full_name_columns', 41),
 (68, '2026_09_10_150536_create_reviews_table', 42),
-(69, '2026_09_11_211439_remove_parent_fields_add_emergency_relation_to_applications', 43);
+(69, '2026_09_11_211439_remove_parent_fields_add_emergency_relation_to_applications', 43),
+(71, '2026_09_16_210055_create_announcements_tables', 44);
 
 -- --------------------------------------------------------
 
@@ -869,7 +914,7 @@ CREATE TABLE `rooms` (
 --
 
 INSERT INTO `rooms` (`id`, `floor_id`, `room_no`, `room_type`, `amenities`, `monthly_rate`, `status`, `vr_asset_path`, `vr_caption`, `vr_visibility`, `created_at`, `updated_at`) VALUES
-(16, 3, '1', 'Standard', '[]', 5000.00, 'full', NULL, 'Living Area', 'public', '2026-08-30 18:57:43', '2026-09-04 12:00:16'),
+(16, 3, '1', 'Standard', '[]', 5000.00, 'available', NULL, 'Living Area', 'public', '2026-08-30 18:57:43', '2026-09-15 12:47:32'),
 (17, 3, '2', 'Standard', '[]', 8500.00, 'available', NULL, 'Random Caption', 'public', '2026-08-31 10:49:31', '2026-09-10 07:41:45'),
 (18, 3, '3', 'Standard', '[]', 6500.00, 'available', NULL, NULL, 'draft', '2026-09-03 06:27:16', '2026-09-03 06:27:16'),
 (19, 11, '5', 'Standard', '[]', 6500.00, 'available', NULL, NULL, 'draft', '2026-09-04 13:04:53', '2026-09-04 13:04:53');
@@ -909,8 +954,14 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('HKsXLrzGz6LuGUra9qIkixkXQiVmkV24mDxSY1Xp', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoianM3S0xQdndhV0lHQ1RZSW5XME5mUkV3V3JmeWoycURFbHNRT2ZBbiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789132231),
-('xIQFE7frzMw6D2LgyLf1XWocdQQQW0TvFyRFzjlh', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiVWRSMDF1T21JczU1TEtqQTFPN0JPTHRFdTI0dnJ5NXFOclZHZE1XMyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9fQ==', 1789139050);
+('7L7BGEJC4ddZCjoOV3UvbrY55r60N4lpc7oPyoF3', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZEVjUU9Ld1B6amFHUW5UdTIyN25DTTEyMmJkaEs1U1lETjZ2TzV5QiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789450590),
+('eH8pZKZ4m24dKxqkOGsVO8yXbr9k41Dx3bU98QUk', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMEhTaWJMaWI0ZFFFQjJFcW52b2JHY2duc3J4Z0VOSktvRHJ6cDFLaiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789476372),
+('FNFMxB8vAJqnJEDZYZAB2fgr5I5pcZvMPSC0xuBe', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoibFh0akZlanh3ZWRqWllxUXh3dE95YU5kRXV6UFhic2M5MUxDa29vNiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789564380),
+('miTEZGXTcqHL52Gmnfvh50ivODQk4230udUXAGV0', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiaTd1ZWZFcHl3VmlXSWdaRkdVNHR0UVZ2T0dxOWdYdHJhVWxseEhlWiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kZWxpbnF1ZW5jeS10ZXN0aW5nL3RlbmFudHMiO3M6NToicm91dGUiO047fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM7fQ==', 1789476963),
+('OviyPq0g8KJjN7ii2DvRqJbHsKBp3ljga8ojo0Ng', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTlZxaXFrSnF5TnA2TFF2dlNiT2RqVkpVOWxVMlZnekNYZkdMZ0JHUCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789476372),
+('reHJ0ZQHbLLO1EoZZJ5mhhpxVlnayswGkSscjyI4', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoibnRObExORWhWemJNNVNtUFlDeGkwUVB3QW9tWjJlRDdjUEhIbmo3MiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789564381),
+('UpFqWdqw67wkjb2VM0oqeyaFyzrPvPMLXKLbINgF', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYVRnY1VON1NMRGVsS1B1UG04d3hGQ1haaGFUTU14YkxralRlVnU3WCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDY6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hbm5vdW5jZW1lbnRzLzEvY29tbWVudHMiO3M6NToicm91dGUiO3M6Mjg6ImFubm91bmNlbWVudHMuY29tbWVudHMuaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1789566845),
+('Y7iRyYfRB8ubWvD0eTwCCYKg5mRX8LiLjRs2jOgY', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiemsxOU5yVU9BdmJicDFkMVZ6ZVA4THY3ZzBHdW1hQW1NdTJQZUp5NiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6ODM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZXBvcnRzL2V4cG9ydD9lbmQ9MjAyNi0wOS0zMCZzdGFydD0yMDI2LTA5LTAxJnR5cGU9ZmluYW5jaWFsIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1789451656);
 
 -- --------------------------------------------------------
 
@@ -948,11 +999,11 @@ CREATE TABLE `tenants` (
 --
 
 INSERT INTO `tenants` (`id`, `user_id`, `first_name`, `last_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `date_of_birth`, `home_address`, `tenant_type`, `id_document_path`, `signed_contract_path`, `status`, `deactivation_reason`, `deactivated_at`, `deactivated_by`, `is_blacklisted`, `portal_restricted`, `escalation_paused`, `created_at`, `updated_at`) VALUES
-(13, 18, 'adasdasdas', 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:04:14', '2026-09-10 05:56:50'),
+(13, 18, 'adasdasdas', 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', NULL, NULL, NULL, NULL, NULL, 'inactive', 'Move-out recorded via Record Occupancy Transaction.', '2026-09-14 16:00:00', 3, 0, 0, 0, '2026-08-31 10:04:14', '2026-09-15 12:47:32'),
 (14, 19, 'Test Tenant', '1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:53:46', '2026-09-10 05:56:50'),
 (23, NULL, 'Test Delinquent - Stage 5', 'Only', '00000000000', 'test.delinquent.stage5only@nestph.test', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, NULL, 0, 1, 0, '2026-09-03 07:57:06', '2026-09-10 05:56:51'),
 (24, 20, 'Delinquency Test', 'Tenant', '09171234567', 'delinquency.test@nestph.test', 'Test Emergency Contact', '09179876543', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 1, 1, 0, '2026-09-03 11:13:24', '2026-09-10 05:56:51'),
-(25, 21, 'Valid ID', 'Check', '09867354632', 'validIDcheck@gmail.com', 'ID Mother', '09673526321', NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 05:59:16', '2026-09-10 05:56:51'),
+(25, 21, 'Valid ID', 'Check', '09867354632', 'validIDcheck@gmail.com', 'ID Mother', '09673526321', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 05:59:16', '2026-09-15 12:47:06'),
 (26, 22, 'Valid ID', 'CheckTwo', '09273648212', 'validid2@gmail.com', 'Valid Mother', '09364729591', '2008-07-04', 'Sta Mesa', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:13:15', '2026-09-10 05:56:51'),
 (27, 23, 'Tenant Check', 'One', '09362537482', 'tenantcheck1@gmail.com', 'Tenant Mother One', '097726373482', '2026-09-01', 'asdasdads', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:50:33', '2026-09-10 05:56:51'),
 (28, 24, 'Tenant Check', 'Two', '09546374234', 'tenantcheck2@gmail.com', 'Tenant Mother Two', '0936474328', '2026-09-01', 'San Sebastian', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 10:42:06', '2026-09-10 05:56:51'),
@@ -1013,7 +1064,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `ro
 (3, 'Test Owner', 'owner@nestph.test', NULL, '$2y$12$tBbYyy35ASpYBp1J16pNkOLef7.5rNtW/O/3jO5M.0Vkg/xe4CHfK', 2, 1, NULL, '2026-07-24 22:12:00', '2026-07-24 22:12:00'),
 (9, 'John Dela Cruz', 'delacruz@gmail.com', NULL, '$2y$12$k3PCXiSoLTXe4G3NnIT24eaeQtjFdK3ckRw0kMS71z5IYiu.Jjt9a', 1, 1, NULL, '2026-08-30 06:11:32', '2026-08-30 06:11:32'),
 (10, 'Carla Bugasto', 'carla@gmail.com', NULL, '$2y$12$zpurO4Udqsfep0Dga16Emuuo29pZblCvUUzyuZS1V0tFID9ToKEm2', 1, 1, NULL, '2026-08-30 19:05:31', '2026-08-30 19:05:31'),
-(18, 'adasdasdas', 'adadas@gmail.com', NULL, '$2y$12$jYvF.c77Jy9w5.7rMNqogeHuWorg/.ULCOXujNRuZeDdZ24d1/yn2', 1, 1, NULL, '2026-08-31 10:04:14', '2026-08-31 10:04:14'),
+(18, 'adasdasdas', 'adadas@gmail.com', NULL, '$2y$12$jYvF.c77Jy9w5.7rMNqogeHuWorg/.ULCOXujNRuZeDdZ24d1/yn2', 1, 0, NULL, '2026-08-31 10:04:14', '2026-09-15 12:47:32'),
 (19, 'Test Tenant 1', 'testtenant1@gmail.com', NULL, '$2y$12$3B5WRI0MHOAO5U/p7mPhR.QeXvj.ZEQvZiubtg9/h1.J0wY/V8UoG', 1, 1, NULL, '2026-08-31 10:53:46', '2026-08-31 10:53:46'),
 (20, 'Delinquency Test Tenant', 'delinquency.test@nestph.test', NULL, '$2y$12$ohxhd4y464pFWZBuaTbBIOMbtEPBm9OkpUT92nMoskkbwbWa88ZMu', 1, 1, NULL, '2026-09-03 11:13:24', '2026-09-04 12:57:10'),
 (21, 'Valid ID Check', 'validIDcheck@gmail.com', NULL, '$2y$12$2Jut6k1qH/hlL0YX9zdste2jp9SN/AjlAWPHnrWJlsKdRtCaAghCG', 1, 1, NULL, '2026-09-04 05:59:16', '2026-09-04 05:59:16'),
@@ -1102,6 +1153,22 @@ ALTER TABLE `admin_privileges`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uq_user_privilege` (`user_id`,`privilege_name`),
   ADD KEY `admin_privileges_granted_by_foreign` (`granted_by`);
+
+--
+-- Indexes for table `announcements`
+--
+ALTER TABLE `announcements`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `announcements_user_id_foreign` (`user_id`);
+
+--
+-- Indexes for table `announcement_comments`
+--
+ALTER TABLE `announcement_comments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `announcement_comments_announcement_id_foreign` (`announcement_id`),
+  ADD KEY `announcement_comments_user_id_foreign` (`user_id`),
+  ADD KEY `announcement_comments_tenant_id_foreign` (`tenant_id`);
 
 --
 -- Indexes for table `applications`
@@ -1389,6 +1456,18 @@ ALTER TABLE `admin_privileges`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT for table `announcements`
+--
+ALTER TABLE `announcements`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `announcement_comments`
+--
+ALTER TABLE `announcement_comments`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
@@ -1476,7 +1555,7 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1573,6 +1652,20 @@ ALTER TABLE `admin_access_logs`
 ALTER TABLE `admin_privileges`
   ADD CONSTRAINT `admin_privileges_granted_by_foreign` FOREIGN KEY (`granted_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `admin_privileges_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `announcements`
+--
+ALTER TABLE `announcements`
+  ADD CONSTRAINT `announcements_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `announcement_comments`
+--
+ALTER TABLE `announcement_comments`
+  ADD CONSTRAINT `announcement_comments_announcement_id_foreign` FOREIGN KEY (`announcement_id`) REFERENCES `announcements` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `announcement_comments_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `announcement_comments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `applications`

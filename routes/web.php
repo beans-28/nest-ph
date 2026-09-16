@@ -28,6 +28,7 @@ use App\Http\Controllers\DelinquencyTestingController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TenantMoveOutController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AnnouncementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -100,6 +101,12 @@ Route::middleware(['auth', 'moveout.check', 'delinquency.check'])->group(functio
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::middleware(['auth', 'movein.check', 'moveout.check', 'delinquency.check'])->group(function () {
+    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('/announcements/{announcement}/comments', [AnnouncementController::class, 'comments'])->name('announcements.comments.index');
+    Route::post('/announcements/{announcement}/comments', [AnnouncementController::class, 'storeComment'])->name('announcements.comments.store');
 });
 /*
 |--------------------------------------------------------------------------
@@ -222,6 +229,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/dormitory-profile/house-rules', [DormitoryProfileController::class, 'storeHouseRule'])->name('dormitory-profile.house-rules.store');
     Route::patch('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'updateHouseRule']);
     Route::delete('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'destroyHouseRule']);
+
+    Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::delete('/announcements/comments/{comment}', [AnnouncementController::class, 'destroyComment'])->name('announcements.comments.destroy');
+    Route::patch('/announcements/{announcement}/restrict', [AnnouncementController::class, 'toggleRestrict'])->name('announcements.restrict');
 });
 
 Route::middleware(['auth', 'admin', 'privileges'])->group(function () {

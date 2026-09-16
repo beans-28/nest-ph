@@ -234,6 +234,7 @@
         </div>
       @endif
 
+      @include('partials.announcements-feed')
       <div class="dash-grid">
         <div>
           <div class="dash-card">

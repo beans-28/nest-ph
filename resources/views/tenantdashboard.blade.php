@@ -108,7 +108,7 @@
   .back-arrow{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
   .page-head h1{ font-size:19px; font-weight:700; margin:0; color:var(--green-accent); }
 
-  .stats-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:20px; }
+  .stats-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:16px; }
   .stat-card{ background:var(--card-bg); border-radius:14px; border:1px solid var(--border); padding:18px 20px; display:flex; align-items:center; gap:16px; }
   .stat-icon{ width:52px; height:52px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .stat-icon svg{ width:22px; height:22px; }
@@ -119,7 +119,17 @@
   .stat-value{ font-size:20px; font-weight:800; color:var(--text-dark); }
   .stat-sub{ font-size:11px; color:var(--text-light); margin-top:2px; }
 
-  .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:20px; align-items:start; }
+  /* Compact heads-up strip -- replaces the old wide illustrated banner.
+     Same message, a fraction of the vertical space, and sits right under
+     the stats where a quick reminder belongs instead of trailing the
+     whole page as a disconnected afterthought. */
+  .tip-strip{ background:#eef4ee; border:1px solid #dce8dc; border-radius:10px; padding:12px 18px; display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .tip-strip-icon{ width:30px; height:30px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--green-dark); }
+  .tip-strip-icon svg{ width:15px; height:15px; }
+  .tip-strip-text{ font-size:12.5px; color:var(--text-mid); }
+  .tip-strip-text strong{ color:var(--text-dark); font-weight:700; }
+
+  .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
   .panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
   .panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .panel-head h2{ font-size:15px; font-weight:700; margin:0; }
@@ -138,13 +148,6 @@
   .panel-btn:hover{ background:var(--green-btn-hover); }
   .panel-btn.outline{ background:#fff; border:1px solid var(--border); color:var(--text-dark); }
   .empty-note{ font-size:12px; color:var(--text-light); text-align:center; padding:20px 0; }
-
-  .banner{ background:#eef4ee; border-radius:14px; padding:22px 28px; display:flex; align-items:center; gap:16px; overflow:hidden; position:relative; }
-  .banner-icon{ width:44px; height:44px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .banner-icon svg{ width:20px; height:20px; color:var(--green-dark); }
-  .banner strong{ display:block; font-size:14px; color:var(--text-dark); }
-  .banner span{ font-size:12px; color:var(--text-mid); }
-  .banner-illustration{ margin-left:auto; opacity:0.9; flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -251,6 +254,13 @@
         </div>
       </div>
 
+      <div class="tip-strip">
+        <div class="tip-strip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></div>
+        <div class="tip-strip-text"><strong>Stay updated —</strong> make sure your payments are on time to avoid penalties.</div>
+      </div>
+
+      @include('partials.announcements-feed')
+
       <div class="dash-grid">
         <div class="panel">
           <div class="panel-head"><h2>Recent Billing</h2></div>
@@ -294,20 +304,6 @@
             </table>
           @endif
           <button class="panel-btn outline" data-href="{{ route('tenant.tickets') }}">View All</button>
-        </div>
-      </div>
-
-      <div class="banner">
-        <div class="banner-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></div>
-        <div><strong>Stay updated!</strong><span>Make sure your payments are on time to avoid penalties</span></div>
-        <div class="banner-illustration">
-          <svg width="100" height="60" viewBox="0 0 100 60" fill="none">
-            <circle cx="20" cy="45" r="12" fill="#bfe0c2"/>
-            <circle cx="85" cy="48" r="10" fill="#bfe0c2"/>
-            <rect x="40" y="30" width="30" height="20" fill="#fff" stroke="#8fc394" stroke-width="1.5"/>
-            <path d="M37 30L55 15L73 30Z" fill="#4f7c57"/>
-            <rect x="51" y="38" width="8" height="12" fill="#8fc394"/>
-          </svg>
         </div>
       </div>
 
