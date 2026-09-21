@@ -21,6 +21,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'delinquency.check' => \App\Http\Middleware\RestrictDelinquentTenant::class,
             'privileges' => \App\Http\Middleware\EnsureCanManagePrivileges::class,
         ]);
+
+        $middleware->redirectGuestsTo(function ($request) {
+            $routeMiddleware = $request->route()?->gatherMiddleware() ?? [];
+
+            return in_array('admin', $routeMiddleware, true)
+                ? route('login.admin')
+                : route('login.tenant');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
