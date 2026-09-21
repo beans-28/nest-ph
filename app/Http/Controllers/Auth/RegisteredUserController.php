@@ -38,7 +38,7 @@ class RegisteredUserController extends Controller
 
         $tenantRole = \App\Models\Role::where('role_name', 'tenant')->firstOrFail();
 
-        $user = User::create([
+        $user = User::forceCreate([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),

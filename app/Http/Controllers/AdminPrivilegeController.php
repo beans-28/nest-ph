@@ -79,7 +79,7 @@ class AdminPrivilegeController extends Controller
         $temporaryPassword = Str::random(10);
 
         $user = DB::transaction(function () use ($data, $adminRole, $temporaryPassword, $request) {
-            $user = User::create([
+            $user = User::forceCreate([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($temporaryPassword),
@@ -179,10 +179,10 @@ class AdminPrivilegeController extends Controller
         DB::transaction(function () use ($user, $tenantRole, $request) {
             AdminPrivilege::where('user_id', $user->id)->delete();
 
-            $user->update([
+            $user->forceFill([
                 'role_id' => $tenantRole->id,
                 'is_active' => false,
-            ]);
+            ])->save();
 
             AdminAccessLog::create([
                 'user_id' => $user->id,

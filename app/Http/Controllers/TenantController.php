@@ -161,7 +161,7 @@ class TenantController extends Controller
             // no first_name/last_name there, so we combine them here rather
             // than passing fields User doesn't have (Eloquent would have
             // silently dropped them anyway since they're not in $fillable).
-            $user = User::create([
+            $user = User::forceCreate([
                 'name' => trim($data['first_name'].' '.$data['last_name']),
                 'email' => $data['email'],
                 'password' => Hash::make($temporaryPassword),

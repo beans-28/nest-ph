@@ -16,65 +16,75 @@ class AuthController extends Controller
 
     private const LOCKOUT_SECONDS = 900; // 15 minutes, once locked
 
-    public function login(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+public function login(Request $request)
+{
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
 
-        $base = $this->throttleKeyBase($request);
-        $lockKey = "login-lock:{$base}";
-        $attemptsKey = "login-attempts:{$base}";
+    $base = $this->throttleKeyBase($request);
+    $lockKey = "login-lock:{$base}";
+    $attemptsKey = "login-attempts:{$base}";
 
-        if (RateLimiter::tooManyAttempts($lockKey, 1)) {
+    if (RateLimiter::tooManyAttempts($lockKey, 1)) {
+        return response()->json([
+            'message' => 'Too many login attempts.',
+            'locked' => true,
+            'retry_after' => RateLimiter::availableIn($lockKey),
+        ], 429);
+    }
+
+    $remember = $request->boolean('remember');
+
+    if (! Auth::attempt($credentials, $remember)) {
+        RateLimiter::hit($attemptsKey, self::ATTEMPT_WINDOW_SECONDS);
+
+        if (RateLimiter::attempts($attemptsKey) >= self::MAX_ATTEMPTS) {
+            RateLimiter::clear($attemptsKey);
+            RateLimiter::hit($lockKey, self::LOCKOUT_SECONDS);
+
             return response()->json([
                 'message' => 'Too many login attempts.',
                 'locked' => true,
-                'retry_after' => RateLimiter::availableIn($lockKey),
+                'retry_after' => self::LOCKOUT_SECONDS,
             ], 429);
         }
 
-        $remember = $request->boolean('remember');
+        return response()->json([
+            'message' => 'Incorrect password.',
+            'attempts' => RateLimiter::attempts($attemptsKey),
+            'max_attempts' => self::MAX_ATTEMPTS,
+        ], 401);
+    }
 
-        if (! Auth::attempt($credentials, $remember)) {
-            RateLimiter::hit($attemptsKey, self::ATTEMPT_WINDOW_SECONDS);
+    RateLimiter::clear($attemptsKey);
+    RateLimiter::clear($lockKey);
 
-            if (RateLimiter::attempts($attemptsKey) >= self::MAX_ATTEMPTS) {
-                RateLimiter::clear($attemptsKey);
-                RateLimiter::hit($lockKey, self::LOCKOUT_SECONDS);
+    $user = Auth::user();
 
-                return response()->json([
-                    'message' => 'Too many login attempts.',
-                    'locked' => true,
-                    'retry_after' => self::LOCKOUT_SECONDS,
-                ], 429);
-            }
-
-            return response()->json([
-                'message' => 'Incorrect password.',
-                'attempts' => RateLimiter::attempts($attemptsKey),
-                'max_attempts' => self::MAX_ATTEMPTS,
-            ], 401);
-        }
-
-        RateLimiter::clear($attemptsKey);
-        RateLimiter::clear($lockKey);
-
-        $request->session()->regenerate();
-
-        $user = Auth::user();
+    if (! $user->is_active) {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json([
-            'message' => 'Logged in successfully.',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-            ],
-        ], 200);
+            'message' => 'This account has been deactivated. Please contact the dormitory administrator.',
+        ], 403);
     }
+
+    $request->session()->regenerate();
+
+    return response()->json([
+        'message' => 'Logged in successfully.',
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+        ],
+    ], 200);
+}
 
     public function logout(Request $request)
     {
