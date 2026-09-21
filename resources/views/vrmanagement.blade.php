@@ -7,89 +7,11 @@
 <title>NEST.PH — VR Management</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
 <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
-  :root{
-    --green-dark:#3f6b4a; --green-mid:#4f7c57;
-    --green-sidebar-top:#5b8a63; --green-sidebar-bottom:#2c4a35;
-    --green-accent:#2f6f3c; --green-btn:#2f6b3a; --green-btn-hover:#255a2f;
-    --status-occupied:#d9564f;
-    --status-vacant:#7fc98a; --status-vacant-bg:#d9f2dd;
-    --bg-page:#eef1ee; --card-bg:#ffffff;
-    --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  }
-  *{box-sizing:border-box;}
-  html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
-  .app{ display:flex; min-height:100vh; }
-
-  /* ===== Sidebar: logo pinned at top, Log Out pinned at bottom, and only
-     the middle nav list scrolls if it doesn't fit (like textbee.dev's
-     sidebar). Collapsible via the hamburger button. ===== */
-  .sidebar{
-    width:220px; flex-shrink:0;
-    background:linear-gradient(180deg, var(--green-sidebar-top) 0%, var(--green-sidebar-bottom) 100%);
-    color:#eaf0ea; display:flex; flex-direction:column; padding:18px 0;
-    position:sticky; top:0; height:100vh; overflow:hidden;
-    transition:width 0.2s ease;
-  }
-  .sidebar-logo{ display:flex; align-items:center; gap:8px; padding:0 20px 18px 20px; font-weight:700; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:12px; white-space:nowrap; flex-shrink:0; }
-  .sidebar-logo .logo-mark{ width:16px; height:16px; border:2px solid #eaf0ea; display:inline-block; position:relative; flex-shrink:0; }
-  .sidebar-logo .logo-mark::before, .sidebar-logo .logo-mark::after{ content:''; position:absolute; background:#eaf0ea; width:2px; height:12px; top:0; left:5px; }
-  .sidebar-section-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:rgba(234,240,234,0.55); padding:4px 20px 8px 20px; font-weight:600; white-space:nowrap; flex-shrink:0; }
-
-  .nav-list{
-    list-style:none; margin:0; padding:0 0 8px 0; flex:1; min-height:0;
-    overflow-y:auto; overflow-x:hidden;
-    scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.28) transparent;
-  }
-  .nav-list::-webkit-scrollbar{ width:5px; }
-  .nav-list::-webkit-scrollbar-track{ background:transparent; }
-  .nav-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.28); border-radius:10px; }
-
-  .nav-item{ display:flex; align-items:center; gap:11px; padding:9px 20px; font-size:13px; color:rgba(234,240,234,0.78); cursor:pointer; border-left:3px solid transparent; white-space:nowrap; flex-shrink:0; }
-  .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; }
-  .nav-item.active{ background:rgba(255,255,255,0.14); color:#fff; font-weight:600; border-left:3px solid #ffffff; }
-  .nav-item .icon svg{ width:15px; height:15px; flex-shrink:0; }
-  .sidebar-footer{ padding:12px 20px 0 20px; border-top:1px solid rgba(255,255,255,0.12); margin-top:8px; flex-shrink:0; }
-
-  .sidebar-footer .nav-item{ padding:9px 12px; border-radius:8px; background:rgba(0,0,0,0.28); border-left:none; }
-  .sidebar-footer .nav-item:hover{ background:rgba(0,0,0,0.42); color:#fff; }
-
-  .sidebar.collapsed{ width:64px; }
-  .sidebar.collapsed .sidebar-logo{ justify-content:center; padding-left:0; padding-right:0; }
-  .sidebar.collapsed .sidebar-logo .logo-text{ display:none; }
-  .sidebar.collapsed .sidebar-section-label{ display:none; }
-  .sidebar.collapsed .nav-item{ justify-content:center; padding-left:0; padding-right:0; gap:0; }
-  .sidebar.collapsed .nav-item .label{ display:none; }
-  .sidebar.collapsed .sidebar-footer{ padding-left:10px; padding-right:10px; }
-  .sidebar.collapsed .sidebar-footer .nav-item{ padding:9px 0; }
-
-  .main{ flex:1; display:flex; flex-direction:column; min-width:0; }
-  .topbar{ display:flex; align-items:center; gap:16px; background:linear-gradient(90deg, var(--green-mid), var(--green-dark)); padding:14px 28px; position:sticky; top:0; z-index:20; }
-  .topbar .hamburger{ width:20px; height:16px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; }
-  .topbar .hamburger span{ display:block; height:2px; background:#eaf0ea; border-radius:2px; }
-  .search-box{ position:relative; flex:1; max-width:420px; display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.92); border-radius:8px; padding:9px 14px; }
-  .search-box svg{ width:15px; height:15px; color:#8a9690; flex-shrink:0; }
-  .search-box input{ border:none; outline:none; background:transparent; font-size:13.5px; width:100%; color:var(--text-dark); }
-
-  .search-results{ position:absolute; top:calc(100% + 8px); left:0; right:0; background:var(--card-bg); border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 26px rgba(20,30,20,0.14); max-height:280px; overflow-y:auto; z-index:50; display:none; }
-  .search-results.visible{ display:block; }
-  .search-result-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; font-size:13px; color:var(--text-dark); cursor:pointer; }
-  .search-result-item:hover{ background:#f3f6f3; }
-  .search-result-item.disabled{ color:var(--text-light); cursor:not-allowed; }
-  .search-result-item.disabled:hover{ background:transparent; }
-  .search-result-item .tag{ font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--status-maintenance,#c9962f); background:var(--status-maintenance-bg,#f6ecd6); padding:2px 7px; border-radius:20px; flex-shrink:0; }
-  .search-empty{ padding:14px; font-size:12.5px; color:var(--text-light); text-align:center; }
-
-  .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:18px; }
-  .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; color:#eaf0ea; cursor:pointer; }
-  .topbar-icon svg{ width:16px; height:16px; }
-  .avatar-icon{ background:rgba(255,255,255,0.9); color:var(--green-dark); }
-
-  .content{ padding:28px 32px 48px 32px; flex:1; }
-  .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
-  .back-arrow{ width:34px; height:34px; border-radius:8px; background:var(--card-bg); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
-  .page-head h1{ font-size:20px; font-weight:700; margin:0; color:var(--text-dark); }
+  /* Shared sidebar/topbar/content-header/reset styles now live in
+     public/css/admin.css (linked above). Only this page's own VR-tour
+     content styling stays here. */
   .page-head .room-pill{ background:var(--status-vacant-bg); color:var(--green-accent); font-size:11.5px; font-weight:700; padding:5px 13px; border-radius:20px; }
 
   .vr-btn{ font-size:12px; font-weight:600; padding:9px 16px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; text-align:center; font-family:var(--font-body); }
@@ -210,35 +132,11 @@
 <body>
 <div class="app">
 
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo"><span class="logo-mark"></span><span class="logo-text">NEST.PH</span></div>
-    <div class="sidebar-section-label">Quick Access</div>
-    <ul class="nav-list">
-      <li class="nav-item" data-href="{{ route('dashboard') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span><span class="label">Dashboard</span></li>
-      <li class="nav-item" data-href="{{ route('tenant-manager.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span><span class="label">Tenant Manager</span></li>
-      <li class="nav-item" data-href="{{ route('payments.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span><span class="label">Billing and Payments</span></li>
-      <li class="nav-item" data-href="{{ route('delinquency.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span class="label">Delinquency</span></li>
-      <li class="nav-item" data-href="{{ route('admin.addfloor') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="4" width="7" height="7"/><rect x="3" y="15" width="7" height="7"/><rect x="14" y="15" width="7" height="7"/></svg></span><span class="label">Vacancy Monitor</span></li>
-      <li class="nav-item" data-href="{{ route('tickets.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></span><span class="label">Tickets</span></li>
-      <li class="nav-item" data-href="{{ route('applications.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></span><span class="label">Applications</span></li>
-      <li class="nav-item" data-href="{{ route('inquiries.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span><span class="label">Inquiries</span></li>
-      <li class="nav-item active" data-href="{{ route('vr.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 3v18M16 3v18"/></svg></span><span class="label">VR Management</span></li>
-      <li class="nav-item" data-href="{{ route('contracts.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span><span class="label">Lease Management</span></li>
-      <li class="nav-item" data-href="{{ route('reports.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></span><span class="label">Reports</span></li>
-      <li class="nav-item" data-href="{{ route('admin-privileges.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg></span><span class="label">Admin Privileges</span></li>
-      <li class="nav-item" data-href="{{ route('dormitory-profile.index') }}"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h4M6 14h2"/></svg></span><span class="label">Dormitory Profile</span></li>
-    </ul>
-    <div class="sidebar-footer"><div class="nav-item" id="logoutBtn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.4 5.6a9 9 0 11-12.8 0M12 3v8"/></svg></span><span class="label">Log Out</span></div></div>
-  </aside>
+@include('partials.admin-sidebar')
 
   <div class="main">
     <div class="topbar">
       <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
-      <div class="search-box" id="searchBox">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input type="text" id="pageSearchInput" placeholder="Search pages" autocomplete="off">
-        <div class="search-results" id="searchResults"></div>
-      </div>
       <div class="topbar-right">
         <div class="topbar-icon avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
@@ -950,76 +848,6 @@
     hamburgerBtn.addEventListener('click', () => {
       const collapsed = sidebar.classList.toggle('collapsed');
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
-    });
-  }
-
-  // Simple client-side search over the site's pages. Pages without a route
-  // yet show up but are marked "Coming Soon" and aren't clickable, matching
-  // how they behave in the sidebar itself.
-  const NEST_PAGES = [
-    { label: 'Dashboard', href: '{{ route('dashboard') }}' },
-    { label: 'Tenant Manager', href: '{{ route('tenant-manager.index') }}' },
-    { label: 'Billing and Payments', href: '{{ route('payments.index') }}' },
-    { label: 'Delinquency', href: null },
-    { label: 'Vacancy Monitor', href: '{{ route('admin.addfloor') }}' },
-    { label: 'Tickets', href: '{{ route('tickets.index') }}' },
-    { label: 'Applications', href: '{{ route('applications.index') }}' },
-    { label: 'Inquiries', href: '{{ route('inquiries.index') }}' },
-    { label: 'VR Management', href: '{{ route('vr.index') }}' },
-    { label: 'Lease Management', href: '{{ route('contracts.index') }}' },
-    { label: 'Admin Privileges', href: '{{ route('admin-privileges.index') }}' },
-    { label: 'Dormitory Profile', href: '{{ route('dormitory-profile.index') }}' },
-  ];
-
-  const searchBox = document.getElementById('searchBox');
-  const searchInput = document.getElementById('pageSearchInput');
-  const searchResults = document.getElementById('searchResults');
-
-  function nestEscapeHtml(str){
-    const d = document.createElement('div');
-    d.textContent = str ?? '';
-    return d.innerHTML;
-  }
-
-  function renderNestSearchResults(query){
-    const q = query.trim().toLowerCase();
-    if (!q) {
-      searchResults.classList.remove('visible');
-      searchResults.innerHTML = '';
-      return;
-    }
-    const matches = NEST_PAGES.filter(p => p.label.toLowerCase().includes(q));
-    searchResults.innerHTML = matches.length === 0
-      ? `<div class="search-empty">No pages match "${nestEscapeHtml(query)}"</div>`
-      : matches.map(p => p.href
-          ? `<div class="search-result-item" data-href="${p.href}">${nestEscapeHtml(p.label)}</div>`
-          : `<div class="search-result-item disabled">${nestEscapeHtml(p.label)}<span class="tag">Coming Soon</span></div>`
-        ).join('');
-    searchResults.classList.add('visible');
-  }
-
-  if (searchInput && searchResults && searchBox) {
-    searchInput.addEventListener('input', () => renderNestSearchResults(searchInput.value));
-    searchInput.addEventListener('focus', () => {
-      if (searchInput.value.trim()) renderNestSearchResults(searchInput.value);
-    });
-    searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const first = searchResults.querySelector('.search-result-item[data-href]');
-        if (first) window.location.href = first.dataset.href;
-      } else if (e.key === 'Escape') {
-        searchResults.classList.remove('visible');
-        searchInput.blur();
-      }
-    });
-    searchResults.addEventListener('click', (e) => {
-      const item = e.target.closest('.search-result-item[data-href]');
-      if (item) window.location.href = item.dataset.href;
-    });
-    document.addEventListener('click', (e) => {
-      if (!searchBox.contains(e.target)) {
-        searchResults.classList.remove('visible');
-      }
     });
   }
 })();

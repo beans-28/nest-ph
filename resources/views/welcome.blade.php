@@ -219,16 +219,16 @@
     <nav class="topnav textured">
         <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
         <div class="menu">
-            <a href="{{ route('public.vr') }}">VR TOUR</a>
-            <a href="{{ route('public.rooms') }}">ROOMS</a>
             <a href="{{ route('home') }}">HOME</a>
-            <a href="{{ route('public.dorminfo') }}" class="pill">Dorm Info</a>
+            <a href="{{ route('public.rooms') }}">ROOMS</a>
+            <a href="{{ route('public.vr') }}">VR TOUR</a>
+            <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
         <div class="logo"><span class="mark"></span> NEST.PH</div>
         <div class="buttons">
-            <a href="{{ route('login.admin') }}" class="btn btn-white">Admin</a>
-            <a href="{{ route('public.apply') }}" class="btn btn-outline-white">Apply</a>
+            <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
+            <a href="{{ route('login.admin') }}" class="btn btn-outline-white">Admin</a>
         </div>
     </nav>
 
@@ -255,22 +255,22 @@
         <p class="sub">Browse available beds, take a 360&deg; virtual tour, and apply online!</p>
         <div class="stats-row">
             <div class="stat-card">
-                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></div>
+                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></div>
                 <div class="stat-value">{{ $happyTenantsCount }}+</div>
                 <div class="stat-label">Happy Tenants</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21 7.5 13.5 2 9h7z"/></svg></div>
+                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg></div>
                 <div class="stat-value">{{ $reviewCount > 0 ? number_format($averageRating, 1) : 'New' }}</div>
                 <div class="stat-label">{{ $reviewCount > 0 ? $reviewCount . ' ' . \Illuminate\Support\Str::plural('Review', $reviewCount) : 'No Reviews Yet' }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"/></svg></div>
+                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/></svg></div>
                 <div class="stat-value">{{ $availableResources ?: 'AC, WIFI, CR' }}</div>
                 <div class="stat-label">Available Resources</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 20v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg></div>
                 <div class="stat-value">{{ $availableBeds }}</div>
                 <div class="stat-label">Beds Available</div>
             </div>

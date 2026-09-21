@@ -1,0 +1,95 @@
+/*
+  Shared admin styles. Linked by every admin*.blade.php page via:
+      <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+
+  Holds only the rules that are identical across every admin page: the
+  color variables, page reset, sidebar, topbar/search, and content header.
+  Anything specific to one page's own content (stat cards, tables, ticket
+  lists, etc.) stays in that page's own <style> block -- those differ from
+  page to page and don't belong here.
+*/
+
+:root{
+  --green-dark:#3f6b4a; --green-mid:#4f7c57;
+  --green-sidebar-top:#5b8a63; --green-sidebar-bottom:#2c4a35;
+  --green-accent:#2f6f3c; --green-btn:#2f6b3a; --green-btn-hover:#255a2f;
+  --status-occupied:#d9564f; --status-occupied-bg:#f7d9d7;
+  --status-vacant:#7fc98a; --status-vacant-bg:#d9f2dd;
+  --status-maintenance:#c9962f; --status-maintenance-bg:#f6ecd6;
+  --bg-page:#eef1ee; --card-bg:#ffffff;
+  --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
+.app{ display:flex; min-height:100vh; }
+
+/* ===== Sidebar: logo pinned at top, Log Out pinned at bottom, and only
+   the middle nav list scrolls if it doesn't fit (like textbee.dev's
+   sidebar). Trying to shrink everything to force it to fit (our previous
+   approach) breaks down once there's simply too little vertical room --
+   items stop shrinking at some point and start overlapping the footer.
+   Letting the nav list scroll is the version that never overlaps or
+   clips: it just gains a scrollbar exactly when there isn't room. ===== */
+.sidebar{
+  width:220px; flex-shrink:0;
+  background:linear-gradient(180deg, var(--green-sidebar-top) 0%, var(--green-sidebar-bottom) 100%);
+  color:#eaf0ea; display:flex; flex-direction:column; padding:18px 0;
+  position:sticky; top:0; height:100vh; overflow:hidden;
+  transition:width 0.2s ease;
+}
+.sidebar-logo{ display:flex; align-items:center; gap:8px; padding:0 20px 18px 20px; font-weight:700; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:12px; white-space:nowrap; flex-shrink:0; }
+.sidebar-logo .logo-mark{ width:16px; height:16px; border:2px solid #eaf0ea; display:inline-block; position:relative; flex-shrink:0; }
+.sidebar-logo .logo-mark::before, .sidebar-logo .logo-mark::after{ content:''; position:absolute; background:#eaf0ea; width:2px; height:12px; top:0; left:5px; }
+.sidebar-section-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:rgba(234,240,234,0.55); padding:4px 20px 8px 20px; font-weight:600; white-space:nowrap; flex-shrink:0; }
+
+/* The scrollable middle section */
+.nav-list{
+  list-style:none; margin:0; padding:0 0 8px 0; flex:1; min-height:0;
+  overflow-y:auto; overflow-x:hidden;
+  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.28) transparent;
+}
+.nav-list::-webkit-scrollbar{ width:5px; }
+.nav-list::-webkit-scrollbar-track{ background:transparent; }
+.nav-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.28); border-radius:10px; }
+
+.nav-item{ display:flex; align-items:center; gap:11px; padding:9px 20px; font-size:13px; color:rgba(234,240,234,0.78); cursor:pointer; border-left:3px solid transparent; white-space:nowrap; flex-shrink:0; }
+.nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; }
+.nav-item.active{ background:rgba(255,255,255,0.14); color:#fff; font-weight:600; border-left:3px solid #ffffff; }
+.nav-item .icon{ display:flex; align-items:center; justify-content:center; width:15px; height:15px; flex-shrink:0; }
+.nav-item .icon svg{ width:100%; height:100%; display:block; flex-shrink:0; }
+.sidebar-footer{ padding:12px 20px 0 20px; border-top:1px solid rgba(255,255,255,0.12); margin-top:8px; flex-shrink:0; }
+
+/* Darker, clearly-a-button Log Out */
+.sidebar-footer .nav-item{ padding:9px 12px; border-radius:8px; background:rgba(0,0,0,0.28); border-left:none; }
+.sidebar-footer .nav-item:hover{ background:rgba(0,0,0,0.42); color:#fff; }
+
+/* Collapsed state (toggled by the hamburger button) */
+.sidebar.collapsed{ width:64px; }
+.sidebar.collapsed .sidebar-logo{ justify-content:center; padding-left:0; padding-right:0; }
+.sidebar.collapsed .sidebar-logo .logo-text{ display:none; }
+.sidebar.collapsed .sidebar-section-label{ display:none; }
+.sidebar.collapsed .nav-item{ justify-content:center; padding-left:0; padding-right:0; gap:0; }
+.sidebar.collapsed .nav-item .label{ display:none; }
+.sidebar.collapsed .sidebar-footer{ padding-left:10px; padding-right:10px; }
+.sidebar.collapsed .sidebar-footer .nav-item{ padding:9px 0; }
+
+.main{ flex:1; display:flex; flex-direction:column; min-width:0; }
+.topbar{ display:flex; align-items:center; gap:16px; background:linear-gradient(90deg, var(--green-mid), var(--green-dark)); padding:14px 28px; position:sticky; top:0; z-index:20; }
+.topbar .hamburger{ width:20px; height:16px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; }
+.topbar .hamburger span{ display:block; height:2px; background:#eaf0ea; border-radius:2px; }
+
+.topbar-right{ margin-left:auto; display:flex; align-items:center; gap:18px; }
+.topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; color:#eaf0ea; cursor:pointer; position:relative; }
+.topbar-icon svg{ width:16px; height:16px; }
+.badge{ position:absolute; top:-3px; right:-3px; background:#e0554f; color:#fff; font-size:9px; font-weight:700; width:15px; height:15px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--green-dark); }
+.avatar-icon{ background:rgba(255,255,255,0.9); color:var(--green-dark); }
+
+.content{ padding:28px 32px 48px 32px; flex:1; }
+.page-head{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+.back-arrow{ width:34px; height:34px; border-radius:8px; background:var(--card-bg); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
+.page-head h1{ font-size:20px; font-weight:700; margin:0; color:var(--text-dark); }
+
+/* Generic "nothing here yet" state, reused by any admin list/table */
+.empty-note{ font-size:12px; color:var(--text-light); text-align:center; padding:22px 10px; }
+.empty-note .tag{ display:inline-block; margin-top:8px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--status-maintenance); background:var(--status-maintenance-bg); padding:3px 8px; border-radius:20px; }
