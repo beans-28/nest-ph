@@ -5,70 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH — Delinquency Status</title>
+<link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
+  /* Shared color variables, page reset, sidebar (normal + restricted-lock),
+     topbar, focus styles, and the shared parts of the blacklist takeover
+     now live in public/css/tenant.css (linked above). This page adds
+     extra variables (green-mid, pending/paid) tenant.css doesn't define,
+     keeps the blacklist bits that genuinely differ from
+     tenantbilling.blade.php's version (this page has two headline lines,
+     a stage-dots row, and an info box that billing's takeover doesn't
+     have), and its own escalation-timeline content styling below. */
   :root{
-    --green-dark:#3f6b4a; --green-darker:#345a3e; --green-mid:#4f7c57;
-    --green-sidebar-top:#33513c; --green-sidebar-bottom:#223a29;
-    --green-accent:#3f6b4a; --green-btn:#3f6b4a; --green-btn-hover:#2f5439;
-    --logout-bg:#16241b; --logout-bg-hover:#0f1b13;
-    --bg-page:#f4f6f4; --card-bg:#ffffff;
-    --text-dark:#1f2a22; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e9e4;
+    --green-mid:#4f7c57;
     --pending-bg:#fbe9c8; --pending-text:#a4761a;
     --paid-bg:#d9f2dd; --paid-text:#3f7a4a;
-    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
-  *{box-sizing:border-box;}
-  html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
-  .app{ display:flex; min-height:100vh; }
-
-  /* ===== Sidebar: same shell as tenantdashboard/tenantbilling/tenantaccount ===== */
-  .sidebar{
-    width:220px; flex-shrink:0;
-    background:linear-gradient(180deg, var(--green-sidebar-top) 0%, var(--green-sidebar-bottom) 100%);
-    color:#eaf0ea; display:flex; flex-direction:column; padding:18px 0;
-    position:sticky; top:0; height:100vh; overflow:hidden;
-    box-shadow:2px 0 14px rgba(0,0,0,0.12);
-    transition:width 0.2s ease;
-  }
-  .sidebar-logo{ display:flex; align-items:center; gap:8px; padding:0 20px 18px 20px; font-weight:700; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:12px; white-space:nowrap; flex-shrink:0; }
-  .sidebar-logo .logo-mark{ width:16px; height:16px; border:2px solid #eaf0ea; display:inline-block; position:relative; flex-shrink:0; }
-  .sidebar-logo .logo-mark::before, .sidebar-logo .logo-mark::after{ content:''; position:absolute; background:#eaf0ea; width:2px; height:12px; top:0; left:5px; }
-  .sidebar-section-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:rgba(234,240,234,0.55); padding:4px 20px 8px 20px; font-weight:600; white-space:nowrap; flex-shrink:0; }
-
-  .nav-list{ list-style:none; margin:0; padding:0 0 8px 0; flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.25) transparent; }
-  .nav-list::-webkit-scrollbar{ width:5px; }
-  .nav-list::-webkit-scrollbar-track{ background:transparent; }
-  .nav-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.22); border-radius:10px; }
-
-  .nav-item{ display:flex; align-items:center; gap:11px; padding:9px 20px; font-size:13px; color:rgba(234,240,234,0.82); cursor:pointer; border-left:3px solid transparent; white-space:nowrap; flex-shrink:0; transition:background 0.12s ease, color 0.12s ease; }
-  .nav-item:hover{ background:rgba(255,255,255,0.08); color:#fff; }
-  .nav-item.active{ background:rgba(255,255,255,0.16); color:#fff; font-weight:600; border-left:3px solid #ffffff; }
-  .nav-item .icon svg{ width:15px; height:15px; flex-shrink:0; }
-  .sidebar-footer{ padding:14px 20px 2px 20px; border-top:1px solid rgba(255,255,255,0.12); margin-top:8px; flex-shrink:0; }
-  .sidebar-footer .nav-item{ padding:10px 14px; border-radius:9px; background:var(--logout-bg); border-left:none; color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06); }
-  .sidebar-footer .nav-item:hover{ background:var(--logout-bg-hover); }
-  .sidebar-footer .nav-item .icon svg{ color:#fff; }
-
-  .sidebar.collapsed{ width:64px; }
-  .sidebar.collapsed .sidebar-logo{ justify-content:center; padding-left:0; padding-right:0; }
-  .sidebar.collapsed .sidebar-logo .logo-text{ display:none; }
-  .sidebar.collapsed .sidebar-section-label{ display:none; }
-  .sidebar.collapsed .nav-item{ justify-content:center; padding-left:0; padding-right:0; gap:0; }
-  .sidebar.collapsed .nav-item .label{ display:none; }
-  .sidebar.collapsed .sidebar-footer{ padding-left:10px; padding-right:10px; }
-  .sidebar.collapsed .sidebar-footer .nav-item{ padding:10px 0; }
-
-  .nav-item:focus-visible, .hamburger-icon:focus-visible, .topbar-icon:focus-visible, .back-arrow:focus-visible{ outline:2px solid #ffffff; outline-offset:-2px; border-radius:4px; }
-  .topbar-icon:focus-visible{ outline-color:var(--green-darker); }
-
-  .main{ flex:1; display:flex; flex-direction:column; min-width:0; }
-  .topbar{ display:flex; align-items:center; gap:16px; background:linear-gradient(90deg, rgba(51,81,60,0.45), rgba(63,107,74,0.45)); backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%); padding:16px 28px; box-shadow:0 1px 0 rgba(0,0,0,0.08); position:sticky; top:0; z-index:20; }
-  .hamburger-icon{ width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; cursor:pointer; transition:background 0.12s ease; }
-  .hamburger-icon:hover{ background:rgba(255,255,255,0.14); }
-  .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:14px; }
-  .topbar-username{ color:#fff; font-size:13.5px; font-weight:600; white-space:nowrap; text-shadow:0 1px 2px rgba(0,0,0,0.15); }
-  .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.92); display:flex; align-items:center; justify-content:center; color:var(--green-dark); cursor:pointer; }
-  .topbar-icon svg{ width:16px; height:16px; }
 
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
   .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
@@ -78,18 +29,6 @@
 
   .stage-banner{ font-size:22px; font-weight:800; color:#c9962f; letter-spacing:0.3px; margin:2px 0 10px 0; }
   .stage-divider{ height:1px; background:linear-gradient(90deg, var(--green-dark), transparent); margin-bottom:22px; }
-
-  /* ===== Portal-restricted takeover: replaces the normal sidebar nav
-     with a non-navigable lock panel while portal_restricted is true, so
-     a restricted tenant isn't shown links that would just bounce them
-     back anyway. Log Out stays available -- restriction shouldn't trap
-     someone in a session they want to end. ===== */
-  .sidebar.restricted-lock{ align-items:center; }
-  .lock-panel-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px 22px; text-align:center; }
-  .lock-icon-circle{ width:80px; height:80px; border-radius:50%; background:#c0463d; display:flex; align-items:center; justify-content:center; margin-bottom:24px; box-shadow:0 4px 10px rgba(0,0,0,0.25); flex-shrink:0; }
-  .lock-icon-circle svg{ width:36px; height:36px; color:#fff; }
-  .lock-panel-title{ color:#fff; font-size:18px; font-weight:800; margin:0 0 10px 0; line-height:1.3; letter-spacing:0.2px; }
-  .lock-panel-text{ color:rgba(255,255,255,0.85); font-size:12px; line-height:1.65; max-width:200px; }
 
   /* ===== Warning banners ===== */
   .warning-banner{ border-radius:14px; padding:16px 22px; margin-bottom:20px; }
@@ -183,18 +122,16 @@
 
   .empty-note{ font-size:12px; color:var(--text-light); text-align:center; padding:16px 0; }
 
-  /* ===== Stage 6 full takeover: blacklisted tenants get a completely
-     different page -- no sidebar, no nav links, nothing to navigate to.
-     Table 28 blacklisting is permanent, even once the balance is paid, so
-     this isn't "restricted but reachable" like Stage 3+'s lock panel --
-     it's final. ===== */
-  .blacklist-page{ min-height:100vh; display:flex; flex-direction:column; background:linear-gradient(160deg, var(--green-sidebar-top) 0%, #2a221d 60%, var(--green-sidebar-bottom) 100%); }
-  .blacklist-topbar{ display:flex; align-items:center; padding:16px 28px; background:linear-gradient(90deg, rgba(51,81,60,0.45), rgba(63,107,74,0.45)); backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%); box-shadow:0 1px 0 rgba(0,0,0,0.08); }
-  .blacklist-topbar .topbar-username{ margin-left:auto; }
-  .blacklist-body{ flex:1; display:flex; align-items:center; justify-content:center; padding:60px 24px; }
+  /* ===== Stage 6 full takeover: parts that genuinely differ from
+     tenantbilling.blade.php's version (confirmed by diffing both files)
+     -- this page's headline is two lines with a highlighted word, its
+     content column is wider (680px vs 640px), its subtext has a top
+     margin, and it has a stage-dots row + explanation box that billing's
+     takeover doesn't have. The shared shell (.blacklist-page,
+     .blacklist-topbar, .blacklist-body, .blacklist-lock-circle,
+     .blacklist-actions, .blacklist-contact-btn, .blacklist-logout-btn)
+     is in tenant.css. ===== */
   .blacklist-content{ max-width:680px; text-align:center; }
-  .blacklist-lock-circle{ width:110px; height:110px; border-radius:50%; background:#c0463d; display:flex; align-items:center; justify-content:center; margin:0 auto 30px auto; box-shadow:0 6px 16px rgba(0,0,0,0.3); }
-  .blacklist-lock-circle svg{ width:52px; height:52px; color:#fff; }
   .blacklist-headline{ color:#fff; font-size:26px; font-weight:900; line-height:1.3; margin:0 0 4px 0; }
   .blacklist-headline .flagged-word{ color:#e8615a; }
   .blacklist-subtext{ color:rgba(255,255,255,0.9); font-size:13.5px; line-height:1.7; margin:18px auto 26px auto; max-width:540px; }
@@ -204,11 +141,6 @@
   .blacklist-info-box{ background:var(--card-bg); border-radius:12px; padding:20px 26px; text-align:left; margin-bottom:26px; }
   .blacklist-info-box h3{ font-size:14px; font-weight:700; color:var(--green-accent); margin:0 0 8px 0; }
   .blacklist-info-box p{ font-size:12.5px; color:var(--text-mid); line-height:1.7; margin:0; }
-  .blacklist-actions{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
-  .blacklist-contact-btn{ background:var(--green-mid); color:#fff; border:none; border-radius:8px; padding:13px 30px; font-size:13px; font-weight:700; letter-spacing:0.3px; cursor:pointer; text-decoration:none; display:inline-block; }
-  .blacklist-contact-btn:hover{ background:var(--green-dark); }
-  .blacklist-logout-btn{ background:#c0463d; color:#fff; border:none; border-radius:8px; padding:13px 30px; font-size:13px; font-weight:700; letter-spacing:0.3px; cursor:pointer; }
-  .blacklist-logout-btn:hover{ background:#a8382f; }
 </style>
 </head>
 <body>
@@ -252,30 +184,9 @@
 <div class="app">
 
   @if($portalRestricted)
-    <aside class="sidebar restricted-lock" id="sidebar">
-      <div class="sidebar-logo"><span class="logo-mark"></span><span class="logo-text">NEST.PH</span></div>
-      <div class="lock-panel-body">
-        <div class="lock-icon-circle">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
-        </div>
-        <h2 class="lock-panel-title">PORTAL ACCESS<br>RESTRICTED</h2>
-        <p class="lock-panel-text">Your account access has been restricted due to unpaid balance. Please settle your balance to restore full access.</p>
-      </div>
-      <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.4 5.6a9 9 0 11-12.8 0M12 3v8"/></svg></span><span class="label">Log Out</span></div></div>
-    </aside>
+    @include('partials.tenant-sidebar-restricted')
   @else
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-logo"><span class="logo-mark"></span><span class="logo-text">NEST.PH</span></div>
-      <div class="sidebar-section-label">Tenant View</div>
-      <ul class="nav-list">
-        <li class="nav-item" data-href="{{ route('dashboard') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span><span class="label">Tenant Dashboard</span></li>
-        <li class="nav-item" data-href="{{ route('tenant.tickets') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></span><span class="label">Tickets</span></li>
-        <li class="nav-item" data-href="{{ route('tenant.billing') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span><span class="label">Billing and Payments</span></li>
-        <li class="nav-item" data-href="{{ route('tenant.account') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span><span class="label">Profile</span></li>
-        <li class="nav-item active" data-href="{{ route('tenant.delinquency') }}" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span><span class="label">Delinquency</span></li>
-      </ul>
-      <div class="sidebar-footer"><div class="nav-item" id="logoutBtn" tabindex="0"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.4 5.6a9 9 0 11-12.8 0M12 3v8"/></svg></span><span class="label">Log Out</span></div></div>
-    </aside>
+    @include('partials.tenant-sidebar')
   @endif
 
   <div class="main">

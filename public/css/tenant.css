@@ -1,0 +1,136 @@
+/*
+  Shared tenant-portal styles. Linked by every tenant*.blade.php page via:
+      <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
+
+  Holds only what's byte-identical across every tenant page: the core
+  color variables, page reset, sidebar (both the normal nav and the
+  portal-restricted lock-panel variant), topbar, and keyboard-focus
+  styles -- plus the parts of the blacklist (Stage 6) full-page takeover
+  that are identical between tenantbilling.blade.php and
+  tenantdelinquency.blade.php specifically.
+
+  Each page's own :root block still exists locally and ADDS whatever
+  extra variables that page needs (--green-mid, --pending-bg/--paid-bg,
+  --blue/--purple/--orange/--red, etc.) -- CSS custom properties on :root
+  merge automatically, so a page doesn't need to repeat the shared ones.
+
+  Content/page-head/back-arrow styling stays page-specific on purpose --
+  margins, alignment, and whether there's a page-head-text wrapper differ
+  enough between pages (confirmed by diffing all five files) that sharing
+  them would silently change one page's layout to match another's.
+*/
+
+:root{
+  --green-dark:#3f6b4a; --green-darker:#345a3e;
+  --green-sidebar-top:#33513c; --green-sidebar-bottom:#223a29;
+  --green-accent:#3f6b4a; --green-btn:#3f6b4a; --green-btn-hover:#2f5439;
+  --logout-bg:#16241b; --logout-bg-hover:#0f1b13;
+  --bg-page:#f4f6f4; --card-bg:#ffffff;
+  --text-dark:#1f2a22; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e9e4;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
+.app{ display:flex; min-height:100vh; }
+
+/* ===== Sidebar: logo pinned at top, Log Out pinned at bottom, and only
+   the middle nav list scrolls if it doesn't fit. Collapsible via the
+   hamburger button. The whole sidebar stays in a narrow, dark range so
+   contrast stays consistent top to bottom, and Log Out gets its own
+   solid, distinctly darker chip rather than a translucent overlay. ===== */
+.sidebar{
+  width:220px; flex-shrink:0;
+  background:linear-gradient(180deg, var(--green-sidebar-top) 0%, var(--green-sidebar-bottom) 100%);
+  color:#eaf0ea; display:flex; flex-direction:column; padding:18px 0;
+  position:sticky; top:0; height:100vh; overflow:hidden;
+  box-shadow:2px 0 14px rgba(0,0,0,0.12);
+  transition:width 0.2s ease;
+}
+.sidebar-logo{ display:flex; align-items:center; gap:8px; padding:0 20px 18px 20px; font-weight:700; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:12px; white-space:nowrap; flex-shrink:0; }
+.sidebar-logo .logo-mark{ width:16px; height:16px; border:2px solid #eaf0ea; display:inline-block; position:relative; flex-shrink:0; }
+.sidebar-logo .logo-mark::before, .sidebar-logo .logo-mark::after{ content:''; position:absolute; background:#eaf0ea; width:2px; height:12px; top:0; left:5px; }
+.sidebar-section-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:rgba(234,240,234,0.55); padding:4px 20px 8px 20px; font-weight:600; white-space:nowrap; flex-shrink:0; }
+
+.nav-list{
+  list-style:none; margin:0; padding:0 0 8px 0; flex:1; min-height:0;
+  overflow-y:auto; overflow-x:hidden;
+  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.25) transparent;
+}
+.nav-list::-webkit-scrollbar{ width:5px; }
+.nav-list::-webkit-scrollbar-track{ background:transparent; }
+.nav-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.22); border-radius:10px; }
+
+.nav-item{ display:flex; align-items:center; gap:11px; padding:9px 20px; font-size:13px; color:rgba(234,240,234,0.82); cursor:pointer; border-left:3px solid transparent; white-space:nowrap; flex-shrink:0; transition:background 0.12s ease, color 0.12s ease; }
+.nav-item:hover{ background:rgba(255,255,255,0.08); color:#fff; }
+.nav-item.active{ background:rgba(255,255,255,0.16); color:#fff; font-weight:600; border-left:3px solid #ffffff; }
+.nav-item .icon svg{ width:15px; height:15px; flex-shrink:0; }
+.sidebar-footer{ padding:14px 20px 2px 20px; border-top:1px solid rgba(255,255,255,0.12); margin-top:8px; flex-shrink:0; }
+
+.sidebar-footer .nav-item{ padding:10px 14px; border-radius:9px; background:var(--logout-bg); border-left:none; color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06); }
+.sidebar-footer .nav-item:hover{ background:var(--logout-bg-hover); }
+.sidebar-footer .nav-item .icon svg{ color:#fff; }
+
+.sidebar.collapsed{ width:64px; }
+.sidebar.collapsed .sidebar-logo{ justify-content:center; padding-left:0; padding-right:0; }
+.sidebar.collapsed .sidebar-logo .logo-text{ display:none; }
+.sidebar.collapsed .sidebar-section-label{ display:none; }
+.sidebar.collapsed .nav-item{ justify-content:center; padding-left:0; padding-right:0; gap:0; }
+.sidebar.collapsed .nav-item .label{ display:none; }
+.sidebar.collapsed .sidebar-footer{ padding-left:10px; padding-right:10px; }
+.sidebar.collapsed .sidebar-footer .nav-item{ padding:10px 0; }
+
+/* Keyboard focus: these nav rows are divs, not native buttons/links, so
+   they need an explicit focus style and (in each page's own script) a
+   tabindex + Enter/Space handler to be usable without a mouse. */
+.nav-item:focus-visible, .hamburger-icon:focus-visible, .topbar-icon:focus-visible, .back-arrow:focus-visible{
+  outline:2px solid #ffffff; outline-offset:-2px; border-radius:4px;
+}
+.topbar-icon:focus-visible{ outline-color:var(--green-darker); }
+
+/* ===== Portal-restricted takeover: replaces the normal sidebar nav with
+   a non-navigable lock panel while portal_restricted is true, so a
+   restricted tenant isn't shown links that would just bounce them back
+   anyway. Log Out stays available. Used by tenantbilling.blade.php and
+   tenantdelinquency.blade.php -- the only two pages a restricted tenant
+   can reach. ===== */
+.sidebar.restricted-lock{ align-items:center; }
+.lock-panel-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px 22px; text-align:center; }
+.lock-icon-circle{ width:80px; height:80px; border-radius:50%; background:#c0463d; display:flex; align-items:center; justify-content:center; margin-bottom:24px; box-shadow:0 4px 10px rgba(0,0,0,0.25); flex-shrink:0; }
+.lock-icon-circle svg{ width:36px; height:36px; color:#fff; }
+.lock-panel-title{ color:#fff; font-size:18px; font-weight:800; margin:0 0 10px 0; line-height:1.3; letter-spacing:0.2px; }
+.lock-panel-text{ color:rgba(255,255,255,0.85); font-size:12px; line-height:1.65; max-width:200px; }
+
+.main{ flex:1; display:flex; flex-direction:column; min-width:0; }
+.topbar{
+  display:flex; align-items:center; gap:16px;
+  background:linear-gradient(90deg, rgba(51,81,60,0.45), rgba(63,107,74,0.45));
+  backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%);
+  padding:16px 28px;
+  box-shadow:0 1px 0 rgba(0,0,0,0.08);
+  position:sticky; top:0; z-index:20;
+}
+.hamburger-icon{ width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; cursor:pointer; transition:background 0.12s ease; }
+.hamburger-icon:hover{ background:rgba(255,255,255,0.14); }
+.topbar-right{ margin-left:auto; display:flex; align-items:center; gap:14px; }
+.topbar-username{ color:#fff; font-size:13.5px; font-weight:600; white-space:nowrap; text-shadow:0 1px 2px rgba(0,0,0,0.15); }
+.topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.92); display:flex; align-items:center; justify-content:center; color:var(--green-dark); cursor:pointer; }
+.topbar-icon svg{ width:16px; height:16px; }
+
+/* ===== Stage 6 full takeover, shared portion only: a blacklisted tenant
+   gets a completely different page -- no sidebar, nothing to navigate to.
+   Only the parts confirmed byte-identical between tenantbilling.blade.php
+   and tenantdelinquency.blade.php live here; .blacklist-content (max-width
+   differs: 640px vs 680px), .blacklist-headline, .blacklist-subtext
+   (margin/max-width differ), and .blacklist-status-btn (billing only)
+   stay in each page's own <style> block since they genuinely differ. ===== */
+.blacklist-page{ min-height:100vh; display:flex; flex-direction:column; background:linear-gradient(160deg, var(--green-sidebar-top) 0%, #2a221d 60%, var(--green-sidebar-bottom) 100%); }
+.blacklist-topbar{ display:flex; align-items:center; padding:16px 28px; background:linear-gradient(90deg, rgba(51,81,60,0.45), rgba(63,107,74,0.45)); backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%); box-shadow:0 1px 0 rgba(0,0,0,0.08); }
+.blacklist-topbar .topbar-username{ margin-left:auto; }
+.blacklist-body{ flex:1; display:flex; align-items:center; justify-content:center; padding:60px 24px; }
+.blacklist-lock-circle{ width:110px; height:110px; border-radius:50%; background:#c0463d; display:flex; align-items:center; justify-content:center; margin:0 auto 30px auto; box-shadow:0 6px 16px rgba(0,0,0,0.3); }
+.blacklist-lock-circle svg{ width:52px; height:52px; color:#fff; }
+.blacklist-actions{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+.blacklist-contact-btn{ background:var(--green-mid); color:#fff; border:none; border-radius:8px; padding:13px 30px; font-size:13px; font-weight:700; letter-spacing:0.3px; cursor:pointer; text-decoration:none; display:inline-block; }
+.blacklist-contact-btn:hover{ background:var(--green-dark); }
+.blacklist-logout-btn{ background:#c0463d; color:#fff; border:none; border-radius:8px; padding:13px 30px; font-size:13px; font-weight:700; letter-spacing:0.3px; cursor:pointer; }
+.blacklist-logout-btn:hover{ background:#a8382f; }

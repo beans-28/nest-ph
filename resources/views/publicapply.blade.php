@@ -330,16 +330,16 @@
     <nav class="topnav textured">
         <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
         <div class="menu">
-            <a href="{{ route('public.vr') }}">VR TOUR</a>
-            <a href="{{ route('public.rooms') }}">ROOMS</a>
             <a href="{{ route('home') }}">HOME</a>
-            <a href="{{ route('public.dorminfo') }}" class="pill">Dorm Info</a>
+            <a href="{{ route('public.rooms') }}">ROOMS</a>
+            <a href="{{ route('public.vr') }}">VR TOUR</a>
+            <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
         <div class="logo"><span class="mark"></span> NEST.PH</div>
         <div class="buttons">
-            <a href="{{ route('login.admin') }}" class="btn btn-white">Admin</a>
-            <a href="{{ route('public.apply') }}" class="btn btn-outline-white">Apply</a>
+            <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
+            <a href="{{ route('login.admin') }}" class="btn btn-outline-white">Admin</a>
         </div>
     </nav>
 
