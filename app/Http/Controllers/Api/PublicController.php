@@ -14,12 +14,12 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PublicController extends Controller
 {
-    /**
-     * Landing page. Server-renders the real "Beds Available" stat; the rest
-     * of the hero stats (Happy Tenants, Star Ratings) are static marketing
-     * copy per the Figma design — no backing data exists for those yet
-     * (reviews aren't built, Week 7 scope).
-     */
+   /**
+    * Landing page. Server-renders "Beds Available" and "Happy Tenants" from
+    * real data; star ratings come from the Review model. Happy Tenants uses
+    * the same active-tenant definition as DashboardController and
+    * TenantController to keep all three counts consistent.
+    */
     public function home()
     {
         $availableBeds = Room::withCount([
@@ -41,7 +41,9 @@ class PublicController extends Controller
             'birRegistrationImageUrl' => $this->isImageFile($profile->bir_registration_path)
                 ? Storage::disk('public')->url($profile->bir_registration_path)
                 : null,
-            'happyTenantsCount' => \App\Models\Tenant::count(),
+            'happyTenantsCount' => \App\Models\Tenant::where('status', 'active')
+                ->where('is_blacklisted', false)
+                ->count(),
             'availableResources' => \App\Models\DormitoryAmenity::where('is_enabled', true)
                 ->orderBy('sort_order')
                 ->pluck('label')

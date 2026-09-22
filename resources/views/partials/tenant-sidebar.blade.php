@@ -34,7 +34,7 @@
       <span class="label">Profile</span>
     </li>
     <li class="nav-item {{ request()->routeIs('tenant.delinquency') ? 'active' : '' }}" data-href="{{ route('tenant.delinquency') }}" tabindex="0">
-      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>
+      <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>
       <span class="label">Delinquency</span>
     </li>
   </ul>

@@ -15,7 +15,7 @@
             <span class="label">Billing and Payments</span>
         </li>
         <li class="nav-item {{ request()->routeIs('delinquency.*') ? 'active' : '' }}" data-href="{{ route('delinquency.index') }}">
-            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>
+            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>
             <span class="label">Delinquency</span>
         </li>
         <li class="nav-item {{ request()->routeIs('admin.addfloor') ? 'active' : '' }}" data-href="{{ route('admin.addfloor') }}">
