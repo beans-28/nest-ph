@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Dormitory Profile</title>
+<title>NEST.PH - Dormitory Profile</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -180,7 +180,7 @@
         <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Dormitory Profile</h1>
       </div>
-      <p class="page-sub">Set up your dormitory's public listing — basic info, house rules, amenities, and legitimacy documents.</p>
+      <p class="page-sub">Set up your dormitory's public listing: basic info, house rules, amenities, and legitimacy documents.</p>
 
       <div class="profile-grid">
         <div class="form-col">

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Inquiry Management</title>
+<title>NEST.PH - Inquiry Management</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -218,7 +218,7 @@
     }
 
     if(!i.email){
-      return `<div class="already-replied" style="background:#fdf0f0;border-color:#f3cccc;color:#b3261e;">No email address on file — a reply cannot be sent for this inquiry.</div>`;
+      return `<div class="already-replied" style="background:#fdf0f0;border-color:#f3cccc;color:#b3261e;">No email address on file, so a reply cannot be sent for this inquiry.</div>`;
     }
 
     return `

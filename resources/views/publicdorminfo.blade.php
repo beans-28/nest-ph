@@ -262,13 +262,13 @@
                     @endforeach
                 </div>
             @else
-                <div class="reviews-empty">No reviews yet — be the first former tenant to share your experience!</div>
+                <div class="reviews-empty">No reviews yet, be the first former tenant to share your experience!</div>
             @endif
         </div>
 
         <div class="info-header">
             <div class="info-header-text">
-                <h1>{{ $dormName ?? 'NEST.PH' }} — Dorm Info</h1>
+                <h1>{{ $dormName ?? 'NEST.PH' }} - Dorm Info</h1>
                 <p>Rental rates, payment schedule, house rules, and check-out procedures.</p>
             </div>
             @if($policiesFileUrl)

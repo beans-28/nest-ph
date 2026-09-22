@@ -18,7 +18,7 @@ class MoveInPermitMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('Your Move-In Permit — NEST.PH')
+        return $this->subject('Your Move-In Permit - NEST.PH')
             ->view('emails.move-in-permit');
     }
 }

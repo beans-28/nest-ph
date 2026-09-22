@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Billing and Payments</title>
+<title>NEST.PH - Billing and Payments</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -866,7 +866,7 @@
     const o = overview.find(x => x.id === id);
     if(!o) return;
 
-    $('drawerTitle').textContent = `Statement — ${o.tenant_name}`;
+    $('drawerTitle').textContent = `Statement: ${o.tenant_name}`;
 
     const historyHtml = o.payments.length === 0
       ? '<div class="stmt-history-empty">No payments recorded against this statement yet.</div>'
@@ -1231,7 +1231,7 @@
       }
       rdSelectedRoomId = result.room.id;
       rdSelectedBedId = result.bed.id;
-      $('rdRoomBedDisplay').textContent = `Room ${result.room.room_no} — ${result.bed.bed_label}`;
+      $('rdRoomBedDisplay').textContent = `Room ${result.room.room_no}, ${result.bed.bed_label}`;
     } catch(e){
       rdSelectedRoomId = null;
       rdSelectedBedId = null;

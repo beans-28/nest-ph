@@ -299,7 +299,7 @@
                 presetRoomType = room.room_type || presetRoomType;
                 document.getElementById('roomContext').style.display = 'flex';
                 document.getElementById('roomContextName').textContent =
-                    `Room ${room.room_no}${room.room_type ? ' — ' + room.room_type.charAt(0).toUpperCase() + room.room_type.slice(1) : ''}`;
+                    `Room ${room.room_no}${room.room_type ? ', ' + room.room_type.charAt(0).toUpperCase() + room.room_type.slice(1) : ''}`;
                 if (room.photo_url) {
                     document.getElementById('roomContextThumb').style.backgroundImage = `url('${room.photo_url}')`;
                 }

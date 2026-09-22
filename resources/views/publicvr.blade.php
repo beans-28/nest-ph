@@ -220,7 +220,7 @@
                 Object.entries(room.tour.scenes).map(([id, scene]) => [
                     id,
                     Object.assign({}, scene, {
-                        title: 'Room ' + room.room_no + ' — ' + scene.title,
+                        title: 'Room ' + room.room_no + ': ' + scene.title,
                     }),
                 ])
             ),

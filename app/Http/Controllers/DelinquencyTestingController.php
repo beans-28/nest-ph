@@ -77,7 +77,7 @@ class DelinquencyTestingController extends Controller
                 'escalation_paused' => false,
             ]);
 
-            return response()->json(['message' => "{$tenant->full_name} reset to Stage 0 — Not Delinquent."]);
+            return response()->json(['message' => "{$tenant->full_name} reset to Stage 0 (Not Delinquent)."]);
         }
 
         if ($tenant->is_blacklisted) {
@@ -112,7 +112,7 @@ class DelinquencyTestingController extends Controller
 
         $contract = $tenant->contracts()->latest('start_date')->first();
 
-        abort_if(! $contract, 422, 'This tenant has no lease contract yet — assign a bed/lease before testing escalation.');
+        abort_if(! $contract, 422, 'This tenant has no lease contract yet, assign a bed/lease before testing escalation.');
 
         return BillingStatement::create([
             'contract_id' => $contract->id,

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Tickets</title>
+<title>NEST.PH - Tickets</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and content
@@ -276,7 +276,7 @@
           <div>
             <div class="ac-num">Ticket#${t.id}</div>
             <div class="ac-title">${esc(t.title)}</div>
-            <div class="ac-meta">${esc(t.tenant_name ?? 'Unknown tenant')}${t.room_no ? ' — Room ' + esc(t.room_no) : ''}</div>
+            <div class="ac-meta">${esc(t.tenant_name ?? 'Unknown tenant')}${t.room_no ? ', Room ' + esc(t.room_no) : ''}</div>
           </div>
           <span class="badge ${t.status}">${esc(t.status_label)}</span>
         </div>
@@ -343,7 +343,7 @@
       $('mStatusSelect').value = detail.status;
 
       $('mReplyThread').innerHTML = detail.replies.length
-        ? detail.replies.map(r => `<div class="reply-item">${esc(r.message)}<div class="r-meta">${esc(r.author)} — ${esc(r.created_at)}</div></div>`).join('')
+        ? detail.replies.map(r => `<div class="reply-item">${esc(r.message)}<div class="r-meta">${esc(r.author)}, ${esc(r.created_at)}</div></div>`).join('')
         : '<div class="reply-item" style="color:var(--text-light);font-style:italic;">No replies yet.</div>';
 
       $('mReplyInput').value = '';

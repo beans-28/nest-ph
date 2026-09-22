@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — VR Management</title>
+<title>NEST.PH - VR Management</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
 <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
@@ -226,7 +226,7 @@
 
                 <div class="placing-banner" id="placingBanner">
                   <span class="pulse"></span>
-                  <span>Click the spot in the photo where the arrow should go — usually a doorway.</span>
+                  <span>Click the spot in the photo where the arrow should go (usually a doorway).</span>
                   <button class="vr-btn sm" id="cancelPlaceBtn" type="button" style="margin-left:auto;">Cancel</button>
                 </div>
 
@@ -258,7 +258,7 @@
                   </div>
                   <div class="fld">
                     <label for="hotspotLabel">Label (optional)</label>
-                    <input type="text" id="hotspotLabel" placeholder="Auto: “Go to [spot]”">
+                    <input type="text" id="hotspotLabel" placeholder='Auto: "Go to [spot]"'>
                   </div>
                   <div style="display:flex;gap:8px;">
                     <button class="vr-btn primary" id="startPlaceBtn" type="button" style="flex:1;">Next: pick the spot</button>
@@ -296,9 +296,9 @@
               <div class="fld">
                 <label for="visibilitySelect">Visibility</label>
                 <select id="visibilitySelect">
-                  <option value="public">Public — visitors can view</option>
-                  <option value="locked">Locked — hidden from visitors</option>
-                  <option value="draft">Draft — still working on it</option>
+                  <option value="public">Public: visitors can view</option>
+                  <option value="locked">Locked: hidden from visitors</option>
+                  <option value="draft">Draft: still working on it</option>
                 </select>
               </div>
               <div class="fld">

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Delinquency</title>
+<title>NEST.PH - Delinquency</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -466,7 +466,7 @@
 
   const ACTION_EXPLANATIONS = {
     pause: {
-      text: 'Freezes this tenant exactly where they are. No more reminders, no restrictions, no blacklist — nothing happens until you Unpause them. Their current stage and full history stay untouched. Use this when a tenant has honestly communicated and you\'re giving them more time.',
+      text: 'Freezes this tenant exactly where they are. No more reminders, no restrictions, no blacklist, nothing happens until you Unpause them. Their current stage and full history stay untouched. Use this when a tenant has honestly communicated and you\'re giving them more time.',
       warning: false,
     },
     unpause: {
@@ -474,11 +474,11 @@
       warning: false,
     },
     clear: {
-      text: 'Marks everything currently open as resolved and lifts any portal restriction, but keeps the history — it stays visible for the record. Does not touch a Stage 6 blacklist.',
+      text: 'Marks everything currently open as resolved and lifts any portal restriction, but keeps the history (it stays visible for the record). Does not touch a Stage 6 blacklist.',
       warning: false,
     },
     reset: {
-      text: 'Erases this tenant\'s entire escalation history — like it never started. Important: this does NOT stop the overdue clock. If they\'re still unpaid, the system will immediately restart from Stage 1 (including re-sending SMS reminders) the very next time it runs. This is for fixing a mistake or clearing test data — NOT for giving a tenant more time. For that, use Pause instead.',
+      text: 'Erases this tenant\'s entire escalation history, like it never started. Important: this does NOT stop the overdue clock. If they\'re still unpaid, the system will immediately restart from Stage 1 (including re-sending SMS reminders) the very next time it runs. This is for fixing a mistake or clearing test data, NOT for giving a tenant more time. For that, use Pause instead.',
       warning: true,
     },
   };

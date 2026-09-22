@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Reports</title>
+<title>NEST.PH - Reports</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -88,7 +88,7 @@
         <button type="button" class="btn primary" id="generateBtn">Generate</button>
         <button type="button" class="btn secondary" id="exportBtn" disabled>Export CSV</button>
       </div>
-      <p class="occupancy-note" id="occupancyNote">Occupancy always reflects current room/bed status in real time — the date range only applies to the Financial report.</p>
+      <p class="occupancy-note" id="occupancyNote">Occupancy always reflects current room/bed status in real time. The date range only applies to the Financial report.</p>
       <div id="resultsArea">
         <div class="empty-note">Pick a report type and click Generate to see the numbers.</div>
       </div>

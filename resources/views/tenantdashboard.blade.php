@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Tenant Dashboard</title>
+<title>NEST.PH - Tenant Dashboard</title>
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and focus styles
@@ -158,7 +158,7 @@
 
       <div class="tip-strip">
         <div class="tip-strip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></div>
-        <div class="tip-strip-text"><strong>Stay updated —</strong> make sure your payments are on time to avoid penalties.</div>
+        <div class="tip-strip-text"><strong>Stay updated:</strong> make sure your payments are on time to avoid penalties.</div>
       </div>
 
       @include('partials.announcements-feed')

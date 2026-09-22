@@ -17,7 +17,7 @@ class ApplicationAcknowledgmentMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('We received your application — NEST.PH')
+        return $this->subject('We received your application - NEST.PH')
             ->view('emails.application-acknowledgment');
     }
 }

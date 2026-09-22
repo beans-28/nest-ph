@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Admin Dashboard</title>
+<title>NEST.PH - Admin Dashboard</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -149,7 +149,7 @@
                     {{ $ticket['title'] }}
                     <span class="time">{{ $ticket['submitted_at'] }}</span>
                   </div>
-                  <div class="ticket-desc">{{ $ticket['tenant_name'] ?? 'Unknown tenant' }}{{ $ticket['room_no'] ? ' — Room ' . $ticket['room_no'] : '' }}</div>
+                  <div class="ticket-desc">{{ $ticket['tenant_name'] ?? 'Unknown tenant' }}{{ $ticket['room_no'] ? ', Room ' . $ticket['room_no'] : '' }}</div>
                   <div class="ticket-meta">
                     <span class="ticket-status-pill status-{{ str_replace(' ', '-', strtolower($ticket['status_label'])) }}">{{ $ticket['status_label'] }}</span>
                     @if($ticket['priority_label'])

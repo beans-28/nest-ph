@@ -17,7 +17,7 @@ class InquiryAcknowledgmentMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('We received your inquiry — NEST.PH')
+        return $this->subject('We received your inquiry - NEST.PH')
             ->view('emails.inquiry-acknowledgment');
     }
 }

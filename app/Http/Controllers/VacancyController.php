@@ -111,7 +111,7 @@ class VacancyController extends Controller
 
         if ($hasHistory) {
             return response()->json([
-                'message' => 'This floor can\'t be deleted — one or more of its rooms has beds with application or lease history tied to them, and removing the floor would orphan those records.',
+                'message' => 'This floor can\'t be deleted: one or more of its rooms has beds with application or lease history tied to them, and removing the floor would orphan those records.',
             ], 409);
         }
 
@@ -211,7 +211,7 @@ class VacancyController extends Controller
 
         if ($hasHistory) {
             return response()->json([
-                'message' => 'This room can\'t be deleted — one or more of its beds has application or lease history tied to it, and removing the room would orphan those records. If the room is no longer usable, consider marking its beds as Maintenance instead.',
+                'message' => 'This room can\'t be deleted: one or more of its beds has application or lease history tied to it, and removing the room would orphan those records. If the room is no longer usable, consider marking its beds as Maintenance instead.',
             ], 409);
         }
 

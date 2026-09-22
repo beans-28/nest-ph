@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Billing and Payments</title>
+<title>NEST.PH - Billing and Payments</title>
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar (normal + restricted-lock),
@@ -222,7 +222,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
         </div>
         <h1 class="blacklist-headline">Account Permanently Deactivated</h1>
-        <p class="blacklist-subtext">Your account has reached the final stage of delinquency escalation and has been blacklisted. Billing is no longer accessible here — please contact the dormitory administrator directly to settle your balance or resolve this.</p>
+        <p class="blacklist-subtext">Your account has reached the final stage of delinquency escalation and has been blacklisted. Billing is no longer accessible here. Please contact the dormitory administrator directly to settle your balance or resolve this.</p>
         <div class="blacklist-actions">
           <a class="blacklist-status-btn" href="{{ route('tenant.delinquency') }}">View Delinquency Status</a>
           @if($dormContactEmail || $dormContactNumber)
@@ -624,7 +624,7 @@
 
     if(current){
       // Balance Due shows the full amount owed (bill balance + any active
-      // penalty not yet folded into a statement) — not just this bill's own
+      // penalty not yet folded into a statement), not just this bill's own
       // total. Matches TenantPortalController::accountSummary().
       document.getElementById('mainBalanceAmount').textContent = peso(totalOwed);
       document.getElementById('mainBalanceDue').textContent = `Due: ${fullDate(current.due_date)}`;
@@ -657,12 +657,12 @@
       document.getElementById('breakdownRows').innerHTML = breakdownHtml;
     } else if(totalOwed > 0){
       // No billing statement is currently payable, but there's an active
-      // penalty sitting unbilled (see BillingController::foldPenaltiesInto()
-      // — it gets attached automatically on the next generated statement).
+      // penalty sitting unbilled (see BillingController::foldPenaltiesInto(),
+      // it gets attached automatically on the next generated statement).
       // Pay Now stays disabled since there's no statement yet to submit
       // proof against.
       document.getElementById('mainBalanceAmount').textContent = peso(totalOwed);
-      document.getElementById('mainBalanceDue').textContent = 'Outstanding penalty — added to your next bill';
+      document.getElementById('mainBalanceDue').textContent = 'Outstanding penalty, added to your next bill';
       document.getElementById('breakdownRows').innerHTML = `
         <div class="breakdown-row">
           <div class="breakdown-label">Penalties</div>
@@ -857,7 +857,7 @@
 
     const time = document.getElementById('pfTime').value;
     const notes = document.getElementById('pfNotes').value.trim();
-    const combinedNotes = `Time of payment: ${time || '—'}${notes ? ' — ' + notes : ''}${selectedMethod === 'bdo' ? ' (Bank: BDO)' : ''}`;
+    const combinedNotes = `Time of payment: ${time || '—'}${notes ? ' - ' + notes : ''}${selectedMethod === 'bdo' ? ' (Bank: BDO)' : ''}`;
 
     const formData = new FormData();
     formData.append('amount_paid', document.getElementById('pfAmount').value);

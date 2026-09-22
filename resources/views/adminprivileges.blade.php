@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Admin Privileges</title>
+<title>NEST.PH - Admin Privileges</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -437,7 +437,7 @@
     const admin = admins.find(a => a.id === id);
     if(!admin) return;
     privModalUserId = id;
-    $('privModalTitle').textContent = `Manage Privileges — ${admin.name}`;
+    $('privModalTitle').textContent = `Manage Privileges: ${admin.name}`;
     $('privModalError').classList.remove('visible');
     privilegeCheckboxGrid('privPrivilegeGrid', admin.privileges, {
       disableManageUsers: id === CURRENT_USER_ID,

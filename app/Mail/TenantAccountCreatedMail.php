@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * Table 15 (Add New Tenant), step 8.5 — sent when an admin registers a
+ * Table 15 (Add New Tenant), step 8.5: sent when an admin registers a
  * walk-in tenant directly, as opposed to ApplicationApprovedMail which
  * covers tenants who came through the online Apply for Occupancy flow.
  */

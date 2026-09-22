@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Tickets</title>
+<title>NEST.PH - Tickets</title>
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and focus styles
@@ -287,7 +287,7 @@
       <div class="ticket-card" data-ticket="${t.id}">
         <div class="tc-head">
           <div>
-            <h3 class="tc-title">#${String(t.id).padStart(3,'0')} — ${esc(t.title)}</h3>
+            <h3 class="tc-title">#${String(t.id).padStart(3,'0')}: ${esc(t.title)}</h3>
             <div class="tc-sub">Submitted: ${esc(t.submitted_at)}</div>
             <span class="tc-cat">${esc(t.category_label)}</span>
           </div>

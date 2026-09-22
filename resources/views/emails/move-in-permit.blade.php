@@ -12,7 +12,7 @@
                 <h2 style="color:#292420;margin:0 0 12px;font-size:20px;">Payment verified, {{ $tenant->full_name }}!</h2>
                 <p style="color:#4b5f4c;font-size:14px;line-height:1.6;margin:0 0 20px;">
                     Your move-in fee has been verified by our administrator. Your account is now fully active,
-                    and you have complete access to your tenant portal — billing, maintenance requests, and more.
+                    and you have complete access to your tenant portal: billing, maintenance requests, and more.
                 </p>
 
                 <div style="background:#eeeded;border-radius:10px;padding:16px 18px;margin:0 0 20px;">
@@ -25,7 +25,7 @@
                 </div>
 
                 <p style="color:#4b5f4c;font-size:14px;line-height:1.6;margin:0;">
-                    Welcome to Pureza Station Dormitory — we're glad to have you!
+                    Welcome to Pureza Station Dormitory, we're glad to have you!
                 </p>
             </td>
         </tr>

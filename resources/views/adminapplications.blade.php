@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Review Applications</title>
+<title>NEST.PH - Review Applications</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -261,7 +261,7 @@
         ${a.returning_tenant ? `
           <div class="returning-note">
             <strong>This applicant matches an existing tenant record</strong> (${esc(a.returning_tenant.full_name)}).
-            They may qualify for a returning-tenant discount — enter an amount below to reduce their monthly rate by that much if approving.
+            They may qualify for a returning-tenant discount. Enter an amount below to reduce their monthly rate by that much if approving.
           </div>
           <div class="discount-fld">
             <label for="discountInput">Discount Amount (₱)</label>
@@ -303,7 +303,7 @@
       return `<div class="sec"><h3>Re-application Instructions</h3><div class="final-note re_application_requested">${esc(a.re_application_note)}</div></div>`;
     }
     if(a.status === 'approved'){
-      return `<div class="sec"><div class="final-note approved">Approved — tenant account created and login credentials emailed to the applicant.</div></div>`;
+      return `<div class="sec"><div class="final-note approved">Approved. Tenant account created and login credentials emailed to the applicant.</div></div>`;
     }
     return '';
   }

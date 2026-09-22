@@ -53,7 +53,7 @@ class ActivityFeedService
             ->get()
             ->map(fn ($p) => [
                 'date' => $p->created_at,
-                'detail' => ($p->tenant?->full_name ?? 'A tenant') . ' — payment received (₱' . number_format($p->amount_paid, 0) . ')',
+                'detail' => 'Payment received from ' . ($p->tenant?->full_name ?? 'a tenant') . ' (₱' . number_format($p->amount_paid, 0) . ')',
                 'type' => 'Payment',
                 'admin' => $this->actorName($p->reviewed_by),
             ]);
@@ -67,7 +67,7 @@ class ActivityFeedService
             ->get()
             ->map(fn ($log) => [
                 'date' => $log->created_at,
-                'detail' => ($log->tenant?->full_name ?? 'A tenant') . ' — ' . ucwords(str_replace('_', ' ', $log->action_type ?? 'escalation update')),
+                'detail' => ucwords(str_replace('_', ' ', $log->action_type ?? 'escalation update')) . ' for ' . ($log->tenant?->full_name ?? 'a tenant'),
                 'type' => 'Delinquency',
                 'admin' => $this->actorName($log->performed_by, systemIfMissing: true),
             ]);
@@ -155,7 +155,7 @@ class ActivityFeedService
             if ($c->terminated_at) {
                 $events->push([
                     'date' => $c->terminated_at,
-                    'detail' => "Lease contract terminated for {$name}" . ($c->termination_reason ? " — {$c->termination_reason}" : ''),
+                    'detail' => "Lease contract terminated for {$name}" . ($c->termination_reason ? " ({$c->termination_reason})" : ''),
                     'type' => 'Lease',
                     'admin' => null,
                 ]);
@@ -182,7 +182,7 @@ class ActivityFeedService
 
                 return [
                     'date' => $log->created_at,
-                    'detail' => "{$name} — {$action}",
+                    'detail' => "{$action} for {$name}",
                     'type' => 'Penalty',
                     'admin' => $this->actorName($log->performed_by),
                 ];
@@ -197,7 +197,7 @@ class ActivityFeedService
             ->get()
             ->map(fn ($d) => [
                 'date' => $d->created_at,
-                'detail' => ($d->tenant?->full_name ?? 'A tenant') . ' — damage recorded (₱' . number_format($d->cost, 0) . ')',
+                'detail' => 'Damage recorded for ' . ($d->tenant?->full_name ?? 'a tenant') . ' (₱' . number_format($d->cost, 0) . ')',
                 'type' => 'Damage',
                 'admin' => $this->actorName($d->created_by),
             ]);
@@ -215,7 +215,7 @@ class ActivityFeedService
                     'granted' => "Granted admin access to {$name}",
                     'privileges_updated' => "Updated admin privileges for {$name}",
                     'revoked' => "Revoked admin access from {$name}",
-                    default => "{$name} — admin access updated",
+                    default => "Admin access updated for {$name}",
                 };
 
                 return [

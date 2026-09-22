@@ -9,7 +9,7 @@ class DormitoryProfileSeeder extends Seeder
 {
     /**
      * Seeds the single dormitory profile row. Content pulled from the
-     * DL CONTRACT frame in the Figma file — replace with the dorm's real
+     * DL CONTRACT frame in the Figma file, replace with the dorm's real
      * final copy once BAGUI confirms it with the client.
      */
     public function run(): void
@@ -65,7 +65,7 @@ prohibited; violation carries a ₱500 fine and may be reported to authorities.
 Drugs and illegal substances are strictly prohibited and will be reported.
 
 Silence should be observed at all times out of consideration for other tenants.
-Treat fellow tenants and staff with respect — harassment, discrimination, or
+Treat fellow tenants and staff with respect. Harassment, discrimination, or
 bullying will not be tolerated.
 
 Management is not responsible for losses or injuries occurring on the premises.

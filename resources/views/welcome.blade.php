@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEST.PH — Study hard, make friends, and live your NEST life.</title>
+    <title>NEST.PH - Study hard, make friends, and live your NEST life.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -280,7 +280,7 @@
     <section class="why-section">
         <div class="eyebrow">You Are in Good Company</div>
         <h2>Why Pick Us?</h2>
-        <p>Located right at the doorstep of Manila's academic hubs, Pureza Station Dormitory is dedicated to providing students with a secure, comfortable, and highly accessible living environment. Through our dedicated management platform, NEST.PH, we ensure that your stay is seamless&mdash;from your first virtual room viewing to your daily tenant needs. Every great mind needs a secure place to hatch their biggest ideas, and we are here to provide the foundation.</p>
+        <p>Located right at the doorstep of Manila's academic hubs, Pureza Station Dormitory gives students a secure, comfortable, and accessible place to stay. Our management platform, NEST.PH, covers everything from your first virtual room viewing to your everyday tenant needs. Every great mind needs a secure place to hatch their biggest ideas, and we're here to provide the foundation.</p>
     </section>
 
     <section class="about-section textured">
@@ -301,7 +301,7 @@
             </div>
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg></div>
-                <p><strong>Seamless Tenant Portal:</strong> Manage your stay entirely online. Check your billing statements, upload proof of payment, and track your payment history without lining up at the admin office.</p>
+                <p><strong>Online Tenant Portal:</strong> Manage your stay entirely online. Check your billing statements, upload proof of payment, and track your payment history without lining up at the admin office.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>

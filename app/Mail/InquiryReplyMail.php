@@ -17,7 +17,7 @@ class InquiryReplyMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('Reply to your inquiry — NEST.PH')
+        return $this->subject('Reply to your inquiry - NEST.PH')
             ->view('emails.inquiry-reply');
     }
 }

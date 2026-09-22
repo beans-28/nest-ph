@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Activity Log</title>
+<title>NEST.PH - Activity Log</title>
 <style>
   :root{
     --green-dark:#3f6b4a; --green-mid:#4f7c57; --green-accent:#2f6f3c;

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH — Tenant Manager</title>
+<title>NEST.PH - Tenant Manager</title>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -611,7 +611,7 @@
           available.map(r => {
             const vacantCount = (r.beds || []).filter(b => b.status === 'vacant').length;
             const type = r.room_type ? ` (${esc(r.room_type)})` : '';
-            return `<option value="${r.id}">Room ${esc(r.room_no)}${type} — ${vacantCount} bed${vacantCount === 1 ? '' : 's'} available</option>`;
+            return `<option value="${r.id}">Room ${esc(r.room_no)}${type}: ${vacantCount} bed${vacantCount === 1 ? '' : 's'} available</option>`;
           }).join('');
       })
       .catch(() => { roomSelect.innerHTML = '<option value="">Could not load rooms</option>'; });
