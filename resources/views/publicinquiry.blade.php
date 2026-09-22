@@ -179,6 +179,19 @@
             .login-left h1 .accent { font-size: 26px; }
             .brand-mark { width: 110px; height: 110px; }
             .brand-mark span { font-size: 70px; }
+
+            /* Topnav: the flex-wrap layout at wider breakpoints packs the
+               menu, logo and button groups unpredictably at phone widths,
+               so stack them into clear rows instead. Matches welcome.blade.php. */
+            .topnav { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+            .topnav .logo { order: -1; justify-content: center; }
+            .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
+            .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
+            .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
+            .btn { min-height: 44px; }
+
+            /* Form fields: 16px avoids the iOS Safari auto-zoom-on-focus. */
+            .form-group input, .form-group select, .form-group textarea { font-size: 16px; }
         }
     </style>
 </head>

@@ -189,6 +189,34 @@
         @media (max-width: 640px) {
             .status-grid { grid-template-columns: 1fr; }
             .legend { gap: 16px; }
+
+            /* Topnav: the flex-wrap layout at wider breakpoints packs the
+               menu, logo and button groups unpredictably at phone widths,
+               so stack them into clear rows instead. Matches welcome.blade.php. */
+            .topnav { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+            .topnav .logo { order: -1; justify-content: center; }
+            .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
+            .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
+            .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
+            .btn { min-height: 44px; }
+        }
+
+        /* Tap targets on room listing cards were under the ~44px touch
+           minimum on small phones. */
+        @media (max-width: 768px) {
+            .rooms-header { padding: 24px 20px 28px; }
+
+            .listing-buttons { gap: 10px; }
+            .listing-buttons a, .listing-buttons button {
+                min-height: 44px;
+                padding: 9px 6px;
+            }
+
+            .vr-cta, .tour-banner .btn-nav {
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+            }
         }
 
         /* Scales the whole page down uniformly on larger screens, where the

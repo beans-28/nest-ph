@@ -207,6 +207,21 @@
             .newsletter input { min-width: 0; flex: 1; }
             .footer-columns { grid-template-columns: 1fr; }
             .footer-bottom { flex-direction: column; align-items: flex-start; }
+
+            /* Topnav: the flex-wrap layout at wider breakpoints packs the
+               menu, logo and button groups unpredictably at phone widths,
+               so stack them into clear rows instead. */
+            .topnav { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+            .topnav .logo { order: -1; justify-content: center; }
+            .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
+            .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
+            .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
+
+            /* Tap targets: bring the default button height up to the
+               ~44px minimum on phone widths (btn-lg is already 46px). */
+            .btn:not(.btn-lg) { height: 44px; }
+            .newsletter input { padding-top: 13px; padding-bottom: 13px; font-size: 16px; }
+            .newsletter button { min-height: 44px; }
         }
         .footer-badge img{ width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0; }
         .about-contact-note{ text-align: center; margin-top: 32px; font-size: 13px; color: rgba(255,255,255,0.85); }

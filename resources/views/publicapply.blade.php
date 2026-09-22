@@ -257,6 +257,30 @@
             .field-row { flex-direction: column; }
             .step-label { display: none; }
             .step-actions { flex-direction: column-reverse; }
+
+            /* Topnav: the flex-wrap layout at wider breakpoints packs the
+               menu, logo and button groups unpredictably at phone widths,
+               so stack them into clear rows instead. Matches welcome.blade.php. */
+            .topnav { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+            .topnav .logo { order: -1; justify-content: center; }
+            .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
+            .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
+            .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
+            .btn { min-height: 44px; }
+
+            /* Form fields: 16px avoids the iOS Safari auto-zoom-on-focus. */
+            .field input[type="text"],
+            .field input[type="email"],
+            .field input[type="tel"],
+            .field input[type="date"],
+            .field select,
+            .field textarea { font-size: 16px; }
+
+            /* Tap targets on the contract-review and modal-footer buttons. */
+            .crc-btn { min-height: 44px; }
+            .contract-modal-foot { flex-wrap: wrap; }
+            .contract-modal-foot button { min-height: 44px; }
+            .contract-preview-frame, .contract-preview-loading { height: 260px; }
         }
 
         /* ===== Contract e-sign modal ===== */

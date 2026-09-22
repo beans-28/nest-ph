@@ -137,6 +137,18 @@
         }
 
         @media (max-width: 1024px) { .topnav { padding: 14px 24px; flex-wrap: wrap; } }
+
+        /* Topnav: the flex-wrap layout at wider breakpoints packs the
+           menu, logo and button groups unpredictably at phone widths,
+           so stack them into clear rows instead. Matches welcome.blade.php. */
+        @media (max-width: 640px) {
+            .topnav { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+            .topnav .logo { order: -1; justify-content: center; }
+            .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
+            .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
+            .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
+            .btn { min-height: 44px; }
+        }
     </style>
 </head>
 <body>

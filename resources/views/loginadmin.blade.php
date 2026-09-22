@@ -261,7 +261,20 @@
             .login-left h1 .accent { font-size: 26px; }
             .brand-mark { width: 110px; height: 110px; }
             .brand-mark span { font-size: 70px; }
-            .tab-header a { padding: 11px 16px; font-size: 12.5px; }
+            .tab-header a { padding: 13px 16px; font-size: 12.5px; min-height: 44px; }
+
+            /* Topnav: the flex-wrap layout at wider breakpoints packs the
+               menu, logo and button groups unpredictably at phone widths,
+               so stack them into clear rows instead. Matches welcome.blade.php. */
+            .topnav { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+            .topnav .logo { order: -1; justify-content: center; }
+            .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
+            .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
+            .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
+            .btn { min-height: 44px; }
+
+            /* Form fields: 16px avoids the iOS Safari auto-zoom-on-focus. */
+            .form-group input { font-size: 16px; }
         }
 
         /* ===== Account locked modal ===== */
@@ -282,6 +295,8 @@
             border-radius: 20px;
             max-width: 360px;
             width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
             padding: 32px 28px 28px;
             text-align: center;
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
@@ -367,16 +382,16 @@
     <nav class="topnav textured">
         <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
         <div class="menu">
-            <a href="{{ route('public.vr') }}">VR TOUR</a>
-            <a href="{{ route('public.rooms') }}">ROOMS</a>
             <a href="{{ route('home') }}">HOME</a>
-            <a href="{{ route('public.dorminfo') }}" class="pill">Dorm Info</a>
+            <a href="{{ route('public.rooms') }}">ROOMS</a>
+            <a href="{{ route('public.vr') }}">VR TOUR</a>
+            <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
         <div class="logo"><span class="mark"></span> NEST.PH</div>
         <div class="buttons">
-            <a href="{{ route('login.admin') }}" class="btn btn-white">Admin</a>
-            <a href="{{ route('public.apply') }}" class="btn btn-outline-white">Apply</a>
+            <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
+            <a href="{{ route('login.admin') }}" class="btn btn-outline-white">Admin</a>
         </div>
     </nav>
 

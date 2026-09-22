@@ -119,9 +119,22 @@
         .empty-state svg { width: 48px; height: 48px; margin-bottom: 14px; color: #8a9690; }
         .empty-state p { font-size: 14px; max-width: 420px; margin: 0 auto; line-height: 1.6; }
 
+        @media (max-width: 1024px) { .topnav { padding: 14px 24px; flex-wrap: wrap; } }
+
         @media (max-width: 640px) {
             .info-header { flex-direction: column; align-items: flex-start; }
             .doc-frame { height: 70vh; }
+
+            /* Topnav: the flex-wrap layout at wider breakpoints packs the
+               menu, logo and button groups unpredictably at phone widths,
+               so stack them into clear rows instead. Matches welcome.blade.php. */
+            .topnav { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+            .topnav .logo { order: -1; justify-content: center; }
+            .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
+            .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
+            .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
+            .btn { min-height: 44px; }
+            .btn-download { min-height: 44px; }
         }
 
         .listing-card{ background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,0.25); margin-bottom:24px; }
