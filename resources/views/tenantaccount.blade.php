@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - My Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and focus styles
@@ -77,14 +80,14 @@
   .pw-toggle:hover{ color:var(--green-dark); }
   .pw-toggle svg{ width:16px; height:16px; }
 
-  .field-error{ color:#b3261e; font-size:12px; margin-top:6px; display:none; }
+  .field-error{ color:#c0463d; font-size:12px; margin-top:6px; display:none; }
   .field-error.visible{ display:block; }
   .pw-hint{ font-size:11px; color:var(--text-light); margin-top:-10px; margin-bottom:20px; }
 
   .form-banner{ display:none; align-items:flex-start; gap:8px; padding:12px 14px; border-radius:8px; font-size:12.5px; margin-bottom:20px; line-height:1.5; }
   .form-banner.visible{ display:flex; }
   .form-banner.success{ background:#d9f2dd; color:#2f6f3c; }
-  .form-banner.error{ background:#f7d9d7; color:#a3372e; }
+  .form-banner.error{ background:#f7d9d7; color:#c0463d; }
 
   .pw-submit-btn{ background:var(--green-btn); color:#fff; border:none; border-radius:8px; padding:13px 0; width:100%; font-weight:700; font-size:13.5px; letter-spacing:0.03em; cursor:pointer; margin-top:4px; transition:background 0.15s ease; }
   .pw-submit-btn:hover:not(:disabled){ background:var(--green-btn-hover); }
@@ -122,13 +125,13 @@
         </div>
       </div>
 
-      <div class="tabs-row">
-        <div class="tab-pill active" data-panel="profilePanel">Profile</div>
-        <div class="tab-pill" data-panel="passwordPanel">Change Password</div>
+      <div class="tabs-row" role="tablist" aria-label="Account settings">
+        <div class="tab-pill active" role="tab" aria-selected="true" aria-controls="profilePanel" id="profileTab" data-panel="profilePanel" tabindex="0">Profile</div>
+        <div class="tab-pill" role="tab" aria-selected="false" aria-controls="passwordPanel" id="passwordTab" data-panel="passwordPanel" tabindex="0">Change Password</div>
       </div>
 
       {{-- ===== PROFILE TAB ===== --}}
-      <div class="tab-panel active" id="profilePanel">
+      <div class="tab-panel active" id="profilePanel" role="tabpanel" aria-labelledby="profileTab">
 
         <div class="request-edit-banner">
           <p>This information is view-only. <strong>Spotted something wrong, or need it updated?</strong> Submit a ticket and an admin will make the change for you.</p>
@@ -222,40 +225,40 @@
       </div>
 
       {{-- ===== CHANGE PASSWORD TAB ===== --}}
-      <div class="tab-panel" id="passwordPanel">
+      <div class="tab-panel" id="passwordPanel" role="tabpanel" aria-labelledby="passwordTab">
         <div class="settings-card">
           <h2>Change Password</h2>
           <p class="intro">Update the password you use to log in. Choose something you don't use anywhere else.</p>
 
-          <div class="form-banner" id="formBanner"></div>
+          <div class="form-banner" id="formBanner" role="status" aria-live="polite"></div>
 
           <form id="changePasswordForm" autocomplete="off">
             <div class="pw-form-group">
               <label for="currentPassword">Current Password</label>
               <div class="pw-input-wrap">
-                <input id="currentPassword" type="password" placeholder="Enter current password" autocomplete="current-password" required>
+                <input id="currentPassword" type="password" placeholder="Enter current password" autocomplete="current-password" required aria-describedby="currentPasswordError">
                 <button type="button" class="pw-toggle" data-target="currentPassword" aria-label="Show password"></button>
               </div>
-              <div class="field-error" id="currentPasswordError"></div>
+              <div class="field-error" id="currentPasswordError" role="alert"></div>
             </div>
 
             <div class="pw-form-group">
               <label for="newPassword">New Password</label>
               <div class="pw-input-wrap">
-                <input id="newPassword" type="password" placeholder="Enter new password" autocomplete="new-password" minlength="8" required>
+                <input id="newPassword" type="password" placeholder="Enter new password" autocomplete="new-password" minlength="8" required aria-describedby="newPasswordError">
                 <button type="button" class="pw-toggle" data-target="newPassword" aria-label="Show password"></button>
               </div>
-              <div class="field-error" id="newPasswordError"></div>
+              <div class="field-error" id="newPasswordError" role="alert"></div>
             </div>
             <div class="pw-hint">At least 8 characters.</div>
 
             <div class="pw-form-group">
               <label for="confirmPassword">Confirm New Password</label>
               <div class="pw-input-wrap">
-                <input id="confirmPassword" type="password" placeholder="Re-enter new password" autocomplete="new-password" minlength="8" required>
+                <input id="confirmPassword" type="password" placeholder="Re-enter new password" autocomplete="new-password" minlength="8" required aria-describedby="confirmPasswordError">
                 <button type="button" class="pw-toggle" data-target="confirmPassword" aria-label="Show password"></button>
               </div>
-              <div class="field-error" id="confirmPasswordError"></div>
+              <div class="field-error" id="confirmPasswordError" role="alert"></div>
             </div>
 
             <button type="submit" class="pw-submit-btn" id="submitBtn">
@@ -311,8 +314,9 @@
   // ===== Tabs (Profile / Change Password) =====
   document.querySelectorAll('.tab-pill').forEach(tab => {
     tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab-pill').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pill').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
       tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       const panel = document.getElementById(tab.dataset.panel);
       if (panel) panel.classList.add('active');
@@ -330,6 +334,7 @@
       const showing = input.type === 'text';
       input.type = showing ? 'password' : 'text';
       btn.innerHTML = showing ? EYE_OPEN : EYE_CLOSED;
+      btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
     });
   });
 

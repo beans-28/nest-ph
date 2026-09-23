@@ -10,6 +10,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
     <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
     <style>
+        :root {
+            --green-light: #a2d9a4;
+            --green-dark: #567357;
+            --green-darker: #197335;
+            --ink: #292420;
+            --cream: #dcd8d7;
+            --cream-light: #f2f4f8;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         /* The whole page is locked to the viewport — no page scrolling, so the
@@ -19,11 +27,22 @@
 
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
-            color: #292420;
+            color: var(--ink);
             background: linear-gradient(90deg, #4e7454 0%, #92db9f 100%);
             display: flex;
             flex-direction: column;
         }
+
+        a:focus-visible, button:focus-visible {
+            outline: 2px solid var(--green-darker);
+            outline-offset: 2px;
+        }
+        .topnav a:focus-visible, .topnav .buttons a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .btn-white:focus-visible { outline-color: var(--ink); }
+        .room-thumb:focus-visible { outline: 2px solid var(--green-light); outline-offset: 2px; }
 
         .textured { position: relative; overflow: hidden; }
         .textured .bg-texture {
@@ -34,7 +53,7 @@
         .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
 
         .topnav {
-            background: linear-gradient(90deg, #567357, #a2d9a4);
+            background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
             padding: 14px clamp(20px, 5vw, 64px);
             display: flex; align-items: center; gap: clamp(16px, 3vw, 40px);
             flex-shrink: 0;
@@ -50,20 +69,20 @@
             display: flex; align-items: center; gap: 6px; color: #fff; font-weight: 700;
             font-size: 19px; letter-spacing: 0.02em; white-space: nowrap;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 40px; padding: 0 18px; border: 2px solid #fff;
+            height: 44px; padding: 0 18px; border: 2px solid #fff;
             font-weight: 500; font-size: 13.5px; cursor: pointer;
             white-space: nowrap; text-decoration: none;
         }
-        .btn-white { background: #fff; color: #292420; }
+        .btn-white { background: #fff; color: var(--ink); }
         .btn-outline-white { background: transparent; color: #fff; }
 
         /* Title bar */
         .vr-titlebar {
-            background: linear-gradient(90deg, #ddd8d7, #f2f2f2);
+            background: linear-gradient(90deg, var(--cream), var(--cream-light));
             padding: 10px clamp(20px, 5vw, 64px);
             box-shadow: 0 4px 4px rgba(0,0,0,0.2), inset 0 4px 4px rgba(0,0,0,0.12);
             flex-shrink: 0;
@@ -106,7 +125,7 @@
             position: relative; flex: 0 0 132px; height: 76px; border-radius: 8px;
             overflow: hidden; cursor: pointer; scroll-snap-align: start;
             background: #3f4a3f; box-shadow: 0 3px 8px rgba(0,0,0,0.35);
-            border: 2px solid transparent;
+            border: 2px solid transparent; padding: 0; font-family: inherit;
             transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
             animation: thumbIn 0.4s ease backwards;
         }
@@ -147,7 +166,6 @@
             .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
             .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
             .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
-            .btn { min-height: 44px; }
         }
     </style>
 </head>
@@ -161,7 +179,7 @@
             <a href="{{ route('public.vr') }}">VR TOUR</a>
             <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
             <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
@@ -175,12 +193,12 @@
 
     <div class="viewer-shell">
         <div id="panorama"></div>
-        <div class="viewer-message" id="viewerMessage">Loading virtual tours…</div>
+        <div class="viewer-message" id="viewerMessage" aria-live="polite">Loading virtual tours…</div>
     </div>
 
     <div class="rooms-strip">
         <h2>Rooms</h2>
-        <div class="rooms-scroll" id="roomsScroll">
+        <div class="rooms-scroll" id="roomsScroll" aria-live="polite">
             <div class="strip-empty">Loading…</div>
         </div>
     </div>
@@ -266,11 +284,11 @@
         }
 
         roomsScroll.innerHTML = tours.map((room, i) => `
-            <div class="room-thumb" data-room="${room.id}" style="animation-delay:${i * 55}ms">
-                ${room.thumbnail_url ? `<img src="${room.thumbnail_url}" alt="Room ${escapeHtml(room.room_no)}">` : ''}
+            <button type="button" class="room-thumb" data-room="${room.id}" style="animation-delay:${i * 55}ms" aria-label="View Room ${escapeHtml(room.room_no)} tour, ${room.scene_count} view${room.scene_count === 1 ? '' : 's'}">
+                ${room.thumbnail_url ? `<img src="${room.thumbnail_url}" alt="" loading="lazy" decoding="async">` : ''}
                 <span class="label">${escapeHtml(room.room_no)}</span>
                 <span class="count">${room.scene_count} view${room.scene_count === 1 ? '' : 's'}</span>
-            </div>
+            </button>
         `).join('');
 
         roomsScroll.querySelectorAll('.room-thumb').forEach(thumb => {

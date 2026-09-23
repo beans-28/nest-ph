@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Admin Privileges</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -17,7 +20,7 @@
     --blue:#33629e; --blue-bg:#e3ecf7;
     --bg-page:#eef1ee; --card-bg:#ffffff;
     --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-body:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
      public/css/admin.css (linked above). This page's .topbar-icon and
@@ -119,15 +122,15 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Admin Privileges</h1>
       </div>
 
@@ -168,8 +171,8 @@
 
 <!-- ===== Add Admin Account modal ===== -->
 <div class="modal-overlay" id="addModal">
-  <div class="modal-box">
-    <div class="modal-head"><h2>Add Admin Account</h2></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="addModalTitle">
+    <div class="modal-head"><h2 id="addModalTitle">Add Admin Account</h2></div>
     <div class="modal-body">
       <div class="modal-error" id="addModalError"></div>
       <div class="fld"><label for="addName">Full Name</label><input type="text" id="addName"></div>
@@ -186,7 +189,7 @@
 
 <!-- ===== Manage Privileges modal ===== -->
 <div class="modal-overlay" id="privModal">
-  <div class="modal-box">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="privModalTitle">
     <div class="modal-head"><h2 id="privModalTitle">Manage Privileges</h2></div>
     <div class="modal-body">
       <div class="modal-error" id="privModalError"></div>
@@ -201,8 +204,8 @@
 
 <!-- ===== Temporary password reveal ===== -->
 <div class="modal-overlay" id="pwModal">
-  <div class="modal-box">
-    <div class="modal-head"><h2>Admin Account Created</h2></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="pwModalTitle">
+    <div class="modal-head"><h2 id="pwModalTitle">Admin Account Created</h2></div>
     <div class="password-box">
       <div id="pwEmail"></div>
       <div class="pw" id="pwValue"></div>
@@ -215,7 +218,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="admins-data">{!! json_encode($admins) !!}</script>
 <script type="application/json" id="privilege-options-data">{!! json_encode($privilegeOptions) !!}</script>
@@ -509,6 +512,20 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  });
 })();
 </script>
 </body>

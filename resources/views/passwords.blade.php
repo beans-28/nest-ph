@@ -9,16 +9,32 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --green-light: #a2d9a4;
+            --green-dark: #567357;
+            --green-darker: #197335;
+            --ink: #292420;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .page-wrap { overflow-x: hidden; }
 
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
-            color: #292420;
+            color: var(--ink);
             background: linear-gradient(180deg, #567357 0%, #59473f 100%);
             min-height: 100vh;
         }
+
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid var(--green-darker);
+            outline-offset: 2px;
+        }
+        .topnav a:focus-visible, .topnav .buttons a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .btn-white:focus-visible { outline-color: var(--ink); }
 
         /* Decorative leaf textures — same technique as homepage/login pages */
         .textured { position: relative; overflow: hidden; }
@@ -36,7 +52,7 @@
         .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
 
         .topnav {
-            background: linear-gradient(90deg, #567357, #a2d9a4);
+            background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
             padding: 14px clamp(20px, 5vw, 64px);
             display: flex;
             align-items: center;
@@ -66,15 +82,15 @@
             color: #fff; font-weight: 700; font-size: 19px;
             letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 40px; padding: 0 18px; border: 2px solid #fff;
+            height: 44px; padding: 0 18px; border: 2px solid #fff;
             font-weight: 500; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer;
             white-space: nowrap; text-decoration: none;
         }
-        .btn-white { background: #fff; color: #292420; }
+        .btn-white { background: #fff; color: var(--ink); }
         .btn-outline-white { background: transparent; color: #fff; }
 
         /* ===== PASSWORD RESET AREA — same skeleton as the login pages ===== */
@@ -161,7 +177,7 @@
             margin-bottom: 10px;
         }
         .login-right .intro {
-            color: #7a7a7a;
+            color: #5f5f5f;
             font-size: 13px;
             line-height: 1.6;
             margin-bottom: 26px;
@@ -252,6 +268,15 @@
             color: #292420;
         }
         .help-text a { color: #567357; text-decoration: none; cursor: pointer; }
+        .link-button {
+            background: none; border: none; padding: 0; margin: 0; font: inherit;
+            color: #567357; font-weight: 700; text-decoration: none; cursor: pointer;
+        }
+        .otp-fieldset { border: none; padding: 0; margin: 0; }
+        .visually-hidden {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+        }
 
         .field-error {
             color: #b3261e;
@@ -289,16 +314,16 @@
     <nav class="topnav textured">
         <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
         <div class="menu">
-            <a href="{{ route('public.vr') }}">VR TOUR</a>
-            <a href="{{ route('public.rooms') }}">ROOMS</a>
             <a href="{{ route('home') }}">HOME</a>
-            <a href="{{ route('public.dorminfo') }}" class="pill">Dorm Info</a>
+            <a href="{{ route('public.rooms') }}">ROOMS</a>
+            <a href="{{ route('public.vr') }}">VR TOUR</a>
+            <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
-            <a href="{{ route('login.admin') }}" class="btn btn-white">Admin</a>
-            <a href="{{ route('public.apply') }}" class="btn btn-outline-white">Apply</a>
+            <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
+            <a href="{{ route('login.admin') }}" class="btn btn-outline-white">Admin</a>
         </div>
     </nav>
 
@@ -323,7 +348,7 @@
                         <div class="form-group">
                             <label for="forgot_email">Email</label>
                             <input id="forgot_email" name="email" type="email" placeholder="you@example.com" required />
-                            <div class="field-error" id="emailError"></div>
+                            <div class="field-error" id="emailError" role="alert"></div>
                         </div>
                         <button type="submit" class="btn-login" id="sendCodeBtn">
                             <span class="spinner"></span>
@@ -336,19 +361,22 @@
                 <div class="step-card" id="step-code" data-step="2">
                     <h2>Verify Code</h2>
                     <p class="intro">We sent a code to <strong id="codeEmailDisplay">your email</strong>. Enter the 5-digit code below.</p>
-                    <div class="otp-row">
-                        <input type="text" inputmode="numeric" maxlength="1" class="otp-box" autocomplete="one-time-code">
-                        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
-                        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
-                        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
-                        <input type="text" inputmode="numeric" maxlength="1" class="otp-box">
-                    </div>
-                    <div class="field-error" id="codeError" style="margin-bottom: 16px;"></div>
+                    <fieldset class="otp-fieldset">
+                        <legend class="visually-hidden">5-digit verification code</legend>
+                        <div class="otp-row">
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-box" autocomplete="one-time-code" aria-label="Digit 1 of 5">
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-box" aria-label="Digit 2 of 5">
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-box" aria-label="Digit 3 of 5">
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-box" aria-label="Digit 4 of 5">
+                            <input type="text" inputmode="numeric" maxlength="1" class="otp-box" aria-label="Digit 5 of 5">
+                        </div>
+                    </fieldset>
+                    <div class="field-error" id="codeError" style="margin-bottom: 16px;" role="alert"></div>
                     <button type="button" class="btn-login" id="verifyCodeBtn">
                         <span class="spinner"></span>
                         <span class="btn-text">Verify Code</span>
                     </button>
-                    <p class="help-text">Haven't got the email yet? <a id="resendLink">Resend email</a></p>
+                    <p class="help-text">Haven't got the email yet? <button type="button" id="resendLink" class="link-button">Resend email</button></p>
                 </div>
 
                 {{-- STEP 3 — set the new password --}}
@@ -366,7 +394,7 @@
                             <label for="password_confirmation">Confirm Password</label>
                             <input id="password_confirmation" name="password_confirmation" type="password" placeholder="Confirm new password" required minlength="8" />
                         </div>
-                        <div class="field-error" id="passwordError" style="margin-bottom: 16px;"></div>
+                        <div class="field-error" id="passwordError" style="margin-bottom: 16px;" role="alert"></div>
                         <button type="submit" class="btn-login">
                             <span class="spinner"></span>
                             <span class="btn-text">Update Password</span>
@@ -375,12 +403,12 @@
                 </div>
 
                 {{-- STEP 4 — confirmation --}}
-                <div class="step-card" id="step-success" data-step="4">
-                    <svg class="success-badge" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div class="step-card" id="step-success" data-step="4" role="status">
+                    <svg class="success-badge" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M32 2 L37.5 7.5 L45 5 L47.5 12.5 L55 15 L52.5 22.5 L58 28 L52.5 33.5 L55 41 L47.5 43.5 L45 51 L37.5 48.5 L32 54 L26.5 48.5 L19 51 L16.5 43.5 L9 41 L11.5 33.5 L6 28 L11.5 22.5 L9 15 L16.5 12.5 L19 5 L26.5 7.5 Z" fill="#5ea86a"/>
                         <path d="M21 32 L28 39 L43 24" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                     </svg>
-                    <h2>Password Reset Successful</h2>
+                    <h2 id="successHeading" tabindex="-1">Password Reset Successful</h2>
                     <p class="intro">Congratulations! Your password has been changed. Click continue to log in.</p>
                     <a href="{{ request('from') === 'admin' ? route('login.admin') : route('login.tenant') }}" class="btn-login">Log In</a>
                 </div>
@@ -396,6 +424,9 @@
                 card.classList.remove('active');
             });
             document.querySelector('.step-card[data-step="' + step + '"]').classList.add('active');
+            if (step === 4) {
+                document.getElementById('successHeading').focus();
+            }
         }
 
         function postJson(url, payload) {

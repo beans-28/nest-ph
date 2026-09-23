@@ -9,7 +9,7 @@
     here anyway. Log Out stays available.
 --}}
 <aside class="sidebar restricted-lock" id="sidebar">
-  <div class="sidebar-logo"><span class="logo-mark"></span><span class="logo-text">NEST.PH</span></div>
+  <div class="sidebar-logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"><span class="logo-text">NEST.PH</span></div>
   <div class="lock-panel-body">
     <div class="lock-icon-circle">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>

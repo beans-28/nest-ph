@@ -5,19 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Activity Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --green-dark:#3f6b4a; --green-mid:#4f7c57; --green-accent:#2f6f3c;
     --bg-page:#eef1ee; --card-bg:#ffffff;
     --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   }
   *{box-sizing:border-box;}
   html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
 
   .topbar{ display:flex; align-items:center; gap:10px; background:linear-gradient(90deg, var(--green-mid), var(--green-dark)); padding:16px 32px; color:#eaf0ea; }
-  .topbar .logo-mark{ width:16px; height:16px; border:2px solid #eaf0ea; display:inline-block; position:relative; flex-shrink:0; }
-  .topbar .logo-mark::before, .topbar .logo-mark::after{ content:''; position:absolute; background:#eaf0ea; width:2px; height:12px; top:0; left:5px; }
+  .topbar .logo-img{ height:24px; width:auto; }
   .topbar .logo-text{ font-weight:700; font-size:15px; }
 
   .content{ max-width:1200px; margin:0 auto; padding:28px 32px 48px 32px; }
@@ -25,7 +27,7 @@
   .back-arrow{ width:34px; height:34px; border-radius:8px; background:var(--card-bg); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
   .page-head h1{ font-size:20px; font-weight:700; margin:0; color:var(--text-dark); }
 
-  .table-panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:8px 22px; }
+  .table-panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:8px 22px; overflow-x:auto; }
   table.activity-table{ width:100%; border-collapse:collapse; table-layout:fixed; }
   table.activity-table col.col-date{ width:160px; }
   table.activity-table col.col-type{ width:130px; }
@@ -50,12 +52,12 @@
 <body>
 
   <div class="topbar">
-    <span class="logo-mark"></span><span class="logo-text">NEST.PH</span>
+    <img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"><span class="logo-text">NEST.PH</span>
   </div>
 
   <div class="content">
     <div class="page-head">
-      <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+      <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
       <h1>Activity Log</h1>
     </div>
 
@@ -118,6 +120,12 @@
 <script>
   document.querySelectorAll('[data-href]').forEach(el => {
     el.addEventListener('click', () => { window.location.href = el.dataset.href; });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        window.location.href = el.dataset.href;
+      }
+    });
   });
 </script>
 </body>

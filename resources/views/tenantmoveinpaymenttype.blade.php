@@ -44,7 +44,7 @@
             display: flex; align-items: center; gap: 6px; color: #fff; font-weight: 700;
             font-size: 19px; letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
@@ -121,13 +121,6 @@
         }
         .btn-login:hover { background: #197335; }
 
-        .next-step-note {
-            background: #e2ede3; border: 1px solid #c5dbc7; border-radius: 8px;
-            padding: 12px 16px; font-size: 12.5px; color: #33513a; line-height: 1.6;
-            max-width: 440px; margin: 18px auto 0; display: none;
-        }
-        .next-step-note.visible { display: block; }
-
         @media (max-width: 1024px) {
             .login-grid { grid-template-columns: 1fr; padding: 20px 28px 32px; }
             .login-left { padding: 0 0 24px; }
@@ -153,7 +146,7 @@
             <a href="{{ route('home') }}">HOME</a>
             <a href="{{ route('public.dorminfo') }}" class="pill">Dorm Info</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
             <a href="{{ route('login.admin') }}" class="btn btn-white">Admin</a>
             <a href="{{ route('public.apply') }}" class="btn btn-outline-white">Apply</a>
@@ -208,14 +201,12 @@
     const fullBtn = document.getElementById('fullPaymentBtn');
     const partialBtn = document.getElementById('partialPaymentBtn');
     const continueWrap = document.getElementById('continueWrap');
-    const nextStepNote = document.getElementById('nextStepNote');
 
     function selectType(type, btn) {
         selectedType = type;
         [fullBtn, partialBtn].forEach(b => b.classList.remove('selected'));
         btn.classList.add('selected');
         continueWrap.classList.add('visible');
-        nextStepNote.classList.remove('visible');
     }
 
     fullBtn.addEventListener('click', () => selectType('full', fullBtn));

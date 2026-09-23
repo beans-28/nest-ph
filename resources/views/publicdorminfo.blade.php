@@ -8,15 +8,37 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --green-light: #a2d9a4;
+            --green-dark: #567357;
+            --green-darker: #197335;
+            --ink: #292420;
+            --cream: #dcd8d7;
+            --cream-light: #f2f4f8;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .page-wrap { overflow-x: hidden; }
 
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
-            color: #292420;
+            color: var(--ink);
             background: linear-gradient(180deg, #567357 0%, #59473f 100%);
             min-height: 100vh;
+        }
+
+        a:focus-visible, button:focus-visible {
+            outline: 2px solid var(--green-darker);
+            outline-offset: 2px;
+        }
+        .topnav a:focus-visible, .topnav .buttons a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .btn-white:focus-visible, .btn-download:focus-visible { outline-color: var(--ink); }
+        .visually-hidden {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
         }
 
         .textured { position: relative; overflow: hidden; }
@@ -28,7 +50,7 @@
         .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
 
         .topnav {
-            background: linear-gradient(90deg, #567357, #a2d9a4);
+            background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
             padding: 14px clamp(20px, 5vw, 64px);
             display: flex; align-items: center; gap: clamp(16px, 3vw, 40px);
             position: sticky; top: 0; z-index: 1000;
@@ -47,15 +69,15 @@
             display: flex; align-items: center; gap: 6px; color: #fff; font-weight: 700;
             font-size: 19px; letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 40px; padding: 0 18px; border: 2px solid #fff;
+            height: 44px; padding: 0 18px; border: 2px solid #fff;
             font-weight: 500; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer;
             white-space: nowrap; text-decoration: none;
         }
-        .btn-white { background: #fff; color: #292420; }
+        .btn-white { background: #fff; color: var(--ink); }
         .btn-outline-white { background: transparent; color: #fff; }
 
         /* ===== DORM INFO CONTENT ===== */
@@ -133,7 +155,6 @@
             .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
             .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
             .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
-            .btn { min-height: 44px; }
             .btn-download { min-height: 44px; }
         }
 
@@ -187,7 +208,7 @@
             <a href="{{ route('public.vr') }}">VR TOUR</a>
             <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
             <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
@@ -206,7 +227,7 @@
                 @if($isBirVerified)
                     <div class="listing-badge">
                         @if($birRegistrationImageUrl)
-                            <img src="{{ $birRegistrationImageUrl }}" alt="">
+                            <img src="{{ $birRegistrationImageUrl }}" alt="BIR registration certificate">
                         @else
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
                         @endif
@@ -243,7 +264,8 @@
                 <div class="reviews-summary">
                     <div class="reviews-score">
                         <div class="score-num">{{ number_format($averageRating, 1) }}</div>
-                        <div class="score-stars">{{ str_repeat('★', (int) round($averageRating)) }}{{ str_repeat('☆', 5 - (int) round($averageRating)) }}</div>
+                        <div class="score-stars" aria-hidden="true">{{ str_repeat('★', (int) round($averageRating)) }}{{ str_repeat('☆', 5 - (int) round($averageRating)) }}</div>
+                        <span class="visually-hidden">{{ number_format($averageRating, 1) }} out of 5 stars</span>
                         <div class="score-count">{{ $reviewCount }} {{ \Illuminate\Support\Str::plural('review', $reviewCount) }}</div>
                     </div>
                     <div class="reviews-breakdown">
@@ -267,7 +289,8 @@
                                 </span>
                                 <span class="review-item-date">{{ $review->created_at->format('M Y') }}</span>
                             </div>
-                            <div class="review-item-stars">{{ str_repeat('★', $review->rating) }}{{ str_repeat('☆', 5 - $review->rating) }}</div>
+                            <div class="review-item-stars" aria-hidden="true">{{ str_repeat('★', $review->rating) }}{{ str_repeat('☆', 5 - $review->rating) }}</div>
+                            <span class="visually-hidden">Rated {{ $review->rating }} out of 5 stars</span>
                             @if($review->comment)
                                 <div class="review-item-comment">{{ $review->comment }}</div>
                             @endif

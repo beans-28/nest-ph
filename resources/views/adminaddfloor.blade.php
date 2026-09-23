@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Vacancy Monitoring</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar/search, and
@@ -124,15 +127,15 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon avatar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Vacancy Monitoring</h1>
         <div class="page-head-tools">
           <div class="head-tool-btn"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg></div>
@@ -187,39 +190,39 @@
 
 <!-- ADD FLOOR MODAL (client-side grouping label only — becomes real once a room is saved under it) -->
 <div class="modal-overlay" id="addFloorModal">
-  <div class="modal-box">
-    <h3 class="modal-title">Add Floor</h3>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="addFloorModalTitle">
+    <h3 class="modal-title" id="addFloorModalTitle">Add Floor</h3>
     <p class="modal-sub">Name a new floor group. It's saved to the database as soon as you add the first room to it.</p>
-    <div class="modal-field"><label>Floor Label</label><input type="text" id="newFloorName" placeholder="e.g. 5"></div>
-    <p class="modal-error" id="floorModalError"></p>
+    <div class="modal-field"><label for="newFloorName">Floor Label</label><input type="text" id="newFloorName" placeholder="e.g. 5"></div>
+    <p class="modal-error" id="floorModalError" role="alert"></p>
     <div class="modal-actions">
-      <div class="modal-btn cancel" id="cancelAddFloor">Cancel</div>
-      <div class="modal-btn confirm" id="confirmAddFloor">Add Floor</div>
+      <button type="button" class="modal-btn cancel" id="cancelAddFloor">Cancel</button>
+      <button type="button" class="modal-btn confirm" id="confirmAddFloor">Add Floor</button>
     </div>
   </div>
 </div>
 
 <!-- ADD / EDIT ROOM MODAL -->
 <div class="modal-overlay" id="addRoomModal">
-  <div class="modal-box">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="roomModalTitle">
     <h3 class="modal-title" id="roomModalTitle">Add Room</h3>
     <p class="modal-sub" id="addRoomFloorLabel">Adding a room to Floor 1</p>
 
     <div class="modal-row">
-      <div class="modal-field"><label>Room No.</label><input type="text" id="newRoomNo" placeholder="e.g. A105"></div>
-      <div class="modal-field"><label>Floor</label><input type="text" id="newRoomFloor" placeholder="e.g. 1"></div>
+      <div class="modal-field"><label for="newRoomNo">Room No.</label><input type="text" id="newRoomNo" placeholder="e.g. A105"></div>
+      <div class="modal-field"><label for="newRoomFloor">Floor</label><input type="text" id="newRoomFloor" placeholder="e.g. 1"></div>
     </div>
     <div class="modal-row">
-      <div class="modal-field"><label>Room Type</label><input type="text" id="newRoomType" placeholder="e.g. Standard"></div>
-      <div class="modal-field"><label>Monthly Rate</label><input type="number" id="newRoomRate" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="modal-field"><label for="newRoomType">Room Type</label><input type="text" id="newRoomType" placeholder="e.g. Standard"></div>
+      <div class="modal-field"><label for="newRoomRate">Monthly Rate</label><input type="number" id="newRoomRate" min="0" step="0.01" placeholder="0.00"></div>
     </div>
-    <div class="modal-field"><label>Number of Beds</label><input type="number" id="newRoomBedCount" min="1" max="8" value="2"></div>
-    <div class="modal-field"><label>Bed Status</label><div class="bed-status-rows" id="bedStatusRows"></div></div>
+    <div class="modal-field"><label for="newRoomBedCount">Number of Beds</label><input type="number" id="newRoomBedCount" min="1" max="8" value="2"></div>
+    <div class="modal-field"><label id="bedStatusLabel">Bed Status</label><div class="bed-status-rows" id="bedStatusRows" role="group" aria-labelledby="bedStatusLabel"></div></div>
 
-    <p class="modal-error" id="roomModalError"></p>
+    <p class="modal-error" id="roomModalError" role="alert"></p>
     <div class="modal-actions">
-      <div class="modal-btn cancel" id="cancelAddRoom">Cancel</div>
-      <div class="modal-btn confirm" id="confirmAddRoom">Add Room</div>
+      <button type="button" class="modal-btn cancel" id="cancelAddRoom">Cancel</button>
+      <button type="button" class="modal-btn confirm" id="confirmAddRoom">Add Room</button>
     </div>
   </div>
 </div>
@@ -321,6 +324,9 @@
 
       const header = document.createElement('div');
       header.className = 'floor-header';
+      header.tabIndex = 0;
+      header.setAttribute('role', 'button');
+      header.setAttribute('aria-expanded', block.classList.contains('open') ? 'true' : 'false');
       header.innerHTML = `
         <div class="floor-header-left"><span>Floor ${group.label}</span></div>
         <div class="floor-header-right">
@@ -339,6 +345,10 @@
         if(e.target.closest('.floor-add-room-btn') || e.target.closest('.delete-floor-btn')) return;
         openFloorLabel = (normalizeFloorLabel(openFloorLabel) === normalizeFloorLabel(group.label)) ? null : normalizeFloorLabel(group.label);
         renderFloors();
+      });
+      header.addEventListener('keydown', (e) => {
+        if(e.target !== header) return;
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); header.click(); }
       });
 
       block.appendChild(header);
@@ -359,7 +369,7 @@
           let bedsHtml = '';
           room.beds.forEach(bed => {
             bedsHtml += `
-              <div class="bed-row" data-bed-id="${bed.id}">
+              <div class="bed-row" data-bed-id="${bed.id}" tabindex="0" role="button" aria-label="Bed ${bed.bed_label}, ${bed.status}. Activate to cycle status.">
                 <span class="bed-swatch ${bed.status}"></span>
                 <span class="bed-label">${bed.bed_label}</span>
               </div>
@@ -445,6 +455,9 @@
     });
 
     container.querySelectorAll('.bed-row').forEach(row => {
+      row.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); row.click(); }
+      });
       row.addEventListener('click', async () => {
         const bedId = parseInt(row.dataset.bedId);
         const bed = findBed(bedId);
@@ -686,6 +699,20 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  });
 })();
 </script>
 

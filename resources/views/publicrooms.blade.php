@@ -8,18 +8,36 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --green-light: #a2d9a4;
+            --green-dark: #567357;
+            --green-darker: #197335;
+            --ink: #292420;
+            --cream: #dcd8d7;
+            --cream-light: #f2f4f8;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .page-wrap { overflow-x: hidden; }
 
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
-            color: #292420;
+            color: var(--ink);
             background:
                 linear-gradient(160deg, #4e7454 15%, #3b4a3e 85%),
                 linear-gradient(100deg, #4e7454 0%, #92db9f 100%);
             min-height: 100vh;
         }
+
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid var(--green-darker);
+            outline-offset: 2px;
+        }
+        .topnav a:focus-visible, .topnav .buttons a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .btn-white:focus-visible { outline-color: var(--ink); }
 
         .textured { position: relative; overflow: hidden; }
         .textured .bg-texture {
@@ -30,7 +48,7 @@
         .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
 
         .topnav {
-            background: linear-gradient(90deg, #567357, #a2d9a4);
+            background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
             padding: 14px clamp(20px, 5vw, 64px);
             display: flex; align-items: center; gap: clamp(16px, 3vw, 40px);
             position: sticky; top: 0; z-index: 1000;
@@ -49,26 +67,26 @@
             display: flex; align-items: center; gap: 6px; color: #fff; font-weight: 700;
             font-size: 19px; letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 40px; padding: 0 18px; border: 2px solid #fff;
+            height: 44px; padding: 0 18px; border: 2px solid #fff;
             font-weight: 500; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer;
             white-space: nowrap; text-decoration: none;
         }
-        .btn-white { background: #fff; color: #292420; }
+        .btn-white { background: #fff; color: var(--ink); }
         .btn-outline-white { background: transparent; color: #fff; }
 
         /* ===== Header banner ===== */
         .rooms-header {
-            background: linear-gradient(90deg, #ddd8d7, #f2f2f2);
+            background: linear-gradient(90deg, var(--cream), var(--cream-light));
             padding: clamp(28px, 5vw, 40px) clamp(20px, 6vw, 64px) clamp(32px, 5vw, 44px);
             box-shadow: 0 4px 4px rgba(0,0,0,0.15), inset 0 4px 4px rgba(0,0,0,0.1);
             position: relative;
         }
         .back-button {
-            background: none; border: none; color: #20bd72; font-size: 26px;
+            background: none; border: none; color: var(--green-darker); font-size: 26px;
             cursor: pointer; line-height: 1; padding: 0; margin-bottom: 16px;
         }
         .rooms-header-text { text-align: center; }
@@ -86,6 +104,7 @@
         .legend-dot.available { background: radial-gradient(circle, #ffeeef 0%, #00d444 100%); }
         .legend-dot.reserved { background: radial-gradient(circle, #ffeeef 0%, #a165b3 100%); }
         .legend-dot.occupied { background: radial-gradient(circle, #ffeeef 0%, #e24149 100%); }
+        .legend-dot.maintenance { background: radial-gradient(circle, #ffeeef 0%, #d4c130 100%); }
 
         /* ===== Room/bed status grid ===== */
         .status-section {
@@ -142,6 +161,7 @@
             position: absolute; top: 12px; right: 12px; width: 30px; height: 30px;
             border-radius: 50%; background: rgba(0,0,0,0.25); display: flex; align-items: center;
             justify-content: center; cursor: pointer; transition: background 0.15s;
+            border: none; padding: 0;
         }
         .listing-favorite:hover { background: rgba(0,0,0,0.4); }
         .listing-favorite svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; }
@@ -198,7 +218,6 @@
             .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
             .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
             .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
-            .btn { min-height: 44px; }
         }
 
         /* Tap targets on room listing cards were under the ~44px touch
@@ -243,7 +262,7 @@
             <a href="{{ route('public.vr') }}">VR TOUR</a>
             <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
             <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
@@ -262,12 +281,13 @@
                     <div class="legend-item"><span class="legend-dot available"></span> Available</div>
                     <div class="legend-item"><span class="legend-dot reserved"></span> Reserved</div>
                     <div class="legend-item"><span class="legend-dot occupied"></span> Occupied</div>
+                    <div class="legend-item"><span class="legend-dot maintenance"></span> Maintenance</div>
                 </div>
             </div>
         </div>
 
         <div class="status-section">
-            <div class="status-grid" id="statusGrid">
+            <div class="status-grid" id="statusGrid" aria-live="polite">
                 <div class="empty-note">Loading rooms…</div>
             </div>
         </div>
@@ -277,7 +297,7 @@
         </div>
 
         <div class="listing-section">
-            <div class="listing-grid" id="listingGrid">
+            <div class="listing-grid" id="listingGrid" aria-live="polite">
                 <div class="no-rooms">Loading listings…</div>
             </div>
         </div>
@@ -352,7 +372,7 @@
                     .join('');
 
                 const photoHtml = room.photo_url
-                    ? `<img src="${room.photo_url}" class="listing-photo" alt="Room ${escapeHtml(room.room_no)}">`
+                    ? `<img src="${room.photo_url}" class="listing-photo" alt="Room ${escapeHtml(room.room_no)}" loading="lazy" decoding="async">`
                     : `<div class="listing-photo"></div>`;
 
                 const tourButton = room.has_vr_tour
@@ -362,9 +382,9 @@
                 return `
                     <div class="listing-card">
                         ${photoHtml}
-                        <div class="listing-favorite" onclick="this.classList.toggle('active')">
+                        <button type="button" class="listing-favorite" aria-pressed="false" aria-label="Save Room ${escapeHtml(room.room_no)} to favorites" onclick="this.classList.toggle('active'); this.setAttribute('aria-pressed', this.classList.contains('active'))">
                             <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4 2.2C10.5 6.2 12 5 14 5c3.5 0 5 3.5 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
-                        </div>
+                        </button>
                         <div class="listing-body">
                             <div class="listing-room-label">Room ${escapeHtml(room.room_no)}</div>
                             <div class="listing-price">${typeLabel} - ${formatPrice(room.price_per_bed)}/mo</div>

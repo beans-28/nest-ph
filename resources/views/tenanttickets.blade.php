@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Tickets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and focus styles
@@ -117,6 +120,13 @@
   .lightbox{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:90; align-items:center; justify-content:center; padding:30px; }
   .lightbox.open{ display:flex; }
   .lightbox img{ max-width:100%; max-height:100%; border-radius:8px; }
+
+  @media (max-width: 700px){
+    .content{ padding:20px 18px 40px 18px; }
+    .page-head{ flex-wrap:wrap; }
+    .new-ticket-btn{ width:100%; justify-content:center; order:3; }
+    .tc-head{ flex-wrap:wrap; }
+  }
 </style>
 </head>
 <body>
@@ -153,9 +163,9 @@
 </div>
 
 <div class="modal-overlay" id="newTicketModal">
-  <div class="modal-box">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="newTicketModalTitle">
     <div id="formState">
-      <h2>Add New Ticket</h2>
+      <h2 id="newTicketModalTitle">Add New Ticket</h2>
       <div class="modal-error" id="formError"></div>
 
       <div class="fld">
@@ -186,7 +196,7 @@
       <div class="fld">
         <label>Photos (optional)</label>
         <div class="photo-grid" id="photoGrid"></div>
-        <div class="photo-hint" id="photoHint">Up to {{ $maxAttachments }} photos, {{ $maxAttachments }} max, 5MB each.</div>
+        <div class="photo-hint" id="photoHint">Up to {{ $maxAttachments }} photos, 5MB max each.</div>
         <input type="file" id="photoInput" accept=".jpg,.jpeg,.png,.webp" multiple style="display:none;">
       </div>
 
@@ -208,9 +218,9 @@
   </div>
 </div>
 
-<div class="lightbox" id="lightbox"><img id="lightboxImg" alt=""></div>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Ticket attachment preview"><img id="lightboxImg" alt="Ticket attachment, full size"></div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="tickets-data">{!! json_encode($tickets) !!}</script>
 
@@ -380,7 +390,7 @@
 
     $('photoHint').textContent = selectedFiles.length >= MAX_ATTACHMENTS
       ? `Maximum of ${MAX_ATTACHMENTS} photos reached.`
-      : `Up to ${MAX_ATTACHMENTS} photos, ${MAX_ATTACHMENTS}MB max, 5MB each.`.replace(`${MAX_ATTACHMENTS}MB max`, '5MB max each');
+      : `Up to ${MAX_ATTACHMENTS} photos, 5MB max each.`;
   }
 
   $('photoInput').addEventListener('change', () => {
@@ -464,6 +474,12 @@
   });
 
   $('successDoneBtn').addEventListener('click', () => $('newTicketModal').classList.remove('open'));
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key !== 'Escape') return;
+    if($('lightbox').classList.contains('open')) $('lightbox').classList.remove('open');
+    else if($('newTicketModal').classList.contains('open')) $('newTicketModal').classList.remove('open');
+  });
 
   renderList();
 })();

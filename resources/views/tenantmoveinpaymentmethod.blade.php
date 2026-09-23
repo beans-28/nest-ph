@@ -44,7 +44,7 @@
             display: flex; align-items: center; gap: 6px; color: #fff; font-weight: 700;
             font-size: 19px; letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
@@ -148,7 +148,7 @@
             <a href="{{ route('home') }}">HOME</a>
             <a href="{{ route('public.dorminfo') }}" class="pill">Dorm Info</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
             <a href="{{ route('login.admin') }}" class="btn btn-white">Admin</a>
             <a href="{{ route('public.apply') }}" class="btn btn-outline-white">Apply</a>

@@ -5,13 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Account Closed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --green-dark:#3f6b4a; --green-darker:#345a3e;
     --green-accent:#3f6b4a; --green-btn:#3f6b4a; --green-btn-hover:#2f5439;
     --bg-page:#f4f6f4; --card-bg:#ffffff;
     --text-dark:#1f2a22; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e9e4;
-    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   }
   *{box-sizing:border-box;}
   html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
@@ -22,8 +25,7 @@
     padding:16px 32px;
   }
   .topbar-logo{ display:flex; align-items:center; gap:8px; font-weight:700; font-size:16px; color:#fff; }
-  .topbar-logo .logo-mark{ width:16px; height:16px; border:2px solid #fff; display:inline-block; position:relative; }
-  .topbar-logo .logo-mark::before, .topbar-logo .logo-mark::after{ content:''; position:absolute; background:#fff; width:2px; height:12px; top:0; left:5px; }
+  .topbar-logo .logo-img{ height:24px; width:auto; }
   .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:14px; }
   .topbar-username{ color:#fff; font-size:13.5px; font-weight:600; }
   .logout-link{ background:rgba(255,255,255,0.14); color:#fff; border:1px solid rgba(255,255,255,0.3); padding:8px 16px; border-radius:7px; font-size:12.5px; font-weight:600; cursor:pointer; }
@@ -72,10 +74,11 @@
   .review-modal{ background:#fff; border-radius:10px; padding:28px; width:100%; max-width:480px; box-shadow:0 12px 32px rgba(0,0,0,0.2); }
   .review-modal h2{ margin:0 0 4px; font-size:20px; color:var(--text-dark); }
   .review-modal-sub{ margin:0 0 18px; font-size:13px; color:var(--text-mid); }
-  .review-modal-error{ display:none; background:#f7d9d7; color:#a3372e; font-size:12.5px; padding:8px 12px; border-radius:6px; margin-bottom:14px; }
+  .review-modal-error{ display:none; background:#f7d9d7; color:#c0463d; font-size:12.5px; padding:8px 12px; border-radius:6px; margin-bottom:14px; }
   .review-modal-error.visible{ display:block; }
   .star-picker{ display:flex; gap:6px; margin-bottom:18px; }
-  .star-btn{ background:none; border:none; font-size:32px; line-height:1; color:#d8d8d8; cursor:pointer; padding:0; }
+  .star-btn{ background:none; border:none; line-height:1; color:#d8d8d8; cursor:pointer; padding:2px; }
+  .star-btn svg{ width:28px; height:28px; display:block; }
   .star-btn.filled{ color:#f5b301; }
   .review-modal textarea{ width:100%; min-height:90px; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13px; font-family:inherit; resize:vertical; margin-bottom:18px; }
   .review-modal-actions{ display:flex; justify-content:flex-end; gap:10px; }
@@ -84,7 +87,7 @@
 <body>
 
   <div class="topbar">
-    <div class="topbar-logo"><span class="logo-mark"></span><span>NEST.PH</span></div>
+    <div class="topbar-logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"><span>NEST.PH</span></div>
     <div class="topbar-right">
       <span class="topbar-username">{{ $tenant->full_name ?? 'Tenant' }}</span>
       <button class="logout-link" id="logoutBtn">Log Out</button>
@@ -156,18 +159,18 @@
 
   @if(! $tenant->review)
     <div class="review-modal-overlay" id="reviewModalOverlay">
-      <div class="review-modal">
-        <h2>Leave a Review</h2>
+      <div class="review-modal" role="dialog" aria-modal="true" aria-labelledby="reviewModalTitle">
+        <h2 id="reviewModalTitle">Leave a Review</h2>
         <p class="review-modal-sub">Share your experience to help future tenants.</p>
 
-        <div class="review-modal-error" id="reviewModalError"></div>
+        <div class="review-modal-error" id="reviewModalError" role="alert"></div>
 
-        <div class="star-picker" id="starPicker">
-          <button type="button" class="star-btn" data-value="1">&#9733;</button>
-          <button type="button" class="star-btn" data-value="2">&#9733;</button>
-          <button type="button" class="star-btn" data-value="3">&#9733;</button>
-          <button type="button" class="star-btn" data-value="4">&#9733;</button>
-          <button type="button" class="star-btn" data-value="5">&#9733;</button>
+        <div class="star-picker" id="starPicker" role="radiogroup" aria-label="Star rating">
+          @for ($i = 1; $i <= 5; $i++)
+            <button type="button" class="star-btn" data-value="{{ $i }}" role="radio" aria-checked="false" aria-label="{{ $i }} star{{ $i > 1 ? 's' : '' }}">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.06 6.6.7-4.9 4.55 1.28 6.55L12 16.9l-5.88 3.46 1.28-6.55L2.5 9.26l6.6-.7z"/></svg>
+            </button>
+          @endfor
         </div>
 
         <textarea id="reviewComment" maxlength="1000" placeholder="Share details about your stay, the things you liked, and areas for improvement..."></textarea>
@@ -208,7 +211,9 @@
   function setRating(value){
     selectedRating = value;
     starButtons.forEach(btn => {
-      btn.classList.toggle('filled', Number(btn.dataset.value) <= value);
+      const filled = Number(btn.dataset.value) <= value;
+      btn.classList.toggle('filled', filled);
+      btn.setAttribute('aria-checked', filled ? 'true' : 'false');
     });
   }
 
@@ -224,6 +229,9 @@
   });
 
   cancelBtn.addEventListener('click', () => overlay.classList.remove('open'));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) overlay.classList.remove('open');
+  });
 
   submitReviewBtn.addEventListener('click', async function(){
     errorEl.classList.remove('visible');

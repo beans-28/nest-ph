@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Billing and Payments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar (normal + restricted-lock),
@@ -207,6 +210,24 @@
   .blacklist-subtext{ color:rgba(255,255,255,0.9); font-size:13.5px; line-height:1.7; margin:0 auto 26px auto; max-width:480px; }
   .blacklist-status-btn{ background:#fff; color:var(--green-darker); border:none; border-radius:8px; padding:13px 30px; font-size:13px; font-weight:700; letter-spacing:0.3px; cursor:pointer; text-decoration:none; display:inline-block; }
   .blacklist-status-btn:hover{ background:#f0f0f0; }
+
+  @media (max-width: 980px){
+    .content{ padding:20px 18px 40px 18px; }
+    .top-grid{ grid-template-columns:1fr 1fr; }
+    .reminder-card{ grid-column:1 / -1; }
+    .method-top-grid{ grid-template-columns:1fr; }
+    .info-grid{ grid-template-columns:repeat(2, 1fr); }
+    .proof-grid{ grid-template-columns:1fr 1fr; }
+    .qr-panel{ grid-column:1 / -1; }
+    table.billing-table{ display:block; overflow-x:auto; white-space:nowrap; }
+  }
+  @media (max-width: 640px){
+    .top-grid{ grid-template-columns:1fr; }
+    .info-grid{ grid-template-columns:1fr; }
+    .proof-grid{ grid-template-columns:1fr; }
+    .secure-bar{ flex-wrap:wrap; }
+    .secure-bar .help{ margin-left:0; text-align:left; }
+  }
 </style>
 </head>
 <body>
@@ -430,11 +451,11 @@
 
           <div class="proof-card">
             <div class="proof-card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Proof of Payment</div>
-            <div class="proof-field"><label>Reference / Transaction ID <span class="req">*</span></label><input type="text" id="pfReference" placeholder="1234 5678 9012 3456"></div>
-            <div class="proof-field"><label>Date of Payment <span class="req">*</span></label><input type="date" id="pfDate"></div>
-            <div class="proof-field"><label>Time of Payment <span class="req">*</span></label><input type="time" id="pfTime"></div>
-            <div class="proof-field"><label>Amount Paid <span class="req">*</span></label><input type="number" id="pfAmount" step="0.01" min="0.01"></div>
-            <div class="proof-field"><label>Notes (optional)</label><input type="text" id="pfNotes" placeholder="Add any additional information…"></div>
+            <div class="proof-field"><label for="pfReference">Reference / Transaction ID <span class="req">*</span></label><input type="text" id="pfReference" placeholder="1234 5678 9012 3456" required></div>
+            <div class="proof-field"><label for="pfDate">Date of Payment <span class="req">*</span></label><input type="date" id="pfDate" required></div>
+            <div class="proof-field"><label for="pfTime">Time of Payment <span class="req">*</span></label><input type="time" id="pfTime" required></div>
+            <div class="proof-field"><label for="pfAmount">Amount Paid <span class="req">*</span></label><input type="number" id="pfAmount" step="0.01" min="0.01" required></div>
+            <div class="proof-field"><label for="pfNotes">Notes (optional)</label><input type="text" id="pfNotes" placeholder="Add any additional information…"></div>
           </div>
 
           <div class="qr-panel" id="qrPanel">
@@ -461,8 +482,8 @@
 </div>
 
 <div class="modal-overlay" id="proofsModal">
-  <div class="modal-box">
-    <h3>Payment Proofs</h3>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="proofsModalTitle">
+    <h3 id="proofsModalTitle">Payment Proofs</h3>
     <div id="proofsModalBody"><div class="empty-note">Loading…</div></div>
     <button class="modal-close-btn" id="proofsModalClose">Close</button>
   </div>
@@ -907,6 +928,11 @@
   document.getElementById('proofsModalClose').addEventListener('click', () => {
     document.getElementById('proofsModal').classList.remove('open');
   });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && document.getElementById('proofsModal').classList.contains('open')){
+      document.getElementById('proofsModal').classList.remove('open');
+    }
+  });
 
   loadEverything();
   loadPenalties();
@@ -928,7 +954,7 @@
 })();
 </script>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 </body>
 </html>

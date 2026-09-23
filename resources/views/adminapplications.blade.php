@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Review Applications</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -16,7 +19,7 @@
     --purple:#7a4fc9; --purple-bg:#e9defa;
     --bg-page:#eef1ee; --card-bg:#ffffff;
     --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-body:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
      public/css/admin.css (linked above). Kept here: :root (this page adds
@@ -29,7 +32,7 @@
 
   .filters{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
   .filters .search-input{ border:1px solid var(--border); border-radius:20px; padding:7px 16px; font-size:12px; font-family:var(--font-body); color:var(--text-dark); min-width:220px; }
-  .filter-chip{ border:1px solid var(--border); background:#fff; border-radius:20px; padding:7px 16px; font-size:12px; font-weight:600; color:var(--text-mid); cursor:pointer; }
+  .filter-chip{ border:1px solid var(--border); background:#fff; border-radius:20px; padding:7px 16px; font-size:12px; font-family:inherit; font-weight:600; color:var(--text-mid); cursor:pointer; }
   .filter-chip.active{ background:var(--status-vacant-bg); border-color:var(--status-vacant); color:var(--green-accent); }
 
   .app-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:16px; }
@@ -44,6 +47,7 @@
   .badge.re_application_requested{ background:#e3ecf7; color:#33629e; }
   .badge.cancelled{ background:#f0f1f0; color:var(--text-light); }
   .returning-flag{ display:inline-flex; align-items:center; gap:5px; background:var(--purple-bg); color:var(--purple); font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:20px; margin-bottom:10px; }
+  .returning-flag svg{ width:11px; height:11px; }
   .ac-meta{ font-size:11.5px; color:var(--text-mid); line-height:1.7; margin-bottom:4px; }
   .ac-meta b{ color:var(--text-dark); }
   .empty{ color:var(--text-light); font-size:13px; font-style:italic; padding:30px; text-align:center; grid-column:1/-1; }
@@ -108,25 +112,25 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Review Applications</h1>
       </div>
 
-      <div class="filters" id="filters">
+      <div class="filters" id="filters" role="tablist" aria-label="Filter applications">
         <input type="text" class="search-input" id="searchInput" placeholder="Search applicant or room">
-        <div class="filter-chip active" data-filter="pending">Pending Review</div>
-        <div class="filter-chip" data-filter="approved">Approved</div>
-        <div class="filter-chip" data-filter="rejected">Rejected</div>
-        <div class="filter-chip" data-filter="re_application_requested">Re-application Requested</div>
-        <div class="filter-chip" data-filter="all">All</div>
+        <button type="button" class="filter-chip active" role="tab" aria-selected="true" data-filter="pending">Pending Review</button>
+        <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="approved">Approved</button>
+        <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="rejected">Rejected</button>
+        <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="re_application_requested">Re-application Requested</button>
+        <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="all">All</button>
       </div>
 
       <div class="app-grid" id="appGrid"></div>
@@ -136,7 +140,7 @@
 
 <div class="overlay" id="overlay"></div>
 
-<div class="drawer" id="drawer">
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
   <div class="drawer-head">
     <h2 id="drawerTitle">Application</h2>
     <button class="drawer-close" id="drawerClose">&times;</button>
@@ -144,7 +148,7 @@
   <div class="drawer-body" id="drawerBody"></div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="applications-data">{!! json_encode($applications) !!}</script>
 
@@ -221,8 +225,8 @@
     }
 
     $('appGrid').innerHTML = list.map(a => `
-      <div class="app-card" data-open="${a.id}">
-        ${a.returning_tenant ? '<div class="returning-flag">★ Returning tenant</div>' : ''}
+      <div class="app-card" data-open="${a.id}" tabindex="0" role="button" aria-label="Open application from ${esc(a.full_name)}">
+        ${a.returning_tenant ? '<div class="returning-flag"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.06 6.6.7-4.9 4.55 1.28 6.55L12 16.9l-5.88 3.46 1.28-6.55L2.5 9.26l6.6-.7z"/></svg>Returning tenant</div>' : ''}
         <div class="ac-top">
           <div>
             <div class="ac-name">${esc(a.full_name)}</div>
@@ -236,6 +240,9 @@
 
     $('appGrid').querySelectorAll('[data-open]').forEach(card => {
       card.addEventListener('click', () => openDrawer(Number(card.dataset.open)));
+      card.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openDrawer(Number(card.dataset.open)); }
+      });
     });
   }
 
@@ -276,7 +283,7 @@
         </div>
 
         <div class="decision-box" id="rejectBox">
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-mid);display:block;margin-bottom:8px;">Rejection Reason (sent to applicant)</label>
+          <label for="rejectReason" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-mid);display:block;margin-bottom:8px;">Rejection Reason (sent to applicant)</label>
           <textarea id="rejectReason" placeholder="Explain why this application is being rejected..."></textarea>
           <div class="decision-actions">
             <button class="btn warn" id="confirmRejectBtn">Confirm Rejection</button>
@@ -285,7 +292,7 @@
         </div>
 
         <div class="decision-box" id="reapplyBox">
-          <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-mid);display:block;margin-bottom:8px;">Instructions for Re-application (sent to applicant)</label>
+          <label for="reapplyNote" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--text-mid);display:block;margin-bottom:8px;">Instructions for Re-application (sent to applicant)</label>
           <textarea id="reapplyNote" placeholder="Explain what needs to change before they reapply..."></textarea>
           <div class="decision-actions">
             <button class="btn info" id="confirmReapplyBtn">Confirm Request</button>
@@ -461,7 +468,11 @@
   $('filters').querySelectorAll('[data-filter]').forEach(chip => {
     chip.addEventListener('click', () => {
       filter = chip.dataset.filter;
-      $('filters').querySelectorAll('[data-filter]').forEach(c => c.classList.toggle('active', c === chip));
+      $('filters').querySelectorAll('[data-filter]').forEach(c => {
+        const active = c === chip;
+        c.classList.toggle('active', active);
+        c.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
       renderGrid();
     });
   });
@@ -493,6 +504,21 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const drawer = document.getElementById('drawer');
+    if (drawer && drawer.classList.contains('open')) document.getElementById('drawerClose').click();
+  });
 })();
 </script>
 

@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Delinquency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -17,7 +20,7 @@
     --blue:#33629e; --blue-bg:#e3ecf7;
     --bg-page:#eef1ee; --card-bg:#ffffff;
     --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-body:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
      public/css/admin.css (linked above). Kept here: :root (this page adds
@@ -44,7 +47,7 @@
 
   .section-title{ font-size:17px; font-weight:700; color:var(--green-accent); margin:0 0 14px 0; }
   .stage-row{ display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:26px; }
-  .stage-card{ background:var(--card-bg); border:1px solid #d7d7d7; border-bottom:4px solid; border-radius:10px; box-shadow:0 0 4px rgba(0,0,0,.1); padding:16px 14px; text-align:center; }
+  .stage-card{ background:var(--card-bg); border:1px solid var(--border); border-bottom:4px solid; border-radius:10px; padding:16px 14px; text-align:center; }
   .stage-card .stage-badge{ width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 8px auto; font-size:12px; font-weight:700; }
   .stage-card .stage-name{ font-size:13px; font-weight:700; margin-bottom:2px; }
   .stage-card .stage-no{ font-size:10.5px; color:var(--text-light); margin-bottom:10px; text-transform:uppercase; letter-spacing:.4px; }
@@ -70,7 +73,7 @@
   .stage-pill{ font-weight:700; font-size:12px; padding:4px 10px; border-radius:20px; display:inline-block; white-space:nowrap; }
   .balance-cell{ font-weight:700; }
   .days-cell{ font-weight:700; }
-  .edit-btn{ border:1px solid #635f5f; background:#fff; border-radius:5px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .edit-btn{ border:1px solid var(--border); background:#fff; color:var(--text-mid); border-radius:5px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .edit-btn:hover{ background:#f5f6f5; }
   .empty-row td{ text-align:center; color:var(--text-light); font-style:italic; padding:34px; }
 
@@ -143,8 +146,12 @@
   .testing-tools-toggle:hover{ color:#000; }
   .testing-tools-toggle svg{ width:13px; height:13px; transition:transform .2s ease; flex-shrink:0; }
   .testing-tools-toggle.open svg{ transform:rotate(90deg); }
-  .testing-tools-panel{ display:none; }
+  .testing-tools-panel{ display:none; padding:16px; }
   .testing-tools-panel.open{ display:block; }
+  .testing-tools-row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px; }
+  .testing-tools-select{ padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:var(--font-body); color:var(--text-dark); background:#fff; min-width:260px; }
+  .testing-tools-stage-label{ font-size:13px; color:var(--text-mid); }
+  .testing-tools-actions{ display:flex; gap:8px; flex-wrap:wrap; }
 
   @media (max-width: 1100px){ .stage-row{ grid-template-columns:repeat(3,1fr); } }
   @media (max-width: 640px){ .stage-row{ grid-template-columns:repeat(2,1fr); } }
@@ -158,15 +165,15 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Delinquency</h1>
       </div>
 
@@ -244,14 +251,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         <span>Testing Tools</span>
       </button>
-      <div class="table-panel testing-tools-panel" id="testingToolsPanel" style="padding:16px;">
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
-          <select id="testTenantSelect" style="padding:8px 10px;border:1px solid #ddd;border-radius:6px;min-width:260px;">
+      <div class="table-panel testing-tools-panel" id="testingToolsPanel">
+        <div class="testing-tools-row">
+          <select id="testTenantSelect" class="testing-tools-select">
             <option value="">Loading tenants...</option>
           </select>
-          <span id="testTenantStage" style="font-size:13px;color:#666;"></span>
+          <span id="testTenantStage" class="testing-tools-stage-label"></span>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="testing-tools-actions">
           <button type="button" class="modal-btn cancel" data-test-stage="0">Reset (Stage 0)</button>
           <button type="button" class="modal-btn confirm" data-test-stage="1">Stage 1</button>
           <button type="button" class="modal-btn confirm" data-test-stage="2">Stage 2</button>
@@ -268,7 +275,7 @@
 </div>
 
 <div class="overlay" id="overlay"></div>
-<div class="modal" id="overrideModal">
+<div class="modal" id="overrideModal" role="dialog" aria-modal="true" aria-labelledby="modalTenantName">
   <h2 id="modalTenantName">Override Escalation</h2>
   <div class="modal-sub" id="modalTenantStage"></div>
 
@@ -299,7 +306,7 @@
   </div>
 </div>
 
-<div class="modal history-modal" id="historyModal">
+<div class="modal history-modal" id="historyModal" role="dialog" aria-modal="true" aria-labelledby="historyTenantName">
   <h2 id="historyTenantName">Escalation History</h2>
   <div class="modal-sub" id="historyTenantStage"></div>
   <div class="history-tenant-flags" id="historyFlags"></div>
@@ -325,7 +332,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="accounts-data">{!! json_encode($accounts) !!}</script>
 
@@ -799,6 +806,23 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const overrideModal = document.getElementById('overrideModal');
+    const historyModal = document.getElementById('historyModal');
+    if (overrideModal && overrideModal.classList.contains('open')) document.getElementById('modalCancel').click();
+    else if (historyModal && historyModal.classList.contains('open')) document.getElementById('historyCloseBtn').click();
+  });
 })();
 </script>
 

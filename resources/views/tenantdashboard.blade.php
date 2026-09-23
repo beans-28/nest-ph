@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Tenant Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and focus styles
@@ -26,11 +29,21 @@
   .stat-icon{ width:52px; height:52px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .stat-icon svg{ width:22px; height:22px; }
   .stat-icon.green{ background:#d9f2dd; color:var(--green-dark); }
-  .stat-icon.red{ background:#f7d9d7; color:#c0463d; }
-  .stat-icon.purple{ background:#e9defa; color:#7a4fc9; }
+  .stat-icon.attention{ background:#f7d9d7; color:#c0463d; }
+  .stat-icon.neutral{ background:#eef1ee; color:var(--text-mid); }
   .stat-label{ font-size:10.5px; font-weight:700; letter-spacing:0.4px; text-transform:uppercase; color:var(--text-light); margin-bottom:3px; }
   .stat-value{ font-size:20px; font-weight:800; color:var(--text-dark); }
+  .stat-card.emphasis .stat-value{ font-size:23px; color:var(--green-darker); }
   .stat-sub{ font-size:11px; color:var(--text-light); margin-top:2px; }
+
+  @media (max-width: 900px){
+    .content{ padding:20px 18px 40px 18px; }
+    .stats-row{ grid-template-columns:repeat(2, 1fr); }
+    .dash-grid{ grid-template-columns:1fr; }
+  }
+  @media (max-width: 520px){
+    .stats-row{ grid-template-columns:1fr; }
+  }
 
   /* Compact heads-up strip -- replaces the old wide illustrated banner.
      Same message, a fraction of the vertical space, and sits right under
@@ -84,8 +97,8 @@
       </div>
 
       <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+        <div class="stat-card emphasis" role="group" aria-label="Balance due">
+          <div class="stat-icon {{ ($daysUntilDue !== null && $daysUntilDue < 0) ? 'attention' : 'green' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
           <div>
             <div class="stat-label">Balance Due</div>
             <div class="stat-value">₱{{ number_format($balanceDue, 0) }}</div>
@@ -100,8 +113,8 @@
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/></svg></div>
+        <div class="stat-card" role="group" aria-label="Room">
+          <div class="stat-icon neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/></svg></div>
           <div>
             <div class="stat-label">Room</div>
             <div class="stat-value">{{ $contract?->bed?->room?->room_no ?? '—' }}</div>
@@ -113,7 +126,7 @@
           </div>
         </div>
 
-        <div class="stat-card">
+        <div class="stat-card" role="group" aria-label="Lease ends">
           <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
           <div>
             <div class="stat-label">Lease Ends</div>
@@ -146,8 +159,8 @@
           </div>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg></div>
+        <div class="stat-card" role="group" aria-label="Open tickets">
+          <div class="stat-icon neutral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg></div>
           <div>
             <div class="stat-label">Open Tickets</div>
             <div class="stat-value">{{ $openTicketsCount }}</div>

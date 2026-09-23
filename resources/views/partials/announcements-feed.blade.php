@@ -28,7 +28,6 @@
   .announce-outer{
     background:var(--card-bg, #fff);
     border:1px solid var(--border, #e2e6e2);
-    border-left:4px solid var(--green-accent, #2f6f3c);
     border-radius:14px;
     padding:22px 24px;
     margin-bottom:20px;

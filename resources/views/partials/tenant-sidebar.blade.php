@@ -14,7 +14,7 @@
     same pattern as partials/admin-sidebar.blade.php.
 --}}
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo"><span class="logo-mark"></span><span class="logo-text">NEST.PH</span></div>
+  <div class="sidebar-logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"><span class="logo-text">NEST.PH</span></div>
   <div class="sidebar-section-label">Tenant View</div>
   <ul class="nav-list">
     <li class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}" data-href="{{ route('dashboard') }}" tabindex="0">

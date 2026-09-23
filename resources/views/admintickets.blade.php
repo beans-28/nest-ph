@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Tickets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and content
@@ -49,6 +52,8 @@
   .badge.rejected{ background:var(--status-occupied-bg); color:var(--status-occupied); }
 
   .overdue-flag{ font-size:11px; font-weight:700; color:var(--status-occupied); background:var(--status-occupied-bg); border-radius:20px; padding:4px 10px; display:inline-flex; align-items:center; gap:5px; width:fit-content; }
+  .overdue-flag svg{ width:11px; height:11px; }
+  .mb-attachment-grid{ display:flex; gap:8px; flex-wrap:wrap; }
   .unresolved-note{ font-size:11.5px; color:var(--text-light); }
 
   .ac-bottom{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:auto; padding-top:10px; border-top:1px solid #f0f2f0; }
@@ -94,15 +99,15 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon avatar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Tickets</h1>
       </div>
 
@@ -149,7 +154,7 @@
 </div>
 
 <div class="modal-overlay" id="ticketModal">
-  <div class="modal-box">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="mTitle">
     <div class="modal-head">
       <div>
         <div class="mh-tenant" id="mTenant"></div>
@@ -159,17 +164,17 @@
     </div>
     <div class="modal-body">
       <div class="mb-desc" id="mDesc"></div>
-            <div class="mb-attachment" id="mAttachment" style="display:none;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="mAttachmentGrid"></div>
+      <div class="mb-attachment" id="mAttachment" style="display:none;">
+        <div class="mb-attachment-grid" id="mAttachmentGrid"></div>
       </div>
 
       <div class="fld">
-        <label>Assign to</label>
+        <label for="mAssignSelect">Assign to</label>
         <select id="mAssignSelect"><option value="">Unassigned</option></select>
       </div>
 
       <div class="fld">
-        <label>Update Status</label>
+        <label for="mStatusSelect">Update Status</label>
         <select id="mStatusSelect">
           @foreach($statuses as $key => $label)
             <option value="{{ $key }}">{{ $label }}</option>
@@ -178,7 +183,7 @@
       </div>
 
       <div class="fld">
-        <label>Reply to tenant</label>
+        <label for="mReplyInput">Reply to tenant</label>
         <div class="reply-thread" id="mReplyThread"></div>
         <textarea id="mReplyInput" placeholder="Write a reply..."></textarea>
       </div>
@@ -190,9 +195,9 @@
   </div>
 </div>
 
-<div class="lightbox" id="lightbox"><img id="lightboxImg" alt=""></div>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Ticket attachment preview"><img id="lightboxImg" alt="Ticket attachment, full size"></div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="tickets-data">{!! json_encode($tickets) !!}</script>
 
@@ -271,7 +276,7 @@
     }
 
     $('ticketGrid').innerHTML = list.map(t => `
-      <div class="app-card" data-open="${t.id}">
+      <div class="app-card" data-open="${t.id}" tabindex="0" role="button" aria-label="Open ticket ${esc(t.title)}">
         <div class="ac-top">
           <div>
             <div class="ac-num">Ticket#${t.id}</div>
@@ -281,7 +286,7 @@
           <span class="badge ${t.status}">${esc(t.status_label)}</span>
         </div>
         <span class="ac-cat">${esc(t.category_label)}</span>
-        ${t.is_overdue ? `<span class="overdue-flag">⚠ Overdue</span>` : (t.unresolved_for ? `<span class="unresolved-note">${esc(t.unresolved_for)}</span>` : '')}
+        ${t.is_overdue ? `<span class="overdue-flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>Overdue</span>` : (t.unresolved_for ? `<span class="unresolved-note">${esc(t.unresolved_for)}</span>` : '')}
         <div class="ac-bottom">
           <select class="priority-select ${t.priority ?? ''}" data-priority-for="${t.id}">${priorityOptionsHtml(t.priority)}</select>
           <span class="ac-assigned">${t.assigned_to_name ? 'Assigned: ' + esc(t.assigned_to_name) : 'Unassigned'}</span>
@@ -293,6 +298,10 @@
       el.addEventListener('click', (e) => {
         if(e.target.closest('[data-priority-for]')) return;
         openModal(Number(el.dataset.open));
+      });
+      el.addEventListener('keydown', (e) => {
+        if(e.target.closest('[data-priority-for]')) return;
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openModal(Number(el.dataset.open)); }
       });
     });
 
@@ -399,6 +408,23 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const lightbox = document.getElementById('lightbox');
+    const modal = document.getElementById('ticketModal');
+    if (lightbox && lightbox.classList.contains('open')) lightbox.classList.remove('open');
+    else if (modal && modal.classList.contains('open')) modal.classList.remove('open');
+  });
 })();
 </script>
 </body>

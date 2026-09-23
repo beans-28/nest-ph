@@ -9,16 +9,32 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --green-light: #a2d9a4;
+            --green-dark: #567357;
+            --green-darker: #197335;
+            --ink: #292420;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .page-wrap { overflow-x: hidden; }
 
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
-            color: #292420;
+            color: var(--ink);
             background: linear-gradient(180deg, #567357 0%, #59473f 100%);
             min-height: 100vh;
         }
+
+        a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 2px solid var(--green-darker);
+            outline-offset: 2px;
+        }
+        .topnav a:focus-visible, .topnav .buttons a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .btn-white:focus-visible { outline-color: var(--ink); }
 
         .textured { position: relative; overflow: hidden; }
         .textured .bg-texture {
@@ -29,7 +45,7 @@
         .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
 
         .topnav {
-            background: linear-gradient(90deg, #567357, #a2d9a4);
+            background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
             padding: 14px clamp(20px, 5vw, 64px);
             display: flex; align-items: center; gap: clamp(16px, 3vw, 40px);
             position: sticky; top: 0; z-index: 1000;
@@ -48,15 +64,15 @@
             display: flex; align-items: center; gap: 6px; color: #fff; font-weight: 700;
             font-size: 19px; letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 40px; padding: 0 18px; border: 2px solid #fff;
+            height: 44px; padding: 0 18px; border: 2px solid #fff;
             font-weight: 500; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer;
             white-space: nowrap; text-decoration: none;
         }
-        .btn-white { background: #fff; color: #292420; }
+        .btn-white { background: #fff; color: var(--ink); }
         .btn-outline-white { background: transparent; color: #fff; }
 
         /* ===== INQUIRY AREA — same skeleton as the login pages ===== */
@@ -101,7 +117,7 @@
         }
 
         .login-right h2 { color: #567357; font-weight: 700; font-size: clamp(22px, 2.6vw, 28px); margin-bottom: 8px; }
-        .login-right .intro { color: #7a7a7a; font-size: 13.5px; line-height: 1.6; margin-bottom: 26px; max-width: 560px; }
+        .login-right .intro { color: #5f5f5f; font-size: 13.5px; line-height: 1.6; margin-bottom: 26px; max-width: 560px; }
 
         .form-group { margin-bottom: 20px; max-width: 560px; }
         .form-group label {
@@ -114,7 +130,7 @@
             font-family: inherit;
         }
         .form-group textarea { resize: vertical; min-height: 90px; border: 1px solid #a6b69f; border-radius: 6px; padding: 10px; }
-        .form-hint { font-size: 11.5px; color: #9aa5ac; margin-top: 6px; }
+        .form-hint { font-size: 11.5px; color: #5a6b5e; margin-top: 6px; }
 
         .consent-row {
             display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px;
@@ -165,7 +181,7 @@
         #successState { display: none; text-align: center; padding: 30px 0; }
         .success-badge { width: 68px; height: 68px; margin: 0 auto 20px; display: block; }
         #successState h2 { color: #567357; font-weight: 900; margin-bottom: 12px; }
-        #successState p { color: #8a9690; font-size: 14px; line-height: 1.6; max-width: 460px; margin: 0 auto 24px; }
+        #successState p { color: #5c6660; font-size: 14px; line-height: 1.6; max-width: 460px; margin: 0 auto 24px; }
         #successState .btn-login { display: inline-block; width: auto; padding: 14px 36px; text-decoration: none; }
 
         @media (max-width: 1024px) {
@@ -188,7 +204,6 @@
             .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
             .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
             .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
-            .btn { min-height: 44px; }
 
             /* Form fields: 16px avoids the iOS Safari auto-zoom-on-focus. */
             .form-group input, .form-group select, .form-group textarea { font-size: 16px; }
@@ -205,7 +220,7 @@
             <a href="{{ route('public.vr') }}">VR TOUR</a>
             <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
             <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
@@ -239,7 +254,7 @@
                         <button type="button" class="room-context-clear" id="roomContextClear">Not this room</button>
                     </div>
 
-                    <div class="form-error" id="formError"></div>
+                    <div class="form-error" id="formError" role="alert"></div>
 
                     <form id="inquiryForm">
                         <div class="form-group">
@@ -282,12 +297,12 @@
                     </form>
                 </div>
 
-                <div id="successState">
-                    <svg class="success-badge" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <div id="successState" role="status">
+                    <svg class="success-badge" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M32 2 L37.5 7.5 L45 5 L47.5 12.5 L55 15 L52.5 22.5 L58 28 L52.5 33.5 L55 41 L47.5 43.5 L45 51 L37.5 48.5 L32 54 L26.5 48.5 L19 51 L16.5 43.5 L9 41 L11.5 33.5 L6 28 L11.5 22.5 L9 15 L16.5 12.5 L19 5 L26.5 7.5 Z" fill="#5ea86a"/>
                         <path d="M21 32 L28 39 L43 24" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
                     </svg>
-                    <h2>Inquiry Sent</h2>
+                    <h2 id="successHeading" tabindex="-1">Inquiry Sent</h2>
                     <p id="successMessage">Your inquiry has been submitted. We will get back to you shortly.</p>
                     <a href="{{ route('home') }}" class="btn-login">Back to Home</a>
                 </div>
@@ -408,6 +423,7 @@
             document.getElementById('successMessage').textContent = data.message;
             document.getElementById('formState').style.display = 'none';
             document.getElementById('successState').style.display = 'block';
+            document.getElementById('successHeading').focus();
         } catch (err) {
             errorBox.textContent = 'Something went wrong. Please check your connection and try again.';
             errorBox.classList.add('visible');

@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Inquiry Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -23,7 +26,7 @@
   .search-input{ display:block; width:100%; max-width:320px; border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-size:13px; font-family:var(--font-body); background:#fff; margin-bottom:14px; }
 
   .filters{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
-  .filter-chip{ border:1px solid var(--border); background:#fff; border-radius:20px; padding:7px 16px; font-size:12px; font-weight:600; color:var(--text-mid); cursor:pointer; }
+  .filter-chip{ border:1px solid var(--border); background:#fff; border-radius:20px; padding:7px 16px; font-size:12px; font-family:inherit; font-weight:600; color:var(--text-mid); cursor:pointer; }
   .filter-chip.active{ background:var(--status-vacant-bg); border-color:var(--status-vacant); color:var(--green-accent); }
 
   .list-panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
@@ -83,27 +86,27 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Inquiry Management</h1>
       </div>
 
-      <input type="text" class="search-input" id="searchInput" placeholder="Search name or message">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search name or message" aria-label="Search name or message">
 
-      <div class="filters" id="filters">
-        <div class="filter-chip active" data-filter="all">All</div>
-        <div class="filter-chip" data-filter="new">New</div>
-        <div class="filter-chip" data-filter="contacted">Replied</div>
-        <div class="filter-chip" data-filter="converted">Converted</div>
-        <div class="filter-chip" data-filter="closed">Closed</div>
-        <div class="filter-chip" data-filter="_has_room">About a specific room</div>
+      <div class="filters" id="filters" role="tablist" aria-label="Filter inquiries">
+        <button type="button" class="filter-chip active" role="tab" aria-selected="true" data-filter="all">All</button>
+        <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="new">New</button>
+        <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="contacted">Replied</button>
+        <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="converted">Converted</button>
+        <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="closed">Closed</button>
+        <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="_has_room">About a specific room</button>
       </div>
 
       <div class="list-panel" id="listPanel"></div>
@@ -113,7 +116,7 @@
 
 <div class="overlay" id="overlay"></div>
 
-<div class="drawer" id="drawer">
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
   <div class="drawer-head">
     <h2 id="drawerTitle">Inquiry</h2>
     <button class="drawer-close" id="drawerClose">&times;</button>
@@ -121,7 +124,7 @@
   <div class="drawer-body" id="drawerBody"></div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="inquiries-data">{!! json_encode($inquiries) !!}</script>
 
@@ -195,7 +198,7 @@
     }
 
     $('listPanel').innerHTML = list.map(i => `
-      <div class="list-row" data-open="${i.id}">
+      <div class="list-row" data-open="${i.id}" tabindex="0" role="button" aria-label="Open inquiry from ${esc(i.full_name)}">
         <span class="lr-name">${esc(i.full_name)}</span>
         ${i.room_no ? `<span class="lr-room">Room ${esc(i.room_no)}</span>` : ''}
         <span class="lr-msg">${esc(i.message)}</span>
@@ -205,6 +208,9 @@
 
     $('listPanel').querySelectorAll('[data-open]').forEach(row => {
       row.addEventListener('click', () => openDrawer(Number(row.dataset.open)));
+      row.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openDrawer(Number(row.dataset.open)); }
+      });
     });
   }
 
@@ -218,7 +224,7 @@
     }
 
     if(!i.email){
-      return `<div class="already-replied" style="background:#fdf0f0;border-color:#f3cccc;color:#b3261e;">No email address on file, so a reply cannot be sent for this inquiry.</div>`;
+      return `<div class="already-replied" style="background:#fdf0f0;border-color:#f3cccc;color:#c0463d;">No email address on file, so a reply cannot be sent for this inquiry.</div>`;
     }
 
     return `
@@ -329,7 +335,11 @@
   $('filters').querySelectorAll('[data-filter]').forEach(chip => {
     chip.addEventListener('click', () => {
       filter = chip.dataset.filter;
-      $('filters').querySelectorAll('[data-filter]').forEach(c => c.classList.toggle('active', c === chip));
+      $('filters').querySelectorAll('[data-filter]').forEach(c => {
+        const active = c === chip;
+        c.classList.toggle('active', active);
+        c.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
       renderList();
     });
   });
@@ -361,6 +371,21 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const drawer = document.getElementById('drawer');
+    if (drawer && drawer.classList.contains('open')) document.getElementById('drawerClose').click();
+  });
 })();
 </script>
 

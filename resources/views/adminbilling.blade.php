@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Billing and Payments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -18,7 +21,7 @@
     --orange:#c9962f; --orange-bg:#f6ecd6;
     --bg-page:#eef1ee; --card-bg:#ffffff;
     --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-body:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Page-specific overrides of shared topbar/content-header rules from admin.css:
      this page uses a lighter (non-translucent) topbar icon and tighter content/page-head spacing. */
@@ -44,7 +47,7 @@
 
   .tabs-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; border-bottom:1px solid var(--border); margin-bottom:18px; }
   .tabs-left{ display:flex; gap:28px; }
-  .tab-item{ padding:10px 2px 14px; font-size:14px; font-weight:600; color:var(--text-light); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-1px; }
+  .tab-item{ padding:10px 2px 14px; font-size:14px; font-family:inherit; font-weight:600; color:var(--text-light); background:none; border:none; border-bottom:3px solid transparent; cursor:pointer; margin-bottom:-1px; }
   .tab-item.active{ color:var(--green-accent); border-bottom-color:var(--green-accent); }
 
   .filters-row{ display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
@@ -168,15 +171,15 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Billing and Payments</h1>
       </div>
 
@@ -199,11 +202,11 @@
         </div>
       </div>
 
-      <div class="tabs-row" id="tabsRow">
+      <div class="tabs-row" id="tabsRow" role="tablist" aria-label="Billing sections">
         <div class="tabs-left">
-          <div class="tab-item active" data-tab="overview">Billing Overview</div>
-          <div class="tab-item" data-tab="pending">Pending Payment</div>
-          <div class="tab-item" data-tab="penalties">Penalties</div>
+          <button type="button" class="tab-item active" role="tab" aria-selected="true" data-tab="overview">Billing Overview</button>
+          <button type="button" class="tab-item" role="tab" aria-selected="false" data-tab="pending">Pending Payment</button>
+          <button type="button" class="tab-item" role="tab" aria-selected="false" data-tab="penalties">Penalties</button>
         </div>
         <div style="display:flex;gap:10px;">
           <button class="btn primary" id="openRecordPaymentBtn">+ Record Payment Entry</button>
@@ -320,7 +323,7 @@
 
 <div class="overlay" id="overlay"></div>
 
-<div class="drawer" id="drawer">
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
   <div class="drawer-head">
     <h2 id="drawerTitle">Payment</h2>
     <button class="drawer-close" id="drawerClose">&times;</button>
@@ -329,8 +332,8 @@
 </div>
 
 <div class="modal-overlay" id="recordPaymentModal">
-  <div class="modal-box">
-    <div class="modal-head"><h2>Record Cash Payment</h2></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="recordPaymentModalTitle">
+    <div class="modal-head"><h2 id="recordPaymentModalTitle">Record Cash Payment</h2></div>
     <div class="modal-body">
       <div class="fld">
         <label for="rpTenantSearchInput">Tenant</label>
@@ -373,8 +376,8 @@
 </div>
 
 <div class="modal-overlay" id="recordDamageModal">
-  <div class="modal-box">
-    <div class="modal-head"><h2>Record Damage</h2></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="recordDamageModalTitle">
+    <div class="modal-head"><h2 id="recordDamageModalTitle">Record Damage</h2></div>
     <div class="modal-body">
       <div class="fld">
         <label for="rdTenantSearchInput">Tenant</label>
@@ -420,8 +423,8 @@
 </div>
 
 <div class="modal-overlay" id="addPenaltyModal">
-  <div class="modal-box">
-    <div class="modal-head"><h2>Add Penalty</h2></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="addPenaltyModalTitle">
+    <div class="modal-head"><h2 id="addPenaltyModalTitle">Add Penalty</h2></div>
     <div class="modal-body">
       <div class="fld">
         <label for="apTenantSearchInput">Tenant</label>
@@ -465,8 +468,8 @@
 </div>
 
 <div class="modal-overlay" id="waivePenaltyModal">
-  <div class="modal-box">
-    <div class="modal-head"><h2>Waive Penalty</h2></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="waivePenaltyModalTitle">
+    <div class="modal-head"><h2 id="waivePenaltyModalTitle">Waive Penalty</h2></div>
     <div class="modal-body">
       <p style="font-size:12.5px;color:var(--text-mid);margin:0 0 14px 0;">This penalty will be marked as waived. It stays on record and can be reinstated later if needed.</p>
       <div class="fld">
@@ -481,7 +484,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="pending-data">{!! json_encode($pending) !!}</script>
 <script type="application/json" id="overview-data">{!! json_encode($overview) !!}</script>
@@ -563,7 +566,11 @@
   const tabContents = document.querySelectorAll('[data-tab-content]');
   $('tabsRow').querySelectorAll('[data-tab]').forEach(t => {
     t.addEventListener('click', () => {
-      $('tabsRow').querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('active', x === t));
+      $('tabsRow').querySelectorAll('[data-tab]').forEach(x => {
+        const active = x === t;
+        x.classList.toggle('active', active);
+        x.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
       tabContents.forEach(el => {
         el.style.display = el.dataset.tabContent === t.dataset.tab ? 'block' : 'none';
       });
@@ -1363,6 +1370,22 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const drawer = document.getElementById('drawer');
+    if (drawer && drawer.classList.contains('open')) { document.getElementById('drawerClose').click(); return; }
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  });
 })();
 </script>
 

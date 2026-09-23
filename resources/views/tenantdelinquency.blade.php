@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Delinquency Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar (normal + restricted-lock),
@@ -27,7 +30,7 @@
   .page-head h1{ font-size:19px; font-weight:700; margin:0; color:var(--green-accent); }
   .page-head p{ font-size:12.5px; color:var(--text-mid); margin:2px 0 0 0; }
 
-  .stage-banner{ font-size:22px; font-weight:800; color:#c9962f; letter-spacing:0.3px; margin:2px 0 10px 0; }
+  .stage-banner{ font-size:22px; font-weight:800; color:var(--pending-text); letter-spacing:0.3px; margin:2px 0 10px 0; }
   .stage-divider{ height:1px; background:linear-gradient(90deg, var(--green-dark), transparent); margin-bottom:22px; }
 
   /* ===== Warning banners ===== */
@@ -141,6 +144,15 @@
   .blacklist-info-box{ background:var(--card-bg); border-radius:12px; padding:20px 26px; text-align:left; margin-bottom:26px; }
   .blacklist-info-box h3{ font-size:14px; font-weight:700; color:var(--green-accent); margin:0 0 8px 0; }
   .blacklist-info-box p{ font-size:12.5px; color:var(--text-mid); line-height:1.7; margin:0; }
+
+  @media (max-width: 900px){
+    .content{ padding:20px 18px 40px 18px; }
+    .top-grid{ grid-template-columns:1fr; }
+  }
+  @media (max-width: 560px){
+    .blacklist-headline{ font-size:21px; }
+    .timeline-row-head{ flex-wrap:wrap; }
+  }
 </style>
 </head>
 <body>

@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Dormitory Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -18,7 +21,7 @@
     --orange:#c9962f; --orange-bg:#f6ecd6;
     --bg-page:#eef1ee; --card-bg:#ffffff;
     --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-body:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
      public/css/admin.css (linked above). The rules below are kept because
@@ -169,15 +172,15 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Dormitory Profile</h1>
       </div>
       <p class="page-sub">Set up your dormitory's public listing: basic info, house rules, amenities, and legitimacy documents.</p>
@@ -212,27 +215,27 @@
 
             <div class="field-row">
               <div class="field">
-                <label>Dormitory Name <span class="req">*</span></label>
+                <label for="dormName">Dormitory Name <span class="req">*</span></label>
                 <input type="text" id="dormName" maxlength="150" value="{{ $profile->dorm_name }}">
               </div>
               <div class="field">
-                <label>Contact Number <span class="req">*</span></label>
+                <label for="contactNumber">Contact Number <span class="req">*</span></label>
                 <input type="text" id="contactNumber" maxlength="20" value="{{ $profile->contact_number }}">
               </div>
             </div>
             <div class="field-row">
               <div class="field">
-                <label>Email Address</label>
+                <label for="contactEmail">Email Address</label>
                 <input type="email" id="contactEmail" maxlength="150" value="{{ $profile->contact_email }}">
               </div>
               <div class="field">
-                <label>Complete Address <span class="req">*</span></label>
+                <label for="address">Complete Address <span class="req">*</span></label>
                 <input type="text" id="address" maxlength="255" value="{{ $profile->address }}">
               </div>
             </div>
             <div class="field-row full">
               <div class="field">
-                <label>Description <span class="req">*</span></label>
+                <label for="description">Description <span class="req">*</span></label>
                 <textarea id="description" maxlength="500">{{ $profile->description }}</textarea>
                 <div class="char-count"><span id="descCount">0</span> / 500</div>
               </div>
@@ -255,7 +258,7 @@
                   <span class="rule-num">{{ $i + 1 }}</span>
                   <div class="rule-text">
                     <span>{{ $rule->rule_text }}</span>
-                    <input type="text" value="{{ $rule->rule_text }}" maxlength="500">
+                    <input type="text" value="{{ $rule->rule_text }}" maxlength="500" aria-label="Edit house rule text">
                   </div>
                   <div class="rule-actions">
                     <button type="button" class="icon-btn edit-rule-btn" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
@@ -268,7 +271,7 @@
             </ul>
 
             <div class="add-rule-row">
-              <input type="text" id="newRuleInput" placeholder="Add a new rule…" maxlength="500">
+              <input type="text" id="newRuleInput" placeholder="Add a new rule…" maxlength="500" aria-label="New house rule text">
               <button type="button" class="btn primary sm" id="addRuleBtn">+ Add Rule</button>
             </div>
           </div>
@@ -409,7 +412,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function(){
@@ -710,7 +713,7 @@
         <span class="rule-num"></span>
         <div class="rule-text">
           <span></span>
-          <input type="text" maxlength="500">
+          <input type="text" maxlength="500" aria-label="Edit house rule text">
         </div>
         <div class="rule-actions">
           <button type="button" class="icon-btn edit-rule-btn" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
@@ -800,6 +803,15 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
 })();
 </script>
 

@@ -29,6 +29,22 @@
         a { text-decoration: none; color: inherit; }
         img { max-width: 100%; display: block; }
 
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid var(--green-darker);
+            outline-offset: 2px;
+        }
+        .topnav a:focus-visible, .topnav .buttons a:focus-visible, footer a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .btn-white:focus-visible, .btn-green:focus-visible {
+            outline-color: var(--ink);
+        }
+        .visually-hidden {
+            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+            overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+        }
+
         /* Decorative leaf textures live INSIDE the green sections, blended
            onto their background — not floating between sections. */
         .textured { position: relative; overflow: hidden; }
@@ -46,7 +62,7 @@
         .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
 
         .topnav {
-            background: linear-gradient(90deg, var(--green-dark), var(--green-light));
+            background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
             padding: 14px clamp(20px, 5vw, 64px);
             display: flex;
             align-items: center;
@@ -77,12 +93,12 @@
             color: #fff; font-weight: 700; font-size: 19px;
             letter-spacing: 0.02em; white-space: nowrap;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
 
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 40px; padding: 0 18px; border: 2px solid #fff;
+            height: 44px; padding: 0 18px; border: 2px solid #fff;
             font-weight: 500; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer; white-space: nowrap;
         }
         .btn-white { background: #fff; color: var(--ink); }
@@ -92,7 +108,7 @@
         .btn-lg { height: 46px; padding: 0 22px; font-size: 15px; }
 
         .hero {
-            background: linear-gradient(90deg, #dcd8d7, #f2f2f2);
+            background: linear-gradient(90deg, var(--cream), var(--cream-light));
             padding: clamp(32px, 6vw, 56px) clamp(20px, 6vw, 64px);
             display: grid;
             grid-template-columns: 1.1fr 1fr;
@@ -124,7 +140,7 @@
         .stat-label { font-size: 12.5px; color: var(--ink-alt); }
 
         .why-section {
-            background: linear-gradient(90deg, #dcd8d7, #f2f2f2);
+            background: linear-gradient(90deg, var(--cream), var(--cream-light));
             padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px); text-align: center;
             box-shadow: 0 4px 2px rgba(0,0,0,0.15);
         }
@@ -163,7 +179,7 @@
             border-bottom: 1px solid var(--gray-border); margin-bottom: 24px;
         }
         .footer-logo { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 19px; }
-        .footer-logo .mark { width: 17px; height: 17px; border: 2px solid var(--cream); border-radius: 4px; }
+        .footer-logo .logo-img { height: 28px; width: auto; }
         .newsletter { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .newsletter input {
             background: var(--cream-light); border: none; border-bottom: 1px solid var(--gray-border);
@@ -217,9 +233,6 @@
             .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
             .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
 
-            /* Tap targets: bring the default button height up to the
-               ~44px minimum on phone widths (btn-lg is already 46px). */
-            .btn:not(.btn-lg) { height: 44px; }
             .newsletter input { padding-top: 13px; padding-bottom: 13px; font-size: 16px; }
             .newsletter button { min-height: 44px; }
         }
@@ -239,7 +252,7 @@
             <a href="{{ route('public.vr') }}">VR TOUR</a>
             <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
             <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
@@ -265,7 +278,7 @@
     </section>
 
     <section class="stats-bar textured">
-        <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="">
+        <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="" loading="lazy" decoding="async">
         <h2>Find your room at {{ $dormName ?? 'NEST.PH' }}</h2>
         <p class="sub">Browse available beds, take a 360&deg; virtual tour, and apply online!</p>
         <div class="stats-row">
@@ -295,11 +308,11 @@
     <section class="why-section">
         <div class="eyebrow">You Are in Good Company</div>
         <h2>Why Pick Us?</h2>
-        <p>Located right at the doorstep of Manila's academic hubs, Pureza Station Dormitory gives students a secure, comfortable, and accessible place to stay. Our management platform, NEST.PH, covers everything from your first virtual room viewing to your everyday tenant needs. Every great mind needs a secure place to hatch their biggest ideas, and we're here to provide the foundation.</p>
+        <p>Located right at the doorstep of Manila's academic hubs, Pureza Station Dormitory gives students a secure, comfortable, and accessible place to stay. Our management platform, NEST.PH, covers everything from your first virtual room viewing to your everyday tenant needs, so you can focus on school instead of paperwork.</p>
     </section>
 
     <section class="about-section textured">
-        <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="">
+        <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="" loading="lazy" decoding="async">
         <div class="about-header">
             <div class="eyebrow">Powered by NEST.PH, a smarter web app for dormitory living and management</div>
             <h2>About NEST.PH</h2>
@@ -329,11 +342,12 @@
 
     <footer>
         <div class="footer-top">
-            <div class="footer-logo"><span class="mark"></span> NEST.PH</div>
-            <div class="newsletter">
-                <input type="email" placeholder="Enter your email to inquire.....">
-                <button type="button">Send</button>
-            </div>
+            <div class="footer-logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
+            <form class="newsletter" onsubmit="return false;">
+                <label for="newsletter-email" class="visually-hidden">Email address</label>
+                <input id="newsletter-email" type="email" name="email" placeholder="Enter your email to inquire" autocomplete="email" required>
+                <button type="submit">Send</button>
+            </form>
         </div>
 
         <div class="footer-columns">
@@ -364,7 +378,7 @@
                 @if($isBirVerified)
                 <div class="footer-badge">
                     @if($birRegistrationImageUrl)
-                        <img src="{{ $birRegistrationImageUrl }}" alt="">
+                        <img src="{{ $birRegistrationImageUrl }}" alt="BIR registration certificate" loading="lazy">
                     @else
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M20 6L9 17l-5-5"/></svg>
                     @endif
@@ -376,11 +390,6 @@
 
         <div class="footer-bottom">
             <span>Powered by {{ $dormName ?? 'NEST.PH' }} Dormitory Management System &copy; 2026. All rights reserved.</span>
-            <div class="links">
-                <a href="#">Eleven</a>
-                <a href="#">Twelve</a>
-                <a href="#">Thirteen</a>
-            </div>
         </div>
     </footer>
     </div>

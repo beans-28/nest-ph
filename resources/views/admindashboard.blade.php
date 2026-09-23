@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -26,12 +29,20 @@
   .stat-sub{ font-size:11px; color:var(--text-light); margin-top:2px; }
   .placeholder-tag{ position:absolute; top:14px; right:16px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--status-maintenance); background:var(--status-maintenance-bg); padding:3px 7px; border-radius:20px; }
 
-  .alert-banner{ background:linear-gradient(90deg, #f6d6d3, #fbeceb); border:1px solid #f2c3bf; border-radius:12px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
-  .alert-banner-text strong{ display:block; font-size:13.5px; color:#a3372e; }
+  .alert-banner{ background:#fbeceb; border:1px solid #f2c3bf; border-radius:12px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
+  .alert-banner-text strong{ display:block; font-size:13.5px; color:#c0463d; }
   .alert-banner-text span{ font-size:12px; color:#8a4a44; }
-  .alert-review-btn{ background:#a3372e; color:#fff; border:none; border-radius:8px; padding:9px 16px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .alert-review-btn{ background:#c0463d; color:#fff; border:none; border-radius:8px; padding:9px 16px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .alert-review-btn:hover{ background:#a8382f; }
 
   .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+  @media (max-width: 1080px){
+    .dash-grid{ grid-template-columns:1fr; }
+  }
+  @media (max-width: 720px){
+    .content{ padding:20px 18px 40px 18px; }
+    .alert-banner{ flex-wrap:wrap; }
+  }
   .dash-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-bottom:20px; }
   .dash-card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
   .dash-card-head h2{ font-size:14.5px; font-weight:700; margin:0; }
@@ -46,7 +57,7 @@
 
   .ticket-item{ border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:12px; }
   .ticket-item:last-child{ margin-bottom:0; }
-  .ticket-title{ font-size:13px; font-weight:700; color:var(--text-dark); display:flex; align-items:center; justify-content:between; gap:8px; }
+  .ticket-title{ font-size:13px; font-weight:700; color:var(--text-dark); display:flex; align-items:center; gap:8px; }
   .ticket-title .time{ margin-left:auto; font-size:11px; font-weight:500; color:var(--text-light); }
   .ticket-desc{ font-size:12px; color:var(--text-mid); margin-top:4px; }
   .ticket-meta{ font-size:11px; color:var(--text-light); margin-top:6px; }
@@ -57,7 +68,7 @@
   .ticket-priority-pill{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:3px 8px; border-radius:20px; margin-left:6px; }
   .ticket-priority-pill.priority-urgent{ background:#f7d9d7; color:#c0463d; }
   .ticket-priority-pill.priority-non-urgent{ background:#d9f2dd; color:#3f7a4a; }
-  .ticket-overdue-pill{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:3px 8px; border-radius:20px; margin-left:6px; background:#f7d9d7; color:#a3372e; }
+  .ticket-overdue-pill{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:3px 8px; border-radius:20px; margin-left:6px; background:#f7d9d7; color:#c0463d; }
   .ticket-summary-row{ font-size:11px; color:var(--text-light); margin-top:10px; text-align:right; }
 
   .activity-tabs{ font-size:11.5px; color:var(--green-accent); font-weight:600; margin-bottom:10px; }
@@ -74,15 +85,14 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon avatar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Admin Dashboard</h1>
       </div>
 
@@ -229,6 +239,18 @@
     });
   }
 
+  // Sidebar links, the hamburger, and topbar icons are styled divs rather
+  // than native <button>/<a> elements, so pressing Enter or Space while one
+  // is focused wouldn't normally do anything. This makes them behave like
+  // real interactive controls for keyboard users.
+  document.querySelectorAll('[tabindex="0"]').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
 })();
 </script>
 

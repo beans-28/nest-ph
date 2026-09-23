@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - VR Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
 <script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
@@ -136,9 +139,9 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon avatar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon avatar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
@@ -147,7 +150,7 @@
       <!-- ===== LIST VIEW ===== -->
       <div id="vrListView">
         <div class="page-head">
-          <div class="back-arrow" data-href="{{ route('vacancy.index') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+          <div class="back-arrow" data-href="{{ route('vacancy.index') }}" tabindex="0" aria-label="Back to Vacancy Monitoring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
           <h1>VR Management</h1>
         </div>
 
@@ -160,7 +163,7 @@
       <!-- ===== EDIT VIEW ===== -->
       <div id="vrEditView">
         <div class="page-head">
-          <div class="back-arrow" id="backToListBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+          <div class="back-arrow" id="backToListBtn" tabindex="0" aria-label="Back to VR room list"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
           <h1>Build VR Tour</h1>
           <span class="room-pill" id="roomPill"></span>
         </div>
@@ -321,7 +324,7 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="vr-rooms-data">{!! json_encode($rooms) !!}</script>
 
@@ -433,13 +436,16 @@
 
   function renderTabs(){
     $('vrTabs').innerHTML = rooms.map(room => `
-      <div class="vr-tab ${room.id === activeRoomId ? 'active' : ''}" data-tab="${room.id}">
+      <div class="vr-tab ${room.id === activeRoomId ? 'active' : ''}" data-tab="${room.id}" tabindex="0" role="tab" aria-selected="${room.id === activeRoomId ? 'true' : 'false'}">
         Room ${esc(room.room_no)}
         <span class="tab-floor">${room.scenes.length} photo${room.scenes.length===1?'':'s'}</span>
       </div>`).join('');
 
     $('vrTabs').querySelectorAll('[data-tab]').forEach(tab => {
       tab.addEventListener('click', () => openEditor(Number(tab.dataset.tab)));
+      tab.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openEditor(Number(tab.dataset.tab)); }
+      });
     });
   }
 
@@ -479,7 +485,7 @@
     const tiles = room.scenes.map(scene => {
       const arrows = scene.hotspots.length;
       return `
-        <div class="photo-tile ${scene.id === activeSceneId ? 'active' : ''}" data-scene="${scene.id}">
+        <div class="photo-tile ${scene.id === activeSceneId ? 'active' : ''}" data-scene="${scene.id}" tabindex="0" role="button" aria-label="View spot: ${esc(scene.title)}">
           <img src="${scene.panorama_url}" alt="">
           <div class="pt-meta">
             <div class="pt-title">${esc(scene.title)}</div>
@@ -490,7 +496,7 @@
     }).join('');
 
     $('photoGrid').innerHTML = tiles + `
-      <div class="add-tile" id="openAddBtn">
+      <div class="add-tile" id="openAddBtn" tabindex="0" role="button" aria-label="Add a photo">
         <span class="plus">+</span>
         <span>Add a photo</span>
       </div>`;
@@ -501,11 +507,26 @@
         closeArrowForm();
         renderAll();
       });
+      tile.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          activeSceneId = Number(tile.dataset.scene);
+          closeArrowForm();
+          renderAll();
+        }
+      });
     });
 
     $('openAddBtn').addEventListener('click', () => {
       $('addForm').classList.add('open');
       $('newSceneTitle').focus();
+    });
+    $('openAddBtn').addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        $('addForm').classList.add('open');
+        $('newSceneTitle').focus();
+      }
     });
   }
 
@@ -850,6 +871,15 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
 })();
 </script>
 

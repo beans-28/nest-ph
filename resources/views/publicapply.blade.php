@@ -9,16 +9,32 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --green-light: #a2d9a4;
+            --green-dark: #567357;
+            --green-darker: #197335;
+            --ink: #292420;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .page-wrap { overflow-x: hidden; }
 
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
-            color: #292420;
+            color: var(--ink);
             background: linear-gradient(180deg, #567357 0%, #59473f 100%);
             min-height: 100vh;
         }
+
+        a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 2px solid var(--green-darker);
+            outline-offset: 2px;
+        }
+        .topnav a:focus-visible, .topnav .buttons a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .btn-white:focus-visible { outline-color: var(--ink); }
 
         .textured { position: relative; overflow: hidden; }
         .textured .bg-texture {
@@ -29,7 +45,7 @@
         .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
 
         .topnav {
-            background: linear-gradient(90deg, #567357, #a2d9a4);
+            background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
             padding: 14px clamp(20px, 5vw, 64px);
             display: flex; align-items: center; gap: clamp(16px, 3vw, 40px);
             position: sticky; top: 0; z-index: 1000;
@@ -48,15 +64,15 @@
             display: flex; align-items: center; gap: 6px; color: #fff; font-weight: 700;
             font-size: 19px; letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 40px; padding: 0 18px; border: 2px solid #fff;
+            height: 44px; padding: 0 18px; border: 2px solid #fff;
             font-weight: 500; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer;
             white-space: nowrap; text-decoration: none;
         }
-        .btn-white { background: #fff; color: #292420; }
+        .btn-white { background: #fff; color: var(--ink); }
         .btn-outline-white { background: transparent; color: #fff; }
 
         /* ===== APPLY WIZARD — same skeleton as the login pages ===== */
@@ -137,6 +153,12 @@
             display: flex; align-items: center; gap: 3px;
         }
         .field label .req { color: #d95117; }
+        .field-fieldset { border: none; padding: 0; margin: 0; }
+        .field-fieldset legend {
+            font-size: 12px; font-weight: 500; color: #262e36; letter-spacing: -0.01em;
+            display: flex; align-items: center; gap: 3px; margin-bottom: 8px; padding: 0;
+        }
+        .field-fieldset legend .req { color: #d95117; }
         .field input[type="text"],
         .field input[type="email"],
         .field input[type="tel"],
@@ -176,7 +198,7 @@
         .contract-review-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
         .contract-review-head svg { width: 26px; height: 26px; color: #567357; flex-shrink: 0; margin-top: 2px; }
         .crc-title { font-size: 14px; font-weight: 700; color: #194e19; }
-        .crc-sub { font-size: 12px; color: #7a8a7c; margin-top: 3px; line-height: 1.5; }
+        .crc-sub { font-size: 12px; color: #5b6b60; margin-top: 3px; line-height: 1.5; }
         .contract-review-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
         .crc-btn {
             display: inline-flex; align-items: center; background: #567357; color: #fff; font-weight: 700;
@@ -226,7 +248,7 @@
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px 24px; }
         .summary-item { display: flex; flex-direction: column; gap: 4px; }
         .summary-item .label {
-            font-size: 10px; color: #9aa5ac; text-transform: uppercase;
+            font-size: 10px; color: #5b6b60; text-transform: uppercase;
             letter-spacing: 0.04em; font-weight: 700;
         }
         .summary-item .value { font-size: 13.5px; color: #292420; font-weight: 500; word-break: break-word; }
@@ -238,10 +260,10 @@
         .consent-row input { margin-top: 3px; accent-color: #567357; width: 16px; height: 16px; flex-shrink: 0; }
 
         /* Step 5 — success */
-        #step-success { text-align: center; padding: 40px 0; }
+        #step-5 { text-align: center; padding: 40px 0; }
         .success-badge { width: 72px; height: 72px; margin: 0 auto 20px; display: block; }
-        #step-success h2 { color: #567357; font-weight: 900; font-size: clamp(22px, 2.6vw, 30px); margin-bottom: 14px; }
-        #step-success p { color: #8a9690; font-size: 14px; line-height: 1.6; max-width: 480px; margin: 0 auto 26px; }
+        #step-5 h2 { color: #567357; font-weight: 900; font-size: clamp(22px, 2.6vw, 30px); margin-bottom: 14px; }
+        #step-5 p { color: #5c6660; font-size: 14px; line-height: 1.6; max-width: 480px; margin: 0 auto 26px; }
 
         @media (max-width: 1024px) {
             .apply-grid { grid-template-columns: 1fr; padding: 20px 24px 32px; }
@@ -266,7 +288,6 @@
             .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
             .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
             .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
-            .btn { min-height: 44px; }
 
             /* Form fields: 16px avoids the iOS Safari auto-zoom-on-focus. */
             .field input[type="text"],
@@ -359,7 +380,7 @@
             <a href="{{ route('public.vr') }}">VR TOUR</a>
             <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
             <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
@@ -388,28 +409,28 @@
                 </div>
                 <div class="step-divider"></div>
 
-                <div class="form-error" id="formError"></div>
+                <div class="form-error" id="formError" role="alert"></div>
 
                 {{-- STEP 1 — Personal Information --}}
                 <div class="step-card active" id="step-1" data-step="1">
                     <h3>Personal Information</h3>
                     <div class="field-row">
                         <div class="field">
-                            <label>First Name <span class="req">*</span></label>
+                            <label for="first_name">First Name <span class="req">*</span></label>
                             <input type="text" id="first_name" required>
                         </div>
                         <div class="field">
-                            <label>Last Name <span class="req">*</span></label>
+                            <label for="last_name">Last Name <span class="req">*</span></label>
                             <input type="text" id="last_name" required>
                         </div>
                     </div>
                     <div class="field-row">
                         <div class="field">
-                            <label>Birthdate <span class="req">*</span></label>
+                            <label for="birthdate">Birthdate <span class="req">*</span></label>
                             <input type="date" id="birthdate" required>
                         </div>
                         <div class="field">
-                            <label>Gender</label>
+                            <label for="gender">Gender</label>
                             <select id="gender">
                                 <option value="">Select</option>
                                 <option value="female">Female</option>
@@ -418,31 +439,31 @@
                             </select>
                         </div>
                         <div class="field">
-                            <label>Nationality</label>
+                            <label for="nationality">Nationality</label>
                             <input type="text" id="nationality" placeholder="Filipino">
                         </div>
                     </div>
                     <div class="field-row">
                         <div class="field full">
-                            <label>Medical Condition <span class="req">*</span></label>
+                            <label for="medical_condition">Medical Condition <span class="req">*</span></label>
                             <input type="text" id="medical_condition" placeholder="None, if not applicable" required>
                         </div>
                     </div>
                     <div class="field-row">
                         <div class="field full">
-                            <label>Occupation <span class="req">*</span></label>
+                            <label for="occupation">Occupation <span class="req">*</span></label>
                             <input type="text" id="occupation" required>
                         </div>
                     </div>
                     <div class="field-row">
                         <div class="field full">
-                            <label>School/Company <span class="req">*</span></label>
+                            <label for="school_company">School/Company <span class="req">*</span></label>
                             <input type="text" id="school_company" required>
                         </div>
                     </div>
                     <div class="field-row">
                         <div class="field full">
-                            <label>School/Company Address <span class="req">*</span></label>
+                            <label for="school_company_address">School/Company Address <span class="req">*</span></label>
                             <input type="text" id="school_company_address" required>
                         </div>
                     </div>
@@ -458,21 +479,21 @@
                     <h3>Contact Information</h3>
                     <div class="field-row">
                         <div class="field">
-                            <label>Cellphone No. <span class="req">*</span></label>
+                            <label for="contact_number">Cellphone No. <span class="req">*</span></label>
                             <input type="tel" id="contact_number" placeholder="09-" required>
                         </div>
                         <div class="field">
-                            <label>Email</label>
+                            <label for="email">Email</label>
                             <input type="email" id="email">
                         </div>
                         <div class="field">
-                            <label>Landline</label>
+                            <label for="landline">Landline</label>
                             <input type="text" id="landline">
                         </div>
                     </div>
                     <div class="field-row">
                         <div class="field full">
-                            <label>Home Address <span class="req">*</span></label>
+                            <label for="home_address">Home Address <span class="req">*</span></label>
                             <input type="text" id="home_address" required>
                         </div>
                     </div>
@@ -480,27 +501,27 @@
                     <h3 class="spaced">Emergency Contact Information</h3>
                     <div class="field-row">
                         <div class="field full">
-                            <label>Fullname <span class="req">*</span></label>
+                            <label for="emergency_contact_name">Fullname <span class="req">*</span></label>
                             <input type="text" id="emergency_contact_name" required>
                         </div>
                     </div>
                     <div class="field-row">
                         <div class="field">
-                            <label>Cellphone No. <span class="req">*</span></label>
+                            <label for="emergency_contact_number">Cellphone No. <span class="req">*</span></label>
                             <input type="tel" id="emergency_contact_number" placeholder="09-" required>
                         </div>
                         <div class="field">
-                            <label>Email</label>
+                            <label for="emergency_contact_email">Email</label>
                             <input type="email" id="emergency_contact_email">
                         </div>
                         <div class="field">
-                            <label>Landline</label>
+                            <label for="emergency_contact_landline">Landline</label>
                             <input type="text" id="emergency_contact_landline">
                         </div>
                     </div>
                     <div class="field-row">
                         <div class="field full">
-                            <label>Relation to Tenant <span class="req">*</span></label>
+                            <label for="emergency_contact_relation">Relation to Tenant <span class="req">*</span></label>
                             <select id="emergency_contact_relation" required>
                                 <option value="">Select</option>
                                 <option value="parent">Parent</option>
@@ -527,11 +548,11 @@
                     <h3>Room Information</h3>
                     <div class="field-row">
                         <div class="field">
-                            <label>Preferred Start Date <span class="req">*</span></label>
+                            <label for="preferred_start_date">Preferred Start Date <span class="req">*</span></label>
                             <input type="date" id="preferred_start_date" required>
                         </div>
                         <div class="field">
-                            <label>Room No <span class="req">*</span></label>
+                            <label for="room_select">Room No <span class="req">*</span></label>
                             <select id="room_select" required>
                                 <option value="">Loading rooms…</option>
                             </select>
@@ -539,11 +560,11 @@
                     </div>
                     <div class="field-row">
                         <div class="field">
-                            <label>Tenant End Date <span class="req">*</span></label>
+                            <label for="tenant_end_date">Tenant End Date <span class="req">*</span></label>
                             <input type="date" id="tenant_end_date" required>
                         </div>
                         <div class="field">
-                            <label>Bed No <span class="req">*</span></label>
+                            <label for="bed_select">Bed No <span class="req">*</span></label>
                             <select id="bed_select" required>
                                 <option value="">Select a room first</option>
                             </select>
@@ -551,15 +572,15 @@
                     </div>
 
                     <div class="field-row">
-                        <div class="field full">
-                            <label>Type of Tenant <span class="req">*</span></label>
+                        <fieldset class="field full field-fieldset">
+                            <legend>Type of Tenant <span class="req">*</span></legend>
                             <div class="radio-group">
                                 <label class="radio-option"><input type="radio" name="type_of_tenant" value="student" required> Student</label>
                                 <label class="radio-option"><input type="radio" name="type_of_tenant" value="working_student" required> Working Student</label>
                                 <label class="radio-option"><input type="radio" name="type_of_tenant" value="full_time_employee" required> Full-time Employee</label>
                                 <label class="radio-option"><input type="radio" name="type_of_tenant" value="part_time_employee" required> Part-time Employee</label>
                             </div>
-                        </div>
+                        </fieldset>
                     </div>
 
                     <div class="field-row">
@@ -591,7 +612,7 @@
 
                     <div class="field-row">
                         <div class="field">
-                            <label>ID <span class="req">*</span></label>
+                            <label for="id_document">ID <span class="req">*</span></label>
                             <div class="file-drop" id="idDrop">
                                 <input type="file" id="id_document" accept=".jpg,.jpeg,.png,.pdf" required>
                                 <span class="placeholder" id="idPlaceholder">Add file (JPG, PNG, or PDF)</span>
@@ -691,10 +712,10 @@
     </div>
 
     <div class="contract-modal-overlay" id="contractModalOverlay">
-        <div class="contract-modal">
+        <div class="contract-modal" role="dialog" aria-modal="true" aria-labelledby="contractModalTitle">
             <div class="contract-modal-head">
-                <h3>Review &amp; Sign Contract</h3>
-                <button type="button" class="contract-modal-close" id="closeContractModalBtn">&times;</button>
+                <h3 id="contractModalTitle">Review &amp; Sign Contract</h3>
+                <button type="button" class="contract-modal-close" id="closeContractModalBtn" aria-label="Close">&times;</button>
             </div>
             <div class="contract-modal-body">
                 <div class="contract-preview-loading" id="contractPreviewLoading">Preparing your contract...</div>
@@ -1163,6 +1184,9 @@
     function closeModal(){ overlay.classList.remove('open'); }
     document.getElementById('closeContractModalBtn').addEventListener('click', closeModal);
     document.getElementById('cancelContractModalBtn').addEventListener('click', closeModal);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+    });
 
     signBtn.addEventListener('click', async () => {
         signBtn.disabled = true;

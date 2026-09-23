@@ -9,16 +9,32 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --green-light: #a2d9a4;
+            --green-dark: #567357;
+            --green-darker: #197335;
+            --ink: #292420;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .page-wrap { overflow-x: hidden; }
 
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
-            color: #292420;
+            color: var(--ink);
             background: linear-gradient(180deg, #567357 0%, #59473f 100%);
             min-height: 100vh;
         }
+
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid var(--green-darker);
+            outline-offset: 2px;
+        }
+        .topnav a:focus-visible, .topnav .buttons a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .btn-white:focus-visible { outline-color: var(--ink); }
 
         /* Decorative leaf textures — same technique as homepage */
         .textured { position: relative; overflow: hidden; }
@@ -36,7 +52,7 @@
         .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
 
         .topnav {
-            background: linear-gradient(90deg, #567357, #a2d9a4);
+            background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
             padding: 14px clamp(20px, 5vw, 64px);
             display: flex;
             align-items: center;
@@ -66,15 +82,15 @@
             color: #fff; font-weight: 700; font-size: 19px;
             letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
         }
-        .topnav .logo .mark { width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px; flex-shrink: 0; }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 40px; padding: 0 18px; border: 2px solid #fff;
+            height: 44px; padding: 0 18px; border: 2px solid #fff;
             font-weight: 500; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer;
             white-space: nowrap; text-decoration: none;
         }
-        .btn-white { background: #fff; color: #292420; }
+        .btn-white { background: #fff; color: var(--ink); }
         .btn-outline-white { background: transparent; color: #fff; }
 
         /* ===== LOGIN AREA ===== */
@@ -172,7 +188,7 @@
             font-size: 14px;
             letter-spacing: 0.02em;
             text-decoration: none;
-            color: #526652;
+            color: #425542;
             background: #d8dcd8;
         }
         .tab-header a.active { background: #eeeded; color: #194e19; }
@@ -271,7 +287,6 @@
             .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
             .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
             .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
-            .btn { min-height: 44px; }
 
             /* Form fields: 16px avoids the iOS Safari auto-zoom-on-focus. */
             .form-group input { font-size: 16px; }
@@ -387,7 +402,7 @@
             <a href="{{ route('public.vr') }}">VR TOUR</a>
             <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
         </div>
-        <div class="logo"><span class="mark"></span> NEST.PH</div>
+        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
         <div class="buttons">
             <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
             <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
@@ -429,7 +444,7 @@
                         <label for="password">Password</label>
                         <input id="password" type="password" placeholder="Enter password" />
                     </div>
-                    <div class="login-error" id="loginError">
+                    <div class="login-error" id="loginError" role="alert">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86l-8.4 14.55A1.5 1.5 0 003.19 21h17.62a1.5 1.5 0 001.3-2.59l-8.4-14.55a1.5 1.5 0 00-2.62 0z"/></svg>
                         <span class="login-error-text">
                             <span class="main" id="loginErrorMain"></span>
@@ -449,11 +464,11 @@
     </div>
 
     <div class="modal-overlay" id="lockoutModal">
-        <div class="lockout-modal">
-            <div class="lockout-icon">
+        <div class="lockout-modal" role="alertdialog" aria-modal="true" aria-labelledby="lockoutModalTitle" tabindex="-1">
+            <div class="lockout-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
             </div>
-            <h3>Account Locked</h3>
+            <h3 id="lockoutModalTitle">Account Locked</h3>
             <p>You have exceeded the maximum number of allowed password attempts.</p>
             <p>For your security, your account has been locked for <strong>15 minutes</strong>.</p>
             <div class="lockout-box">
@@ -535,6 +550,7 @@ let lockoutInterval = null;
 
 function showLockoutModal(seconds) {
     document.getElementById('lockoutModal').classList.add('visible');
+    document.querySelector('.lockout-modal').focus();
     updateLockoutTimer(seconds);
 
     clearInterval(lockoutInterval);

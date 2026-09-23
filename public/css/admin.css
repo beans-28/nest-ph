@@ -18,7 +18,7 @@
   --status-maintenance:#c9962f; --status-maintenance-bg:#f6ecd6;
   --bg-page:#eef1ee; --card-bg:#ffffff;
   --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 }
 *{box-sizing:border-box;}
 html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
@@ -39,8 +39,7 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
   transition:width 0.2s ease;
 }
 .sidebar-logo{ display:flex; align-items:center; gap:8px; padding:0 20px 18px 20px; font-weight:700; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:12px; white-space:nowrap; flex-shrink:0; }
-.sidebar-logo .logo-mark{ width:16px; height:16px; border:2px solid #eaf0ea; display:inline-block; position:relative; flex-shrink:0; }
-.sidebar-logo .logo-mark::before, .sidebar-logo .logo-mark::after{ content:''; position:absolute; background:#eaf0ea; width:2px; height:12px; top:0; left:5px; }
+.sidebar-logo .logo-img{ height:24px; width:auto; flex-shrink:0; }
 .sidebar-section-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:rgba(234,240,234,0.55); padding:4px 20px 8px 20px; font-weight:600; white-space:nowrap; flex-shrink:0; }
 
 /* The scrollable middle section */
@@ -93,3 +92,12 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
 /* Generic "nothing here yet" state, reused by any admin list/table */
 .empty-note{ font-size:12px; color:var(--text-light); text-align:center; padding:22px 10px; }
 .empty-note .tag{ display:inline-block; margin-top:8px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--status-maintenance); background:var(--status-maintenance-bg); padding:3px 8px; border-radius:20px; }
+
+/* Keyboard focus: nav rows, the hamburger, and topbar/back-arrow icons are
+   divs, not native buttons/links, so they need an explicit focus style
+   and (in each page's own script) a tabindex + Enter/Space handler to be
+   usable without a mouse. */
+.nav-item:focus-visible, .hamburger:focus-visible, .topbar-icon:focus-visible, .back-arrow:focus-visible{
+  outline:2px solid #ffffff; outline-offset:-2px; border-radius:4px;
+}
+.topbar-icon:focus-visible, .back-arrow:focus-visible{ outline-color:var(--green-dark); }

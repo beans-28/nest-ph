@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>NEST.PH - Lease Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -17,7 +20,7 @@
     --blue:#33629e; --blue-bg:#e3ecf7;
     --bg-page:#eef1ee; --card-bg:#ffffff;
     --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --font-body:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Page-specific overrides of shared topbar/content-header rules from admin.css:
      this page uses a lighter (non-translucent) topbar icon, a bigger page title,
@@ -50,7 +53,7 @@
   .stat-sub{ font-size:11px; color:var(--status-occupied); font-weight:700; margin-top:2px; }
 
   .tabs-row{ display:flex; gap:28px; border-bottom:1px solid var(--border); margin-bottom:18px; }
-  .tab-item{ padding:10px 2px 14px; font-size:14px; font-weight:600; color:var(--text-light); cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-1px; }
+  .tab-item{ padding:10px 2px 14px; font-size:14px; font-family:inherit; font-weight:600; color:var(--text-light); background:none; border:none; border-bottom:3px solid transparent; cursor:pointer; margin-bottom:-1px; }
   .tab-item.active{ color:var(--green-accent); border-bottom-color:var(--green-accent); }
 
   .filters-row{ display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
@@ -149,15 +152,15 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
-        <div class="topbar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <div class="topbar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
     </div>
 
     <div class="content">
       <div class="page-head">
-        <div class="back-arrow" data-href="{{ route('dashboard') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
+        <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Lease Management</h1>
         <div class="spacer"></div>
         <button class="btn primary" id="openAddModalBtn">+ Add Lease Contract</button>
@@ -182,12 +185,12 @@
         </div>
       </div>
 
-      <div class="tabs-row" id="tabsRow">
-        <div class="tab-item active" data-tab="all">All Contracts</div>
-        <div class="tab-item" data-tab="active">Active</div>
-        <div class="tab-item" data-tab="expiring_soon">Expiring Soon</div>
-        <div class="tab-item" data-tab="expired">Expired</div>
-        <div class="tab-item" data-tab="terminated">Terminated</div>
+      <div class="tabs-row" id="tabsRow" role="tablist" aria-label="Filter contracts">
+        <button type="button" class="tab-item active" role="tab" aria-selected="true" data-tab="all">All Contracts</button>
+        <button type="button" class="tab-item" role="tab" aria-selected="false" data-tab="active">Active</button>
+        <button type="button" class="tab-item" role="tab" aria-selected="false" data-tab="expiring_soon">Expiring Soon</button>
+        <button type="button" class="tab-item" role="tab" aria-selected="false" data-tab="expired">Expired</button>
+        <button type="button" class="tab-item" role="tab" aria-selected="false" data-tab="terminated">Terminated</button>
       </div>
 
       <div class="filters-row">
@@ -217,8 +220,8 @@
 </div>
 
 <div class="modal-overlay" id="addModal">
-  <div class="modal-box">
-    <div class="modal-head"><h2>Add Lease Contract</h2></div>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="addModalTitle">
+    <div class="modal-head"><h2 id="addModalTitle">Add Lease Contract</h2></div>
     <div class="modal-body">
       <div class="fld">
         <label for="tenantSearchInput">Tenant</label>
@@ -269,7 +272,7 @@
 
 <div class="overlay" id="overlay"></div>
 
-<div class="drawer" id="drawer">
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
   <div class="drawer-head">
     <h2 id="drawerTitle">Contract</h2>
     <button class="drawer-close" id="drawerClose">&times;</button>
@@ -277,7 +280,7 @@
   <div class="drawer-body" id="drawerBody"></div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/json" id="contracts-data">{!! json_encode($contracts) !!}</script>
 
@@ -433,7 +436,11 @@
     t.addEventListener('click', () => {
       tab = t.dataset.tab;
       page = 1;
-      $('tabsRow').querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('active', x === t));
+      $('tabsRow').querySelectorAll('[data-tab]').forEach(x => {
+        const active = x === t;
+        x.classList.toggle('active', active);
+        x.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
       renderTable();
     });
   });
@@ -748,6 +755,23 @@
       localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
     });
   }
+
+  document.querySelectorAll('.sidebar [tabindex="0"], .hamburger, .topbar-icon, .back-arrow').forEach(el => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const drawer = document.getElementById('drawer');
+    const addModal = document.getElementById('addModal');
+    if (drawer && drawer.classList.contains('open')) document.getElementById('drawerClose').click();
+    else if (addModal && addModal.classList.contains('open')) addModal.classList.remove('open');
+  });
 })();
 </script>
 
