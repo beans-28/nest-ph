@@ -239,6 +239,18 @@ class ApplicationController extends Controller
             'tenant:id,first_name,last_name',
         ])->latest();
 
+        // Once an applicant resubmits with the same email, their old
+        // re-application request is resolved and drops off the list.
+        $query->where(function ($q) {
+            $q->where('status', '!=', 're_application_requested')
+                ->orWhereNotExists(function ($sub) {
+                    $sub->selectRaw('1')
+                        ->from('applications as newer')
+                        ->whereRaw('LOWER(newer.email) = LOWER(applications.email)')
+                        ->whereColumn('newer.created_at', '>', 'applications.created_at');
+                });
+        });
+
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
         }

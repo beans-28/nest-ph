@@ -206,11 +206,16 @@
             color: #292420;
             outline: none;
             font-family: inherit;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
+        /* The underline fields drop the default outline, so focus shows on the underline itself */
+        .form-group input:focus { border-bottom-color: var(--green-darker); box-shadow: 0 1px 0 var(--green-darker); }
 
         /* OTP code boxes */
         .otp-row { display: flex; gap: 12px; margin-bottom: 26px; }
         .otp-box {
+            flex: 0 1 52px;
+            min-width: 0;
             width: 52px;
             height: 60px;
             text-align: center;
@@ -305,7 +310,11 @@
             .login-left h1 { font-size: 22px; }
             .brand-mark { width: 110px; height: 110px; }
             .brand-mark span { font-size: 70px; }
-            .otp-box { width: 44px; height: 52px; font-size: 17px; }
+            .otp-row { gap: 8px; }
+            .otp-box { height: 54px; font-size: 20px; }
+            /* 16px avoids the iOS Safari auto-zoom-on-focus */
+            .form-group input { font-size: 16px; }
+            .login-right { border-radius: 24px; padding: 28px 20px; }
         }
         /* Phones: get visitors to the form fast. The full-height grid split its
            leftover space between the tagline and the form, leaving a big gap,

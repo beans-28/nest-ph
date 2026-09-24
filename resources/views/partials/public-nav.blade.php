@@ -13,6 +13,7 @@
 --}}
 <style>
     .topnav .nav-toggle, .topnav .nav-apply { display: none; }
+    .topnav .nav-logout-form .btn { height: 38px; padding: 0 16px; font-size: 13px; }
     /* The logo is a link now; some pages' own styles don't remove the link underline */
     .topnav .logo, .topnav .logo:hover { text-decoration: none; color: #fff; }
     .topnav .menu a[aria-current="page"] { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
@@ -74,17 +75,34 @@
         <a href="{{ route('public.dorminfo') }}" class="pill" @if(request()->routeIs('public.dorminfo')) aria-current="page" @endif>About the Dorm</a>
     </div>
     <a href="{{ route('home') }}" class="logo"><img src="{{ asset('images/nestph.png') }}" alt="" class="logo-img"> NEST.PH</a>
+    @if(!empty($tenantSession))
+    {{-- Signed-in tenant mid move-in: Log Out replaces Apply / Log In / Admin --}}
+    <form method="POST" action="{{ route('logout') }}" class="nav-apply nav-logout-form">
+        @csrf
+        <button type="submit" class="btn btn-white">Log Out</button>
+    </form>
+    @else
     <a href="{{ route('public.apply') }}" class="btn btn-white nav-apply">Apply</a>
+    @endif
     <button type="button" class="nav-toggle" id="publicNavToggle" aria-expanded="false" aria-controls="publicNavMenu">
         <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
         Menu
     </button>
+    @if(!empty($tenantSession))
+    <div class="buttons">
+        <form method="POST" action="{{ route('logout') }}" class="nav-apply-full">
+            @csrf
+            <button type="submit" class="btn btn-white">Log Out</button>
+        </form>
+    </div>
+    @else
     <div class="buttons">
         <a href="{{ route('public.apply') }}" class="btn btn-white nav-apply-full">Apply</a>
         <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
         <a href="{{ route('login.admin') }}" class="btn btn-outline-white">Admin</a>
     </div>
+    @endif
 </nav>
 
 <script>
