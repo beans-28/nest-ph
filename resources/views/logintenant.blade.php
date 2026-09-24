@@ -390,25 +390,22 @@
         .login-error-text { display: flex; flex-direction: column; gap: 2px; }
         .login-error-text .main { color: #cc3333; font-weight: 700; font-size: 13px; }
         .login-error-text .sub { color: #6b6b6b; font-weight: 400; font-size: 12px; }
+        /* Phones: get visitors to the form fast. The full-height grid split its
+           leftover space between the tagline and the form, leaving a big gap,
+           and the decorative N mark pushed the form down further. Placed last
+           so it wins over the base rules above. */
+        @media (max-width: 640px) {
+            .login-grid { min-height: 0; padding-top: 12px; }
+            .login-left { padding-bottom: 16px; }
+            .login-left-content { justify-content: flex-start; }
+            .brand-mark { display: none; }
+            .back-button { margin-bottom: 14px; }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="topnav textured">
-        <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
-        <div class="menu">
-            <a href="{{ route('home') }}">HOME</a>
-            <a href="{{ route('public.rooms') }}">ROOMS</a>
-            <a href="{{ route('public.vr') }}">VR TOUR</a>
-            <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
-        </div>
-        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
-        <div class="buttons">
-            <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
-            <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
-            <a href="{{ route('login.admin') }}" class="btn btn-outline-white">Admin</a>
-        </div>
-    </nav>
+    @include('partials.public-nav')
 
     <div class="page-wrap">
     <div class="login-grid">

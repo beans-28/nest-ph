@@ -77,6 +77,12 @@
   .toast{ position:fixed; bottom:22px; right:22px; background:var(--green-accent); color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; display:none; z-index:99; box-shadow:0 6px 18px rgba(0,0,0,.2); }
   .toast.error{ background:var(--status-occupied); }
   .toast.visible{ display:block; }
+  /* Mobile: each inquiry wraps onto two lines instead of squeezing five items into one */
+  @media (max-width:640px){
+    .list-row{ flex-wrap:wrap; gap:6px 10px; padding:14px 16px; }
+    .lr-name{ min-width:0; flex:1 1 auto; }
+    .lr-msg{ flex:1 1 100%; order:5; white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  }
 </style>
 </head>
 <body>

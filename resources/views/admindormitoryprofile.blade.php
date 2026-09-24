@@ -39,6 +39,11 @@
   /* ===== Layout: form column + sticky preview column ===== */
   .profile-grid{ display:grid; grid-template-columns:1fr 340px; gap:22px; align-items:start; }
   @media (max-width:1080px){ .profile-grid{ grid-template-columns:1fr; } }
+  /* Grid columns grow to fit their widest unbreakable text by default, so one
+     long file name or word made the page scroll sideways on phones. */
+  .profile-grid > *{ min-width:0; }
+  .profile-grid{ overflow-wrap:anywhere; }
+  @media (max-width:640px){ .page-sub{ margin-left:0; } .card{ padding:18px 16px; } }
 
   .card{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-bottom:20px; }
   .card h2{ font-size:15px; font-weight:700; color:var(--green-accent); margin:0 0 4px 0; }
@@ -163,6 +168,49 @@
   .legit-update-btn:hover{ background:#f0f7f1; }
   .legit-remove-link{ display:block; width:100%; text-align:center; background:none; border:none; color:var(--status-occupied); font-size:11.5px; font-weight:600; margin-top:8px; cursor:pointer; font-family:var(--font-body); }
   .legit-remove-link:hover{ text-decoration:underline; }
+  .rv-card-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+  .rv-card-head .btn{ flex-shrink:0; }
+  @media (max-width:640px){ .rv-card-head{ flex-direction:column; gap:0; } .rv-card-head .btn{ margin-bottom:18px; } }
+  .rv-summary{ font-size:12.5px; color:var(--text-mid); margin:0 0 14px 0; }
+  .rv-summary strong{ color:var(--text-dark); }
+  .rv-toolbar{ display:flex; flex-direction:column; gap:12px; margin-bottom:14px; }
+  .rv-tabs{ display:flex; gap:6px; flex-wrap:wrap; }
+  .rv-tab{ font-size:12px; font-weight:600; padding:7px 12px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); }
+  .rv-tab:hover{ background:#f7f9f7; }
+  .rv-tab.needs-review{ color:var(--text-dark); font-weight:700; border-color:var(--text-light); }
+  .rv-tab.active, .rv-tab.active:hover{ background:var(--green-accent); border-color:var(--green-accent); color:#fff; }
+  .rv-filters{ display:grid; grid-template-columns:1fr 160px; gap:12px; }
+  @media (max-width:640px){ .rv-filters{ grid-template-columns:1fr; } }
+  .rv-field{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .rv-field label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
+  .rv-field input, .rv-field select{ border:1px solid var(--border); border-radius:8px; padding:9px 10px; font-size:12.5px; font-family:var(--font-body); color:var(--text-dark); background:#fff; }
+  .rv-field input:focus, .rv-field select:focus{ outline:none; border-color:var(--green-accent); box-shadow:0 0 0 2px #eaf0ea; }
+  #reviewModerationCard .btn:focus-visible, #reviewModerationCard .rv-tab:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; }
+  .rv-list{ list-style:none; margin:0; padding:0; }
+  .rv-row{ padding:14px 4px; border-bottom:1px solid #f0f2f0; }
+  .rv-row:last-child{ border-bottom:none; }
+  .rv-head{ display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+  .rv-name{ font-size:13px; font-weight:700; color:var(--text-dark); }
+  .rv-date{ font-size:11.5px; color:var(--text-mid); margin-left:8px; }
+  .rv-status{ font-size:11.5px; font-weight:700; flex-shrink:0; }
+  .rv-row[data-status="published"] .rv-status{ color:var(--green-accent); }
+  .rv-row[data-status="hidden"] .rv-status{ color:var(--text-dark); }
+  .rv-row[data-status="removed"] .rv-status{ color:var(--text-mid); }
+  .rv-stars{ color:#f5b301; font-size:13px; letter-spacing:1px; margin:4px 0; }
+  .rv-comment{ font-size:13px; color:var(--text-dark); line-height:1.6; white-space:pre-line; word-break:break-word; }
+  .rv-comment.empty{ color:var(--text-mid); font-style:italic; }
+  .rv-row[data-status="removed"] .rv-comment{ color:var(--text-mid); }
+  .rv-meta{ font-size:11.5px; color:var(--text-mid); margin-top:6px; }
+  .rv-meta:empty{ display:none; }
+  .rv-actions{ display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .rv-row[data-status="published"] .act-publish,
+  .rv-row[data-status="published"] .act-restore,
+  .rv-row[data-status="hidden"] .act-hide,
+  .rv-row[data-status="hidden"] .act-restore,
+  .rv-row[data-status="removed"] .act-publish,
+  .rv-row[data-status="removed"] .act-hide,
+  .rv-row[data-status="removed"] .act-remove{ display:none; }
+  .rv-empty{ font-size:12.5px; color:var(--text-mid); font-style:italic; padding:14px 4px; display:none; margin:0; }
 </style>
 </head>
 <body>
@@ -290,6 +338,75 @@
                 </label>
               @endforeach
             </div>
+          </div>
+
+          {{-- Review Moderation --}}
+          <div class="card" id="reviewModerationCard">
+            <div class="rv-card-head">
+              <div>
+                <h2>Review Moderation</h2>
+                <p class="card-sub">Reviews with offensive language (English or Filipino), links, contact details, or spam patterns are hidden automatically and wait here for your decision.</p>
+              </div>
+              <button type="button" class="btn sm" id="rvRescanBtn">Re-scan Reviews</button>
+            </div>
+
+            <p class="rv-summary">Public rating: <strong id="rvAverage">{{ number_format($reviewAverage, 1) }}</strong> from <strong id="rvPublicCount">{{ $reviewCounts['published'] }}</strong> public <span id="rvPublicNoun">{{ $reviewCounts['published'] == 1 ? 'review' : 'reviews' }}</span>.</p>
+
+            <div class="rv-toolbar">
+              <div class="rv-tabs" role="group" aria-label="Filter by status">
+                <button type="button" class="rv-tab active" data-filter="all" aria-pressed="true">All (<span data-count="all">{{ $reviewCounts['all'] }}</span>)</button>
+                <button type="button" class="rv-tab" data-filter="published" aria-pressed="false">Public (<span data-count="published">{{ $reviewCounts['published'] }}</span>)</button>
+                <button type="button" class="rv-tab {{ $reviewCounts['hidden'] > 0 ? 'needs-review' : '' }}" data-filter="hidden" aria-pressed="false">Hidden (<span data-count="hidden">{{ $reviewCounts['hidden'] }}</span>)</button>
+                <button type="button" class="rv-tab" data-filter="removed" aria-pressed="false">Removed (<span data-count="removed">{{ $reviewCounts['removed'] }}</span>)</button>
+              </div>
+              <div class="rv-filters">
+                <div class="rv-field">
+                  <label for="rvSearch">Search name or comment</label>
+                  <input type="search" id="rvSearch" maxlength="100">
+                </div>
+                <div class="rv-field">
+                  <label for="rvRating">Rating</label>
+                  <select id="rvRating">
+                    <option value="">All ratings</option>
+                    @for ($s = 5; $s >= 1; $s--)
+                      <option value="{{ $s }}">{{ $s }} {{ $s == 1 ? 'star' : 'stars' }}</option>
+                    @endfor
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <ul class="rv-list" id="rvList">
+              @foreach($reviews as $review)
+                <li class="rv-row"
+                    data-id="{{ $review->id }}"
+                    data-status="{{ $review->status }}"
+                    data-rating="{{ $review->rating }}"
+                    data-search="{{ mb_strtolower(($review->tenant?->full_name ?? '') . ' ' . ($review->comment ?? '')) }}">
+                  <div class="rv-head">
+                    <div>
+                      <span class="rv-name">{{ $review->tenant?->full_name ?? 'Former tenant' }}</span>
+                      <span class="rv-date">{{ $review->created_at->format('M j, Y') }}</span>
+                    </div>
+                    <span class="rv-status">{{ $review->status_label }}</span>
+                  </div>
+                  <div class="rv-stars" role="img" aria-label="Rated {{ $review->rating }} out of 5">{{ str_repeat('★', $review->rating) }}{{ str_repeat('☆', 5 - $review->rating) }}</div>
+                  @if($review->comment)
+                    <div class="rv-comment">{{ $review->comment }}</div>
+                  @else
+                    <div class="rv-comment empty">Rating only, no written comment.</div>
+                  @endif
+                  <div class="rv-meta">{{ $review->moderationSummary() }}</div>
+                  <div class="rv-actions">
+                    <button type="button" class="btn sm primary act-publish">Publish</button>
+                    <button type="button" class="btn sm primary act-restore">Restore</button>
+                    <button type="button" class="btn sm act-hide">Hide</button>
+                    <button type="button" class="btn sm warn act-remove">Remove</button>
+                  </div>
+                </li>
+              @endforeach
+            </ul>
+            <p class="rv-empty" id="rvEmpty" tabindex="-1">No reviews match this view.</p>
           </div>
 
           {{-- Legitimacy Documents --}}
@@ -812,6 +929,151 @@
       }
     });
   });
+})();
+</script>
+
+<script>
+(function(){
+  const card = document.getElementById('reviewModerationCard');
+  if (!card) return;
+
+  const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+  const LABELS = { published: 'Public', hidden: 'Hidden', removed: 'Removed' };
+  let currentFilter = 'all';
+
+  function notify(msg, isError) {
+    const t = document.getElementById('toast');
+    if (!t) return alert(msg);
+    t.textContent = msg;
+    t.classList.toggle('error', !!isError);
+    t.classList.add('visible');
+    clearTimeout(window._nestToastTimer);
+    window._nestToastTimer = setTimeout(() => t.classList.remove('visible'), 3200);
+  }
+
+  async function send(url, method, payload) {
+    const res = await fetch(url, {
+      method,
+      headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: payload ? JSON.stringify(payload) : null,
+    });
+    let body = {};
+    try { body = await res.json(); } catch (e) {}
+    if (!res.ok) throw new Error(body.message || 'Something went wrong.');
+    return body;
+  }
+
+  function rows() { return Array.from(card.querySelectorAll('.rv-row')); }
+
+  function applyFilters() {
+    const q = document.getElementById('rvSearch').value.trim().toLowerCase();
+    const rating = document.getElementById('rvRating').value;
+    let shown = 0;
+    rows().forEach(row => {
+      const ok = (currentFilter === 'all' || row.dataset.status === currentFilter)
+        && (!rating || row.dataset.rating === rating)
+        && (!q || row.dataset.search.includes(q));
+      row.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    const empty = document.getElementById('rvEmpty');
+    empty.textContent = rows().length ? 'No reviews match this view.' : 'No reviews yet.';
+    empty.style.display = shown ? 'none' : 'block';
+  }
+
+  function recount() {
+    const counts = { all: 0, published: 0, hidden: 0, removed: 0 };
+    rows().forEach(r => { counts.all++; counts[r.dataset.status]++; });
+    Object.keys(counts).forEach(k => {
+      const el = card.querySelector(`[data-count="${k}"]`);
+      if (el) el.textContent = counts[k];
+    });
+    card.querySelector('.rv-tab[data-filter="hidden"]').classList.toggle('needs-review', counts.hidden > 0);
+  }
+
+  // After an action, keep keyboard focus inside the list instead of losing it.
+  function refocus(row) {
+    const isVisible = (el) => el.offsetParent !== null;
+    let target = row;
+    while (target && !isVisible(target)) target = target.nextElementSibling;
+    if (!target) target = rows().reverse().find(isVisible);
+    const btn = target && Array.from(target.querySelectorAll('.rv-actions button')).find(isVisible);
+    (btn || document.getElementById('rvEmpty')).focus();
+  }
+
+  function updateRow(row, body) {
+    row.dataset.status = body.review.status;
+    row.querySelector('.rv-status').textContent = LABELS[body.review.status];
+    row.querySelector('.rv-meta').textContent = body.review.summary;
+    document.getElementById('rvAverage').textContent = Number(body.aggregate.average).toFixed(1);
+    document.getElementById('rvPublicCount').textContent = body.aggregate.count;
+    document.getElementById('rvPublicNoun').textContent = Number(body.aggregate.count) === 1 ? 'review' : 'reviews';
+    recount();
+    applyFilters();
+    refocus(row);
+  }
+
+  card.querySelectorAll('.rv-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      card.querySelectorAll('.rv-tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-pressed', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-pressed', 'true');
+      currentFilter = tab.dataset.filter;
+      applyFilters();
+    });
+  });
+  document.getElementById('rvSearch').addEventListener('input', applyFilters);
+  document.getElementById('rvRating').addEventListener('change', applyFilters);
+
+  card.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.rv-actions button');
+    if (!btn) return;
+    const row = btn.closest('.rv-row');
+    let action;
+    let payload = null;
+
+    if (btn.classList.contains('act-publish') || btn.classList.contains('act-restore')) {
+      action = 'publish';
+    } else if (btn.classList.contains('act-hide')) {
+      if (!confirm('Hide this review from the public Dorm Info page?')) return;
+      action = 'hide';
+    } else if (btn.classList.contains('act-remove')) {
+      const note = prompt('Remove this review? It will never show publicly, and the tenant cannot submit another one.\n\nReason (optional):');
+      if (note === null) return;
+      action = 'remove';
+      payload = { note: note.trim() };
+    } else {
+      return;
+    }
+
+    btn.disabled = true;
+    try {
+      const body = await send(`/dormitory-profile/reviews/${row.dataset.id}/${action}`, 'PATCH', payload);
+      updateRow(row, body);
+      notify(body.message);
+    } catch (err) {
+      notify(err.message, true);
+    }
+    btn.disabled = false;
+  });
+
+  document.getElementById('rvRescanBtn').addEventListener('click', async function () {
+    if (!confirm('Check all reviews again against the word list and spam rules? Reviews you already decided on are skipped.')) return;
+    this.disabled = true;
+    try {
+      const body = await send('{{ route('dormitory-profile.reviews.rescan') }}', 'POST');
+      notify(body.message);
+      setTimeout(() => location.reload(), 1200);
+    } catch (err) {
+      notify(err.message, true);
+      this.disabled = false;
+    }
+  });
+
+  applyFilters();
 })();
 </script>
 

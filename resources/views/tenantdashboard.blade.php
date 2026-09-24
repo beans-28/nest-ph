@@ -16,7 +16,6 @@
      plus its own dashboard content styling below. */
   :root{
     --pending-bg:#fbe9c8; --pending-text:#a4761a;
-    --paid-bg:#d9f2dd; --paid-text:#3f7a4a;
   }
 
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
@@ -28,9 +27,9 @@
   .stat-card{ background:var(--card-bg); border-radius:14px; border:1px solid var(--border); padding:18px 20px; display:flex; align-items:center; gap:16px; }
   .stat-icon{ width:52px; height:52px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .stat-icon svg{ width:22px; height:22px; }
-  .stat-icon.green{ background:#d9f2dd; color:var(--green-dark); }
+  .stat-icon.green{ background:var(--sage-100); color:var(--green-dark); }
   .stat-icon.attention{ background:#f7d9d7; color:#c0463d; }
-  .stat-icon.neutral{ background:#eef1ee; color:var(--text-mid); }
+  .stat-icon.neutral{ background:var(--cream); color:var(--text-mid); }
   .stat-label{ font-size:10.5px; font-weight:700; letter-spacing:0.4px; text-transform:uppercase; color:var(--text-light); margin-bottom:3px; }
   .stat-value{ font-size:20px; font-weight:800; color:var(--text-dark); }
   .stat-card.emphasis .stat-value{ font-size:23px; color:var(--green-darker); }
@@ -49,13 +48,15 @@
      Same message, a fraction of the vertical space, and sits right under
      the stats where a quick reminder belongs instead of trailing the
      whole page as a disconnected afterthought. */
-  .tip-strip{ background:#eef4ee; border:1px solid #dce8dc; border-radius:10px; padding:12px 18px; display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .tip-strip{ background:var(--sage-50); border:1px solid var(--sage-200); border-radius:10px; padding:12px 18px; display:flex; align-items:center; gap:12px; margin-bottom:20px; }
   .tip-strip-icon{ width:30px; height:30px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:var(--green-dark); }
   .tip-strip-icon svg{ width:15px; height:15px; }
   .tip-strip-text{ font-size:12.5px; color:var(--text-mid); }
   .tip-strip-text strong{ color:var(--text-dark); font-weight:700; }
 
   .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+  /* Must come after the base rule above, or the 2-column layout wins on phones */
+  @media (max-width: 900px){ .dash-grid{ grid-template-columns:1fr; } }
   .panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
   .panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
   .panel-head h2{ font-size:15px; font-weight:700; margin:0; }

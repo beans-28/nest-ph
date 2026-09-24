@@ -45,3 +45,4 @@
     </div>
   </div>
 </aside>
+<script src="{{ asset('js/sidebar-drawer.js') }}"></script>

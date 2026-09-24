@@ -130,6 +130,12 @@
   .toast.visible{ display:block; }
 
   @media (max-width:1100px){ .link-layout{ grid-template-columns:1fr; } }
+  /* Mobile: form fields fill the width and settings stack */
+  @media (max-width:640px){
+    .fld input[type=text], .fld select{ min-width:0; width:100%; }
+    .settings-row{ grid-template-columns:1fr; }
+    .vr-tabs-bar{ flex-wrap:wrap; }
+  }
 </style>
 </head>
 <body>

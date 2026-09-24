@@ -15,7 +15,6 @@
      extra variable (--green-mid) that tenant.css doesn't define, plus its
      own profile/change-password content styling below. */
   :root{
-    --green-mid:#4f7c57;
   }
 
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
@@ -38,7 +37,7 @@
   /* ===== Profile tab ===== */
   .request-edit-banner{
     display:flex; align-items:center; gap:14px; justify-content:space-between;
-    background:#eaf3ec; border:1px solid #cfe3d2; border-radius:12px;
+    background:var(--sage-50); border:1px solid var(--sage-200); border-radius:12px;
     padding:14px 18px; margin-bottom:22px; max-width:640px;
   }
   .request-edit-banner p{ margin:0; font-size:12.5px; color:var(--text-dark); line-height:1.5; }
@@ -86,7 +85,7 @@
 
   .form-banner{ display:none; align-items:flex-start; gap:8px; padding:12px 14px; border-radius:8px; font-size:12.5px; margin-bottom:20px; line-height:1.5; }
   .form-banner.visible{ display:flex; }
-  .form-banner.success{ background:#d9f2dd; color:#2f6f3c; }
+  .form-banner.success{ background:var(--sage-100); color:var(--sage-600); }
   .form-banner.error{ background:#f7d9d7; color:#c0463d; }
 
   .pw-submit-btn{ background:var(--green-btn); color:#fff; border:none; border-radius:8px; padding:13px 0; width:100%; font-weight:700; font-size:13.5px; letter-spacing:0.03em; cursor:pointer; margin-top:4px; transition:background 0.15s ease; }

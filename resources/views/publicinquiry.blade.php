@@ -208,25 +208,22 @@
             /* Form fields: 16px avoids the iOS Safari auto-zoom-on-focus. */
             .form-group input, .form-group select, .form-group textarea { font-size: 16px; }
         }
+        /* Phones: get visitors to the form fast. The full-height grid split its
+           leftover space between the tagline and the form, leaving a big gap,
+           and the decorative N mark pushed the form down further. Placed last
+           so it wins over the base rules above. */
+        @media (max-width: 640px) {
+            .login-grid { min-height: 0; padding-top: 12px; }
+            .login-left { padding-bottom: 16px; }
+            .login-left-content { justify-content: flex-start; }
+            .brand-mark { display: none; }
+            .back-button { margin-bottom: 14px; }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="topnav textured">
-        <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
-        <div class="menu">
-            <a href="{{ route('home') }}">HOME</a>
-            <a href="{{ route('public.rooms') }}">ROOMS</a>
-            <a href="{{ route('public.vr') }}">VR TOUR</a>
-            <a href="{{ route('public.dorminfo') }}" class="pill">About the Dorm</a>
-        </div>
-        <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
-        <div class="buttons">
-            <a href="{{ route('public.apply') }}" class="btn btn-white">Apply</a>
-            <a href="{{ route('login.tenant') }}" class="btn btn-white">Log In</a>
-            <a href="{{ route('login.admin') }}" class="btn btn-outline-white">Admin</a>
-        </div>
-    </nav>
+    @include('partials.public-nav')
 
     <div class="page-wrap">
     <div class="login-grid">

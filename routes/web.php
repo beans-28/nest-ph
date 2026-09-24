@@ -29,6 +29,7 @@ use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TenantMoveOutController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\ReviewModerationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -230,6 +231,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'updateHouseRule']);
     Route::delete('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'destroyHouseRule']);
 
+        // --- Review Moderation (card on the Dormitory Profile page) ---
+    Route::post('/dormitory-profile/reviews/rescan', [ReviewModerationController::class, 'rescan'])->name('dormitory-profile.reviews.rescan');
+    Route::patch('/dormitory-profile/reviews/{review}/publish', [ReviewModerationController::class, 'publish']);
+    Route::patch('/dormitory-profile/reviews/{review}/hide', [ReviewModerationController::class, 'hide']);
+    Route::patch('/dormitory-profile/reviews/{review}/remove', [ReviewModerationController::class, 'remove']);
+    
     Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
     Route::delete('/announcements/comments/{comment}', [AnnouncementController::class, 'destroyComment'])->name('announcements.comments.destroy');
     Route::patch('/announcements/{announcement}/restrict', [AnnouncementController::class, 'toggleRestrict'])->name('announcements.restrict');

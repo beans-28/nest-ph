@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ReviewModerationService;
 
 /**
  * Use Case Reports Tables 42/43 — Reviews & Ratings, Submit Review after
@@ -58,8 +59,12 @@ class ReviewController extends Controller
             'comment' => $data['comment'] ?? null,
         ]);
 
+        $review = app(ReviewModerationService::class)->autoModerate($review);
+
         return response()->json([
-            'message' => 'Thank you for your review!',
+            'message' => $review->status === 'hidden'
+                ? 'Thank you for your review! It will appear publicly once an administrator has checked it.'
+                : 'Thank you for your review!',
             'review' => $review,
         ]);
     }

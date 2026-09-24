@@ -47,6 +47,14 @@
   .page-link:hover{ background:#f3f6f3; }
   .page-current{ background:var(--green-accent); color:#fff; font-weight:700; }
   .page-disabled{ min-width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:var(--text-light); opacity:0.4; }
+  /* Mobile: tighter padding; the log table scrolls sideways instead of crushing the Details column */
+  @media (max-width:640px){
+    .topbar{ padding:12px 16px; }
+    .content{ padding:18px 16px 40px 16px; }
+    .page-head h1{ font-size:18px; }
+    .table-panel{ padding:4px 12px; }
+    table.activity-table{ min-width:640px; }
+  }
 </style>
 </head>
 <body>

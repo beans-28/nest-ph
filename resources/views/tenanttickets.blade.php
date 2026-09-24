@@ -15,7 +15,6 @@
      several extra variable pairs (green-mid, blue/purple/orange/red) that
      tenant.css doesn't define, plus its own ticket-list/modal styling. */
   :root{
-    --green-mid:#4f7c57;
     --blue:#33629e; --blue-bg:#e3ecf7;
     --purple:#7a4fc9; --purple-bg:#e9defa;
     --orange:#a4761a; --orange-bg:#fbe9c8;
@@ -43,13 +42,13 @@
   .tc-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:4px; }
   .tc-title{ font-size:15px; font-weight:700; color:var(--green-accent); margin:0; }
   .tc-sub{ font-size:11.5px; color:var(--text-light); margin-top:4px; }
-  .tc-cat{ font-size:11px; color:var(--text-mid); background:#f4f7f4; border-radius:6px; padding:3px 8px; display:inline-block; margin-top:6px; }
+  .tc-cat{ font-size:11px; color:var(--text-mid); background:var(--sage-50); border-radius:6px; padding:3px 8px; display:inline-block; margin-top:6px; }
 
   .badge{ font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
   .badge.open{ background:var(--blue-bg); color:var(--blue); }
   .badge.seen{ background:var(--purple-bg); color:var(--purple); }
   .badge.in_progress{ background:var(--orange-bg); color:var(--orange); }
-  .badge.resolved{ background:#d9f2dd; color:#3f7a4a; }
+  .badge.resolved{ background:var(--sage-100); color:var(--sage-700); }
   .badge.rejected{ background:var(--red-bg); color:var(--red); }
 
   .tc-gallery{ display:flex; gap:8px; flex-wrap:wrap; margin:14px 0; }
@@ -58,7 +57,7 @@
   .thread{ display:flex; flex-direction:column; gap:10px; margin-top:16px; }
   .msg{ display:flex; gap:10px; align-items:flex-start; }
   .msg-avatar{ width:32px; height:32px; border-radius:50%; background:var(--green-dark); color:#fff; font-size:11.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .msg-body{ flex:1; border-radius:10px; padding:10px 14px; background:#f5f7f5; }
+  .msg-body{ flex:1; border-radius:10px; padding:10px 14px; background:var(--sage-50); }
   .msg.admin .msg-body{ background:var(--blue-bg); }
   .msg-name{ font-size:12.5px; font-weight:700; color:var(--text-dark); }
   .msg.admin .msg-name{ color:var(--green-accent); }
@@ -79,13 +78,13 @@
   .fld{ margin-bottom:16px; }
   .fld label{ display:block; font-size:13px; font-weight:600; color:var(--text-dark); margin-bottom:7px; }
   .fld input, .fld select, .fld textarea{ width:100%; border:1px solid var(--border); border-radius:9px; padding:11px 14px; font-size:13.5px; font-family:var(--font-body); color:var(--text-dark); }
-  .fld input[readonly]{ background:#f5f7f5; color:var(--text-mid); }
+  .fld input[readonly]{ background:var(--sage-50); color:var(--text-mid); }
   .fld textarea{ min-height:90px; resize:vertical; }
 
   /* Photo grid: small square tiles, native picker feel instead of one
      big centered dropzone. Up to MAX_ATTACHMENTS, plus an "add" tile. */
   .photo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(76px, 1fr)); gap:10px; }
-  .photo-tile{ position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:#f5f7f5; }
+  .photo-tile{ position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:var(--sage-50); }
   .photo-tile img{ width:100%; height:100%; object-fit:cover; display:block; }
   .photo-tile .remove-tile{ position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(20,30,20,.65); color:#fff; border:none; font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
   .photo-tile .remove-tile:hover{ background:var(--red); }

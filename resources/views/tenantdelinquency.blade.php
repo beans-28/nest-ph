@@ -19,9 +19,7 @@
      a stage-dots row, and an info box that billing's takeover doesn't
      have), and its own escalation-timeline content styling below. */
   :root{
-    --green-mid:#4f7c57;
     --pending-bg:#fbe9c8; --pending-text:#a4761a;
-    --paid-bg:#d9f2dd; --paid-text:#3f7a4a;
   }
 
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
@@ -46,7 +44,7 @@
 
   /* ===== Good-standing placeholder ===== */
   .good-standing-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:56px 32px; text-align:center; }
-  .good-standing-icon{ width:64px; height:64px; border-radius:50%; background:#eaf5eb; display:flex; align-items:center; justify-content:center; margin:0 auto 18px auto; }
+  .good-standing-icon{ width:64px; height:64px; border-radius:50%; background:var(--sage-100); display:flex; align-items:center; justify-content:center; margin:0 auto 18px auto; }
   .good-standing-icon svg{ width:30px; height:30px; color:var(--green-dark); }
   .good-standing-card h2{ font-size:17px; margin:0 0 8px 0; color:var(--text-dark); }
   .good-standing-card p{ font-size:13px; color:var(--text-mid); max-width:340px; margin:0 auto; line-height:1.6; }
@@ -101,7 +99,7 @@
   .pay-now-pill{ background:#c0463d; color:#fff; border:none; border-radius:8px; padding:12px 28px; font-size:12.5px; font-weight:700; cursor:pointer; letter-spacing:0.3px; }
   .pay-now-pill:hover{ background:#a8382f; }
   .contact-admin-pill{ background:var(--green-darker); color:#fff; border-radius:8px; padding:12px 28px; font-size:12.5px; font-weight:700; cursor:pointer; letter-spacing:0.3px; text-decoration:none; display:inline-flex; align-items:center; }
-  .contact-admin-pill:hover{ background:#233f29; }
+  .contact-admin-pill:hover{ background:var(--sage-900); }
 
   /* Stage 4's expanded row: the emergency contact's name/number + the
      actual SMS message sent to them (real data from message_content,

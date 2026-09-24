@@ -8,6 +8,7 @@ use App\Models\DormitoryProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Review;
 
 /**
  * Use Case Report — Manage Dormitory Profile (Table 39). The Dormitory
@@ -28,6 +29,8 @@ class DormitoryProfileController extends Controller
         $amenities = DormitoryAmenity::orderBy('sort_order')->get();
         $houseRules = DormitoryHouseRule::orderBy('sort_order')->orderBy('id')->get();
 
+        $reviews = Review::with(['tenant', 'moderator'])->latest()->get();
+
         return view('admindormitoryprofile', [
             'profile' => $profile,
             'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
@@ -44,6 +47,14 @@ class DormitoryProfileController extends Controller
                 : null,
             'amenities' => $amenities,
             'houseRules' => $houseRules,
+            'reviews' => $reviews,
+            'reviewCounts' => [
+                'all' => $reviews->count(),
+                'published' => $reviews->where('status', 'published')->count(),
+                'hidden' => $reviews->where('status', 'hidden')->count(),
+                'removed' => $reviews->where('status', 'removed')->count(),
+            ],
+            'reviewAverage' => Review::aggregate()['average'],
         ]);
     }
 

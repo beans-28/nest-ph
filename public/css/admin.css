@@ -81,7 +81,10 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
 .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:18px; }
 .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; color:#eaf0ea; cursor:pointer; position:relative; }
 .topbar-icon svg{ width:16px; height:16px; }
-.badge{ position:absolute; top:-3px; right:-3px; background:#e0554f; color:#fff; font-size:9px; font-weight:700; width:15px; height:15px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--green-dark); }
+/* Scoped to .topbar-icon: a bare .badge rule leaked position:absolute and a
+   15px size into the status labels on Tickets, Inquiries and Applications,
+   which pushed the page wider than the screen. */
+.topbar-icon .badge{ position:absolute; top:-3px; right:-3px; background:#e0554f; color:#fff; font-size:9px; font-weight:700; width:15px; height:15px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid var(--green-dark); }
 .avatar-icon{ background:rgba(255,255,255,0.9); color:var(--green-dark); }
 
 .content{ padding:28px 32px 48px 32px; flex:1; }
@@ -101,3 +104,88 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
   outline:2px solid #ffffff; outline-offset:-2px; border-radius:4px;
 }
 .topbar-icon:focus-visible, .back-arrow:focus-visible{ outline-color:var(--green-dark); }
+
+/* =====================================================================
+   Mobile (860px and below)
+   - The sidebar becomes a slide-in drawer instead of a column that eats
+     half the screen. public/js/sidebar-drawer.js (loaded by the sidebar
+     partial) opens and closes it from the hamburger.
+   - The topbar stays pinned to the top while scrolling.
+   - Shared page patterns (tabs, filters, stat cards, tables, modals)
+     get tighter, phone-friendly layouts. The `.main` prefix makes these
+     win over each page's own <style> block without editing those pages.
+   ===================================================================== */
+@media (max-width: 860px){
+  .sidebar, .sidebar.collapsed{
+    position:fixed; top:0; left:0; bottom:0; z-index:200;
+    width:min(280px, 84vw); height:100%; height:100dvh;
+    transform:translateX(-100%); visibility:hidden;
+    transition:transform .24s cubic-bezier(.2,.8,.2,1), visibility 0s linear .24s;
+    box-shadow:none;
+  }
+  .sidebar.open{
+    transform:none; visibility:visible;
+    transition:transform .24s cubic-bezier(.2,.8,.2,1), visibility 0s;
+    box-shadow:8px 0 28px rgba(0,0,0,.25);
+  }
+  /* The drawer always shows full labels, even if desktop was collapsed. */
+  .sidebar.collapsed .sidebar-logo{ justify-content:flex-start; padding:0 20px 18px 20px; }
+  .sidebar.collapsed .sidebar-logo .logo-text,
+  .sidebar.collapsed .nav-item .label{ display:inline; }
+  .sidebar.collapsed .sidebar-section-label{ display:block; }
+  .sidebar.collapsed .nav-item{ justify-content:flex-start; padding:9px 20px; gap:11px; }
+  .sidebar.collapsed .sidebar-footer{ padding:12px 20px 0 20px; }
+  .sidebar.collapsed .sidebar-footer .nav-item{ padding:9px 12px; }
+  .sidebar .nav-item{ padding-top:12px; padding-bottom:12px; font-size:14px; }
+
+  .sidebar-backdrop{
+    position:fixed; inset:0; z-index:190; background:rgba(20,32,24,.45);
+    opacity:0; visibility:hidden; transition:opacity .2s ease, visibility 0s linear .2s;
+  }
+  .sidebar-backdrop.show{ opacity:1; visibility:visible; transition:opacity .2s ease, visibility 0s; }
+  body.drawer-open{ overflow:hidden; }
+
+  .main > .topbar{ position:sticky; top:0; z-index:100; padding:10px 16px; }
+  /* Bigger tap area around the 20px hamburger lines */
+  .topbar .hamburger{ box-sizing:content-box; padding:12px 10px; margin:-12px -10px; }
+
+  .main > .content{ padding:18px 16px 40px 16px; }
+  .main .page-head{ margin-bottom:16px; }
+  .main .page-head h1{ font-size:18px; }
+}
+@media (max-width: 860px) and (prefers-reduced-motion: reduce){
+  .sidebar, .sidebar.open, .sidebar-backdrop, .sidebar-backdrop.show{ transition:none; }
+}
+
+@media (max-width: 640px){
+  /* Stat cards: two per row instead of one tall stack */
+  .main .stats-row{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+  .main .stat-card{ padding:12px; gap:10px; min-width:0; }
+
+  /* Tab strips: action buttons on top, tabs in one swipeable row that
+     keeps its underline against the divider */
+  .main .tabs-row:has(> .tabs-left){ flex-direction:column-reverse; align-items:stretch; gap:12px; }
+  .main .tabs-row:has(> .tabs-left) > div:last-child{ flex-wrap:wrap; }
+  .main .tabs-row:has(> .tabs-left) > div:last-child .btn{ flex:1 1 auto; justify-content:center; }
+  .main .tabs-left, .main .report-tabs, .main .tabs-row:not(:has(> .tabs-left)){
+    gap:20px; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  }
+  .main .tabs-left::-webkit-scrollbar, .main .report-tabs::-webkit-scrollbar, .main .tabs-row::-webkit-scrollbar{ display:none; }
+  .main .tab-item, .main .report-tab{ white-space:nowrap; flex-shrink:0; }
+  .main .report-tabs{ gap:8px; }
+
+  /* Filter rows: search full width, dropdowns share a row, buttons full width */
+  .main .filters-row{ gap:10px; }
+  .main .filters-row .search-input,
+  .main .search-input{ flex:1 1 100%; min-width:0; max-width:none; }
+  .main .filters-row select{ flex:1 1 calc(50% - 5px); min-width:0; }
+  .main .filters-row .btn{ flex:1 1 100%; justify-content:center; }
+
+  /* Wide tables scroll sideways inside their panel instead of the page */
+  .main .table-panel{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .main table.report-table{ display:block; overflow-x:auto; white-space:nowrap; }
+
+  /* Two-column form rows and modals */
+  body .modal-row2{ grid-template-columns:1fr; }
+  body .modal-overlay{ padding:12px; }
+}

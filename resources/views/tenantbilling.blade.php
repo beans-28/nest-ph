@@ -19,9 +19,7 @@
      subtext, and the status button which only exists on this page), and
      its own billing/payment-flow content styling below. */
   :root{
-    --green-mid:#4f7c57;
     --pending-bg:#fbe9c8; --pending-text:#a4761a;
-    --paid-bg:#d9f2dd; --paid-text:#3f7a4a;
   }
 
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
@@ -51,10 +49,10 @@
   .breakdown-fill{ height:100%; border-radius:20px; }
   .breakdown-fill.rent{ background:#e8b13c; }
   .breakdown-fill.utilities{ background:#6f8fae; }
-  .breakdown-fill.wifi{ background:#6fbf73; }
+  .breakdown-fill.wifi{ background:var(--sage-500); }
   .breakdown-amount{ font-size:12.5px; color:var(--text-dark); text-align:right; }
 
-  .reminder-card{ background:#eef4ee; border-radius:14px; padding:22px 20px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .reminder-card{ background:var(--sage-50); border-radius:14px; padding:22px 20px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .reminder-card svg{ width:30px; height:30px; color:var(--green-dark); margin-bottom:10px; }
   .reminder-card strong{ font-size:13.5px; color:var(--text-dark); display:block; margin-bottom:4px; }
   .reminder-card span{ font-size:11.5px; color:var(--text-mid); }
@@ -98,19 +96,19 @@
   .method-panel h3{ font-size:15px; font-weight:700; margin:0 0 16px 0; }
   .method-option{ display:flex; align-items:center; gap:16px; border:1px solid var(--border); border-radius:10px; padding:16px 18px; margin-bottom:12px; cursor:pointer; }
   .method-option:last-child{ margin-bottom:0; }
-  .method-option.selected{ border-color:var(--green-dark); background:#f4faf5; }
+  .method-option.selected{ border-color:var(--green-dark); background:var(--sage-50); }
   .method-radio{ width:18px; height:18px; border-radius:50%; border:2px solid #b7c2b8; flex-shrink:0; position:relative; }
   .method-option.selected .method-radio{ border-color:var(--green-dark); }
   .method-option.selected .method-radio::after{ content:''; position:absolute; inset:3px; border-radius:50%; background:var(--green-dark); }
   .method-logo{ width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:800; font-size:11px; color:#fff; }
   .method-logo.gcash{ background:#0070e0; }
   .method-logo.bdo{ background:#00287a; }
-  .method-logo.cash{ background:#eef4ee; color:var(--green-dark); font-size:18px; }
+  .method-logo.cash{ background:var(--sage-50); color:var(--green-dark); font-size:18px; }
   .method-text strong{ display:block; font-size:13.5px; color:var(--text-dark); }
   .method-text span{ font-size:11.5px; color:var(--text-mid); }
   .method-note{ margin-left:auto; font-size:11px; color:#c0463d; text-align:right; max-width:220px; }
 
-  .secure-bar{ background:#eef4ee; border-radius:14px; padding:16px 22px; display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+  .secure-bar{ background:var(--sage-50); border-radius:14px; padding:16px 22px; display:flex; align-items:center; gap:14px; margin-bottom:20px; }
   .secure-bar svg{ width:26px; height:26px; color:var(--green-dark); flex-shrink:0; }
   .secure-bar strong{ display:block; font-size:13px; color:var(--text-dark); }
   .secure-bar span{ font-size:11px; color:var(--text-mid); }
