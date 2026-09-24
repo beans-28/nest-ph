@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 16, 2026 at 04:00 PM
+-- Generation Time: Sep 24, 2026 at 10:23 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -710,7 +710,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (67, '2026_09_10_135740_drop_full_name_columns', 41),
 (68, '2026_09_10_150536_create_reviews_table', 42),
 (69, '2026_09_11_211439_remove_parent_fields_add_emergency_relation_to_applications', 43),
-(71, '2026_09_16_210055_create_announcements_tables', 44);
+(71, '2026_09_16_210055_create_announcements_tables', 44),
+(72, '2026_09_24_130732_add_moderation_columns_to_reviews_table', 45);
 
 -- --------------------------------------------------------
 
@@ -858,6 +859,11 @@ CREATE TABLE `reviews` (
   `rating` tinyint(3) UNSIGNED NOT NULL,
   `comment` text DEFAULT NULL,
   `is_approved` tinyint(1) NOT NULL DEFAULT 1,
+  `status` enum('published','hidden','removed') NOT NULL DEFAULT 'published',
+  `flag_reasons` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`flag_reasons`)),
+  `moderated_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `moderated_at` timestamp NULL DEFAULT NULL,
+  `moderation_note` varchar(500) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -866,8 +872,8 @@ CREATE TABLE `reviews` (
 -- Dumping data for table `reviews`
 --
 
-INSERT INTO `reviews` (`id`, `tenant_id`, `rating`, `comment`, `is_approved`, `created_at`, `updated_at`) VALUES
-(1, 30, 5, 'Nice staff, spacious room, nice privacy.', 1, '2026-09-10 08:06:35', '2026-09-10 08:06:35');
+INSERT INTO `reviews` (`id`, `tenant_id`, `rating`, `comment`, `is_approved`, `status`, `flag_reasons`, `moderated_by`, `moderated_at`, `moderation_note`, `created_at`, `updated_at`) VALUES
+(1, 30, 5, 'Nice staff, spacious room, nice privacy.', 1, 'published', NULL, NULL, NULL, NULL, '2026-09-10 08:06:35', '2026-09-10 08:06:35');
 
 -- --------------------------------------------------------
 
@@ -954,14 +960,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('7L7BGEJC4ddZCjoOV3UvbrY55r60N4lpc7oPyoF3', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZEVjUU9Ld1B6amFHUW5UdTIyN25DTTEyMmJkaEs1U1lETjZ2TzV5QiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789450590),
-('eH8pZKZ4m24dKxqkOGsVO8yXbr9k41Dx3bU98QUk', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMEhTaWJMaWI0ZFFFQjJFcW52b2JHY2duc3J4Z0VOSktvRHJ6cDFLaiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789476372),
-('FNFMxB8vAJqnJEDZYZAB2fgr5I5pcZvMPSC0xuBe', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoibFh0akZlanh3ZWRqWllxUXh3dE95YU5kRXV6UFhic2M5MUxDa29vNiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789564380),
-('miTEZGXTcqHL52Gmnfvh50ivODQk4230udUXAGV0', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiaTd1ZWZFcHl3VmlXSWdaRkdVNHR0UVZ2T0dxOWdYdHJhVWxseEhlWiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kZWxpbnF1ZW5jeS10ZXN0aW5nL3RlbmFudHMiO3M6NToicm91dGUiO047fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM7fQ==', 1789476963),
-('OviyPq0g8KJjN7ii2DvRqJbHsKBp3ljga8ojo0Ng', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTlZxaXFrSnF5TnA2TFF2dlNiT2RqVkpVOWxVMlZnekNYZkdMZ0JHUCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789476372),
-('reHJ0ZQHbLLO1EoZZJ5mhhpxVlnayswGkSscjyI4', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoibnRObExORWhWemJNNVNtUFlDeGkwUVB3QW9tWjJlRDdjUEhIbmo3MiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1789564381),
-('UpFqWdqw67wkjb2VM0oqeyaFyzrPvPMLXKLbINgF', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYVRnY1VON1NMRGVsS1B1UG04d3hGQ1haaGFUTU14YkxralRlVnU3WCI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDY6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9hbm5vdW5jZW1lbnRzLzEvY29tbWVudHMiO3M6NToicm91dGUiO3M6Mjg6ImFubm91bmNlbWVudHMuY29tbWVudHMuaW5kZXgiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1789566845),
-('Y7iRyYfRB8ubWvD0eTwCCYKg5mRX8LiLjRs2jOgY', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiemsxOU5yVU9BdmJicDFkMVZ6ZVA4THY3ZzBHdW1hQW1NdTJQZUp5NiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6ODM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZXBvcnRzL2V4cG9ydD9lbmQ9MjAyNi0wOS0zMCZzdGFydD0yMDI2LTA5LTAxJnR5cGU9ZmluYW5jaWFsIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1789451656);
+('5he7wD9WDY8FmlIE2CBW0aJg4mY8INfTcmfKygLX', 28, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiR1FDcEZjS1k1b05UWVNvNTNvVzJXOHpqUzVGckV1ZHlJUUVzN3VJaiI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlZC1vdXQiO3M6NToicm91dGUiO3M6MTQ6InRlbmFudC5tb3Zlb3V0Ijt9czozOiJ1cmwiO2E6MTp7czo4OiJpbnRlbmRlZCI7czozMToiaHR0cDovLzEyNy4wLjAuMTo4MDAwL21vdmVkLW91dCI7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjI4O30=', 1790237059);
 
 -- --------------------------------------------------------
 
@@ -1367,7 +1366,9 @@ ALTER TABLE `personal_access_tokens`
 --
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `reviews_tenant_id_unique` (`tenant_id`);
+  ADD UNIQUE KEY `reviews_tenant_id_unique` (`tenant_id`),
+  ADD KEY `reviews_moderated_by_foreign` (`moderated_by`),
+  ADD KEY `reviews_status_index` (`status`);
 
 --
 -- Indexes for table `roles`
@@ -1555,7 +1556,7 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1763,6 +1764,7 @@ ALTER TABLE `penalty_audit_logs`
 -- Constraints for table `reviews`
 --
 ALTER TABLE `reviews`
+  ADD CONSTRAINT `reviews_moderated_by_foreign` FOREIGN KEY (`moderated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `reviews_tenant_id_foreign` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE;
 
 --
