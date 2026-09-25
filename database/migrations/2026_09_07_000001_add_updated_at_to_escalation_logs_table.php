@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('escalation_logs', function (Blueprint $table) {
             // The table only ever had created_at -- a pending -> sent
-            // transition (Table 24's retry exception path) left no trace of
+            // transition (Table 23's retry exception path) left no trace of
             // when it happened. Standard Eloquent convention, low-risk.
             $table->timestamp('updated_at')->nullable()->after('created_at');
         });

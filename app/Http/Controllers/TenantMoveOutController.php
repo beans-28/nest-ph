@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 /**
- * Use Case Report Table 43 — Submit Review after Move-out.
+ * Use Case Report Table 42 — Submit Review after Move-out.
  *
  * Dedicated, sidebar-less takeover page (Figma: "Move-out Review
  * Prompt", node 1009:4715). This is now the ONLY page a moved-out

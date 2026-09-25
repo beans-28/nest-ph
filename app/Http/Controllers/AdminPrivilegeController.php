@@ -164,7 +164,7 @@ class AdminPrivilegeController extends Controller
     /**
      * Demotes the account back to tenant role and deactivates the login,
      * matching the same is_active convention used by Deactivate Tenant
-     * Account (Table 38). Also strips every admin_privileges row.
+     * Account (Table 37). Also strips every admin_privileges row.
      */
     public function revoke(Request $request, User $user): JsonResponse
     {

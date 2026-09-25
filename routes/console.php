@@ -10,7 +10,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 /**
- * Use Case Report Table 19 ("Generate Billing Statement"): billing
+ * Use Case Report Table 18 ("Generate Billing Statement"): billing
  * statements should be generated automatically once each tenant's billing
  * cycle date is reached, not only when an admin clicks a button.
  *
@@ -32,7 +32,7 @@ Schedule::call(function () {
 })->daily();
 
 /**
- * Use Case Report Tables 23-28 (Delinquency Escalation): overdue tenants
+ * Use Case Report Tables 22-27 (Delinquency Escalation): overdue tenants
  * should advance through the SMS/portal-restriction/blacklist ladder
  * automatically each day, not only when someone runs the command by hand.
  *

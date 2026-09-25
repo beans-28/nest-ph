@@ -63,7 +63,17 @@ public function login(Request $request)
 
     $user = Auth::user();
 
-    if (! $user->is_active) {
+    // Exception for Table 42: a moved-out tenant (inactive, not
+    // blacklisted) who hasn't reviewed yet may still log in, but only to
+    // leave a review -- RestrictMovedOutTenant keeps them on the move-out
+    // page. Everyone else with a deactivated login is refused as before.
+    $tenant = $user->tenant;
+    $canLogInToReview = $tenant
+        && $tenant->status === 'inactive'
+        && ! $tenant->is_blacklisted
+        && ! $tenant->review;
+
+    if (! $user->is_active && ! $canLogInToReview) {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

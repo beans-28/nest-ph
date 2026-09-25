@@ -166,6 +166,14 @@
     }
     .form-error.visible { display: block; }
 
+    /* Rejected move-in proof reason (welcome + payment pages). */
+    .rejection-notice {
+        width: 100%; text-align: left; background: #fdf0f0; border: 1px solid #f3cccc; color: #b3261e;
+        border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.5; margin-bottom: 18px;
+        overflow-wrap: anywhere;
+    }
+    .rejection-notice strong, .rejection-notice span { display: block; }
+
     .visually-hidden {
         position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
         overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Table 34 step 5: "Enter a response message and click Send" -> "Save
+     * Table 33 step 5: "Enter a response message and click Send" -> "Save
      * the response and attach it to the ticket record." Each admin reply
      * is its own row, so a ticket builds up a response history instead of
      * one overwritable "last reply" field.

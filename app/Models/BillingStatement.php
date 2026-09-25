@@ -59,7 +59,7 @@ class BillingStatement extends Model
     }
 
     /**
-     * Use Case Report Table 23, steps 1–3: the system should flag an account
+     * Use Case Report Table 22, steps 1–3: the system should flag an account
      * as "Payment Overdue" once the due date passes without payment.
      *
      * Before this existed, a statement only ever moved to 'overdue'

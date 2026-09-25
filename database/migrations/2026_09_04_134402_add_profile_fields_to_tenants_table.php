@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('id_document_path')->nullable()->after('tenant_type');
             $table->string('signed_contract_path')->nullable()->after('id_document_path');
 
-            // Table 38 — Deactivate Tenant Account.
+            // Table 37 — Deactivate Tenant Account.
             $table->string('deactivation_reason', 500)->nullable()->after('status');
             $table->timestamp('deactivated_at')->nullable()->after('deactivation_reason');
         });

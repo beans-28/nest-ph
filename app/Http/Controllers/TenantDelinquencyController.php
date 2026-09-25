@@ -42,7 +42,7 @@ class TenantDelinquencyController extends Controller
             ->orderBy('due_date')
             ->get();
 
-        // Admin override entries (Table 29) are internal admin notes, not
+        // Admin override entries (Table 28) are internal admin notes, not
         // a stage the tenant was actually flagged/reminded/restricted at
         // -- excluded here the same way DelinquencyController excludes
         // them from "current stage" on the admin side.
@@ -84,13 +84,13 @@ class TenantDelinquencyController extends Controller
         $daysOverdue = $oldestDueDate ? Carbon::parse($oldestDueDate)->diffInDays(now()) : 0;
         $monthsOverdue = intdiv($daysOverdue, 30);
 
-        // Stage 4 (Table 26): the actual SMS sent to the tenant's emergency
+        // Stage 4 (Table 25): the actual SMS sent to the tenant's emergency
         // contact, pulled from the real log row rather than re-typed here --
         // if EscalationService::stage4EmergencyContact()'s wording ever
         // changes, this stays accurate without a second place to update.
         $emergencyContactLog = $rawLogs->first(fn (EscalationLog $log) => $log->action_type === 'emergency_contact_notified');
 
-        // Table 27 step 8's tenant-facing equivalent: whether a real PDF is
+        // Table 26 step 8's tenant-facing equivalent: whether a real PDF is
         // actually sitting on disk yet, so the button only shows once
         // there's something real to download -- never a broken link.
         $demandLetterReady = $rawLogs->contains(
@@ -127,7 +127,7 @@ class TenantDelinquencyController extends Controller
     }
 
     /**
-     * Tenant's own copy of Table 27 step 8 -- the same PDF the admin side
+     * Tenant's own copy of Table 26 step 8 -- the same PDF the admin side
      * can download, but scoped strictly to the logged-in tenant's own
      * record. Never accepts a tenant ID from the request, so there's no
      * way to reach another tenant's letter by guessing a URL.

@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('dormitory_profile', function (Blueprint $table) {
-            // Use Case Report — Manage Dormitory Profile (Table 39), extend
+            // Use Case Report — Manage Dormitory Profile (Table 38), extend
             // use cases "Upload Business Permit" / "Upload BIR Registration
             // Credentials". Both optional. Uploading the BIR file is what
             // triggers the "BIR Registration Seal/Badge" on the public

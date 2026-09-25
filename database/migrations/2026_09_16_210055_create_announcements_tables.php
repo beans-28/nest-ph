@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Announcements newsfeed (Tables 44–47). Two tables: announcements
+     * Announcements newsfeed (Tables 43–46). Two tables: announcements
      * (the post itself) and announcement_comments (the thread), mirroring
      * the ticket_replies pattern -- nullable user_id/tenant_id, exactly
      * one set per row, resolves author + bubble style without a lookup.

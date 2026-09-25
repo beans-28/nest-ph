@@ -12,7 +12,7 @@ class MaintenanceTicket extends Model
 {
     use HasFactory;
 
-    /** Figma "drop down type" (node 994-5004). Broader than Table 33's
+    /** Figma "drop down type" (node 994-5004). Broader than Table 32's
      * "Maintenance Request / Concern / Feedback" -- flagged for BAGUI. */
     public const CATEGORIES = [
         'billing_payment_concern' => 'Billing & Payment Concern',
@@ -31,7 +31,7 @@ class MaintenanceTicket extends Model
     ];
 
     /** Figma "drop down status" (node 882-3246). Adds Seen/Rejected beyond
-     * Table 34's literal Open/In Progress/Resolved -- flagged for BAGUI. */
+     * Table 33's literal Open/In Progress/Resolved -- flagged for BAGUI. */
     public const STATUSES = [
         'open' => 'Open',
         'seen' => 'Seen',
@@ -40,20 +40,27 @@ class MaintenanceTicket extends Model
         'rejected' => 'Rejected',
     ];
 
-    /** Table 40. */
+    /** Table 39. */
     public const PRIORITIES = [
         'urgent' => 'Urgent',
         'non_urgent' => 'Non-Urgent',
     ];
 
     /**
-     * Table 41 gives a RANGE, not a single number (Urgent: 24-48h,
+     * Table 40 gives a RANGE, not a single number (Urgent: 24-48h,
      * Non-Urgent: 3-5 days). These use the lower bound as a placeholder --
      * same pattern as EscalationService::DAYS_PER_STAGE. Confirm the real
      * policy value with the team before the defense.
      */
     public const URGENT_OVERDUE_HOURS = 24;
     public const NON_URGENT_OVERDUE_DAYS = 3;
+
+    /**
+     * Unresolved Non-Urgent (or unclassified) tickets older than this are
+     * shown as Urgent on the admin side (never saved). Upper bound of
+     * Table 40's 3-5 day range -- PLACEHOLDER, team must confirm.
+     */
+    public const NON_URGENT_ESCALATE_DAYS = 5;
 
     /** Submit Ticket form allows up to 5 photos per ticket. */
     public const MAX_ATTACHMENTS = 5;
@@ -120,14 +127,64 @@ class MaintenanceTicket extends Model
         return $this->priority ? (self::PRIORITIES[$this->priority] ?? $this->priority) : null;
     }
 
+    public function isClosed(): bool
+    {
+        return in_array($this->status, ['resolved', 'rejected'], true);
+    }
+
+    /**
+     * Priority used for overdue checks and sorting. Computed live and
+     * NEVER saved -- the stored `priority` column is untouched. A ticket
+     * with no priority counts as non_urgent; an unresolved ticket older
+     * than NON_URGENT_ESCALATE_DAYS is treated as urgent (Table 40).
+     */
+    public function effectivePriority(): string
+    {
+        if ($this->priority === 'urgent') {
+            return 'urgent';
+        }
+
+        if (! $this->isClosed()
+            && $this->created_at->diffInHours(now()) >= self::NON_URGENT_ESCALATE_DAYS * 24) {
+            return 'urgent';
+        }
+
+        return $this->priority ?: 'non_urgent';
+    }
+
+    /** Urgent only because of age, not because an admin set it. */
+    public function isAutoEscalated(): bool
+    {
+        return $this->effectivePriority() === 'urgent' && $this->priority !== 'urgent';
+    }
+
+    /**
+     * The ONE place overdue tickets are counted. The dashboard banner,
+     * the dashboard Tickets card, and the Tickets page stat strip all
+     * call this, so they can never disagree.
+     *
+     * @return array{total: int, urgent: int}
+     */
+    public static function overdueSummary(): array
+    {
+        $overdue = self::whereNotIn('status', ['resolved', 'rejected'])
+            ->get()
+            ->filter(fn (self $t) => $t->isOverdue());
+
+        return [
+            'total' => $overdue->count(),
+            'urgent' => $overdue->filter(fn (self $t) => $t->effectivePriority() === 'urgent')->count(),
+        ];
+    }
+
     public function isOverdue(): bool
     {
-        if (! $this->priority || in_array($this->status, ['resolved', 'rejected'], true)) {
+        if ($this->isClosed()) {
             return false;
         }
 
         $hoursElapsed = $this->created_at->diffInHours(now());
-        $thresholdHours = $this->priority === 'urgent'
+        $thresholdHours = $this->effectivePriority() === 'urgent'
             ? self::URGENT_OVERDUE_HOURS
             : self::NON_URGENT_OVERDUE_DAYS * 24;
 

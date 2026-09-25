@@ -51,8 +51,10 @@
   .badge.resolved{ background:var(--status-vacant-bg); color:var(--green-accent); }
   .badge.rejected{ background:var(--status-occupied-bg); color:var(--status-occupied); }
 
-  .overdue-flag{ font-size:11px; font-weight:700; color:var(--status-occupied); background:var(--status-occupied-bg); border-radius:20px; padding:4px 10px; display:inline-flex; align-items:center; gap:5px; width:fit-content; }
+  /* #b3261e instead of --status-occupied: that red is 2.9:1 on this pink and 3.9:1 on white, below WCAG AA. */
+  .overdue-flag{ font-size:11px; font-weight:700; color:#b3261e; background:var(--status-occupied-bg); border-radius:20px; padding:4px 10px; display:inline-flex; align-items:center; gap:5px; width:fit-content; }
   .overdue-flag svg{ width:11px; height:11px; }
+  .auto-escalated-flag{ font-size:11px; font-weight:700; color:#b3261e; border:1px dashed #b3261e; border-radius:20px; padding:3px 10px; width:fit-content; }
   .mb-attachment-grid{ display:flex; gap:8px; flex-wrap:wrap; }
   .unresolved-note{ font-size:11.5px; color:var(--text-light); }
 
@@ -253,11 +255,25 @@
     return tickets.filter(t => {
       if(categoryFilter && t.category !== categoryFilter) return false;
       if(statusFilter && t.status !== statusFilter) return false;
-      if(priorityFilter && t.priority !== priorityFilter) return false;
+      // Urgent filter also shows auto-escalated tickets (effective priority).
+      if(priorityFilter && (priorityFilter === 'urgent' ? t.effective_priority !== 'urgent' : t.priority !== priorityFilter)) return false;
       if(!search) return true;
       const hay = `${t.tenant_name ?? ''} ${t.title ?? ''}`.toLowerCase();
       return hay.includes(search);
-    });
+    }).sort(compareTickets);
+  }
+
+  // Overdue first (effective-urgent before non-urgent, oldest first),
+  // then other open tickets (oldest first), then resolved/rejected
+  // (newest first, as before).
+  function compareTickets(a, b){
+    const group = t => t.is_overdue ? 0 : (['resolved', 'rejected'].includes(t.status) ? 2 : 1);
+    if(group(a) !== group(b)) return group(a) - group(b);
+    if(group(a) === 0){
+      const urg = t => t.effective_priority === 'urgent' ? 0 : 1;
+      if(urg(a) !== urg(b)) return urg(a) - urg(b);
+    }
+    return group(a) === 2 ? b.created_ts - a.created_ts : a.created_ts - b.created_ts;
   }
 
   function priorityOptionsHtml(current){
@@ -287,6 +303,7 @@
         </div>
         <span class="ac-cat">${esc(t.category_label)}</span>
         ${t.is_overdue ? `<span class="overdue-flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>Overdue</span>` : (t.unresolved_for ? `<span class="unresolved-note">${esc(t.unresolved_for)}</span>` : '')}
+        ${t.is_auto_escalated ? `<span class="auto-escalated-flag">Auto-escalated to Urgent · open {{ \App\Models\MaintenanceTicket::NON_URGENT_ESCALATE_DAYS }}+ days</span>` : ''}
         <div class="ac-bottom">
           <select class="priority-select ${t.priority ?? ''}" data-priority-for="${t.id}">${priorityOptionsHtml(t.priority)}</select>
           <span class="ac-assigned">${t.assigned_to_name ? 'Assigned: ' + esc(t.assigned_to_name) : 'Unassigned'}</span>

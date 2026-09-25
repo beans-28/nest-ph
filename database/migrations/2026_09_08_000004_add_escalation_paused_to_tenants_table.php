@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            // Table 29 ("Override Delinquency Escalation Stage") lets an
+            // Table 28 ("Override Delinquency Escalation Stage") lets an
             // admin Pause a tenant's escalation without resetting their
             // stage or clearing history. No column existed to represent
             // "auto-advancement is paused for this tenant" before now.

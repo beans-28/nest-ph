@@ -433,7 +433,7 @@ class ApplicationController extends Controller
             ]);
 
             // Step 11.2: "create billing record" — the move-in fee breakdown
-            // (security deposit + 1 month advance rent) that Table 17's Pay
+            // (security deposit + 1 month advance rent) that Table 16's Pay
             // Move-In Fees flow requires to exist before the tenant can even
             // see a total due. A brand-new tenant is only ever created with
             // 'pending_move_in_payment' status by createTenantWithLogin();

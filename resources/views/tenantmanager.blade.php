@@ -152,7 +152,6 @@
           <option value="working_student">Working Student</option>
           <option value="full_time_employee">Full-time Employee</option>
           <option value="part_time_employee">Part-time Employee</option>
-          <option value="transient_worker">Transient Worker</option>
         </select>
         <select id="sortFilter">
           <option value="date_started_desc">Sort: Latest Date Started</option>
@@ -214,7 +213,6 @@
             <option value="working_student">Working Student</option>
             <option value="full_time_employee">Full-time Employee</option>
             <option value="part_time_employee">Part-time Employee</option>
-            <option value="transient_worker">Transient Worker</option>
           </select>
         </div>
       </div>
@@ -267,7 +265,6 @@
             <option value="working_student">Working Student</option>
             <option value="full_time_employee">Full-time Employee</option>
             <option value="part_time_employee">Part-time Employee</option>
-            <option value="transient_worker">Transient Worker</option>
           </select>
         </div>
       </div>

@@ -30,9 +30,9 @@
   .placeholder-tag{ position:absolute; top:14px; right:16px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--status-maintenance); background:var(--status-maintenance-bg); padding:3px 7px; border-radius:20px; }
 
   .alert-banner{ background:#fbeceb; border:1px solid #f2c3bf; border-radius:12px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
-  .alert-banner-text strong{ display:block; font-size:13.5px; color:#c0463d; }
+  .alert-banner-text strong{ display:block; font-size:13.5px; color:#a8382f; }
   .alert-banner-text span{ font-size:12px; color:#8a4a44; }
-  .alert-review-btn{ background:#c0463d; color:#fff; border:none; border-radius:8px; padding:9px 16px; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .alert-review-btn{ background:#c0463d; color:#fff; border:none; border-radius:8px; padding:9px 16px; min-height:44px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; }
   .alert-review-btn:hover{ background:#a8382f; }
 
   .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
@@ -118,6 +118,16 @@
           <div class="stat-sub">{{ $vacantBeds }} of {{ $totalBeds }} beds open</div>
         </div>
       </div>
+
+      @if($ticketOverdueSummary['total'] > 0)
+        <div class="alert-banner">
+          <div class="alert-banner-text">
+            <strong>{{ $ticketOverdueSummary['total'] }} {{ $ticketOverdueSummary['total'] === 1 ? 'ticket is' : 'tickets are' }} overdue{{ $ticketOverdueSummary['urgent'] > 0 ? ' (' . $ticketOverdueSummary['urgent'] . ' urgent)' : '' }}.</strong>
+            <span>Overdue tickets are listed first on the Tickets page.</span>
+          </div>
+          <a href="{{ route('tickets.index') }}" class="alert-review-btn" style="text-decoration:none;">View Tickets</a>
+        </div>
+      @endif
 
       @if($topDelinquent)
         <div class="alert-banner">

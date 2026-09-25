@@ -434,7 +434,7 @@ class PublicController extends Controller
     {
         $profile = DormitoryProfile::current();
 
-        // Reviews & Ratings (Table 42) — the full breakdown bar + individual
+        // Reviews & Ratings (Table 41) — the full breakdown bar + individual
         // review list live here, on the "listing" page, rather than the
         // homepage, which only carries the lightweight average+count teaser.
         $reviewStats = \App\Models\Review::aggregate();

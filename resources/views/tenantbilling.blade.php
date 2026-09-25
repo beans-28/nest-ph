@@ -37,6 +37,7 @@
   .balance-label{ font-size:11.5px; font-weight:700; letter-spacing:0.6px; opacity:0.85; margin-bottom:8px; }
   .balance-amount{ font-size:32px; font-weight:800; margin-bottom:6px; }
   .balance-due{ font-size:12px; opacity:0.85; margin-bottom:16px; }
+  .balance-rejected{ background:#fff; color:#b3261e; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; line-height:1.4; margin:-4px 0 14px; }
   .pay-now-btn{ background:#fff; color:var(--green-dark); border:none; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:700; cursor:pointer; }
   .pay-now-btn:hover{ background:#f0f0f0; }
 
@@ -204,6 +205,11 @@
   .modal-payment-row{ border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:10px; font-size:12.5px; }
   .modal-payment-row div{ display:flex; justify-content:space-between; margin-bottom:4px; }
   .modal-payment-row div span:first-child{ color:var(--text-light); }
+  /* Table 20: rejected proof reason, shown to the tenant. */
+  .rejected-note{ display:block; margin-top:4px; font-size:11px; font-weight:600; color:#c0463d; }
+  .rejection-notice{ background:#fdf0f0; border:1px solid #f3cccc; color:#b3261e; border-radius:8px; padding:12px 14px; font-size:13px; line-height:1.5; margin-bottom:18px; overflow-wrap:anywhere; }
+  .rejection-notice strong, .rejection-notice span{ display:block; }
+  .modal-payment-row .reject-reason{ color:#b3261e; justify-content:flex-start; gap:6px; }
   .cash-modal{ text-align:center; }
   .cash-modal-icon{ width:36px; height:36px; color:var(--green-dark); margin-bottom:8px; }
   .cash-modal p{ font-size:13px; color:var(--text-mid); margin:0 0 14px; line-height:1.55; }
@@ -241,6 +247,7 @@
     table.billing-table{ display:block; overflow-x:auto; white-space:nowrap; }
   }
   @media (max-width: 640px){
+    .pay-now-btn, .row-pay-btn, .row-view-btn{ min-height:44px; }
     .top-grid{ grid-template-columns:1fr; }
     .info-grid{ grid-template-columns:1fr; }
     .proof-grid{ grid-template-columns:1fr; }
@@ -311,6 +318,7 @@
             <div class="balance-label">BALANCE DUE</div>
             <div class="balance-amount" id="mainBalanceAmount">₱0.00</div>
             <div class="balance-due" id="mainBalanceDue">—</div>
+            <div class="balance-rejected" id="mainRejectedHint" hidden>Your last proof of payment was not accepted. Tap Pay Now to see why.</div>
             <button class="pay-now-btn" id="mainPayNowBtn">Pay Now &nbsp;›</button>
           </div>
 
@@ -445,6 +453,8 @@
             <p>Pay here and submit proof of payment</p>
           </div>
         </div>
+
+        <div class="rejection-notice" id="proofRejection" hidden></div>
 
         <div class="info-card">
           <div class="info-card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg>Payment Information</div>
@@ -663,6 +673,9 @@
   function showView(id){
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(id).classList.add('active');
+    // Each view acts as its own page; start it at the top so its heading
+    // (and the rejected-proof notice on the Payment view) is in sight.
+    window.scrollTo(0, 0);
   }
 
   async function loadEverything(){
@@ -696,6 +709,7 @@
       document.getElementById('mainBalanceAmount').textContent = peso(totalOwed);
       document.getElementById('mainBalanceDue').textContent = `Due: ${fullDate(current.due_date)}`;
       document.getElementById('mainPayNowBtn').disabled = false;
+      document.getElementById('mainRejectedHint').hidden = !payable.some(b => latestRejectedProof(b));
 
       const total = Number(current.total_amount) || 1;
       const rows = [
@@ -746,6 +760,13 @@
     renderBillingTable();
   }
 
+  // Table 20: the newest proof on a bill, if the admin rejected it. Null
+  // once the tenant has submitted a newer one.
+  function latestRejectedProof(bill){
+    const latest = (bill.payments || []).slice().sort((a, b) => b.id - a.id)[0];
+    return latest && latest.status === 'rejected' ? latest : null;
+  }
+
   function renderBillingTable(){
     const tbody = document.getElementById('billingRows');
     const shown = allBills.slice(0, billingRowsShown);
@@ -766,7 +787,7 @@
           <td>${peso(bill.utilities_amount)}</td>
           <td>${peso(bill.wifi_amount)}</td>
           <td>${peso(bill.total_amount)}</td>
-          <td><span class="status-pill ${pillClass}">${pillLabel}</span></td>
+          <td><span class="status-pill ${pillClass}">${pillLabel}</span>${payable && latestRejectedProof(bill) ? '<span class="rejected-note">Proof rejected</span>' : ''}</td>
           <td>${fullDate(bill.due_date)}</td>
           <td>${payable
             ? `<button class="row-pay-btn" data-bill-id="${bill.id}">Pay</button>`
@@ -872,6 +893,13 @@
     document.getElementById('infoRoom').textContent = roomLabel;
     document.getElementById('infoRef').textContent = invoiceRef;
     document.getElementById('infoAmount').textContent = peso(activeBill.balance);
+
+    const rejected = latestRejectedProof(activeBill);
+    const rejectionBox = document.getElementById('proofRejection');
+    rejectionBox.hidden = !rejected;
+    rejectionBox.innerHTML = rejected
+      ? `<strong>Your last proof of payment was not accepted.</strong><span>Reason: ${esc(rejected.review_notes || 'No reason given.')}</span><span>Please submit a new proof of payment.</span>`
+      : '';
     document.getElementById('infoDue').textContent = fullDate(activeBill.due_date);
     document.getElementById('infoMethodName').innerHTML = `${esc(method.name)}`
       + `<span class="acct">${esc(method.account_name || '')}${method.account_number ? ' · ' + esc(method.account_number) : ''}</span>`
@@ -978,6 +1006,7 @@
           <div><span>Amount</span><span>${peso(p.amount_paid)}</span></div>
           <div><span>Method</span><span>${esc(p.payment_method_label || p.payment_method.replace('_',' '))}</span></div>
           <div><span>Status</span><span>${p.status}</span></div>
+          ${p.status === 'rejected' && p.review_notes ? `<div class="reject-reason"><span>Reason:</span><span>${esc(p.review_notes)}</span></div>` : ''}
         </div>
       `).join('');
     } catch(e){

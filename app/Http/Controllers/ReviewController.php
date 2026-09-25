@@ -10,17 +10,17 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\ReviewModerationService;
 
 /**
- * Use Case Reports Tables 42/43 — Reviews & Ratings, Submit Review after
+ * Use Case Reports Tables 41/42 — Reviews & Ratings, Submit Review after
  * Move-out.
  *
  * Scope simplification (flagged for BAGUI): the Figma "Review Overlay"
  * design shows 5 separate category ratings plus a recommend field.
- * Tables 42/43 only ever call for one overall star rating (1-5) and an
+ * Tables 41/42 only ever call for one overall star rating (1-5) and an
  * optional comment, so that's all this stores.
  *
- * Eligibility trigger: Table 16 (Record Move-Out) was never built as its
- * own flow, so this uses the tenant's existing status: inactive from
- * Deactivate Account (Table 38) instead — while excluding blacklisted
+ * Eligibility trigger: a separate Record Move-Out flow was never built
+ * (that use case was removed from the manuscript), so this uses the tenant's existing status: inactive from
+ * Deactivate Account (Table 37) instead — while excluding blacklisted
  * tenants (evictions), since Stage 6 blacklisting never changes
  * tenants.status on its own.
  */

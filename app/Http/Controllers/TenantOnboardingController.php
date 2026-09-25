@@ -45,6 +45,7 @@ class TenantOnboardingController extends Controller
 
         return view('tenantmoveinwelcome', [
             'tenant' => $tenant,
+            'rejectedProof' => $this->latestRejectedProof($tenant),
         ]);
     }
 
@@ -66,7 +67,7 @@ class TenantOnboardingController extends Controller
     /**
      * Step 2: displays the move-in fee breakdown and lets the tenant choose
      * how they intend to pay. The Full/Partial choice itself is not part of
-     * Table 17's documented flow — that use case only ever describes paying
+     * Table 16's documented flow — that use case only ever describes paying
      * the full computed total in one submission. This screen exists because
      * the team's own design calls for it.
      */
@@ -167,6 +168,7 @@ class TenantOnboardingController extends Controller
             'paymentType' => $paymentType,
             'method' => $method->toClientArray(),
             'dormName' => $profile->dorm_name ?: 'NEST.PH',
+            'rejectedProof' => $this->latestRejectedProof($tenant),
         ]);
     }
 
@@ -177,6 +179,24 @@ class TenantOnboardingController extends Controller
             ->where('status', '!=', 'paid')
             ->latest()
             ->first();
+    }
+
+    /**
+     * Table 16, step 6.2: the most recent proof on the move-in bill, if the
+     * admin rejected it -- so the tenant can see the reason before
+     * submitting a new one. Null once a newer proof has been submitted.
+     */
+    private function latestRejectedProof(Tenant $tenant): ?Payment
+    {
+        $billing = $this->pendingMoveInBill($tenant);
+
+        if (! $billing) {
+            return null;
+        }
+
+        $latest = Payment::where('billing_id', $billing->id)->latest('id')->first();
+
+        return $latest && $latest->status === 'rejected' ? $latest : null;
     }
 
     /**

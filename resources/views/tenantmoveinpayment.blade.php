@@ -123,6 +123,13 @@
 
                     <h2 id="pageHeading">Pay and upload your proof</h2>
 
+                    @if($rejectedProof)
+                        <div class="rejection-notice">
+                            <strong>Your last proof of payment was not accepted.</strong>
+                            <span>Reason: {{ $rejectedProof->review_notes }}</span>
+                            <span>Please submit a new proof of payment.</span>
+                        </div>
+                    @endif
                     <div class="form-error" id="formError" role="alert"></div>
 
                     <div class="top-row">

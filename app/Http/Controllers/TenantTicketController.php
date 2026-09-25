@@ -10,8 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /**
- * Use Case Reports — Submit Ticket (Table 33), Track Ticket Status
- * (Table 35). Figma: My Tickets / tracking page (node 524-6001), Add New
+ * Use Case Reports — Submit Ticket (Table 32), Track Ticket Status
+ * (Table 34). Figma: My Tickets / tracking page (node 524-6001), Add New
  * Ticket modal (node 564-3561), type dropdown (node 994-5004).
  */
 class TenantTicketController extends Controller
@@ -37,7 +37,7 @@ class TenantTicketController extends Controller
     }
 
     /**
-     * Table 33. Stage 3+ restriction is already enforced by the
+     * Table 32. Stage 3+ restriction is already enforced by the
      * delinquency.check middleware on this route group. Up to
      * MAX_ATTACHMENTS photos accepted, each validated individually.
      */

@@ -109,7 +109,9 @@ class DashboardController extends Controller
 
         $openTicketsCount = $openTickets->where('status', 'open')->count();
         $inProgressTicketsCount = $openTickets->where('status', 'in_progress')->count();
-        $overdueTicketsCount = $openTickets->filter(fn (MaintenanceTicket $t) => $t->isOverdue())->count();
+        // Shared with the Tickets page stat strip -- see overdueSummary().
+        $ticketOverdueSummary = MaintenanceTicket::overdueSummary();
+        $overdueTicketsCount = $ticketOverdueSummary['total'];
 
         // Overdue tickets bubble to the top (sortByDesc is a stable sort, so
         // the newest-first ordering from latest() is preserved within each
@@ -147,7 +149,8 @@ class DashboardController extends Controller
             'recentTickets',
             'openTicketsCount',
             'inProgressTicketsCount',
-            'overdueTicketsCount'
+            'overdueTicketsCount',
+            'ticketOverdueSummary'
         ));
     }
 

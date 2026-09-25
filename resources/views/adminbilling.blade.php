@@ -864,7 +864,7 @@
   const PAYMENT_METHOD_LABEL = { gcash:'GCash', bank_transfer:'BDO', other:'Other' };
 
   /**
-   * Use Case Report Table 22 (View Payment History): "select a specific
+   * Use Case Report Table 21 (View Payment History): "select a specific
    * transaction to view details" -- scoped here to one statement's own
    * breakdown and payment history, rather than a separate cross-statement
    * transaction ledger.
@@ -929,7 +929,7 @@
   renderOverviewTable();
 
   // ===== Generate Billing =====
-  // Matches Use Case Report Table 19 ("Generate Billing Statement"). Runs
+  // Matches Use Case Report Table 18 ("Generate Billing Statement"). Runs
   // BillingController::generate() for every active contract that's due for
   // its next monthly statement -- safe to click repeatedly, contracts that
   // aren't due yet (or already have a current-period statement) are skipped

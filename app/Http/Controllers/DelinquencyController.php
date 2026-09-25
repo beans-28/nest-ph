@@ -47,7 +47,7 @@ class DelinquencyController extends Controller
         // A tenant belongs on this page if they have an overdue bill right
         // now, OR they're permanently blacklisted (Stage 6 doesn't get
         // lifted by resolveSettledEscalations() even if the triggering
-        // bill later gets paid -- Table 28 treats it as final).
+        // bill later gets paid -- Table 27 treats it as final).
         $overdueTenantIds = BillingStatement::where('status', 'overdue')->pluck('tenant_id');
         $blacklistedTenantIds = Tenant::where('is_blacklisted', true)->pluck('id');
         $tenantIds = $overdueTenantIds->merge($blacklistedTenantIds)->unique();
@@ -96,8 +96,8 @@ class DelinquencyController extends Controller
         $oldestDueDate = $overdueBills->min('due_date');
         $daysOverdue = $oldestDueDate ? (int) Carbon::parse($oldestDueDate)->diffInDays(now()) : 0;
 
-        // Only genuine ladder stages (Tables 23-28) count toward "current
-        // stage." Table 29 override entries carry a stage number too (for
+        // Only genuine ladder stages (Tables 22-27) count toward "current
+        // stage." Table 28 override entries carry a stage number too (for
         // audit context), but they're administrative notes, not the tenant
         // actually being flagged/reminded/restricted -- an override must
         // never make a tenant look further along the ladder than they are.
@@ -128,7 +128,7 @@ class DelinquencyController extends Controller
     }
 
     /**
-     * Table 29 -- Override Delinquency Escalation Stage. An admin can
+     * Table 28 -- Override Delinquency Escalation Stage. An admin can
      * Pause (stop auto-advancement without touching current stage), Reset
      * (clear all escalation history, back to a clean slate), or Clear
      * (resolve every open log and lift restrictions, without erasing the
@@ -192,7 +192,7 @@ class DelinquencyController extends Controller
 
     /**
      * Wednesday's stage-detail modal: a tenant's full escalation
-     * history/timeline (Tables 23-28), plus every Table 29 override
+     * history/timeline (Tables 22-27), plus every Table 28 override
      * that's been applied. Ordered oldest-first so the modal reads top
      * to bottom like a real timeline.
      */
@@ -247,7 +247,7 @@ class DelinquencyController extends Controller
     }
 
     /**
-     * Table 27, step 8: serves a tenant's most recently generated Stage 5
+     * Table 26, step 8: serves a tenant's most recently generated Stage 5
      * demand letter PDF for download. The letter is system-generated
      * (EscalationService::stage5DemandLetter()) -- this endpoint only
      * ever reads what's already on disk, it never generates one itself.
@@ -270,13 +270,13 @@ class DelinquencyController extends Controller
     }
 
     /**
-     * Table 51 -- Issue Eviction Notice. Admin-discretionary, and only
+     * Table 50 -- Issue Eviction Notice. Admin-discretionary, and only
      * available once the tenant has actually reached Stage 6
      * (Delinquent/Blacklisted) -- this is a discretionary action that
      * happens AFTER Stage 6, not Stage 6 itself (see the manuscript
-     * correction: Table 51 originally mislabeled itself as updating the
+     * correction: Table 50 originally mislabeled itself as updating the
      * escalation record "to Stage 6," which Figure 26 contradicts --
-     * Stage 6 is Table 28's automatic blacklist).
+     * Stage 6 is Table 27's automatic blacklist).
      */
     public function issueEvictionNotice(Request $request, Tenant $tenant): JsonResponse
     {
@@ -307,7 +307,7 @@ class DelinquencyController extends Controller
         $path = 'eviction-notices/'.$tenant->id.'_'.now()->timestamp.'.pdf';
         Storage::disk('public')->put($path, $pdf->output());
 
-        // Table 51 exception path: "textbee.dev SMS gateway is unavailable;
+        // Table 50 exception path: "textbee.dev SMS gateway is unavailable;
         // system displays an error and logs the failed send attempt." The
         // PDF and log entry are still created either way -- only the SMS
         // delivery status differs (status: 'pending' vs 'sent') -- matching

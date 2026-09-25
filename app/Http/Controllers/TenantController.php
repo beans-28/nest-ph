@@ -23,7 +23,7 @@ use App\Services\TextbeeService;
 
 class TenantController extends Controller
 {
-    private const TENANT_TYPES = ['student', 'working_student', 'full_time_employee', 'part_time_employee', 'transient_worker'];
+    private const TENANT_TYPES = ['student', 'working_student', 'full_time_employee', 'part_time_employee'];
 
     /**
      * Tenant Manager admin page — Table 14 (Manage Tenant Records).
@@ -185,10 +185,9 @@ class TenantController extends Controller
                 // A walk-in registration is completed entirely by the
                 // admin, bypassing the online Pay Move-In Fees flow that
                 // pending_move_in_payment tenants go through -- so the
-                // tenant is active immediately. This is the same open
-                // question already flagged for Table 16 (move-in
-                // confirmation) -- worth a deliberate call from BAGUI if a
-                // walk-in flow ever needs its own payment step too.
+                // tenant is active immediately (Table 15). Worth a
+                // deliberate call from BAGUI if a walk-in flow ever needs
+                // its own payment step too.
                 'status' => 'active',
             ]);
 
@@ -284,15 +283,14 @@ class TenantController extends Controller
     }
 
     /**
-     * Table 38 — Deactivate Tenant Account (and its reverse, Reactivate,
+     * Table 37 — Deactivate Tenant Account (and its reverse, Reactivate,
      * which the manuscript doesn't name separately but which the "Set
      * Status" action needs to be reversible).
      *
-     * Note: Table 38 assumes move-out already happened (Table 16 -- Record
-     * Occupancy Transaction, not yet built). Since that's not wired up yet,
+     * Note: there is no separate move-out flow (the Record Occupancy
+     * Transaction use case was removed from the manuscript), so
      * deactivating here also releases the tenant's current bed/lease, so a
      * deactivated tenant is never left showing as still occupying a room.
-     * Worth revisiting once Table 16 exists as its own flow.
      */
     public function setStatus(Request $request, Tenant $tenant): JsonResponse
     {
@@ -347,7 +345,7 @@ class TenantController extends Controller
                 }
             });
 
-            // Table 43 trigger: "the system marks a tenant's status as
+            // Table 42 trigger: "the system marks a tenant's status as
             // Moved Out, which triggers an SMS/system notification
             // prompting the tenant to leave a review." Sent outside the
             // transaction so a slow/unreachable SMS gateway never holds

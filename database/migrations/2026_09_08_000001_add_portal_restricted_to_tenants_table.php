@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            // Use Case Report Table 25 (Stage 3: Portal Restriction), step 3:
+            // Use Case Report Table 24 (Stage 3: Portal Restriction), step 3:
             // "System restricts access to all portal features except the
             // direct payment link." No column existed anywhere to represent
             // this state before Week 6.

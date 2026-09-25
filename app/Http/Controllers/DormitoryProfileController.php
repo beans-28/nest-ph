@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\Review;
 
 /**
- * Use Case Report — Manage Dormitory Profile (Table 39). The Dormitory
+ * Use Case Report — Manage Dormitory Profile (Table 38). The Dormitory
  * Administrator/Owner sets up or updates the dormitory's basic info, house
  * rules, amenities, cover photo, policies file, and optional Business
  * Permit / BIR Registration documents. Everything here is read straight

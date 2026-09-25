@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Use Case Report Table 25 (Stage 3: Portal Restriction), postcondition:
+ * Use Case Report Table 24 (Stage 3: Portal Restriction), postcondition:
  * "Tenant portal access is restricted to the payment link only."
  *
  * Applied to the tenant route group, right after movein.check. If the
@@ -57,7 +57,7 @@ class RestrictDelinquentTenant
         if (! $isAllowedByName && ! $isAllowedByPath) {
             // A blacklisted tenant's default landing spot should be their
             // status page, not Billing -- /billing itself now shows a
-            // dead-end takeover for them (Table 28: blacklisting is
+            // dead-end takeover for them (Table 27: blacklisting is
             // permanent, there's nothing left to pay toward), so bouncing
             // them there first would just be a page they immediately have
             // to click away from.

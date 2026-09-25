@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Ticketing module backend (Tables 33, 34, 40, 41).
+     * Ticketing module backend (Tables 32, 33, 39, 40).
      *
      * The original maintenance_tickets table (Feb 2024 scaffold) was never
      * used by any model/controller/route -- no real data exists in it --
@@ -15,12 +15,12 @@ return new class extends Migration
      * column. Changes from the original scaffold:
      *   - category enum replaced with the 13 categories from the actual
      *     admin type-dropdown Figma frame (node 994-5004) -- far more
-     *     granular than Table 33's own "Maintenance Request / Concern /
+     *     granular than Table 32's own "Maintenance Request / Concern /
      *     Feedback". Flagged for BAGUI to update the manuscript.
      *   - status enum replaced with the 5 values from the actual admin
      *     status-dropdown Figma frame (node 882-3246): open, seen,
      *     in_progress, resolved, rejected. Also flagged for BAGUI.
-     *   - new nullable priority column (Table 40: Urgent / Non-Urgent).
+     *   - new nullable priority column (Table 39: Urgent / Non-Urgent).
      *   - attachment_url renamed to attachment_path -- it stores a
      *     relative Storage path, not a full URL, matching the _path/_url
      *     convention used everywhere else (e.g. Damage::photo_path).

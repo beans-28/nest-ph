@@ -25,7 +25,7 @@ class BillingController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        // Table 23: catches any statement that's gone overdue with zero
+        // Table 22: catches any statement that's gone overdue with zero
         // payment activity, which nothing else here would ever touch on its
         // own. Same call PaymentController::page() makes -- kept in sync so
         // "overdue" means the same thing everywhere it's displayed.
@@ -159,7 +159,7 @@ class BillingController extends Controller
     /**
      * Core billing-generation logic.
      *
-     * Matches Use Case Report Table 19 ("Generate Billing Statement"):
+     * Matches Use Case Report Table 18 ("Generate Billing Statement"):
      *   1. Compute base rent for the tenant's assigned room.
      *   2. Add the room's utility and wifi charges, split by the
      *      room's bed count, same as rent (see splitUtilityCost()).
@@ -214,7 +214,7 @@ class BillingController extends Controller
             return $bill->fresh();
         });
 
-        // Step 8 of Table 19: "Send Billing Notification to Tenant" via
+        // Step 8 of Table 18: "Send Billing Notification to Tenant" via
         // portal + SMS. No SMS gateway is configured anywhere in this
         // project yet -- same stub pattern already used for application and
         // inquiry notifications -- so this keeps a durable record of the
@@ -243,7 +243,7 @@ class BillingController extends Controller
         $room = $contract->bed?->room;
 
         if (! $room) {
-            // Exception in Table 19: "Utility charge data is incomplete or
+            // Exception in Table 18: "Utility charge data is incomplete or
             // missing for the billing period; system flags the discrepancy
             // and notifies the administrator." Doesn't block generation --
             // the statement still goes out with a 0 utility share -- this

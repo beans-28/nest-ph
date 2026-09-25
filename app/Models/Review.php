@@ -91,7 +91,7 @@ class Review extends Model
     }
 
     /**
-     * Table 42 homepage aggregate. Only public (published) reviews count.
+     * Table 41 homepage aggregate. Only public (published) reviews count.
      */
     public static function aggregate(): array
     {
@@ -105,7 +105,7 @@ class Review extends Model
     }
 
     /**
-     * Per-star distribution for the rating breakdown bar (Table 42, step 1.3).
+     * Per-star distribution for the rating breakdown bar (Table 41, step 1.3).
      */
     public static function breakdown(): array
     {

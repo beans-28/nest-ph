@@ -7,7 +7,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Table 38 names the deactivated state "Inactive," but the original
+        // Table 37 names the deactivated state "Inactive," but the original
         // enum (predating Tenant Manager) used "archived." Renaming in three
         // steps so existing rows never sit on an invalid value mid-migration:
         // widen the enum to allow both, move the data, then narrow it.

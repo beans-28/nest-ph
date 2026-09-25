@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('penalties', function (Blueprint $table) {
-            // Use Case Report Table 50 ("Add Tenant Penalty"): the manual-add
+            // Use Case Report Table 49 ("Add Tenant Penalty"): the manual-add
             // form needs its own date field, separate from created_at, so an
             // admin can record a penalty for an incident that happened a few
             // days before they got around to entering it. Nullable because

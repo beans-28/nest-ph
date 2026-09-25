@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Reviews & Ratings module backend (Tables 42, 43).
+     * Reviews & Ratings module backend (Tables 41, 42).
      *
-     * Scope simplification (flagged for BAGUI): Table 43's "Moved Out"
+     * Scope simplification (flagged for BAGUI): Table 42's "Moved Out"
      * trigger and admin approval flow are not wired up yet. For the MVP,
      * any tenant with status 'inactive' can submit one review, and
      * is_approved defaults to true so no moderation queue is needed to

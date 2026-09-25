@@ -419,7 +419,7 @@
               <button class="edit-btn" data-history="${a.id}" title="View escalation history">
                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/></svg>
               </button>
-              <button class="edit-btn" data-override="${a.id}" title="Override escalation (Table 29)">
+              <button class="edit-btn" data-override="${a.id}" title="Override escalation (Table 28)">
                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
               </button>
             </div>
@@ -620,7 +620,7 @@
           <div class="timeline-head">
             <span class="timeline-stage">${log.is_override ? 'Admin Override' : 'Stage ' + log.stage + ': ' + esc(log.stage_name)}</span>
             <span class="timeline-status ${log.status}">${esc(log.status)}</span>
-            ${log.is_override ? '<span class="timeline-override-tag">Table 29</span>' : ''}
+            ${log.is_override ? '<span class="timeline-override-tag">Table 28</span>' : ''}
           </div>
           <div class="timeline-time">${esc(log.created_at || '')}${log.performed_by ? ' · by ' + esc(log.performed_by) : ''}</div>
           ${timelineMessageLine(log)}

@@ -39,7 +39,7 @@ class DormitoryProfile extends Model
     }
 
     /**
-     * Use Case Report — Manage Dormitory Profile (Table 39): uploading BIR
+     * Use Case Report — Manage Dormitory Profile (Table 38): uploading BIR
      * Registration credentials is what triggers the public "BIR Registration
      * Seal/Badge" per RMC No. 038-2026. There's no separate boolean column
      * for this on purpose — the presence of the file IS the flag, so it can

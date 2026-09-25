@@ -55,7 +55,7 @@ class InquiryController extends Controller
             ], 422);
         }
 
-        // Table 28 step 4: "System restricts the tenant from making future
+        // Table 27 step 4: "System restricts the tenant from making future
         // inquiry form submissions." This form is public/unauthenticated,
         // so there's no session to check -- match against the submitted
         // contact info against any blacklisted tenant's contact info

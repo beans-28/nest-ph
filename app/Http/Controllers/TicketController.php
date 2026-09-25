@@ -11,15 +11,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
- * Use Case Reports — View and Manage Tickets (Table 34), Ticket Priority
- * Classification (Table 40), Ticket Escalation Reminder (Table 41).
- * Admin side only -- tenant-side Submit Ticket (Table 33) and Track Ticket
- * Status (Table 35) are separate, not-yet-built work.
+ * Use Case Reports — View and Manage Tickets (Table 33), Ticket Priority
+ * Classification (Table 39), Ticket Escalation Reminder (Table 40).
+ * Admin side only -- tenant-side Submit Ticket (Table 32) and Track Ticket
+ * Status (Table 34) are separate, not-yet-built work.
  *
  * Figma: "ticket view" modal (node 441-527), type dropdown (994-5004),
  * status dropdown (882-3246). No Figma exists for the list page itself --
  * built here matching the app-grid/app-card pattern Applications/Inquiries
- * already use, since Table 41 literally calls this a "ticket card."
+ * already use, since Table 40 literally calls this a "ticket card."
  */
 class TicketController extends Controller
 {
@@ -43,7 +43,7 @@ class TicketController extends Controller
             'priorities' => MaintenanceTicket::PRIORITIES,
             'openCount' => $tickets->where('status', 'open')->count(),
             'inProgressCount' => $tickets->where('status', 'in_progress')->count(),
-            'overdueCount' => $tickets->filter(fn ($t) => $t->isOverdue())->count(),
+            'overdueCount' => MaintenanceTicket::overdueSummary()['total'],
         ]);
     }
 
@@ -82,9 +82,9 @@ class TicketController extends Controller
     }
 
     /**
-     * "Save" on the ticket view modal -- Table 34 steps 4/5 (status
+     * "Save" on the ticket view modal -- Table 33 steps 4/5 (status
      * update, reply). Also handles the card's standalone priority
-     * selector (Table 40) -- same endpoint, just status resent unchanged.
+     * selector (Table 39) -- same endpoint, just status resent unchanged.
      */
     public function update(Request $request, MaintenanceTicket $ticket): JsonResponse
     {
@@ -153,6 +153,9 @@ class TicketController extends Controller
             'assigned_to' => $ticket->assigned_to,
             'assigned_to_name' => $ticket->assignedTo?->name,
             'is_overdue' => $ticket->isOverdue(),
+            'effective_priority' => $ticket->effectivePriority(),
+            'is_auto_escalated' => $ticket->isAutoEscalated(),
+            'created_ts' => $ticket->created_at->timestamp,
             'unresolved_for' => $ticket->unresolvedForHumans(),
             'submitted_at' => $ticket->created_at->format('M j, Y g:ia'),
         ];

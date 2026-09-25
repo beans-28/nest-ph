@@ -14,16 +14,16 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /**
- * Use Case Report Table 37 — Generate Reports.
+ * Use Case Report Table 36 — Generate Reports.
  *
  * Combines both report types (Occupancy, Financial/Billing) into one page,
  * following the same navigation -> date range -> Generate -> Export flow
- * the use case describes for both. Export is CSV only for now (Table 37
+ * the use case describes for both. Export is CSV only for now (Table 36
  * allows "PDF or CSV" — CSV covers the requirement; PDF export can be
  * added later the same way the Demand Letter/Eviction Notice PDFs were,
  * via dompdf, if the team decides it's worth the extra time).
  *
- * Scope simplification (flagged for BAGUI): Table 37's Occupancy Report
+ * Scope simplification (flagged for BAGUI): Table 36's Occupancy Report
  * flow mentions "reserved visitor" / "reserved applicant" / "approved /
  * pending move-in payment" as separate bed statuses, and a "historical
  * trend if applicable." Neither exists in the current schema — beds only
@@ -48,7 +48,7 @@ class ReportController extends Controller
     }
 
     /**
-     * GET /reports/occupancy (JSON) — Table 37, [Occupancy Report] branch.
+     * GET /reports/occupancy (JSON) — Table 36, [Occupancy Report] branch.
      */
     public function occupancy(Request $request): JsonResponse
     {
@@ -56,7 +56,7 @@ class ReportController extends Controller
     }
 
     /**
-     * GET /reports/financial (JSON) — Table 37, [Financial/Billing Report] branch.
+     * GET /reports/financial (JSON) — Table 36, [Financial/Billing Report] branch.
      */
     public function financial(Request $request): JsonResponse
     {
@@ -67,7 +67,7 @@ class ReportController extends Controller
 
     /**
      * GET /reports/export?type=occupancy|financial&start=&end=
-     * Table 37, step 4 — "Click Export -> generate and download the
+     * Table 36, step 4 — "Click Export -> generate and download the
      * report as a PDF or CSV." CSV only, per the scope note above.
      *
      * A UTF-8 BOM is written first (see writeCsv() below) — without it,

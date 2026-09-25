@@ -27,7 +27,7 @@ class PaymentController extends Controller
      */
     public function page()
     {
-        // Table 23: catch any statement that's gone overdue with zero
+        // Table 22: catch any statement that's gone overdue with zero
         // payment activity, which the reactive per-payment resync alone
         // would never touch. See BillingStatement::syncOverdueStatuses().
         BillingStatement::syncOverdueStatuses();
@@ -45,11 +45,11 @@ class PaymentController extends Controller
             ->map(fn ($p) => $this->transformPendingRow($p))
             ->values();
 
-        // Use Case Report Table 22 (View Payment History): the Billing
+        // Use Case Report Table 21 (View Payment History): the Billing
         // Overview tab lists every statement with its running balance.
         // BillingController::index() already computes this same shape via
         // its own withBalance() helper for the recurring monthly billing
-        // system (Table 19) -- this reuses the same BillingStatement/Payment
+        // system (Table 18) -- this reuses the same BillingStatement/Payment
         // tables rather than duplicating that generation logic here.
         $overview = BillingStatement::with([
             'tenant:id,first_name,last_name',
@@ -94,7 +94,7 @@ class PaymentController extends Controller
      * One row per billing statement for the Overview tab -- tenant, room,
      * period, due date (with days-overdue when applicable), amounts,
      * balance, status, and the statement's own payment history for the
-     * View drawer (Table 22: "select a specific transaction to view
+     * View drawer (Table 21: "select a specific transaction to view
      * details").
      */
     private function transformOverviewRow(BillingStatement $bill): array
@@ -182,7 +182,7 @@ class PaymentController extends Controller
 
     /**
      * Admin: a specific tenant's not-fully-paid statements, for the Record
-     * Cash Payment modal's statement picker. Table 20 step 1 ("Display
+     * Cash Payment modal's statement picker. Table 19 step 1 ("Display
      * tenant's outstanding balance and billing history") -- scoped to just
      * what's needed to pick which statement a cash payment applies to.
      */
@@ -446,7 +446,7 @@ class PaymentController extends Controller
 
         $statement->refresh();
 
-        // Table 23-26's own exception paths ("if payment is received,
+        // Table 22-25's own exception paths ("if payment is received,
         // cancel remaining reminders / lift restriction / close the
         // escalation") previously only ran on the next escalation:process
         // sweep -- meaning a tenant could pay in full, drop off the admin's

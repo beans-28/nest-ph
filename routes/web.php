@@ -179,7 +179,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/damages', [DamageController::class, 'store']);
 
     // --- Delinquency Escalation (Week 6, Mon-Tue) ---
-    // Dashboard/tenant-list page plus Table 29's admin override action
+    // Dashboard/tenant-list page plus Table 28's admin override action
     // (Pause / Unpause / Reset to Stage 1 / Clear).
     Route::get('/delinquency', [DelinquencyController::class, 'page'])->name('delinquency.index');
     Route::post('/delinquency/{tenant}/override', [DelinquencyController::class, 'override']);
@@ -189,8 +189,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/delinquency-testing/{tenant}/escalate', [DelinquencyTestingController::class, 'escalate']);
 
     // --- Delinquency Escalation (Week 6, Thu) ---
-    // Table 27 step 8 (download the system-generated Stage 5 demand
-    // letter) and Table 51 (admin-triggered Issue Eviction Notice, only
+    // Table 26 step 8 (download the system-generated Stage 5 demand
+    // letter) and Table 50 (admin-triggered Issue Eviction Notice, only
     // available once a tenant has actually reached Stage 6/Blacklisted --
     // see DelinquencyController::issueEvictionNotice() for the gate).
     Route::get('/delinquency/{tenant}/demand-letter', [DelinquencyController::class, 'downloadDemandLetter']);
@@ -204,20 +204,20 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/tenant-manager/{tenant}', [TenantController::class, 'update']);
     Route::post('/tenant-manager/{tenant}/status', [TenantController::class, 'setStatus']);
 
-    // --- Tickets (View and Manage Tickets / Priority / Escalation — Tables 34, 40, 41) ---
+    // --- Tickets (View and Manage Tickets / Priority / Escalation — Tables 33, 39, 40) ---
     Route::get('/tickets', [TicketController::class, 'page'])->name('tickets.index');
     Route::get('/tickets/{ticket}', [TicketController::class, 'show']);
     Route::patch('/tickets/{ticket}', [TicketController::class, 'update']);
 
     Route::get('/activity-log', [DashboardController::class, 'activityLog'])->name('activity-log.index');
 
-    // --- Reports (Table 37 — Generate Reports) ---
+    // --- Reports (Table 36 — Generate Reports) ---
     Route::get('/reports', [ReportController::class, 'page'])->name('reports.index');
     Route::get('/reports/occupancy', [ReportController::class, 'occupancy']);
     Route::get('/reports/financial', [ReportController::class, 'financial']);
     Route::get('/reports/export', [ReportController::class, 'export']);
 
-    // --- Dormitory Profile (Manage Dormitory Profile, Table 39) ---
+    // --- Dormitory Profile (Manage Dormitory Profile, Table 38) ---
     Route::get('/dormitory-profile', [DormitoryProfileController::class, 'page'])->name('dormitory-profile.index');
     Route::post('/dormitory-profile', [DormitoryProfileController::class, 'updateProfile'])->name('dormitory-profile.update');
     Route::post('/dormitory-profile/cover-photo', [DormitoryProfileController::class, 'uploadCoverPhoto'])->name('dormitory-profile.cover-photo');

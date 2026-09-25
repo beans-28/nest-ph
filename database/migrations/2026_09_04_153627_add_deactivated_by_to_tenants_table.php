@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            // Table 38, postcondition: "Log the deactivation action with
+            // Table 37, postcondition: "Log the deactivation action with
             // administrator ID, reason, and timestamp." Reason and timestamp
             // already existed (deactivation_reason/deactivated_at) -- the
             // admin ID itself was the missing piece.

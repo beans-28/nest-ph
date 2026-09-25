@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Use Case Report Table 43, precondition: once Move-Out has been
+ * Use Case Report Table 42, precondition: once Move-Out has been
  * recorded, a former tenant's only remaining reason to log in is to see
  * the move-out confirmation and optionally leave a review -- not to keep
  * browsing Billing, Tickets, or Delinquency with stale data from a
@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Applied to the tenant route group, alongside movein.check and
  * delinquency.check. If the logged-in tenant's status is 'inactive' and
  * they are NOT blacklisted (an evicted tenant is delinquency.check's
- * problem, not this one -- Table 28's blacklist is permanent and takes
+ * problem, not this one -- Table 27's blacklist is permanent and takes
  * priority), every request gets redirected to the Profile/Account page
  * except that page itself and the review-submission endpoint.
  */

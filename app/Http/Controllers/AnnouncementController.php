@@ -12,7 +12,7 @@ class AnnouncementController extends Controller
     private const FEED_LIMIT = 20;
 
     /**
-     * Table 44 — homepage newsfeed. Returns recent announcements with a
+     * Table 43 — homepage newsfeed. Returns recent announcements with a
      * comment COUNT only; the full thread loads on demand via comments()
      * when a tenant expands a card, keeping this initial payload light.
      */
@@ -36,7 +36,7 @@ class AnnouncementController extends Controller
     }
 
     /**
-     * Table 46 — Manage Announcements. Route middleware restricts this
+     * Table 45 — Manage Announcements. Route middleware restricts this
      * to admin/owner accounts.
      */
     public function store(Request $request): JsonResponse
@@ -65,7 +65,7 @@ class AnnouncementController extends Controller
     }
 
     /**
-     * Table 44, step 2 — expand comment thread.
+     * Table 43, step 2 — expand comment thread.
      */
     public function comments(Announcement $announcement): JsonResponse
     {
@@ -85,7 +85,7 @@ class AnnouncementController extends Controller
     }
 
     /**
-     * Table 45 — Comment on Announcement. Open to both tenants and
+     * Table 44 — Comment on Announcement. Open to both tenants and
      * admins; comments_restricted only ever blocks a tenant.
      */
     public function storeComment(Request $request, Announcement $announcement): JsonResponse
@@ -126,7 +126,7 @@ class AnnouncementController extends Controller
     }
 
     /**
-     * Table 47 — Manage Comments (delete). Admin/owner only.
+     * Table 46 — Manage Comments (delete). Admin/owner only.
      */
     public function destroyComment(AnnouncementComment $comment): JsonResponse
     {
@@ -140,7 +140,7 @@ class AnnouncementController extends Controller
     }
 
     /**
-     * Table 47 — Manage Comments (restrict/unrestrict toggle). Admin/owner only.
+     * Table 46 — Manage Comments (restrict/unrestrict toggle). Admin/owner only.
      */
     public function toggleRestrict(Announcement $announcement): JsonResponse
     {

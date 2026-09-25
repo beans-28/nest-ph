@@ -28,15 +28,24 @@
                 @include('partials.movein-steps', ['step' => 1])
 
                 <div class="panel-body">
-                    <svg class="state-badge" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <path d="M32 2 L37.5 7.5 L45 5 L47.5 12.5 L55 15 L52.5 22.5 L58 28 L52.5 33.5 L55 41 L47.5 43.5 L45 51 L37.5 48.5 L32 54 L26.5 48.5 L19 51 L16.5 43.5 L9 41 L11.5 33.5 L6 28 L11.5 22.5 L9 15 L16.5 12.5 L19 5 L26.5 7.5 Z" fill="#5ea86a"/>
-                        <path d="M21 32 L28 39 L43 24" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                    </svg>
+                    @if($rejectedProof)
+                        {{-- A rejected proof comes first: the tenant's next step is to resend it, not to celebrate. --}}
+                        <div class="rejection-notice">
+                            <strong>Your last proof of payment was not accepted.</strong>
+                            <span>Reason: {{ $rejectedProof->review_notes }}</span>
+                            <span>Please submit a new proof of payment.</span>
+                        </div>
+                    @else
+                        <svg class="state-badge" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M32 2 L37.5 7.5 L45 5 L47.5 12.5 L55 15 L52.5 22.5 L58 28 L52.5 33.5 L55 41 L47.5 43.5 L45 51 L37.5 48.5 L32 54 L26.5 48.5 L19 51 L16.5 43.5 L9 41 L11.5 33.5 L6 28 L11.5 22.5 L9 15 L16.5 12.5 L19 5 L26.5 7.5 Z" fill="#5ea86a"/>
+                            <path d="M21 32 L28 39 L43 24" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        </svg>
+                    @endif
 
                     <h2 id="pageHeading">Welcome to Pureza Station Dormitory!</h2>
                     <p class="lead">We are pleased to inform you that your application has been approved by the dormitory administration. To proceed with your move-in process, please settle your required move-in fees to receive your official Move-In Permit.</p>
 
-                    <a href="{{ route('tenant.movein.payment-type') }}" class="btn-login">Proceed with Payment</a>
+                    <a href="{{ route('tenant.movein.payment-type') }}" class="btn-login">{{ $rejectedProof ? 'Submit a New Proof of Payment' : 'Proceed with Payment' }}</a>
                 </div>
             </section>
         </div>
