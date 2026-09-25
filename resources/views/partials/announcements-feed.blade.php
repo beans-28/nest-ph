@@ -57,7 +57,9 @@
   .announce-post-head{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
   .announce-avatar{ width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12.5px; color:var(--green-dark, #3f6b4a); background:var(--status-vacant-bg, #d9f2dd); border:1px solid #c3e3c6; flex-shrink:0; }
   .announce-post-meta{ flex:1; min-width:0; }
-  .announce-post-name{ font-weight:700; font-size:13px; color:var(--text-dark, #243026); display:flex; align-items:center; gap:6px; }
+  .announce-post-name{ font-weight:700; font-size:13px; color:var(--text-dark, #243026); display:flex; align-items:center; flex-wrap:wrap; gap:4px 6px; }
+  .announce-post-name .tag{ flex-shrink:0; }
+  .announce-restrict-btn{ flex-shrink:0; }
   .announce-post-name .tag{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:var(--green-accent, #2f6f3c); background:var(--status-vacant-bg, #d9f2dd); padding:2px 7px; border-radius:20px; }
   .announce-post-time{ font-size:11px; color:var(--text-light, #8a9690); margin-top:1px; }
   .announce-post-body{ font-size:13.5px; color:var(--text-dark, #243026); line-height:1.6; margin-bottom:10px; white-space:pre-wrap; padding-left:46px; }
@@ -92,6 +94,18 @@
   .announce-toast{ position:fixed; bottom:24px; right:24px; background:var(--text-dark, #243026); color:#fff; padding:10px 18px; border-radius:8px; font-size:12.5px; z-index:999; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
   .announce-toast.error{ background:var(--status-occupied, #d9564f); }
   .announce-toast.visible{ display:block; }
+
+  @media (max-width: 640px){
+    .announce-post{ padding:14px; }
+    .announce-post-head{ align-items:flex-start; }
+    .announce-restrict-btn{ padding:6px 10px; font-size:11.5px; }
+    /* Drop the avatar-width indent so text gets the full card width */
+    .announce-post-body, .announce-count-row, .announce-action-bar, .announce-thread{ padding-left:0; }
+    .announce-composer{ flex-direction:column; align-items:stretch; }
+    .announce-composer textarea{ width:100%; box-sizing:border-box; }
+    .announce-composer .announce-btn{ align-self:flex-end; }
+    .announce-toast{ left:16px; right:16px; bottom:16px; text-align:center; }
+  }
 </style>
 
 <script>

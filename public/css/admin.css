@@ -161,6 +161,11 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
   /* Stat cards: two per row instead of one tall stack */
   .main .stats-row{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
   .main .stat-card{ padding:12px; gap:10px; min-width:0; }
+  /* Keep long peso amounts inside the half-width cards */
+  .main .stat-card > div:not(.stat-icon){ min-width:0; }
+  .main .stat-card .stat-icon{ width:36px; height:36px; }
+  .main .stat-card .stat-icon svg{ width:18px; height:18px; }
+  .main .stat-card .stat-value{ font-size:18px; overflow-wrap:anywhere; }
 
   /* Tab strips: action buttons on top, tabs in one swipeable row that
      keeps its underline against the divider */

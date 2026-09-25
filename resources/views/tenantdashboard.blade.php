@@ -37,7 +37,9 @@
 
   @media (max-width: 900px){
     .content{ padding:20px 18px 40px 18px; }
-    .stats-row{ grid-template-columns:repeat(2, 1fr); }
+    .stats-row{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    .stat-card > div:not(.stat-icon){ min-width:0; }
+    .stat-value{ overflow-wrap:anywhere; }
     .dash-grid{ grid-template-columns:1fr; }
   }
   @media (max-width: 520px){
