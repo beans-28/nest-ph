@@ -26,8 +26,13 @@
             justify-content: center; color: #fff; flex-shrink: 0;
         }
         .method-icon svg { width: 20px; height: 20px; }
+        .method-icon.default { background: var(--green-darker); }
         .method-icon.gcash { background: #007dfe; }
+        .method-icon.maya { background: #0d8b5f; }
         .method-icon.bdo { background: #003da5; }
+        .method-icon.bpi { background: #a6192e; }
+        .method-text { min-width: 0; }
+        .method-desc { overflow-wrap: anywhere; }
         .method-name { display: block; font-weight: 700; font-size: 15px; color: var(--ink); }
         .method-desc { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
     </style>
@@ -58,30 +63,31 @@
                     <fieldset class="choice-group">
                         <legend class="visually-hidden">Payment method</legend>
 
+                        @forelse($paymentMethods as $pm)
                         <label class="choice">
-                            <input type="radio" name="payment_method" value="gcash" required>
-                            <span class="method-icon gcash" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>
-                            </span>
-                            <span>
-                                <span class="method-name">GCash</span>
-                                <span class="method-desc">Pay using your GCash account or mobile number</span>
-                            </span>
-                        </label>
-
-                        <label class="choice">
-                            <input type="radio" name="payment_method" value="bdo" required>
-                            <span class="method-icon bdo" aria-hidden="true">
+                            <input type="radio" name="payment_method" value="{{ $pm['id'] }}" required {{ (string) $selectedMethodId === (string) $pm['id'] ? 'checked' : '' }}>
+                            <span class="method-icon {{ $pm['brand'] }}" aria-hidden="true">
+                                @if($pm['type'] === 'bank')
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 21h18"/></svg>
+                                @else
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>
+                                @endif
                             </span>
-                            <span>
-                                <span class="method-name">BDO</span>
-                                <span class="method-desc">Pay using your BDO account</span>
+                            <span class="method-text">
+                                <span class="method-name">{{ $pm['name'] }}</span>
+                                <span class="method-desc">{{ $pm['account_name'] }} · {{ $pm['account_number'] }}</span>
                             </span>
                         </label>
+                        @empty
+                        <p class="method-desc">No online payment methods are set up yet. Please contact the dormitory admin.</p>
+                        @endforelse
                     </fieldset>
 
-                    <button type="submit" class="btn-login" id="proceedBtn" disabled>
+                    @error('payment_method')
+                        <p class="form-error visible" role="alert">{{ $message }}</p>
+                    @enderror
+
+                    <button type="submit" class="btn-login" id="proceedBtn" {{ $selectedMethodId ? '' : 'disabled' }}>
                         <span class="spinner"></span>
                         <span>Proceed with Payment</span>
                     </button>

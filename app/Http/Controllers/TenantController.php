@@ -374,6 +374,23 @@ class TenantController extends Controller
 
             $message = 'Tenant account deactivated successfully.';
         } else {
+            // Delinquency is derived (blacklisted or an overdue bill), not
+            // a tenants.status value, so flipping the column can't clear
+            // it -- only settling the overdue bill (or a Reset, for a blacklisted
+            // tenant with no overdue bill) can. Reject instead of reporting a success that changes nothing.
+            $isDelinquent = $tenant->is_blacklisted
+                || $tenant->billingStatements()->where('status', 'overdue')->exists();
+
+            if ($isDelinquent) {
+                return response()->json([
+                    'message' => "A delinquent account can't be set to active. It clears automatically once the tenant's overdue balance is paid and confirmed.",
+                ], 409);
+            }
+
+            if ($tenant->status === 'active') {
+                return response()->json(['message' => 'This tenant is already active.'], 409);
+            }
+
             $tenant->update([
                 'status' => 'active',
                 'deactivation_reason' => null,

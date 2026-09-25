@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\BillingStatement;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Models\Penalty;
 use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
@@ -154,7 +155,8 @@ class TenantPortalController extends Controller
 
         $data = $request->validate([
             'amount_paid' => ['required', 'numeric', 'min:0.01'],
-            'payment_method' => ['required', Rule::in(['gcash', 'bank_transfer', 'other'])],
+            'payment_method_id' => ['nullable', 'integer', 'exists:payment_methods,id'],
+            'payment_method' => ['required_without:payment_method_id', Rule::in(['gcash', 'bank_transfer', 'other'])],
             'reference_number' => ['required', 'string', 'max:100'],
             'payment_date' => ['required', 'date', 'before_or_equal:today'],
             'notes' => ['nullable', 'string', 'max:500'],
@@ -169,6 +171,14 @@ class TenantPortalController extends Controller
             return response()->json(['message' => 'This statement is already fully paid.'], 409);
         }
 
+        // The admin-configured method the tenant paid through decides the
+        // enum and label, so the client can't claim a method that isn't offered.
+        $method = isset($data['payment_method_id']) ? PaymentMethod::find($data['payment_method_id']) : null;
+
+        if ($method && ! $method->isOnline()) {
+            return response()->json(['message' => 'Cash payments are recorded by the admin at the office, not submitted online.'], 422);
+        }
+
         $hasPending = Payment::where('billing_id', $bill->id)->where('status', 'pending')->exists();
 
         if ($hasPending) {
@@ -181,7 +191,8 @@ class TenantPortalController extends Controller
             'billing_id' => $bill->id,
             'tenant_id' => $bill->tenant_id,
             'amount_paid' => $data['amount_paid'],
-            'payment_method' => $data['payment_method'],
+            'payment_method' => $method ? $method->paymentEnum() : $data['payment_method'],
+            'payment_method_label' => $method?->name,
             'reference_number' => $data['reference_number'] ?? null,
             'payment_date' => $data['payment_date'],
             'notes' => $data['notes'] ?? null,
@@ -273,6 +284,7 @@ class TenantPortalController extends Controller
             'tenant' => $payment->tenant?->full_name,
             'amount_paid' => $payment->amount_paid,
             'payment_method' => $payment->payment_method,
+            'payment_method_label' => $payment->payment_method_label,
             'reference_number' => $payment->reference_number,
             'payment_date' => $payment->payment_date,
             'billing_period' => $payment->billingStatement

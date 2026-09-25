@@ -161,8 +161,8 @@ class BillingController extends Controller
      *
      * Matches Use Case Report Table 19 ("Generate Billing Statement"):
      *   1. Compute base rent for the tenant's assigned room.
-     *   2. Add the fixed utility charges among tenants sharing the same
-     *      floor/facility (see splitUtilityCost()).
+     *   2. Add the room's utility and wifi charges, split by the
+     *      room's bed count, same as rent (see splitUtilityCost()).
      *   3. Check for existing unpaid balance and apply late payment penalty
      *      if applicable (handled by foldPenaltiesInto(), Week 5 Tue's work).
      *
@@ -232,17 +232,17 @@ class BillingController extends Controller
     }
 
     /**
-     * Splits this contract's floor's fixed monthly utility/wifi cost evenly
-     * among all tenants currently on active contracts on that same floor --
-     * "the fixed utility charges among tenants sharing the same floor" per
-     * the use case report. Falls back to 0/0 if the floor has no configured
-     * cost, or (edge case) no active tenants to split it across.
+     * Splits this contract's room's monthly utility/wifi cost evenly across
+     * its beds (same as rent), at the room's
+     * prices as of right now. Bills already generated keep the amounts they
+     * were issued with, so a mid-month price change only reaches each
+     * tenant's next generated statement.
      */
     private function splitUtilityCost(LeaseContract $contract): array
     {
-        $floor = $contract->bed?->room?->floor;
+        $room = $contract->bed?->room;
 
-        if (! $floor) {
+        if (! $room) {
             // Exception in Table 19: "Utility charge data is incomplete or
             // missing for the billing period; system flags the discrepancy
             // and notifies the administrator." Doesn't block generation --
@@ -252,24 +252,13 @@ class BillingController extends Controller
             $this->notify('billing.utility_data_missing', [
                 'contract_id' => $contract->id,
                 'tenant_id' => $contract->tenant_id,
-                'reason' => 'No floor is configured for this contract\'s room.',
+                'reason' => "No room is assigned to this contract's bed.",
             ]);
 
             return [0, 0];
         }
 
-        $activeTenantsOnFloor = LeaseContract::where('status', 'active')
-            ->whereHas('bed.room', fn ($q) => $q->where('floor_id', $floor->id))
-            ->count();
-
-        if ($activeTenantsOnFloor === 0) {
-            return [0, 0];
-        }
-
-        $utilitiesShare = round($floor->monthly_utility_cost / $activeTenantsOnFloor, 2);
-        $wifiShare = round($floor->monthly_wifi_cost / $activeTenantsOnFloor, 2);
-
-        return [$utilitiesShare, $wifiShare];
+        return $room->utilityShares();
     }
 
     /**

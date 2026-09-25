@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     @include('partials.movein-styles')
     <style>
         /* This step carries a two-column form, so the panel gets more room */
@@ -31,16 +30,17 @@
         .balance-amount { font-size: clamp(26px, 3vw, 32px); font-weight: 900; color: var(--green-deep); font-variant-numeric: tabular-nums; margin-top: 2px; }
         .balance-type { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
 
-        .qr-card { border-radius: 12px; padding: 18px 20px; color: #fff; display: flex; align-items: center; gap: 16px; }
-        .qr-card.gcash { background: linear-gradient(135deg, #0065d1, #0093d6); }
-        .qr-card.bdo { background: linear-gradient(135deg, #003da5, #002b73); }
+        .qr-card { background: #fff; border-radius: 12px; padding: 18px 20px; display: flex; align-items: center; gap: 16px; }
         .qr-card-info { flex: 1; min-width: 0; }
-        .qr-brand { font-size: 20px; font-weight: 900; letter-spacing: 0.02em; margin-bottom: 4px; }
-        .qr-scan-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-        .qr-account { font-size: 13px; margin-top: 8px; font-variant-numeric: tabular-nums; word-break: break-word; }
-        .qr-code-box { background: #fff; border-radius: 8px; padding: 6px; flex-shrink: 0; }
-        .qr-code-box canvas { display: block; border-radius: 4px; }
-        .qr-fallback { width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); text-align: center; padding: 6px; }
+        .qr-label { font-size: 13px; font-weight: 500; color: var(--muted); }
+        .qr-method { font-size: 18px; font-weight: 900; color: var(--green-deep); margin-top: 2px; }
+        .qr-account { font-size: 13px; color: var(--ink); margin-top: 6px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+        .qr-instructions { font-size: 12px; color: var(--muted); margin-top: 6px; overflow-wrap: anywhere; }
+        .qr-code-box { background: #fff; border: 1px solid #e2e6e3; border-radius: 8px; padding: 6px; flex-shrink: 0; font: inherit; }
+        .qr-code-box img { display: block; width: 110px; height: 110px; object-fit: contain; border-radius: 4px; }
+        .qr-code-box .qr-tap-hint { color: var(--muted); text-align: center; }
+        .qr-fallback { width: 110px; height: 110px; display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); text-align: center; padding: 8px; border: 1.5px dashed #cfd6d0; border-radius: 6px; flex-shrink: 0; }
+        .qr-fallback svg { width: 26px; height: 26px; opacity: 0.55; }
 
         .form-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .panel-card { background: #fff; border-radius: 12px; padding: 22px 24px; min-width: 0; }
@@ -132,13 +132,23 @@
                             <div class="balance-type">{{ $paymentType === 'partial' ? 'Partial payment — enter the amount you sent below.' : 'Full payment' }}</div>
                         </div>
 
-                        <div class="qr-card {{ $paymentMethod }}">
+                        <div class="qr-card">
                             <div class="qr-card-info">
-                                <div class="qr-brand">{{ $paymentMethod === 'bdo' ? 'BDO' : 'GCash' }}</div>
-                                <div class="qr-scan-label">Scan to pay here</div>
-                                <div class="qr-account">{{ $dormName }}<br>{{ $paymentMethod === 'bdo' ? ($bdoAccountNumber ?: 'Account not set') : ($gcashNumber ?: 'Number not set') }}</div>
+                                <div class="qr-label">Pay via</div>
+                                <div class="qr-method">{{ $method['name'] }}</div>
+                                <div class="qr-account">{{ $method['account_name'] ?: $dormName }}@if($method['account_number']) · {{ $method['account_number'] }}@endif</div>
+                                @if($method['instructions'])
+                                    <div class="qr-instructions">{{ $method['instructions'] }}</div>
+                                @endif
                             </div>
-                            <div class="qr-code-box"><canvas id="qrCanvas" aria-label="Payment QR code" role="img"></canvas></div>
+                            @if($method['qr_url'])
+                                <button type="button" class="qr-code-box" data-qr-src="{{ $method['qr_url'] }}" data-qr-name="{{ $method['name'] }}" aria-label="Enlarge {{ $method['name'] }} QR code">
+                                    <img src="{{ $method['qr_url'] }}" alt="{{ $method['name'] }} QR code">
+                                    <span class="qr-tap-hint">Tap to enlarge</span>
+                                </button>
+                            @else
+                                <div class="qr-fallback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7h-7"/></svg>No QR code set up</div>
+                            @endif
                         </div>
                     </div>
 
@@ -275,7 +285,7 @@
     });
 
     const submitUrl = '/my/billing/bills/{{ $billing?->id ?? 0 }}/payment-proof';
-    const paymentMethodValue = @json($paymentMethod === 'bdo' ? 'bank_transfer' : 'gcash');
+    const paymentMethodId = @json($method['id']);
 
     document.getElementById('proofForm').addEventListener('submit', async function (e) {
         e.preventDefault();
@@ -328,7 +338,7 @@
 
         const formData = new FormData();
         formData.append('amount_paid', amountPaid);
-        formData.append('payment_method', paymentMethodValue);
+        formData.append('payment_method_id', paymentMethodId);
         formData.append('reference_number', referenceNumber);
         formData.append('payment_date', paymentDate);
         formData.append('notes', combinedNotes);
@@ -366,24 +376,8 @@
         document.querySelector('.topnav').classList.toggle('scrolled', window.scrollY > 10);
     });
 
-    // QR code generation runs LAST and is wrapped defensively — if the CDN
-    // library fails to load (network restriction, ad blocker, offline), this
-    // must never be able to break the actual upload/submit functionality
-    // above, which is the part that actually matters.
-    try {
-        const qrPayload = @json($paymentMethod === 'bdo'
-            ? 'BDO Account: ' . ($bdoAccountNumber ?: 'Not configured')
-            : 'GCash: ' . ($gcashNumber ?: 'Not configured'));
-
-        if (typeof QRCode !== 'undefined') {
-            QRCode.toCanvas(document.getElementById('qrCanvas'), qrPayload, { width: 96, margin: 1 });
-        } else {
-            document.querySelector('.qr-code-box').innerHTML = '<div class="qr-fallback">QR code unavailable</div>';
-        }
-    } catch (qrError) {
-        console.warn('QR code generation failed (non-critical):', qrError);
-    }
 </script>
 
+@include('partials.qr-lightbox')
 </body>
 </html>

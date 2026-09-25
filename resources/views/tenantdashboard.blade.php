@@ -101,7 +101,7 @@
 
       <div class="stats-row">
         <div class="stat-card emphasis" role="group" aria-label="Balance due">
-          <div class="stat-icon {{ ($daysUntilDue !== null && $daysUntilDue < 0) ? 'attention' : 'green' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+          <div class="stat-icon {{ ($daysUntilDue !== null && $daysUntilDue < 0) ? 'attention' : 'green' }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11H4M20 7H4"/><path d="M7 21V4a1 1 0 011-1h4a1 1 0 010 12H7"/></svg></div>
           <div>
             <div class="stat-label">Balance Due</div>
             <div class="stat-value">₱{{ number_format($balanceDue, 0) }}</div>

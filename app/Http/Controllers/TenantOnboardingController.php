@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BillingStatement;
 use App\Models\DormitoryProfile;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -96,7 +97,8 @@ class TenantOnboardingController extends Controller
     }
 
     /**
-     * Payment method choice (GCash / BDO). Requires the payment type to
+     * Payment method choice -- the admin's configured online methods
+     * (cash can't carry a proof upload). Requires the payment type to
      * already be chosen — a tenant landing here directly (e.g. a bookmarked
      * URL) gets sent back to pick that first.
      */
@@ -111,6 +113,8 @@ class TenantOnboardingController extends Controller
         return view('tenantmoveinpaymentmethod', [
             'tenant' => $tenant,
             'paymentType' => session('move_in_payment_type'),
+            'paymentMethods' => PaymentMethod::ordered()->filter->isOnline()->map->toClientArray()->values(),
+            'selectedMethodId' => session('move_in_payment_method'),
         ]);
     }
 
@@ -121,7 +125,9 @@ class TenantOnboardingController extends Controller
     public function storePaymentMethod(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'payment_method' => ['required', Rule::in(['gcash', 'bdo'])],
+            'payment_method' => ['required', 'integer', Rule::exists('payment_methods', 'id')->whereNot('type', 'cash')],
+        ], [
+            'payment_method.exists' => 'That payment method is no longer available. Please choose another.',
         ]);
 
         session(['move_in_payment_method' => $data['payment_method']]);
@@ -144,7 +150,10 @@ class TenantOnboardingController extends Controller
         if (! $paymentType) {
             return redirect()->route('tenant.movein.payment-type');
         }
-        if (! $paymentMethod) {
+        // Also catches a method the admin deleted (or an old 'gcash'/'bdo'
+        // session value from before methods were configurable).
+        $method = $paymentMethod ? PaymentMethod::find($paymentMethod) : null;
+        if (! $method || ! $method->isOnline()) {
             return redirect()->route('tenant.movein.payment-method');
         }
 
@@ -156,9 +165,7 @@ class TenantOnboardingController extends Controller
             'tenant' => $tenant,
             'billing' => $billing,
             'paymentType' => $paymentType,
-            'paymentMethod' => $paymentMethod,
-            'gcashNumber' => $profile->gcash_number,
-            'bdoAccountNumber' => $profile->bdo_account_number,
+            'method' => $method->toClientArray(),
             'dormName' => $profile->dorm_name ?: 'NEST.PH',
         ]);
     }

@@ -53,6 +53,8 @@ class VacancyController extends Controller
             'amenities' => ['nullable', 'array'],
             'amenities.*' => ['string', 'max:40'],
             'monthly_rate' => ['nullable', 'numeric', 'min:0'],
+            'monthly_utility_cost' => ['nullable', 'numeric', 'min:0'],
+            'monthly_wifi_cost' => ['nullable', 'numeric', 'min:0'],
             'bed_count' => ['required', 'integer', 'min:1', 'max:8'],
             'bed_statuses' => ['nullable', 'array'],
             'bed_statuses.*' => [Rule::in(self::BED_STATUSES)],
@@ -70,6 +72,8 @@ class VacancyController extends Controller
             'room_type' => $data['room_type'] ?? null,
             'amenities' => $data['amenities'] ?? [],
             'monthly_rate' => $data['monthly_rate'] ?? 0,
+            'monthly_utility_cost' => $data['monthly_utility_cost'] ?? 0,
+            'monthly_wifi_cost' => $data['monthly_wifi_cost'] ?? 0,
             'status' => 'available',
         ]);
 
@@ -138,6 +142,8 @@ class VacancyController extends Controller
             'amenities' => ['nullable', 'array'],
             'amenities.*' => ['string', 'max:40'],
             'monthly_rate' => ['nullable', 'numeric', 'min:0'],
+            'monthly_utility_cost' => ['nullable', 'numeric', 'min:0'],
+            'monthly_wifi_cost' => ['nullable', 'numeric', 'min:0'],
             'status' => ['nullable', Rule::in(self::ROOM_STATUSES)],
             'bed_count' => ['required', 'integer', 'min:1', 'max:8'],
             'bed_statuses' => ['nullable', 'array'],
@@ -157,6 +163,8 @@ class VacancyController extends Controller
             'room_type' => $data['room_type'] ?? null,
             'amenities' => $data['amenities'] ?? $room->amenities,
             'monthly_rate' => $data['monthly_rate'] ?? 0,
+            'monthly_utility_cost' => $data['monthly_utility_cost'] ?? 0,
+            'monthly_wifi_cost' => $data['monthly_wifi_cost'] ?? 0,
             'status' => $data['status'] ?? $room->status,
         ]);
 
@@ -317,6 +325,8 @@ class VacancyController extends Controller
             'amenities' => $room->amenities ?? [],
             'monthly_rate' => $room->monthly_rate,
             'price_per_bed' => $room->perBedRate(),
+            'monthly_utility_cost' => $room->monthly_utility_cost,
+            'monthly_wifi_cost' => $room->monthly_wifi_cost,
             'status' => $room->status,
             'beds' => $room->beds->map(fn ($bed) => [
                 'id' => $bed->id,

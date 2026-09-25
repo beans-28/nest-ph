@@ -185,7 +185,7 @@
 
       <div class="stats-row">
         <div class="stat-card">
-          <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+          <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11H4M20 7H4"/><path d="M7 21V4a1 1 0 011-1h4a1 1 0 010 12H7"/></svg></div>
           <div><div class="stat-label">Total Outstanding</div><div class="stat-value">₱{{ number_format($stats['total_outstanding'], 2) }}</div></div>
         </div>
         <div class="stat-card">
@@ -611,7 +611,7 @@
         <td>${esc(p.room_no ?? '—')}</td>
         <td>${esc(p.billing_month ?? '—')}</td>
         <td>${esc(p.date_paid ?? '—')}</td>
-        <td><span class="method-text ${p.payment_method}">${METHOD_LABEL[p.payment_method] ?? p.payment_method}</span></td>
+        <td><span class="method-text ${p.payment_method}">${esc(p.payment_method_label || (METHOD_LABEL[p.payment_method] ?? p.payment_method))}</span></td>
         <td>${peso(p.amount_paid)}</td>
         <td>${esc(p.reference_number ?? 'N/A')}</td>
         <td>
@@ -672,7 +672,7 @@
           <div><div class="k">Billing Month</div>${val(p.billing_month)}</div>
           <div><div class="k">Type</div>${val(p.billing_type === 'move_in' ? 'Move-In Fee' : 'Monthly Rent')}</div>
           <div><div class="k">Date Paid</div>${val(p.date_paid)}</div>
-          <div><div class="k">Payment Method</div>${val(METHOD_LABEL[p.payment_method] ?? p.payment_method)}</div>
+          <div><div class="k">Payment Method</div>${val(p.payment_method_label || (METHOD_LABEL[p.payment_method] ?? p.payment_method))}</div>
           <div><div class="k">Amount Paid</div><span class="v">${peso(p.amount_paid)}</span></div>
           <div><div class="k">Reference</div>${val(p.reference_number)}</div>
         </div>
@@ -880,7 +880,7 @@
       : o.payments.map(p => `
           <div class="stmt-history-row">
             <span>${esc(p.date ?? '—')}</span>
-            <span>${esc(PAYMENT_METHOD_LABEL[p.payment_method] ?? p.payment_method)}</span>
+            <span>${esc(p.payment_method_label || (PAYMENT_METHOD_LABEL[p.payment_method] ?? p.payment_method))}</span>
             <span class="status-pill ${p.status === 'approved' ? 'paid' : (p.status === 'rejected' ? 'overdue' : 'unpaid')}">${esc(p.status)}</span>
             <span class="amt">${peso(p.amount_paid)}</span>
           </div>`).join('');

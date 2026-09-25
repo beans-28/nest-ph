@@ -11,7 +11,7 @@
             <span class="label">Tenant Manager</span>
         </li>
         <li class="nav-item {{ request()->routeIs('payments.*') ? 'active' : '' }}" data-href="{{ route('payments.index') }}" tabindex="0">
-            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span>
+            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11H4M20 7H4"/><path d="M7 21V4a1 1 0 011-1h4a1 1 0 010 12H7"/></svg></span>
             <span class="label">Billing and Payments</span>
         </li>
         <li class="nav-item {{ request()->routeIs('delinquency.*') ? 'active' : '' }}" data-href="{{ route('delinquency.index') }}" tabindex="0">

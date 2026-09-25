@@ -80,6 +80,45 @@
 
   .form-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:4px; }
 
+
+  /* Payment methods */
+  .pm-card-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+  .pm-card-head .card-sub{ margin-bottom:0; }
+  .pm-list{ list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+  .pm-row{ display:flex; align-items:center; gap:12px; border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .pm-logo{ width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:800; font-size:11px; color:#fff; background:var(--green-accent); }
+  .pm-logo.gcash{ background:#0070e0; } .pm-logo.maya{ background:#0d8b5f; } .pm-logo.bdo{ background:#00287a; } .pm-logo.bpi{ background:#a6192e; }
+  .pm-logo.cash{ background:#eaf0ea; color:var(--green-accent); }
+  .pm-logo svg{ width:19px; height:19px; }
+  .pm-info{ flex:1; min-width:0; }
+  .pm-name{ font-size:13.5px; font-weight:700; color:var(--text-dark); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .pm-type{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--text-mid); background:#f0f2f0; padding:2px 7px; border-radius:20px; }
+  .pm-detail{ font-size:12px; color:var(--text-mid); margin-top:2px; overflow-wrap:anywhere; }
+  .pm-qr-thumb{ width:40px; height:40px; border-radius:6px; border:1px solid var(--border); object-fit:cover; flex-shrink:0; background:#fff; }
+  .pm-qr-none{ width:40px; height:40px; border-radius:6px; border:1px dashed #cfd6d0; flex-shrink:0; font-size:9px; color:var(--text-light); display:flex; align-items:center; justify-content:center; text-align:center; line-height:1.2; }
+  .pm-empty{ font-size:12.5px; color:var(--text-light); font-style:italic; padding:10px 4px; }
+
+  .pm-modal{ position:fixed; inset:0; background:rgba(20,32,24,.45); display:none; align-items:center; justify-content:center; z-index:300; padding:20px; }
+  .pm-modal.open{ display:flex; }
+  .pm-modal-box{ background:#fff; border-radius:14px; width:100%; max-width:520px; max-height:calc(100vh - 40px); overflow-y:auto; padding:22px 24px; box-shadow:0 12px 40px rgba(0,0,0,.2); }
+  .pm-modal-box h3{ margin:0 0 16px; font-size:16px; color:var(--text-dark); }
+  .pm-modal .field{ margin-bottom:14px; }
+  .pm-modal .field select{ border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13.5px; font-family:var(--font-body); color:var(--text-dark); background:#fff; }
+  .pm-modal .field textarea{ min-height:70px; }
+  .pm-hint{ font-size:11.5px; color:var(--text-light); }
+  .pm-qr-edit{ display:flex; align-items:center; gap:14px; }
+  .pm-qr-preview{ width:84px; height:84px; border-radius:8px; border:1px solid var(--border); object-fit:contain; background:#fff; flex-shrink:0; }
+  .pm-qr-preview-none{ width:84px; height:84px; border-radius:8px; border:1px dashed #cfd6d0; display:flex; align-items:center; justify-content:center; font-size:10.5px; color:var(--text-light); text-align:center; flex-shrink:0; padding:6px; }
+  .pm-qr-btns{ display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+  .pm-error{ display:none; background:#fbeceb; color:var(--status-occupied); border-radius:8px; padding:9px 12px; font-size:12.5px; margin-bottom:12px; }
+  .pm-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:6px; }
+  @media (max-width:640px){
+    .pm-card-head{ flex-direction:column; }
+    .pm-row{ align-items:flex-start; }
+    .pm-modal{ padding:12px; }
+    .pm-modal-box{ padding:18px 16px; }
+  }
+
   /* House rules */
   .rules-list{ list-style:none; margin:0; padding:0; }
   .rule-row{ display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:1px solid #f0f2f0; }
@@ -322,6 +361,18 @@
               <input type="text" id="newRuleInput" placeholder="Add a new rule…" maxlength="500" aria-label="New house rule text">
               <button type="button" class="btn primary sm" id="addRuleBtn">+ Add Rule</button>
             </div>
+          </div>
+
+          {{-- Payment Methods --}}
+          <div class="card" id="paymentMethodsCard">
+            <div class="pm-card-head">
+              <div>
+                <h2>Payment Methods</h2>
+                <p class="card-sub">How tenants can pay their bills and move-in fees. Changes show on tenant payment screens right away.</p>
+              </div>
+              <button type="button" class="btn primary sm" id="addPmBtn">+ Add Method</button>
+            </div>
+            <ul class="pm-list" id="pmList"></ul>
           </div>
 
           {{-- Amenities --}}
@@ -1077,5 +1128,204 @@
 })();
 </script>
 
+
+<div class="pm-modal" id="pmModal" role="dialog" aria-modal="true" aria-labelledby="pmModalTitle">
+  <div class="pm-modal-box">
+    <h3 id="pmModalTitle">Add Payment Method</h3>
+    <div class="pm-error" id="pmError" role="alert"></div>
+    <div class="field">
+      <label for="pmType">Type</label>
+      <select id="pmType">
+        <option value="ewallet">E-wallet (GCash, Maya…)</option>
+        <option value="bank">Bank account</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="pmName">Name <span class="req">*</span></label>
+      <input type="text" id="pmName" maxlength="60" placeholder="e.g. GCash, BDO, Maya">
+    </div>
+    <div id="pmOnlineOnly">
+      <div class="field">
+        <label for="pmAccountName">Account Name <span class="req">*</span></label>
+        <input type="text" id="pmAccountName" maxlength="120" placeholder="Name registered on the account">
+      </div>
+      <div class="field">
+        <label for="pmAccountNumber"><span id="pmAccountNumberText">Mobile / Account Number</span> <span class="req">*</span></label>
+        <input type="text" id="pmAccountNumber" maxlength="60" placeholder="e.g. 0917 123 4567">
+      </div>
+      <div class="field">
+        <label>QR Code (optional)</label>
+        <div class="pm-qr-edit">
+          <div id="pmQrPreviewWrap"></div>
+          <div class="pm-qr-btns">
+            <button type="button" class="btn sm" id="pmQrChoose">Upload QR image</button>
+            <button type="button" class="btn sm warn" id="pmQrRemove">Remove QR</button>
+            <span class="pm-hint">JPG, PNG or WEBP, up to 5MB.</span>
+          </div>
+        </div>
+        <input type="file" id="pmQrInput" accept="image/jpeg,image/png,image/webp" hidden>
+      </div>
+    </div>
+    <div class="field">
+      <label for="pmInstructions">Instructions for tenants (optional)</label>
+      <textarea id="pmInstructions" maxlength="500" placeholder="e.g. Pay at the lobby reception between 8 AM and 5 PM."></textarea>
+    </div>
+    <div class="pm-actions">
+      <button type="button" class="btn" id="pmCancel">Cancel</button>
+      <button type="button" class="btn primary" id="pmSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="pmData">{!! json_encode($paymentMethods) !!}</script>
+<script>
+(function(){
+  const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+  const $ = (id) => document.getElementById(id);
+  let methods = JSON.parse($('pmData').textContent || '[]');
+  let editingId = null, qrFile = null, removeQr = false, currentQrUrl = null;
+
+  const TYPE_LABEL = { ewallet: 'E-wallet', bank: 'Bank', cash: 'Cash' };
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const TYPE_ICON = {
+    ewallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>',
+    bank: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 21h18"/></svg>',
+    cash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11H4M20 7H4"/><path d="M7 21V4a1 1 0 011-1h4a1 1 0 010 12H7"/></svg>',
+  };
+
+  function toast(msg, isError){
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.toggle('error', !!isError);
+    t.classList.add('visible');
+    clearTimeout(window._nestToastTimer);
+    window._nestToastTimer = setTimeout(() => t.classList.remove('visible'), 3200);
+  }
+
+  async function api(url, options){
+    const res = await fetch(url, Object.assign({}, options, { headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } }));
+    let body = {};
+    try { body = await res.json(); } catch(e) {}
+    if(!res.ok) throw new Error(body.message || (body.errors ? Object.values(body.errors)[0][0] : 'Something went wrong.'));
+    return body;
+  }
+
+  function render(){
+    const list = $('pmList');
+    if(!methods.length){
+      list.innerHTML = '<li class="pm-empty">No payment methods yet. Tenants can\'t pay until you add one.</li>';
+      return;
+    }
+    list.innerHTML = methods.map(m => `
+      <li class="pm-row">
+        <span class="pm-logo ${esc(m.brand)}" aria-hidden="true">${TYPE_ICON[m.type] ?? TYPE_ICON.ewallet}</span>
+        <div class="pm-info">
+          <div class="pm-name">${esc(m.name)} <span class="pm-type">${m.type === 'cash' ? 'Cash · Always on' : (TYPE_LABEL[m.type] ?? esc(m.type))}</span></div>
+          <div class="pm-detail">${m.type === 'cash' ? esc(m.instructions || 'Paid in person') : `${esc(m.account_name)} · ${esc(m.account_number)}`}</div>
+        </div>
+        ${m.type === 'cash' ? '' : (m.qr_url ? `<img class="pm-qr-thumb" src="${esc(m.qr_url)}" alt="${esc(m.name)} QR code">` : '<span class="pm-qr-none">No QR</span>')}
+        <div class="rule-actions">
+          <button type="button" class="icon-btn" data-edit="${m.id}" title="Edit" aria-label="Edit ${esc(m.name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+          ${m.type === 'cash' ? '' : `<button type="button" class="icon-btn danger" data-delete="${m.id}" title="Delete" aria-label="Delete ${esc(m.name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg></button>`}
+        </div>
+      </li>`).join('');
+  }
+
+  function renderQrPreview(){
+    const src = qrFile ? URL.createObjectURL(qrFile) : (removeQr ? null : currentQrUrl);
+    $('pmQrPreviewWrap').innerHTML = src
+      ? `<img class="pm-qr-preview" src="${esc(src)}" alt="QR code preview">`
+      : '<div class="pm-qr-preview-none">No QR code uploaded</div>';
+    $('pmQrRemove').style.display = src ? '' : 'none';
+  }
+
+  const pmTypeSelect = $('pmType');
+  const ONLINE_TYPE_OPTIONS = pmTypeSelect.innerHTML;
+  function setTypeOptions(isCash){
+    pmTypeSelect.innerHTML = isCash ? '<option value="cash">Cash (in person)</option>' : ONLINE_TYPE_OPTIONS;
+    pmTypeSelect.disabled = isCash;
+  }
+
+  function syncType(){
+    const type = $('pmType').value;
+    $('pmOnlineOnly').style.display = type === 'cash' ? 'none' : '';
+    $('pmAccountNumberText').textContent = type === 'bank' ? 'Account Number' : 'Mobile / Account Number';
+  }
+
+  function openModal(m){
+    editingId = m ? m.id : null;
+    qrFile = null; removeQr = false; currentQrUrl = m ? m.qr_url : null;
+    $('pmModalTitle').textContent = m ? 'Edit Payment Method' : 'Add Payment Method';
+    setTypeOptions(!!m && m.type === 'cash');
+    $('pmType').value = m ? m.type : 'ewallet';
+    $('pmName').value = m ? m.name : '';
+    $('pmAccountName').value = m ? (m.account_name || '') : '';
+    $('pmAccountNumber').value = m ? (m.account_number || '') : '';
+    $('pmInstructions').value = m ? (m.instructions || '') : '';
+    $('pmQrInput').value = '';
+    $('pmError').style.display = 'none';
+    syncType();
+    renderQrPreview();
+    $('pmModal').classList.add('open');
+    $('pmName').focus();
+  }
+  const closeModal = () => $('pmModal').classList.remove('open');
+
+  $('addPmBtn').addEventListener('click', () => openModal(null));
+  $('pmCancel').addEventListener('click', closeModal);
+  $('pmModal').addEventListener('click', (e) => { if(e.target.id === 'pmModal') closeModal(); });
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape' && $('pmModal').classList.contains('open')) closeModal(); });
+  $('pmType').addEventListener('change', syncType);
+  $('pmQrChoose').addEventListener('click', () => $('pmQrInput').click());
+  $('pmQrInput').addEventListener('change', () => {
+    if($('pmQrInput').files.length){ qrFile = $('pmQrInput').files[0]; removeQr = false; renderQrPreview(); }
+  });
+  $('pmQrRemove').addEventListener('click', () => { qrFile = null; removeQr = true; $('pmQrInput').value = ''; renderQrPreview(); });
+
+  $('pmSave').addEventListener('click', async function(){
+    const fd = new FormData();
+    fd.append('type', $('pmType').value);
+    fd.append('name', $('pmName').value.trim());
+    fd.append('account_name', $('pmAccountName').value.trim());
+    fd.append('account_number', $('pmAccountNumber').value.trim());
+    fd.append('instructions', $('pmInstructions').value.trim());
+    if(qrFile) fd.append('qr', qrFile);
+    if(removeQr) fd.append('remove_qr', '1');
+
+    this.disabled = true;
+    try {
+      const url = '/dormitory-profile/payment-methods' + (editingId ? '/' + editingId : '');
+      const result = await api(url, { method: 'POST', body: fd });
+      methods = editingId ? methods.map(m => m.id === editingId ? result.method : m) : methods.concat(result.method);
+      render();
+      closeModal();
+      toast(result.message);
+    } catch(e){
+      $('pmError').textContent = e.message;
+      $('pmError').style.display = 'block';
+    }
+    this.disabled = false;
+  });
+
+  $('pmList').addEventListener('click', async (e) => {
+    const editBtn = e.target.closest('[data-edit]');
+    const delBtn = e.target.closest('[data-delete]');
+    if(editBtn){
+      openModal(methods.find(m => m.id === Number(editBtn.dataset.edit)));
+    } else if(delBtn){
+      const m = methods.find(x => x.id === Number(delBtn.dataset.delete));
+      if(!confirm(`Delete "${m.name}"? Tenants will no longer see it as a payment option.`)) return;
+      try {
+        const result = await api('/dormitory-profile/payment-methods/' + m.id, { method: 'DELETE' });
+        methods = methods.filter(x => x.id !== m.id);
+        render();
+        toast(result.message);
+      } catch(err){ toast(err.message, true); }
+    }
+  });
+
+  render();
+})();
+</script>
 </body>
 </html>

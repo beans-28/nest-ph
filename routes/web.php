@@ -230,6 +230,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/dormitory-profile/house-rules', [DormitoryProfileController::class, 'storeHouseRule'])->name('dormitory-profile.house-rules.store');
     Route::patch('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'updateHouseRule']);
     Route::delete('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'destroyHouseRule']);
+    Route::post('/dormitory-profile/payment-methods', [\App\Http\Controllers\PaymentMethodController::class, 'store']);
+    Route::post('/dormitory-profile/payment-methods/{paymentMethod}', [\App\Http\Controllers\PaymentMethodController::class, 'update']);
+    Route::delete('/dormitory-profile/payment-methods/{paymentMethod}', [\App\Http\Controllers\PaymentMethodController::class, 'destroy']);
 
         // --- Review Moderation (card on the Dormitory Profile page) ---
     Route::post('/dormitory-profile/reviews/rescan', [ReviewModerationController::class, 'rescan'])->name('dormitory-profile.reviews.rescan');
@@ -260,8 +263,24 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'moveout.check', 'delinquen
         $tenant = $request->attributes->get('tenant') ?? $request->user()->tenant;
         $dormProfile = \App\Models\DormitoryProfile::current();
 
+        // Preview of the next statement at today's room prices. Not a
+        // charge -- nothing reaches the balance until a bill is generated.
+        $contract = $tenant->activeContract()->with('bed.room')->first();
+        $nextBill = null;
+        if ($contract && $contract->bed?->room) {
+            [$utilities, $wifi] = $contract->bed->room->utilityShares();
+            $nextBill = [
+                'rent' => (float) $contract->monthly_rate,
+                'utilities' => $utilities,
+                'wifi' => $wifi,
+                'total' => (float) $contract->monthly_rate + $utilities + $wifi,
+            ];
+        }
+
         return view('tenantbilling', [
             'tenant' => $tenant,
+            'nextBill' => $nextBill,
+            'paymentMethods' => \App\Models\PaymentMethod::ordered()->map->toClientArray()->values(),
             'portalRestricted' => (bool) $tenant->portal_restricted,
             'isBlacklisted' => (bool) $tenant->is_blacklisted,
             'dormContactEmail' => $dormProfile->contact_email,

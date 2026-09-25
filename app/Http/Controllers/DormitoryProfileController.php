@@ -47,6 +47,7 @@ class DormitoryProfileController extends Controller
                 : null,
             'amenities' => $amenities,
             'houseRules' => $houseRules,
+            'paymentMethods' => \App\Models\PaymentMethod::ordered()->map->toClientArray()->values(),
             'reviews' => $reviews,
             'reviewCounts' => [
                 'all' => $reviews->count(),
