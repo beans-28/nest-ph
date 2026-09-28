@@ -84,6 +84,7 @@
     .lr-msg{ flex:1 1 100%; order:5; white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
   }
 </style>
+@include('partials.role-tag-style')
 </head>
 <body>
 <div class="app">
@@ -161,6 +162,9 @@
     setTimeout(() => el.classList.remove('visible'), 2800);
   }
 
+  // Owner / Admin tag next to staff names (styles: partials/role-tag-style).
+  const roleTag = t => t ? `<span class="role-tag role-tag-${t}">${t === 'owner' ? 'Owner' : 'Admin'}</span>` : '';
+
   function esc(s){
     const d = document.createElement('div');
     d.textContent = s ?? '';
@@ -224,7 +228,7 @@
     if(i.reply_message){
       return `
         <div class="already-replied">
-          <strong>Replied${i.replied_at ? ' on ' + esc(i.replied_at) : ''}${i.replied_by ? ' by ' + esc(i.replied_by) : ''}.</strong>
+          <strong>Replied${i.replied_at ? ' on ' + esc(i.replied_at) : ''}${i.replied_by ? ' by ' + esc(i.replied_by) : ''}.</strong>${i.replied_by ? roleTag(i.replied_by_tag) : ''}
           <div class="msg-box" style="background:#fff;margin-top:10px;">${esc(i.reply_message)}</div>
         </div>`;
     }

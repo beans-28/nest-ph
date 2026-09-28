@@ -16,13 +16,14 @@
   .head-tool-btn{ width:32px; height:32px; border-radius:7px; background:var(--card-bg); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; color:var(--text-mid); cursor:pointer; }
   .head-tool-btn svg{ width:14px; height:14px; }
 
-  .stats-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:20px; }
+  .stats-row{ display:grid; grid-template-columns:repeat(5, 1fr); gap:16px; margin-bottom:20px; }
   .stat-card{ background:var(--card-bg); border-radius:12px; border:1px solid var(--border); padding:18px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 1px 2px rgba(20,30,20,0.03); }
   .stat-icon{ width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .stat-icon svg{ width:20px; height:20px; }
   .stat-icon.bedspaces{ background:var(--status-vacant-bg); color:var(--green-accent); }
   .stat-icon.occupied{ background:var(--status-occupied-bg); color:var(--status-occupied); }
   .stat-icon.vacant{ background:var(--status-vacant-bg); color:#4a9a58; }
+  .stat-icon.reserved{ background:var(--status-reserved-bg); color:var(--status-reserved); }
   .stat-icon.maintenance{ background:var(--status-maintenance-bg); color:var(--status-maintenance); }
   .stat-label{ font-size:12.5px; color:var(--text-mid); margin-bottom:3px; }
   .stat-value{ font-size:24px; font-weight:700; color:var(--text-dark); }
@@ -45,6 +46,7 @@
   .legend-dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
   .legend-dot.occupied{ background:var(--status-occupied); }
   .legend-dot.vacant{ background:var(--status-vacant); }
+  .legend-dot.reserved{ background:var(--status-reserved); }
   .legend-dot.maintenance{ background:var(--status-maintenance); }
 
   .floor-block{ margin-bottom:10px; }
@@ -75,6 +77,7 @@
   .bed-swatch:hover{ transform:scale(1.15); }
   .bed-swatch.occupied{ background:var(--status-occupied); }
   .bed-swatch.vacant{ background:var(--status-vacant); }
+  .bed-swatch.reserved{ background:var(--status-reserved); }
   .bed-swatch.maintenance{ background:var(--status-maintenance); }
   .bed-label{ font-size:12.5px; color:var(--text-mid); }
 
@@ -118,6 +121,7 @@
   .modal-btn.confirm:hover{ background:var(--green-btn-hover); }
   .modal-error{ font-size:12px; color:var(--status-occupied); margin:-10px 0 14px 0; display:none; }
 
+  @media (max-width: 1280px){ .stats-row{ grid-template-columns:repeat(3, 1fr); } }
   @media (max-width: 900px){ .stats-row{ grid-template-columns:repeat(2, 1fr); } }
 </style>
 </head>
@@ -159,6 +163,10 @@
           <div><div class="stat-label">Vacant</div><div class="stat-value" id="statVacant">{{ $stats['vacant'] }}</div></div>
         </div>
         <div class="stat-card">
+          <div class="stat-icon reserved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+          <div><div class="stat-label">Reserved</div><div class="stat-value" id="statReserved">{{ $stats['reserved'] }}</div></div>
+        </div>
+        <div class="stat-card">
           <div class="stat-icon maintenance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a4 4 0 01-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 015.4-5.4l-2.5 2.5-2-2z"/></svg></div>
           <div><div class="stat-label">Maintenance</div><div class="stat-value" id="statMaintenance">{{ $stats['maintenance'] }}</div></div>
         </div>
@@ -180,6 +188,7 @@
           <div class="legend">
             <div class="legend-item"><span class="legend-dot occupied"></span>Occupied</div>
             <div class="legend-item"><span class="legend-dot vacant"></span>Vacant</div>
+            <div class="legend-item"><span class="legend-dot reserved"></span>Reserved</div>
             <div class="legend-item"><span class="legend-dot maintenance"></span>Maintenance</div>
           </div>
         </div>
@@ -288,13 +297,14 @@
   }
 
   function computeStats(){
-    let total = 0, occupied = 0, vacant = 0, maintenance = 0;
+    let total = 0, occupied = 0, vacant = 0, reserved = 0, maintenance = 0;
     floorGroups.forEach(group => {
       group.rooms.forEach(room => {
         room.beds.forEach(bed => {
           total++;
           if(bed.status === 'occupied') occupied++;
           else if(bed.status === 'vacant') vacant++;
+          else if(bed.status === 'reserved') reserved++;
           else if(bed.status === 'maintenance') maintenance++;
         });
       });
@@ -302,6 +312,7 @@
     document.getElementById('statTotal').textContent = total;
     document.getElementById('statOccupied').textContent = occupied;
     document.getElementById('statVacant').textContent = vacant;
+    document.getElementById('statReserved').textContent = reserved;
     document.getElementById('statMaintenance').textContent = maintenance;
   }
 
@@ -470,6 +481,14 @@
         const bed = findBed(bedId);
         if(!bed) return;
 
+        // A reserved bed is held for an applicant. One misclick shouldn't
+        // cancel that, so cycling skips it; changing it on purpose is
+        // still possible from the room's Edit screen.
+        if(bed.status === 'reserved'){
+          alert('This bed is reserved for an applicant, so clicking won\'t change it. To change it on purpose, use Edit on this room.');
+          return;
+        }
+
         const nextStatus = statusCycle[(statusCycle.indexOf(bed.status) + 1) % statusCycle.length];
 
         try {
@@ -552,6 +571,7 @@
         <span class="bed-index">Bed ${i}</span>
         <select data-bed-index="${i}">
           <option value="vacant" ${preset === 'vacant' ? 'selected' : ''}>Vacant</option>
+          <option value="reserved" ${preset === 'reserved' ? 'selected' : ''}>Reserved</option>
           <option value="occupied" ${preset === 'occupied' ? 'selected' : ''}>Occupied</option>
           <option value="maintenance" ${preset === 'maintenance' ? 'selected' : ''}>Maintenance</option>
         </select>

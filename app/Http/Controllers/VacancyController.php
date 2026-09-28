@@ -32,6 +32,7 @@ class VacancyController extends Controller
             'total' => $allBeds->count(),
             'occupied' => $allBeds->where('status', 'occupied')->count(),
             'vacant' => $allBeds->where('status', 'vacant')->count(),
+            'reserved' => $allBeds->where('status', 'reserved')->count(),
             'maintenance' => $allBeds->where('status', 'maintenance')->count(),
         ];
 

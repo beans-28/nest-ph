@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminAccessLog;
+use App\Models\AdminLoginSession;
 use App\Models\AdminPrivilege;
 use App\Models\Role;
 use App\Models\User;
@@ -33,7 +34,7 @@ class AdminPrivilegeController extends Controller
     public function index(Request $request)
     {
         $admins = User::whereHas('role', fn ($q) => $q->where('role_name', 'admin'))
-            ->with('privileges')
+            ->with('privileges', 'role')
             ->orderBy('name')
             ->get()
             ->map(function (User $user) {
@@ -45,19 +46,73 @@ class AdminPrivilegeController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'is_active' => (bool) $user->is_active,
+                    'role_tag' => $user->roleTag(),
                     'privileges' => $user->privileges->pluck('privilege_name')->values(),
                     'granted_at' => $grantedAt ? Carbon::parse($grantedAt)->toIso8601String() : null,
                 ];
             })
             ->values();
 
+        // "Show older sign-ins" adds 30 more each click (?tracker=60, 90, ...).
+        $trackerLimit = min(max((int) $request->query('tracker', 30), 30), 1000);
+        $loginSessions = $this->loginTracker($request->user()->id, $trackerLimit + 1);
+        $loginSessionsHasMore = $loginSessions->count() > $trackerLimit;
+        $loginSessions = $loginSessions->take($trackerLimit)->values();
+
         return view('adminprivileges', [
+            'loginSessions' => $loginSessions,
+            'loginSessionsHasMore' => $loginSessionsHasMore,
             'admins' => $admins,
             'privilegeOptions' => self::PRIVILEGES,
             'activeAdminsCount' => $admins->where('is_active', true)->count(),
             'totalGrants' => AdminPrivilege::count(),
             'currentUserId' => $request->user()->id,
         ]);
+    }
+
+    /**
+     * Login Tracker section -- when every OTHER admin signed in and out.
+     * This whole controller is already Owner-only (see the 'privileges'
+     * middleware), so no extra check is needed here.
+     *
+     * A row with no logout time is either still signed in (their session
+     * still exists in the `sessions` table and was active recently) or
+     * ended without pressing Log Out (timed out / browser closed).
+     */
+    private function loginTracker(int $viewerId, int $limit)
+    {
+        $rows = AdminLoginSession::with('user:id,name,email,role_id', 'user.role', 'user.privileges')
+            ->where('user_id', '!=', $viewerId)
+            ->latest('logged_in_at')
+            ->take($limit)
+            ->get();
+
+        $lifetimeSeconds = (int) config('session.lifetime') * 60;
+        $liveSessions = DB::table('sessions')
+            ->whereIn('id', $rows->whereNull('logged_out_at')->pluck('session_id')->filter())
+            ->pluck('last_activity', 'id');
+
+        return $rows->map(function (AdminLoginSession $row) use ($liveSessions, $lifetimeSeconds) {
+            $lastActivity = $liveSessions[$row->session_id] ?? null;
+
+            $state = match (true) {
+                $row->logged_out_at !== null => 'logged_out',
+                $lastActivity && (time() - $lastActivity) < $lifetimeSeconds => 'online',
+                default => 'ended',
+            };
+
+            return [
+                'name' => $row->user?->name ?? 'Deleted admin',
+                'email' => $row->user?->email,
+                'tag' => $row->user?->roleTag(),
+                'logged_in_at' => $row->logged_in_at,
+                'logged_out_at' => $row->logged_out_at,
+                'last_active' => $lastActivity ? Carbon::createFromTimestamp($lastActivity) : null,
+                'state' => $state,
+                'device' => $row->deviceLabel(),
+                'ip' => $row->ip_address,
+            ];
+        });
     }
 
     /**

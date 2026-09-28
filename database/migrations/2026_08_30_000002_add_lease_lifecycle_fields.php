@@ -12,7 +12,10 @@ return new class extends Migration
         // Use Case Report — Manage Lease Contracts: "Expiring Soon" is a real
         // status a contract moves into, not just a UI label — steps 11.3 and
         // 14.1 both refer to updating status to/from it.
-        DB::statement("ALTER TABLE lease_contracts MODIFY status ENUM('pending','active','expiring_soon','expired','terminated') NOT NULL DEFAULT 'pending'");
+        $this->modifyColumn(
+            "ALTER TABLE lease_contracts MODIFY status ENUM('pending','active','expiring_soon','expired','terminated') NOT NULL DEFAULT 'pending'",
+            'lease_contracts', fn (Blueprint $t) => $t->enum('status', ['pending', 'active', 'expiring_soon', 'expired', 'terminated'])->default('pending')->change()
+        );
 
         Schema::table('lease_contracts', function (Blueprint $table) {
             // Step 13: termination requires and stores a reason.
@@ -33,6 +36,27 @@ return new class extends Migration
             $table->dropColumn(['termination_reason', 'terminated_at', 'last_renewed_at', 'last_renewed_by']);
         });
 
-        DB::statement("ALTER TABLE lease_contracts MODIFY status ENUM('pending','active','terminated') NOT NULL DEFAULT 'pending'");
+        $this->modifyColumn(
+            "ALTER TABLE lease_contracts MODIFY status ENUM('pending','active','terminated') NOT NULL DEFAULT 'pending'",
+            'lease_contracts', fn (Blueprint $t) => $t->enum('status', ['pending', 'active', 'terminated'])->default('pending')->change()
+        );
+    }
+
+    /**
+     * Runs the original MySQL ALTER unchanged on MySQL/MariaDB (so existing
+     * databases behave exactly as before). Any other database -- the
+     * in-memory SQLite that `php artisan test` uses -- doesn't understand
+     * MODIFY, so it gets the same column change through Laravel's portable
+     * ->change() instead (built into Laravel 11+, no doctrine/dbal needed).
+     */
+    private function modifyColumn(string $mysqlSql, string $table, Closure $change): void
+    {
+        if (in_array(DB::getDriverName(), ['mysql', 'mariadb'], true)) {
+            DB::statement($mysqlSql);
+
+            return;
+        }
+
+        Schema::table($table, $change);
     }
 };

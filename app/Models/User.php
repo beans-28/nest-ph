@@ -62,6 +62,34 @@ class User extends Authenticatable
     }
 
     /**
+     * The Dormitory Owner is the admin holding manage_users -- the same
+     * rule the 'privileges' middleware (EnsureCanManagePrivileges) uses.
+     */
+    public function isOwner(): bool
+    {
+        if ($this->role?->role_name !== 'admin') {
+            return false;
+        }
+
+        return $this->relationLoaded('privileges')
+            ? $this->privileges->contains('privilege_name', 'manage_users')
+            : $this->privileges()->where('privilege_name', 'manage_users')->exists();
+    }
+
+    /**
+     * 'owner', 'admin', or null (tenants). Drives the Owner / Admin tag
+     * shown next to staff names across the app (see partials/role-tag).
+     */
+    public function roleTag(): ?string
+    {
+        if ($this->role?->role_name !== 'admin') {
+            return null;
+        }
+
+        return $this->isOwner() ? 'owner' : 'admin';
+    }
+
+    /**
      * The tenant record this login account belongs to, if any.
      * Admin/owner accounts have none.
      */

@@ -98,7 +98,7 @@ class TenantTicketController extends Controller
 
     private function transform(MaintenanceTicket $ticket, Tenant $tenant): array
     {
-        $ticket->loadMissing(['replies' => fn ($q) => $q->with(['user', 'tenant'])->oldest('created_at')]);
+        $ticket->loadMissing(['replies' => fn ($q) => $q->with(['user.role', 'user.privileges', 'tenant'])->oldest('created_at')]);
 
         $messages = collect([[
             'id' => 'original',
@@ -111,6 +111,7 @@ class TenantTicketController extends Controller
             'message' => $r->message,
             'author' => $r->tenant_id ? ($r->tenant->full_name ?? $tenant->full_name) : ($r->user->name ?? 'Administrator'),
             'is_admin' => is_null($r->tenant_id),
+            'author_tag' => $r->tenant_id ? null : ($r->user?->roleTag() ?? 'admin'),
             'created_at' => $r->created_at->format('M j, Y g:ia'),
         ]));
 

@@ -1,6 +1,7 @@
 @php
     $isAnnounceAdmin = auth()->user()->role?->role_name === 'admin';
 @endphp
+@include('partials.role-tag-style')
 
 <div class="announce-outer" id="announceCard" data-is-admin="{{ $isAnnounceAdmin ? '1' : '0' }}">
   <div class="announce-header">
@@ -58,9 +59,8 @@
   .announce-avatar{ width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12.5px; color:var(--green-dark, #3f6b4a); background:var(--status-vacant-bg, #d9f2dd); border:1px solid #c3e3c6; flex-shrink:0; }
   .announce-post-meta{ flex:1; min-width:0; }
   .announce-post-name{ font-weight:700; font-size:13px; color:var(--text-dark, #243026); display:flex; align-items:center; flex-wrap:wrap; gap:4px 6px; }
-  .announce-post-name .tag{ flex-shrink:0; }
+  .announce-post-name .role-tag{ flex-shrink:0; margin-left:0; }
   .announce-restrict-btn{ flex-shrink:0; }
-  .announce-post-name .tag{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; color:var(--green-accent, #2f6f3c); background:var(--status-vacant-bg, #d9f2dd); padding:2px 7px; border-radius:20px; }
   .announce-post-time{ font-size:11px; color:var(--text-light, #8a9690); margin-top:1px; }
   .announce-post-body{ font-size:13.5px; color:var(--text-dark, #243026); line-height:1.6; margin-bottom:10px; white-space:pre-wrap; padding-left:46px; }
 
@@ -118,6 +118,9 @@
   const feedEl = document.getElementById('announceFeed');
   const emptyNote = document.getElementById('announceEmptyNote');
 
+  // Owner / Admin tag next to staff names (styles: partials/role-tag-style).
+  const roleTag = t => t ? `<span class="role-tag role-tag-${t}">${t === 'owner' ? 'Owner' : 'Admin'}</span>` : '';
+
   function escapeHtml(str){
     const d = document.createElement('div');
     d.textContent = str ?? '';
@@ -159,7 +162,7 @@
         <div class="announce-post-head">
           <div class="announce-avatar">${escapeHtml(a.poster_initials)}</div>
           <div class="announce-post-meta">
-            <div class="announce-post-name">${escapeHtml(a.poster_name)} <span class="tag">Admin</span></div>
+            <div class="announce-post-name">${escapeHtml(a.poster_name)}${roleTag(a.poster_tag || 'admin')}</div>
             <div class="announce-post-time">${escapeHtml(a.posted_at)}</div>
           </div>
           ${isAdmin ? `<button class="announce-btn secondary announce-restrict-btn" data-id="${a.id}">${a.comments_restricted ? 'Unrestrict' : 'Restrict comments'}</button>` : ''}
@@ -190,7 +193,7 @@
       <div class="announce-comment" data-comment-id="${c.id}">
         <div class="announce-avatar">${escapeHtml(c.author_initials)}</div>
         <div class="announce-comment-body">
-          <div class="announce-comment-name">${escapeHtml(c.author_name)}${c.is_admin ? ' <span style="font-weight:400;color:var(--text-light,#8a9690);">(Admin)</span>' : ''}</div>
+          <div class="announce-comment-name">${escapeHtml(c.author_name)}${roleTag(c.author_tag || (c.is_admin ? 'admin' : null))}</div>
           <div class="announce-comment-text">${escapeHtml(c.body)}</div>
           <div class="announce-comment-time">${escapeHtml(c.posted_at)}</div>
         </div>

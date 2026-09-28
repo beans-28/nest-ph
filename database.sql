@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 25, 2026 at 07:34 PM
+-- Generation Time: Sep 28, 2026 at 08:21 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -43,7 +43,24 @@ CREATE TABLE `admin_access_logs` (
 INSERT INTO `admin_access_logs` (`id`, `user_id`, `performed_by`, `action`, `note`, `created_at`) VALUES
 (1, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_billing, view_reports', '2026-09-07 13:09:41'),
 (2, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_billing, manage_users, view_reports', '2026-09-25 12:41:19'),
-(3, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_billing, view_reports', '2026-09-25 12:41:22');
+(3, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_billing, view_reports', '2026-09-25 12:41:22'),
+(4, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_contracts, manage_billing, view_reports', '2026-09-26 05:57:28');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_login_sessions`
+--
+
+CREATE TABLE `admin_login_sessions` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `session_id` varchar(255) DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(512) DEFAULT NULL,
+  `logged_in_at` datetime NOT NULL,
+  `logged_out_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -73,7 +90,8 @@ INSERT INTO `admin_privileges` (`id`, `user_id`, `granted_by`, `privilege_name`,
 (7, 2, NULL, 'manage_tenants', '2026-07-25 06:12:00'),
 (8, 2, NULL, 'manage_rooms', '2026-07-25 06:12:00'),
 (9, 2, NULL, 'manage_billing', '2026-07-25 06:12:00'),
-(10, 2, NULL, 'view_reports', '2026-07-25 06:12:00');
+(10, 2, NULL, 'view_reports', '2026-07-25 06:12:00'),
+(12, 2, 3, 'manage_contracts', '2026-09-26 05:57:28');
 
 -- --------------------------------------------------------
 
@@ -179,7 +197,8 @@ INSERT INTO `applications` (`id`, `inquiry_id`, `tenant_id`, `first_name`, `last
 (15, NULL, 31, 'Shayne', 'Bagui', '2004-08-13', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta. Mesa', '09212408565', 'shaynebagui@gmail.com', '121342', 'Sta Mesa Road 4 block 1234', 'Marie Bagui', '09212408568', 'mariebagui@gmail.com', NULL, NULL, 46, '2026-09-12', '2026-12-19', 'student', 'application-documents/7kDFU28JRBf080PHvgF2ZpC9eRTi3KyWArsakZ2g.jpg', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-10 01:14:28', '2026-09-10 05:56:47'),
 (16, NULL, 32, 'First', 'Name', '2026-09-01', 'female', 'Filipino', 'Nonerz', 'Student', 'NEST.PH', 'San Sebastian, Tarlac City', '09289811489', 'first@gmail.com', NULL, 'San Sebastian, Tarlac City', 'Emergency Contact', '09289833405', 'emergency@gmail.com', '543535', 'parent', 47, '2026-09-19', '2026-12-31', 'student', 'application-documents/3LWq2xbgs0Xcx5Z8GCa9fJv7ypkLLAEs3wWsRD7y.jpg', 'application-documents/signed-contracts/ff9755ee-f1c4-4933-96df-975451fab131.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-11 14:38:21', '2026-09-11 14:39:02'),
 (17, NULL, NULL, 'Second', 'Acc', '2004-07-14', 'male', 'Filipino', 'None', 'Student', 'NEST.PH', 'San Sebastian, Manila', '09289822305', 'second@gmail.com', '111111', 'San Sebastian, Manila', 'Second Mother', '09489811467', 'secondmom@gmail.com', '1121212', 'parent', 48, '2026-09-25', '2026-12-24', 'student', 'application-documents/PumgBwUEVDrEVxwSsTyagfQGLkQhtzuH9iupYYvG.jpg', 'application-documents/signed-contracts/d9ddb565-5731-4c99-891c-722390a1c556.pdf', 1, 're_application_requested', NULL, 'Invalid ID', NULL, 3, '2026-09-24 12:54:47', '2026-09-24 12:56:39'),
-(18, NULL, 33, 'Second', 'Acc', '2004-07-14', 'male', 'Filipino', 'None', 'Student', 'NEST.PH', 'San Sebastian, Manila', '09289822305', 'second@gmail.com', '111111', 'San Sebastian, Manila', 'Second Mother', '09349811467', 'secondmom@gmail.com', NULL, 'parent', 48, '2026-09-24', '2026-12-24', 'student', 'application-documents/5oBuSAlpN4t0Mas1EOYIIpJibDKibFWuDCOegOWW.jpg', 'application-documents/signed-contracts/5f1b612f-ccf0-4773-b5f4-068297b758ef.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-24 12:59:58', '2026-09-24 13:05:26');
+(18, NULL, 33, 'Second', 'Acc', '2004-07-14', 'male', 'Filipino', 'None', 'Student', 'NEST.PH', 'San Sebastian, Manila', '09289822305', 'second@gmail.com', '111111', 'San Sebastian, Manila', 'Second Mother', '09349811467', 'secondmom@gmail.com', NULL, 'parent', 48, '2026-09-24', '2026-12-24', 'student', 'application-documents/5oBuSAlpN4t0Mas1EOYIIpJibDKibFWuDCOegOWW.jpg', 'application-documents/signed-contracts/5f1b612f-ccf0-4773-b5f4-068297b758ef.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-24 12:59:58', '2026-09-24 13:05:26'),
+(19, NULL, NULL, 'Ayranne', 'Pelea', '2026-02-10', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta. Mesa', '09212408565', 'ayrannepelea@gmail.com', NULL, 'Sta Mesa Road 4 block 1245', 'Father Pelea', '09212408576', 'fatherpelea@gmail.com', '2121212', 'parent', 34, '2026-09-26', '2026-12-26', 'student', 'application-documents/uOzzHMWtK5UKwYtynULAzWlk8o3T3Bly2tBVQ28s.jpg', 'application-documents/signed-contracts/e51d518e-b7f0-4493-aeee-4a01a15031dd.pdf', 1, 'pending', NULL, NULL, NULL, NULL, '2026-09-26 05:20:19', '2026-09-26 05:20:19');
 
 -- --------------------------------------------------------
 
@@ -201,7 +220,7 @@ CREATE TABLE `beds` (
 --
 
 INSERT INTO `beds` (`id`, `room_id`, `bed_label`, `status`, `created_at`, `updated_at`) VALUES
-(34, 16, 'Bed 1', 'vacant', '2026-08-30 18:57:43', '2026-09-15 12:47:32'),
+(34, 16, 'Bed 1', 'reserved', '2026-08-30 18:57:43', '2026-09-26 05:20:19'),
 (35, 16, 'Bed 2', 'occupied', '2026-08-30 18:57:43', '2026-09-03 07:57:06'),
 (36, 16, 'Bed 3', 'occupied', '2026-08-30 18:57:43', '2026-09-03 11:13:25'),
 (38, 17, 'Bed 1', 'occupied', '2026-08-31 10:49:31', '2026-08-31 11:21:55'),
@@ -267,7 +286,7 @@ INSERT INTO `billing_statements` (`id`, `contract_id`, `tenant_id`, `type`, `bil
 (31, 28, 27, 'monthly', '2026-09-06', '2026-10-05', '2026-09-11', 2125.00, 0.00, 0.00, 0.00, 2125.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
 (32, 29, 28, 'monthly', '2026-09-06', '2026-10-05', '2026-09-11', 2125.00, 0.00, 0.00, 0.00, 2125.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
 (33, 30, 29, 'monthly', '2026-09-10', '2026-10-09', '2026-09-15', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
-(34, 32, 31, 'monthly', '2026-09-13', '2026-10-12', '2026-09-18', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
+(34, 32, 31, 'monthly', '2026-09-13', '2026-10-12', '2026-09-15', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-25 05:36:52', '2026-09-26 05:29:11'),
 (35, 33, 32, 'monthly', '2026-09-20', '2026-10-19', '2026-09-25', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 16:08:27'),
 (36, 34, 33, 'monthly', '2026-09-25', '2026-10-24', '2026-09-30', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'unpaid', '2026-09-25 05:36:52', '2026-09-25 05:36:52');
 
@@ -446,7 +465,15 @@ INSERT INTO `escalation_logs` (`id`, `tenant_id`, `billing_id`, `stage`, `action
 (132, 24, 16, 3, 'portal_restricted', '[TEST SEED — not actually sent] Portal access restricted.', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
 (133, 24, 16, 4, 'emergency_contact_notified', '[TEST SEED — not actually sent] Emergency contact notified.', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
 (134, 24, 16, 5, 'demand_letter_generated', 'demand-letters/(test-seed-no-real-pdf).pdf', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(135, 24, 16, 6, 'delinquent_blacklisted', NULL, 'resolved', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10');
+(135, 24, 16, 6, 'delinquent_blacklisted', NULL, 'resolved', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
+(158, 31, 34, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-26 05:25:49', '2026-09-26 05:25:49'),
+(159, 31, 34, 2, 'sms_reminder_day2', 'Reminder: Your account with NEST PH is now 2 day(s) overdue. Outstanding balance (incl. penalties): PHP 1,625.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-26 05:25:51', '2026-09-26 05:25:51'),
+(160, 31, 34, 2, 'sms_reminder_day4', 'Reminder: Your account with NEST PH is now 4 day(s) overdue. Outstanding balance (incl. penalties): PHP 1,625.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-26 05:25:53', '2026-09-26 05:25:53'),
+(161, 31, 34, 2, 'sms_reminder_day7', 'URGENT: Your account with NEST PH is now 7 day(s) overdue. Outstanding balance (incl. penalties): PHP 1,625.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-26 05:25:55', '2026-09-26 05:25:55'),
+(162, 31, 34, 3, 'portal_restricted', 'Your account access has been restricted due to unpaid balance. Please settle your balance to restore full access. - NEST PH', 'sent', NULL, '2026-09-26 05:27:34', '2026-09-26 05:27:34'),
+(163, 31, 34, 4, 'emergency_contact_notified', 'This is to inform you that Shayne Bagui\'s account at NEST PH is 10 days overdue, balance PHP 1,625.00. Please encourage them to settle it as soon as possible.', 'sent', NULL, '2026-09-26 05:28:10', '2026-09-26 05:28:10'),
+(164, 31, 34, 5, 'demand_letter_generated', 'demand-letters/31_34.pdf', 'sent', NULL, '2026-09-26 05:28:11', '2026-09-26 05:28:11'),
+(165, 31, 34, 6, 'delinquent_blacklisted', NULL, 'resolved', NULL, '2026-09-26 05:29:11', '2026-09-26 05:29:11');
 
 -- --------------------------------------------------------
 
@@ -727,7 +754,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (72, '2026_09_24_130732_add_moderation_columns_to_reviews_table', 45),
 (73, '2026_09_25_000001_add_utility_costs_to_rooms_table', 46),
 (74, '2026_09_25_000002_create_payment_methods_table', 47),
-(75, '2026_09_25_000003_add_default_cash_payment_method', 48);
+(75, '2026_09_25_000003_add_default_cash_payment_method', 48),
+(77, '2026_09_28_000001_create_admin_login_sessions_table', 49);
 
 -- --------------------------------------------------------
 
@@ -967,7 +995,7 @@ CREATE TABLE `rooms` (
 --
 
 INSERT INTO `rooms` (`id`, `floor_id`, `room_no`, `room_type`, `amenities`, `monthly_rate`, `monthly_utility_cost`, `monthly_wifi_cost`, `status`, `vr_asset_path`, `vr_caption`, `vr_visibility`, `created_at`, `updated_at`) VALUES
-(16, 3, '1', 'Standard', '[]', 5000.00, 500.00, 1000.00, 'available', NULL, 'Living Area', 'public', '2026-08-30 18:57:43', '2026-09-25 06:09:14'),
+(16, 3, '1', 'Standard', '[]', 5000.00, 500.00, 1000.00, 'full', NULL, 'Living Area', 'public', '2026-08-30 18:57:43', '2026-09-26 05:20:19'),
 (17, 3, '2', 'Standard', '[]', 8500.00, 500.00, 1000.00, 'available', NULL, 'Random Caption', 'public', '2026-08-31 10:49:31', '2026-09-25 06:09:00'),
 (18, 3, '3', 'Standard', '[]', 6500.00, 500.00, 1000.00, 'available', NULL, NULL, 'draft', '2026-09-03 06:27:16', '2026-09-25 06:09:09'),
 (19, 11, '5', 'Standard', '[]', 6500.00, 500.00, 1000.00, 'available', NULL, NULL, 'draft', '2026-09-04 13:04:53', '2026-09-25 06:09:22');
@@ -1007,28 +1035,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('2PXitbjEdlomECHGrjItVryobtNt9V7h2X2Qsll1', 36, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWVVxM3pSVk01NUlLZk9hdG1hNldRb2F6QlFraVJaTjZzbTFMQ3R1bSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9teS9iaWxsaW5nL2JpbGxzIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozNjt9', 1790357184),
-('6OPLOTjeWSYJ53mbEC40ZfXbUFqGthdpgvVKzPif', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoieVBQZFVMaDNhTThseWN0YnpTeTFJOHZWOEhXWDN1OFh0dG40VG82byI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluIjtzOjU6InJvdXRlIjtzOjIxOiJ0ZW5hbnQubW92ZWluLndlbGNvbWUiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozNzt9', 1790357485),
-('8iI74TwNEjJmcK9IrGW3B7v89OpItFOHfdzsJoNq', 39, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiOHFraGVyTGpjZWpkSnk5S1ZoN3F1cHFSSEY5VVNJWWoyOEQ4REdScSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90aWNrZXRzIjtzOjU6InJvdXRlIjtzOjEzOiJ0aWNrZXRzLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzk7fQ==', 1790357482),
-('aMXI43wI88t4xKO8wHILjUVWyWfL4r9LSmIABslm', 36, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibm8xU3huWk1CU1JRUEh2TE9LeGl3MlBnSGVBMzcyNUVGUERsU3RYNyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9teS9iaWxsaW5nL2JpbGxzIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozNjt9', 1790357243),
-('EFgFdjLNxQ8uResaWOjrka6h9uO5hm9fwSgeC0h0', 39, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibld6YXBXdVhSM05LZFA3Uk1KOGxCYWRkMlZQblpIUnB2c0ZzYncweSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90aWNrZXRzIjtzOjU6InJvdXRlIjtzOjEzOiJ0aWNrZXRzLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzk7fQ==', 1790357518),
-('fTkosG8TQS1a91gYyAEwGZK7RoWRRMixuUEpotKF', 36, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiT1NpWnZvYVZiUVRvTGRWRnpObUpxTm16OFdSTWRUaldNd2NNVmNZeSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9teS9iaWxsaW5nL2JpbGxzIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozNjt9', 1790357234),
-('HjoXgF40l1ayoFZgbh6atm8FD0GD6YqYwPyvGWOY', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoidmdkWU1WRzZEeXptM3UySlV0bVlzSDNiekdmNGJwV1JnelJjdG1kWSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluIjtzOjU6InJvdXRlIjtzOjIxOiJ0ZW5hbnQubW92ZWluLndlbGNvbWUiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozNzt9', 1790357521),
-('ihf7R3prZwpXoeH3QbQEhDEq0cNzW6ZFpRKbIBHw', 38, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTXNHZkF6TGZ6ejdmZEs5QTdFYWFpUzlTQXVtNHgybE0wQmNtZEtsaCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9teS9iaWxsaW5nL2JpbGxzIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozODt9', 1790357478),
-('Is9usJ908j6NenDVs8UEYpe35zfTzcTBxu34Ovww', 35, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiaGEyU2hVZTJFRHBmYzU3akQ1dTdnemFPUjU1MUVmQW14VGk4OXNMciI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluL3BheW1lbnQiO3M6NToicm91dGUiO3M6MjE6InRlbmFudC5tb3ZlaW4ucGF5bWVudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM1O3M6MjA6Im1vdmVfaW5fcGF5bWVudF90eXBlIjtzOjQ6ImZ1bGwiO3M6MjI6Im1vdmVfaW5fcGF5bWVudF9tZXRob2QiO3M6MToiNyI7fQ==', 1790357239),
-('MH9fPidKoDGVIUO631HAHQUzvTasYCckoB3BlGne', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiSXA0cnVtUFZBVjgxQkdOeFdEbmVKRlZrcUF0c3lxbmdsSWdaUnZqaiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluIjtzOjU6InJvdXRlIjtzOjIxOiJ0ZW5hbnQubW92ZWluLndlbGNvbWUiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozNzt9', 1790357532),
-('NErz4vbIPyi7IruSVkemieXunKAEko0accpZkyzQ', 38, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiY3RiTjZtOG9BT24wM1MwbXhYQjFlN0dCYzAzRjk3dzRmM0djeDdGcyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9teS9iaWxsaW5nL2JpbGxzIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozODt9', 1790357489),
-('ngXSzvpNZTrlfAVAhUuOPjPixh1MwgU5FK8FqICP', 37, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTFRuR012V3EyT0hZTVZJOHk4MFBWOGw0R0FpeHhyQ3FGVjJMOWlDcSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluIjtzOjU6InJvdXRlIjtzOjIxOiJ0ZW5hbnQubW92ZWluLndlbGNvbWUiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozNzt9', 1790357474),
-('QEPVNtJuSx1l9XW6FIyAZz259xQIK3Zfd0DQ0OSs', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQXpNaGozMXdHM0pvTHhOZUhXMVZ2Rm1zVDRZWG1kczZMUjdVWFRVdyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9fQ==', 1790341724),
-('SJlZPXQpyFKYcr4SwoLG9O875XdJn4Iu1dCuWtww', 35, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiRlNYRjN1bHBwUmhpWklQMU5Vd0lrVEM2MUdobkh1UlVVb1g5ZUU4UiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluL3BheW1lbnQiO3M6NToicm91dGUiO3M6MjE6InRlbmFudC5tb3ZlaW4ucGF5bWVudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM1O3M6MjA6Im1vdmVfaW5fcGF5bWVudF90eXBlIjtzOjQ6ImZ1bGwiO3M6MjI6Im1vdmVfaW5fcGF5bWVudF9tZXRob2QiO3M6MToiNyI7fQ==', 1790357179),
-('suKENXapmsEmEPAkHLseaNm3NBbv0HcWe6azSRXF', 38, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiRFBTZmRtTjY1SUtlYzNCdHFGWUluQm1NQ2JmR3ZhNU13Z0JTNzdjciI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9teS9iaWxsaW5nL2JpbGxzIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozODt9', 1790357536),
-('ulAPITo0PWjRWnlk2u0cBOcDRayJgqPqbI2ezK9q', 39, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoic0ZhWVRmY3lxc0NHNXNtYVUwNmJnODFSMmxaTXdlNlVleU0zU3cydSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90aWNrZXRzIjtzOjU6InJvdXRlIjtzOjEzOiJ0aWNrZXRzLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzk7fQ==', 1790357471),
-('VCAPQrTqdZGObjC1It554ECyx8Dd13MNpuKICH3Y', 30, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiTXlpQmVCVnBmRURzbXFBV0RKQ1dvVGxyZUVld3RHN1RRZmZFakdWNCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90aWNrZXRzIjtzOjU6InJvdXRlIjtzOjEzOiJ0aWNrZXRzLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MzA7fQ==', 1790352509),
-('Vdlj0683kHEMx3dOIOqBnj9GZdzfYvmrQJENlJDA', 35, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo2OntzOjY6Il90b2tlbiI7czo0MDoiTFlRdGVhc1pYam5McVRuZUZoelRueldlM0ZJWWZHWTJ6OGcyczdhMSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9tb3ZlLWluL3BheW1lbnQiO3M6NToicm91dGUiO3M6MjE6InRlbmFudC5tb3ZlaW4ucGF5bWVudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM1O3M6MjA6Im1vdmVfaW5fcGF5bWVudF90eXBlIjtzOjQ6ImZ1bGwiO3M6MjI6Im1vdmVfaW5fcGF5bWVudF9tZXRob2QiO3M6MToiNyI7fQ==', 1790357230),
-('wAxnm4WyzOkZPchN1eltVTxG8rmTx7aZmWr0qLIa', 30, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoicEdZcDF1c244QTBJYXNPVkNzbGRzWmNDZzljdUdBT085QVZMSHZqcyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90aWNrZXRzIjtzOjU6InJvdXRlIjtzOjEzOiJ0aWNrZXRzLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MzA7fQ==', 1790352513),
-('xeoXUG2bXnQkJVo7aIdgrzrAGZ1MgwZ8NP49O5Wx', 38, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoibFJCR044Zjk0aWh0Z0FTalFmb29wRUVmMVB3NU5VcXMxOWhMT2UxRyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9teS9iaWxsaW5nL2JpbGxzIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozODt9', 1790357525),
-('ZhmFEHvnfQZ6p4v2dKg7QLAhLVWc08CPN5Dojizi', 39, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWUtBcm45WVhUT1hkMjA0U0JTcGxhdkMxcE9QVjltTnlCdnVpdVI0MyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjk6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC90aWNrZXRzIjtzOjU6InJvdXRlIjtzOjEzOiJ0aWNrZXRzLmluZGV4Ijt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6Mzk7fQ==', 1790357529),
-('zvKzSJReKZ19I90uyyoDzrHYdmaRQnGALzwDdQx4', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZTFGSkxwMHZMNUhZSzVEd0FNOUVkQUNaVG5mM2prVkI5RjVLYUFDMiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790339850);
+('MFkB2ElqiwJXn6jxpa0qBXzJyuHgOALIUdJujg68', 3, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoicVBla0RLWUtLQVYwV3lvaHlZVjllRElxUlQ1TWxpQlBaVmtwdUx5ViI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC92YWNhbmN5LW1vbml0b3JpbmciO3M6NToicm91dGUiO3M6MTM6InZhY2FuY3kuaW5kZXgiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTozO30=', 1790576469);
 
 -- --------------------------------------------------------
 
@@ -1076,7 +1083,7 @@ INSERT INTO `tenants` (`id`, `user_id`, `first_name`, `last_name`, `contact_numb
 (28, 24, 'Tenant Check', 'Two', '09546374234', 'tenantcheck2@gmail.com', 'Tenant Mother Two', '0936474328', '2026-09-01', 'San Sebastian', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 10:42:06', '2026-09-10 05:56:51'),
 (29, 25, 'Add New Tenant', 'Test', '09389703563', 'addnewtenant@gmail.com', 'Add New Mom', '09613571155', '2004-07-07', 'Commonwealth, Quezon City', 'student', 'tenant-documents/BIMDbxuna9NH8pTN5NO9usN43u1m7POb9IQDWrBG.jpg', 'tenant-documents/y6WIdA8dDS01fDE62sJHGrUWyTDvI9xjMVhoyve9.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 11:14:43', '2026-09-10 05:56:51'),
 (30, 26, 'Beans', 'Lopez', '09613571155', 'vincelopez@gmail.com', 'Arlene Lopez', '09289811476', '2014-02-07', 'Manila', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 12:38:43', '2026-09-25 05:40:22'),
-(31, 27, 'Shayne', 'Bagui', '09212408565', 'shaynebagui@gmail.com', 'Marie Bagui', '09212408568', '2004-08-13', 'Sta Mesa Road 4 block 1234', 'student', 'application-documents/7kDFU28JRBf080PHvgF2ZpC9eRTi3KyWArsakZ2g.jpg', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-10 01:26:19', '2026-09-10 05:56:51'),
+(31, 27, 'Shayne', 'Bagui', '09212408565', 'shaynebagui@gmail.com', 'Marie Bagui', '09212408568', '2004-08-13', 'Sta Mesa Road 4 block 1234', 'student', 'application-documents/7kDFU28JRBf080PHvgF2ZpC9eRTi3KyWArsakZ2g.jpg', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', 'active', NULL, NULL, NULL, 1, 1, 0, '2026-09-10 01:26:19', '2026-09-26 05:29:11'),
 (32, 28, 'First', 'Name', '09289811489', 'first@gmail.com', 'Emergency Contact', '09289833405', '2026-09-01', 'San Sebastian, Tarlac City', 'student', 'application-documents/3LWq2xbgs0Xcx5Z8GCa9fJv7ypkLLAEs3wWsRD7y.jpg', 'application-documents/signed-contracts/ff9755ee-f1c4-4933-96df-975451fab131.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-11 14:39:02', '2026-09-11 14:40:59'),
 (33, 29, 'Second', 'Acc', '09289822305', 'second@gmail.com', 'Second Mother', '09349811467', '2004-07-14', 'San Sebastian, Manila', 'student', 'application-documents/5oBuSAlpN4t0Mas1EOYIIpJibDKibFWuDCOegOWW.jpg', 'application-documents/signed-contracts/5f1b612f-ccf0-4773-b5f4-068297b758ef.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-24 13:05:26', '2026-09-24 13:17:22');
 
@@ -1214,6 +1221,13 @@ ALTER TABLE `admin_access_logs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `admin_access_logs_user_id_foreign` (`user_id`),
   ADD KEY `admin_access_logs_performed_by_foreign` (`performed_by`);
+
+--
+-- Indexes for table `admin_login_sessions`
+--
+ALTER TABLE `admin_login_sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `admin_login_sessions_user_id_logged_in_at_index` (`user_id`,`logged_in_at`);
 
 --
 -- Indexes for table `admin_privileges`
@@ -1524,13 +1538,19 @@ ALTER TABLE `vr_scenes`
 -- AUTO_INCREMENT for table `admin_access_logs`
 --
 ALTER TABLE `admin_access_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `admin_login_sessions`
+--
+ALTER TABLE `admin_login_sessions`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `admin_privileges`
 --
 ALTER TABLE `admin_privileges`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `announcements`
@@ -1548,7 +1568,7 @@ ALTER TABLE `announcement_comments`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `beds`
@@ -1590,7 +1610,7 @@ ALTER TABLE `dormitory_profile`
 -- AUTO_INCREMENT for table `escalation_logs`
 --
 ALTER TABLE `escalation_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=154;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=166;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1632,7 +1652,7 @@ ALTER TABLE `maintenance_tickets`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1728,6 +1748,12 @@ ALTER TABLE `vr_scenes`
 ALTER TABLE `admin_access_logs`
   ADD CONSTRAINT `admin_access_logs_performed_by_foreign` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `admin_access_logs_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `admin_login_sessions`
+--
+ALTER TABLE `admin_login_sessions`
+  ADD CONSTRAINT `admin_login_sessions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `admin_privileges`

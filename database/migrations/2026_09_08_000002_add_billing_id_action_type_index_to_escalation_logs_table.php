@@ -25,6 +25,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('escalation_logs', function (Blueprint $table) {
+            // MySQL requires the billing_id foreign key to always have an
+            // index, and it silently dropped its own automatic one when the
+            // composite index above took over that job. Put a plain
+            // billing_id index back first, or the drop below is refused
+            // ("needed in a foreign key constraint").
+            $table->index('billing_id');
             $table->dropIndex('escalation_logs_billing_id_action_type_index');
         });
     }

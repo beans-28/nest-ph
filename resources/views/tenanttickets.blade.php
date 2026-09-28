@@ -127,6 +127,7 @@
     .tc-head{ flex-wrap:wrap; }
   }
 </style>
+@include('partials.role-tag-style')
 </head>
 <body>
 <div class="app">
@@ -264,6 +265,9 @@
     setTimeout(() => el.classList.remove('visible'), 3000);
   }
 
+  // Owner / Admin tag next to staff names (styles: partials/role-tag-style).
+  const roleTag = t => t ? `<span class="role-tag role-tag-${t}">${t === 'owner' ? 'Owner' : 'Admin'}</span>` : '';
+
   function esc(s){
     const d = document.createElement('div');
     d.textContent = s ?? '';
@@ -312,7 +316,7 @@
             <div class="msg ${m.is_admin ? 'admin' : ''}">
               <div class="msg-avatar">${initials(m.author)}</div>
               <div class="msg-body">
-                <span class="msg-name">${esc(m.author)}<span class="msg-time">${esc(m.created_at)}</span></span>
+                <span class="msg-name">${esc(m.author)}${roleTag(m.author_tag)}<span class="msg-time">${esc(m.created_at)}</span></span>
                 <div class="msg-text">${esc(m.message)}</div>
               </div>
             </div>

@@ -136,7 +136,48 @@ class DashboardController extends Controller
             })
             ->values();
 
+        // --- Data for the small charts inside the four stat cards ---
+        // Last 6 months, oldest first, ending with the current month.
+        $months = collect(range(5, 0))->map(fn ($i) => $now->copy()->startOfMonth()->subMonths($i));
+
+        $cardCharts = [
+            'labels' => $months->map(fn ($m) => $m->format('M'))->values(),
+            // New tenants added per month (tenant record created_at).
+            'tenants' => $months->map(fn ($m) => Tenant::whereYear('created_at', $m->year)
+                ->whereMonth('created_at', $m->month)->count())->values(),
+            // Approved payments per month, same rule as the Revenue number.
+            'revenue' => $months->map(fn ($m) => (float) Payment::where('status', 'approved')
+                ->whereYear('payment_date', $m->year)
+                ->whereMonth('payment_date', $m->month)
+                ->sum('amount_paid'))->values(),
+            // Every billing statement, grouped by its status.
+            'bills' => collect(['paid', 'partial', 'unpaid', 'overdue'])
+                ->mapWithKeys(fn ($s) => [$s => BillingStatement::where('status', $s)->count()]),
+            // Every bed, grouped by its status.
+            'beds' => [
+                'occupied' => $allBeds->where('status', 'occupied')->count(),
+                'vacant' => $vacantBeds,
+                'reserved' => $allBeds->where('status', 'reserved')->count(),
+                'maintenance' => $allBeds->where('status', 'maintenance')->count(),
+            ],
+        ];
+
+        // Every bed, grouped by floor, for the dashboard's bed map (one
+        // square per bed, colored by status).
+        $bedMap = $floors->map(fn ($floor) => [
+            'label' => 'Floor ' . $floor->floor_number,
+            'beds' => $floor->rooms->sortBy('room_no')->flatMap(fn ($room) => $room->beds->sortBy('bed_label')->map(fn ($bed) => [
+                'name' => 'Room ' . $room->room_no . ' · Bed ' . $bed->bed_label,
+                'status' => $bed->status,
+            ]))->values(),
+        ])->values();
+
+        $newTenantsThisMonth = $cardCharts['tenants']->last();
+
         return view('admindashboard', compact(
+            'cardCharts',
+            'bedMap',
+            'newTenantsThisMonth',
             'occupancy',
             'vacancyRate',
             'vacantBeds',

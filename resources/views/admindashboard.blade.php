@@ -14,20 +14,72 @@
      public/css/admin.css (linked above). Only this page's own dashboard
      content styling stays here. */
 
-  .stats-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:20px; }
-  .stat-card{ background:var(--card-bg); border-radius:12px; border:1px solid var(--border); padding:16px 18px; box-shadow:0 1px 2px rgba(20,30,20,0.03); position:relative; }
-  .stat-card:has(.placeholder-tag){ padding-right:76px; }
-  .stat-card-head{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--text-mid); margin-bottom:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .stat-icon-dot{ width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .stat-icon-dot svg{ width:11px; height:11px; }
-  .stat-icon-dot.red{ background:#f7d9d7; color:var(--status-occupied); }
-  .stat-icon-dot.blue{ background:#dbe6f7; color:#3f66c9; }
-  .stat-icon-dot.teal{ background:#d7f0ec; color:#2f9c85; }
-  .stat-icon-dot.green{ background:var(--status-vacant-bg); color:var(--green-accent); }
-  .stat-value{ font-size:26px; font-weight:700; color:var(--text-dark); }
-  .stat-value .unit{ font-size:15px; font-weight:600; color:var(--text-mid); }
-  .stat-sub{ font-size:11px; color:var(--text-light); margin-top:2px; }
-  .placeholder-tag{ position:absolute; top:14px; right:16px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.4px; color:var(--status-maintenance); background:var(--status-maintenance-bg); padding:3px 7px; border-radius:20px; }
+  /* ---- Overview: four panels, each shaped by its own data ---- */
+  .overview{ display:grid; grid-template-columns:minmax(0,1.55fr) minmax(0,1fr); grid-template-areas:"rev beds" "rev ten" "bills bills"; gap:16px; margin-bottom:20px; }
+  .panel-revenue{ grid-area:rev; display:flex; flex-direction:column; }
+  .panel-revenue .chart-box{ flex:1; min-height:220px; }
+  .panel-beds{ grid-area:beds; } .panel-tenants{ grid-area:ten; } .panel-bills{ grid-area:bills; }
+  .panel-bills .bills-body{ display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:28px; }
+  .panel-bills .stack{ margin:0; }
+  .panel-bills .stack-keys{ display:flex; gap:28px; }
+  .panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:18px 20px 20px; min-width:0; }
+  .panel-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px; }
+  .panel-head h2{ font-size:13px; font-weight:700; color:var(--text-mid); margin:0; }
+  .panel-link{ font-size:12px; font-weight:500; color:var(--green-accent); text-decoration:none; white-space:nowrap; border-radius:4px; }
+  .panel-link::after{ content:" \2192"; }
+  .panel-link:hover{ text-decoration:underline; text-underline-offset:3px; }
+  .panel-link:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; }
+  .figure{ display:flex; flex-wrap:wrap; align-items:baseline; column-gap:10px; row-gap:4px; margin-bottom:14px; }
+  .figure-value{ font-size:30px; font-weight:700; color:var(--text-dark); letter-spacing:-0.02em; font-variant-numeric:tabular-nums; line-height:1.1; }
+  .figure-of{ font-size:18px; font-weight:500; color:var(--text-light); }
+  .figure-label{ font-size:12.5px; color:var(--text-mid); }
+  .delta{ font-size:11.5px; font-weight:600; padding:2px 8px; border-radius:20px; font-variant-numeric:tabular-nums; }
+  .delta.up{ background:var(--status-vacant-bg); color:var(--green-accent); }
+  .delta.down{ background:var(--status-occupied-bg); color:var(--danger-text); }
+  .chart-box{ position:relative; height:190px; }
+  .chart-fallback{ position:absolute; inset:0; margin:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:12px; font-size:12.5px; color:var(--text-mid); background:#f7f9f7; border-radius:8px; }
+  .chart-box.chart-sm{ height:84px; }
+
+  .bed-map{ display:flex; flex-direction:column; gap:10px; }
+  .bed-floor{ display:flex; align-items:center; gap:10px; }
+  .bed-floor-label{ flex:0 0 56px; font-size:12px; color:var(--text-mid); }
+  .bed-cells{ display:flex; flex-wrap:wrap; gap:5px; }
+  .bed{ width:18px; height:18px; border-radius:4px; display:inline-block; flex-shrink:0; }
+  .bed-occupied{ background:var(--green-accent); }
+  .bed-vacant{ background:var(--card-bg); box-shadow:inset 0 0 0 1.5px var(--bed-open-ring); }
+  /* Not colour alone: maintenance is striped, reserved has a centre dot,
+     open is an outline, so colour-blind admins can still tell them apart. */
+  .bed-maintenance{ background:repeating-linear-gradient(135deg, var(--status-maintenance) 0 3px, #e3bd6c 3px 6px); }
+  .bed-reserved{ background:var(--status-reserved); position:relative; }
+  .bed-reserved::after{ content:''; position:absolute; inset:33%; border-radius:50%; background:#fff; }
+  .bed-none{ font-size:11.5px; color:var(--text-light); }
+  .legend{ list-style:none; display:flex; flex-wrap:wrap; gap:14px; margin:14px 0 0; padding:12px 0 0; border-top:1px solid var(--border); }
+  .legend li{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-mid); }
+  .legend .bed{ width:11px; height:11px; border-radius:3px; }
+
+  .stack{ display:flex; gap:3px; height:14px; border-radius:7px; overflow:hidden; margin:6px 0 16px; }
+  .stack-seg{ flex-basis:0; min-width:6px; }
+  .seg-paid{ background:var(--green-accent); }
+  .seg-partial{ background:var(--status-maintenance); }
+  .seg-unpaid{ background:var(--bar-neutral); }
+  .seg-overdue{ background:var(--danger); }
+  .stack-keys{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; margin:0; }
+  .stack-key dt{ display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-mid); }
+  .stack-key dd{ margin:2px 0 0 14px; font-size:20px; font-weight:700; color:var(--text-dark); font-variant-numeric:tabular-nums; }
+  .stack-key.key-overdue dd{ color:var(--danger-text); }
+  .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+  @media (max-width: 1080px){
+    .overview{ grid-template-columns:1fr; grid-template-areas:"rev" "beds" "bills" "ten"; }
+    .panel-bills .bills-body{ grid-template-columns:1fr; gap:16px; }
+  }
+  @media (max-width: 720px){
+    .panel-link{ display:inline-block; padding:13px 0; margin:-13px 0; }
+  }
+  @media (max-width: 480px){
+    .panel-bills .stack-keys{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+    .figure-value{ font-size:26px; }
+  }
 
   .alert-banner{ background:#fbeceb; border:1px solid #f2c3bf; border-radius:12px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
   .alert-banner-text strong{ display:block; font-size:13.5px; color:#a8382f; }
@@ -48,32 +100,26 @@
   .dash-card-head h2{ font-size:14.5px; font-weight:700; margin:0; }
   .dash-card-head .view-all{ font-size:11.5px; color:var(--green-accent); font-weight:600; cursor:pointer; }
 
-  .occ-row{ display:grid; grid-template-columns:70px 1fr 40px; align-items:center; gap:12px; margin-bottom:14px; }
-  .occ-row:last-child{ margin-bottom:0; }
-  .occ-label{ font-size:12.5px; color:var(--text-mid); }
-  .occ-bar-track{ height:9px; border-radius:20px; background:#e6ebe6; overflow:hidden; }
-  .occ-bar-fill{ height:100%; border-radius:20px; background:linear-gradient(90deg, var(--green-accent), var(--status-vacant)); }
-  .occ-count{ font-size:11.5px; color:var(--text-light); text-align:right; }
 
   .ticket-item{ border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:12px; }
   .ticket-item:last-child{ margin-bottom:0; }
   .ticket-title{ font-size:13px; font-weight:700; color:var(--text-dark); display:flex; align-items:center; gap:8px; }
-  .ticket-title .time{ margin-left:auto; font-size:11px; font-weight:500; color:var(--text-light); }
+  .ticket-title .time{ margin-left:auto; font-size:12px; font-weight:500; color:var(--text-mid); }
   .ticket-desc{ font-size:12px; color:var(--text-mid); margin-top:4px; }
-  .ticket-meta{ font-size:11px; color:var(--text-light); margin-top:6px; }
-  .ticket-status-pill{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:3px 8px; border-radius:20px; }
-  .ticket-status-pill.status-open{ background:#dbe6f7; color:#3f66c9; }
-  .ticket-status-pill.status-seen{ background:#e9defa; color:#6a5bcf; }
-  .ticket-status-pill.status-in-progress{ background:#f6ecd6; color:#c9962f; }
-  .ticket-priority-pill{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:3px 8px; border-radius:20px; margin-left:6px; }
-  .ticket-priority-pill.priority-urgent{ background:#f7d9d7; color:#c0463d; }
-  .ticket-priority-pill.priority-non-urgent{ background:#d9f2dd; color:#3f7a4a; }
-  .ticket-overdue-pill{ font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.3px; padding:3px 8px; border-radius:20px; margin-left:6px; background:#f7d9d7; color:#c0463d; }
-  .ticket-summary-row{ font-size:11px; color:var(--text-light); margin-top:10px; text-align:right; }
+  .ticket-meta{ display:flex; flex-wrap:wrap; gap:6px; font-size:12px; color:var(--text-mid); margin-top:8px; }
+  .ticket-status-pill{ font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; }
+  .ticket-status-pill.status-open{ background:#dbe6f7; color:#2f55b0; }
+  .ticket-status-pill.status-seen{ background:#e9defa; color:#5646b8; }
+  .ticket-status-pill.status-in-progress{ background:#f6ecd6; color:#8a6414; }
+  .ticket-priority-pill{ font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; }
+  .ticket-priority-pill.priority-urgent{ background:#f7d9d7; color:#9a2f27; }
+  .ticket-priority-pill.priority-non-urgent{ background:#d9f2dd; color:var(--green-accent); }
+  .ticket-overdue-pill{ font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:#f7d9d7; color:#9a2f27; }
+  .ticket-summary-row{ font-size:12px; color:var(--text-mid); margin-top:12px; text-align:right; }
 
   .activity-tabs{ font-size:11.5px; color:var(--green-accent); font-weight:600; margin-bottom:10px; }
   table.activity-table{ width:100%; border-collapse:collapse; }
-  table.activity-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:6px 8px; border-bottom:1px solid var(--border); }
+  table.activity-table th{ text-align:left; font-size:12px; font-weight:600; color:var(--text-mid); padding:6px 8px; border-bottom:1px solid var(--border); }
   table.activity-table td{ font-size:12px; color:var(--text-dark); padding:8px 8px; border-bottom:1px solid #f0f2f0; }
   table.activity-table td.type{ text-align:right; color:var(--text-mid); }
 </style>
@@ -96,27 +142,103 @@
         <h1>Admin Dashboard</h1>
       </div>
 
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-card-head"><span class="stat-icon-dot red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>Total Tenants</div>
-          <div class="stat-value">{{ $totalTenants }}</div>
-          <div class="stat-sub">Active tenants</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-head"><span class="stat-icon-dot blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>Revenue ({{ now()->format('F') }})</div>
-          <div class="stat-value">₱{{ number_format($revenueThisMonth, 0) }}</div>
-          <div class="stat-sub">Approved payments this month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-head"><span class="stat-icon-dot teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></span>Delinquent</div>
-          <div class="stat-value">{{ $delinquentCount }}</div>
-          <div class="stat-sub">{{ $delinquentCount === 1 ? 'account overdue' : 'accounts overdue' }}</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-card-head"><span class="stat-icon-dot green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>Vacancy Rate</div>
-          <div class="stat-value">{{ $vacancyRate }}<span class="unit">%</span></div>
-          <div class="stat-sub">{{ $vacantBeds }} of {{ $totalBeds }} beds open</div>
-        </div>
+      @php
+        $rev = $cardCharts['revenue'];
+        $revPrev = $rev[count($rev) - 2] ?? 0;
+        $revDelta = $revPrev > 0 ? round((($revenueThisMonth - $revPrev) / $revPrev) * 100) : null;
+        $bills = $cardCharts['bills'];
+        $billsTotal = array_sum($bills->all());
+        $occupiedBeds = $cardCharts['beds']['occupied'];
+        $maintBeds = $cardCharts['beds']['maintenance'];
+        $reservedBeds = $cardCharts['beds']['reserved'];
+      @endphp
+      <div class="overview">
+        <section class="panel panel-revenue" aria-labelledby="revHead">
+          <header class="panel-head">
+            <h2 id="revHead">Collections</h2>
+            <a href="{{ route('payments.index') }}" class="panel-link">Billing and Payments</a>
+          </header>
+          <div class="figure">
+            <span class="figure-value">₱{{ number_format($revenueThisMonth, 0) }}</span>
+            <span class="figure-label">approved in {{ now()->format('F') }}</span>
+            @if(!is_null($revDelta))
+              <span class="delta {{ $revDelta >= 0 ? 'up' : 'down' }}">{{ $revDelta >= 0 ? '+' : '−' }}{{ abs($revDelta) }}% vs {{ now()->subMonthNoOverflow()->format('F') }}</span>
+            @endif
+          </div>
+          <div class="chart-box"><canvas id="revenueChart" role="img" aria-label="Approved payments per month, last six months"></canvas></div>
+        </section>
+
+        <section class="panel panel-beds" aria-labelledby="bedsHead">
+          <header class="panel-head">
+            <h2 id="bedsHead">Beds</h2>
+            <a href="{{ route('vacancy.index') }}" class="panel-link">Vacancy Monitor</a>
+          </header>
+          <div class="figure">
+            <span class="figure-value">{{ $occupiedBeds }}<span class="figure-of">/{{ $totalBeds }}</span></span>
+            <span class="figure-label">occupied · {{ $vacantBeds }} open ({{ $vacancyRate }}% vacancy){{ $reservedBeds ? ' · ' . $reservedBeds . ' reserved' : '' }}{{ $maintBeds ? ' · ' . $maintBeds . ' in maintenance' : '' }}</span>
+          </div>
+          @if($bedMap->isEmpty())
+            <div class="empty-note">No floors yet. Add rooms in Vacancy Monitor and every bed will appear here.</div>
+          @else
+            <div class="bed-map">
+              @foreach($bedMap as $floor)
+                <div class="bed-floor">
+                  @php $fc = collect($floor['beds'])->countBy('status'); @endphp
+                  <span class="bed-floor-label">{{ $floor['label'] }}</span>
+                  <span class="sr-only">: {{ $fc->get('occupied', 0) }} occupied, {{ $fc->get('reserved', 0) }} reserved, {{ $fc->get('vacant', 0) }} open, {{ $fc->get('maintenance', 0) }} in maintenance.</span>
+                  <div class="bed-cells" aria-hidden="true">
+                    @forelse($floor['beds'] as $bed)
+                      <span class="bed bed-{{ $bed['status'] }}" title="{{ $bed['name'] }}: {{ $bed['status'] === 'vacant' ? 'Open' : ucfirst($bed['status']) }}"></span>
+                    @empty
+                      <span class="bed-none">No beds</span>
+                    @endforelse
+                  </div>
+                </div>
+              @endforeach
+            </div>
+            <ul class="legend">
+              <li><span class="bed bed-occupied"></span>Occupied</li>
+              <li><span class="bed bed-reserved"></span>Reserved</li>
+              <li><span class="bed bed-vacant"></span>Open</li>
+              <li><span class="bed bed-maintenance"></span>Maintenance</li>
+            </ul>
+          @endif
+        </section>
+
+        <section class="panel panel-bills" aria-labelledby="billsHead">
+          <header class="panel-head">
+            <h2 id="billsHead">Bills</h2>
+            <a href="{{ route('delinquency.index') }}" class="panel-link">{{ $delinquentCount }} delinquent {{ $delinquentCount === 1 ? 'account' : 'accounts' }}</a>
+          </header>
+          @if($billsTotal === 0)
+            <div class="empty-note">No bills generated yet. They will show here by status once billing runs.</div>
+          @else
+            <div class="bills-body">
+            <div class="stack" role="img" aria-label="Bills by status: {{ $bills['paid'] }} paid, {{ $bills['partial'] }} partial, {{ $bills['unpaid'] }} unpaid, {{ $bills['overdue'] }} overdue">
+              @foreach(['paid','partial','unpaid','overdue'] as $st)
+                @if($bills[$st] > 0)<span class="stack-seg seg-{{ $st }}" style="flex-grow:{{ $bills[$st] }}"></span>@endif
+              @endforeach
+            </div>
+            <dl class="stack-keys">
+              @foreach(['paid' => 'Paid','partial' => 'Partial','unpaid' => 'Unpaid','overdue' => 'Overdue'] as $st => $lbl)
+                <div class="stack-key key-{{ $st }}"><dt><span class="dot seg-{{ $st }}"></span>{{ $lbl }}</dt><dd>{{ $bills[$st] }}</dd></div>
+              @endforeach
+            </dl>
+            </div>
+          @endif
+        </section>
+
+        <section class="panel panel-tenants" aria-labelledby="tenHead">
+          <header class="panel-head">
+            <h2 id="tenHead">Tenants</h2>
+            <a href="{{ route('tenant-manager.index') }}" class="panel-link">Tenant Manager</a>
+          </header>
+          <div class="figure">
+            <span class="figure-value">{{ $totalTenants }}</span>
+            <span class="figure-label">active · {{ $newTenantsThisMonth }} new this month</span>
+          </div>
+          <div class="chart-box chart-sm"><canvas id="tenantsChart" role="img" aria-label="New tenants per month, last six months"></canvas></div>
+        </section>
       </div>
 
       @if($ticketOverdueSummary['total'] > 0)
@@ -142,22 +264,6 @@
       @include('partials.announcements-feed')
       <div class="dash-grid">
         <div>
-          <div class="dash-card">
-            <div class="dash-card-head"><h2>Occupancy</h2></div>
-            @if($occupancy->isEmpty())
-              <div class="empty-note">No floors added yet. Add rooms in Vacancy Monitoring to see occupancy here.</div>
-            @else
-              @foreach($occupancy as $floor)
-                @php $pct = $floor['total'] > 0 ? round(($floor['occupied'] / $floor['total']) * 100) : 0; @endphp
-                <div class="occ-row">
-                  <div class="occ-label">{{ $floor['label'] }}</div>
-                  <div class="occ-bar-track"><div class="occ-bar-fill" style="width:{{ $pct }}%"></div></div>
-                  <div class="occ-count">{{ $floor['occupied'] }}/{{ $floor['total'] }}</div>
-                </div>
-              @endforeach
-            @endif
-          </div>
-
           <div class="dash-card">
             <div class="dash-card-head"><h2>Tickets</h2><a href="{{ route('tickets.index') }}" class="view-all" style="text-decoration:none;">View All</a></div>
             @if($recentTickets->isEmpty())
@@ -260,6 +366,53 @@
         el.click();
       }
     });
+  });
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+// Revenue + new-tenant charts. Data: DashboardController::adminDashboard() -> $cardCharts.
+(function(){
+  if (typeof Chart === 'undefined') {
+    // CDN didn't load (e.g. offline): say so instead of leaving a blank box.
+    document.querySelectorAll('.chart-box').forEach(box => {
+      box.innerHTML = '<p class="chart-fallback">Chart couldn\'t load. The numbers above are still up to date.</p>';
+    });
+    return;
+  }
+  const d = @json($cardCharts);
+  // Colours come from admin.css so the charts follow any palette change.
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const C = { muted:css('--chart-muted'), mutedHover:css('--chart-muted-hover'), accent:css('--green-accent'),
+    accentHover:css('--green-btn-hover'), grid:css('--chart-grid'), tooltip:css('--chart-tooltip'), text:css('--text-mid') };
+  const last = d.labels.length - 1;
+  Chart.defaults.font.family = 'Roboto, sans-serif';
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = C.text;
+  const peso = v => '₱' + Number(v).toLocaleString('en-PH');
+  const shortPeso = v => v >= 1000 ? '₱' + (v / 1000).toLocaleString('en-PH', { maximumFractionDigits: 1 }) + 'k' : '₱' + v;
+  const tooltip = { backgroundColor:C.tooltip, padding:10, cornerRadius:6, displayColors:false, titleFont:{ weight:'600' } };
+  // Past months muted, current month in full green so it ties to the headline figure.
+  const shade = (past, now) => d.labels.map((_, i) => i === last ? now : past);
+
+  new Chart(document.getElementById('revenueChart'), {
+    type:'bar',
+    data:{ labels:d.labels, datasets:[{ data:d.revenue, backgroundColor:shade(C.muted, C.accent),
+      hoverBackgroundColor:shade(C.mutedHover, C.accentHover), borderRadius:5, maxBarThickness:44 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{ label: c => peso(c.parsed.y) + ' approved' } } },
+      scales:{
+        x:{ grid:{ display:false }, border:{ display:false } },
+        y:{ beginAtZero:true, border:{ display:false }, grid:{ color:C.grid }, ticks:{ maxTicksLimit:4, callback:shortPeso } }
+      } }
+  });
+
+  new Chart(document.getElementById('tenantsChart'), {
+    type:'bar',
+    data:{ labels:d.labels, datasets:[{ data:d.tenants, backgroundColor:shade(C.muted, C.accent), borderRadius:4, maxBarThickness:26 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{ label: c => c.parsed.y + ' new ' + (c.parsed.y === 1 ? 'tenant' : 'tenants') } } },
+      scales:{ x:{ grid:{ display:false }, border:{ display:false } }, y:{ display:false, beginAtZero:true, suggestedMax:2 } } }
   });
 })();
 </script>

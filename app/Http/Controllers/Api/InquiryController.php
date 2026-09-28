@@ -219,7 +219,7 @@ class InquiryController extends Controller
      */
     public function page()
     {
-        $inquiries = Inquiry::with('room:id,room_no,room_type', 'repliedBy:id,name')
+        $inquiries = Inquiry::with('room:id,room_no,room_type', 'repliedBy:id,name,role_id', 'repliedBy.role', 'repliedBy.privileges')
             ->latest()
             ->get()
             ->map(fn ($inquiry) => [
@@ -234,6 +234,7 @@ class InquiryController extends Controller
                 'reply_message' => $inquiry->reply_message,
                 'replied_at' => $inquiry->replied_at?->format('M j, Y g:ia'),
                 'replied_by' => $inquiry->repliedBy?->name,
+                'replied_by_tag' => $inquiry->repliedBy?->roleTag(),
                 'created_at' => $inquiry->created_at?->format('M j, Y g:ia'),
             ])->values();
 

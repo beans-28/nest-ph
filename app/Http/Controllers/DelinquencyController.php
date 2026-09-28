@@ -199,7 +199,7 @@ class DelinquencyController extends Controller
     public function history(Tenant $tenant): JsonResponse
     {
         $logs = $tenant->escalationLogs()
-            ->with('performedBy:id,name')
+            ->with('performedBy:id,name,role_id', 'performedBy.role', 'performedBy.privileges')
             ->orderBy('created_at')
             ->get()
             ->map(fn (EscalationLog $log) => [
@@ -212,6 +212,7 @@ class DelinquencyController extends Controller
                 'status' => $log->status,
                 'is_override' => str_starts_with((string) $log->action_type, 'admin_override_'),
                 'performed_by' => $log->performedBy?->name,
+                'performed_by_tag' => $log->performedBy?->roleTag(),
                 'created_at' => optional($log->created_at)->format('M j, Y g:i A'),
             ])
             ->values();

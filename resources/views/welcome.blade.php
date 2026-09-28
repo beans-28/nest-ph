@@ -279,7 +279,7 @@
                 <div class="stat-label">{{ $reviewCount > 0 ? $reviewCount . ' ' . \Illuminate\Support\Str::plural('Review', $reviewCount) : 'No Reviews Yet' }}</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/></svg></div>
+                <div class="stat-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.859a10 10 0 0 1 14 0"/><path d="M8.5 16.429a5 5 0 0 1 7 0"/></svg></div>
                 <div class="stat-value">{{ $availableResources ?: 'AC, WIFI, CR' }}</div>
                 <div class="stat-label">Available Resources</div>
             </div>
@@ -310,7 +310,7 @@
                 <p><strong>360&deg; VR Room Viewing:</strong> Walk through real rooms and common areas in immersive 360&deg; from any device. See the actual space, layout, and lighting before you commit, with no guesswork and no wasted trips.</p>
             </div>
             <div class="feature">
-                <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><path d="M12 8v4M12 15h.01"/></svg></div>
+                <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><path d="M12 8v4M12 15h.01"/></svg></div>
                 <p><strong>Smart Delinquency Escalation:</strong> Automated reminders and a clear, staged notice process keep accounts on track, giving tenants fair warning and dorm owners a system that runs itself instead of chasing payments by hand.</p>
             </div>
             <div class="feature">

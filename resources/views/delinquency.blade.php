@@ -156,6 +156,7 @@
   @media (max-width: 1100px){ .stage-row{ grid-template-columns:repeat(3,1fr); } }
   @media (max-width: 640px){ .stage-row{ grid-template-columns:repeat(2,1fr); } }
 </style>
+@include('partials.role-tag-style')
 </head>
 <body>
 
@@ -364,6 +365,9 @@
     el.classList.add('visible');
     setTimeout(() => el.classList.remove('visible'), 2800);
   }
+
+  // Owner / Admin tag next to staff names (styles: partials/role-tag-style).
+  const roleTag = t => t ? `<span class="role-tag role-tag-${t}">${t === 'owner' ? 'Owner' : 'Admin'}</span>` : '';
 
   function esc(s){
     const d = document.createElement('div');
@@ -622,7 +626,7 @@
             <span class="timeline-status ${log.status}">${esc(log.status)}</span>
             ${log.is_override ? '<span class="timeline-override-tag">Table 28</span>' : ''}
           </div>
-          <div class="timeline-time">${esc(log.created_at || '')}${log.performed_by ? ' · by ' + esc(log.performed_by) : ''}</div>
+          <div class="timeline-time">${esc(log.created_at || '')}${log.performed_by ? ' · by ' + esc(log.performed_by) + roleTag(log.performed_by_tag) : ''}</div>
           ${timelineMessageLine(log)}
         </div>
       </li>

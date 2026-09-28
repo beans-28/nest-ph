@@ -16,6 +16,10 @@
   --status-occupied:#d9564f; --status-occupied-bg:#f7d9d7;
   --status-vacant:#7fc98a; --status-vacant-bg:#d9f2dd;
   --status-maintenance:#c9962f; --status-maintenance-bg:#f6ecd6;
+  --status-reserved:#7c5cc4; --status-reserved-bg:#ece6f8;
+  --danger:#c0463d; --danger-text:#a8382f;
+  --chart-muted:#c5d9c8; --chart-muted-hover:#9fc2a5; --chart-grid:#edf0ed; --chart-tooltip:#243026;
+  --bar-neutral:#b3bdb5; --bed-open-ring:#8fbf97;
   --bg-page:#eef1ee; --card-bg:#ffffff;
   --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
   --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
@@ -208,3 +212,6 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
 @media (max-width: 640px){
   body .modal-box{ padding:20px 18px; }
 }
+
+/* Text only screen readers hear (visually hidden). */
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }

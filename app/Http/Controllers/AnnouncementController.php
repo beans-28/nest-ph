@@ -19,6 +19,7 @@ class AnnouncementController extends Controller
     public function index(): JsonResponse
     {
         $announcements = Announcement::withCount('comments')
+            ->with('poster.role', 'poster.privileges')
             ->latest()
             ->take(self::FEED_LIMIT)
             ->get()
@@ -27,6 +28,7 @@ class AnnouncementController extends Controller
                 'body' => $a->body,
                 'poster_name' => $a->poster_name,
                 'poster_initials' => $a->poster_initials,
+                'poster_tag' => $a->poster?->roleTag() ?? 'admin',
                 'posted_at' => $a->created_at->diffForHumans(),
                 'comments_count' => $a->comments_count,
                 'comments_restricted' => $a->comments_restricted,
@@ -57,6 +59,7 @@ class AnnouncementController extends Controller
                 'body' => $announcement->body,
                 'poster_name' => $announcement->poster_name,
                 'poster_initials' => $announcement->poster_initials,
+                'poster_tag' => $announcement->poster?->roleTag() ?? 'admin',
                 'posted_at' => $announcement->created_at->diffForHumans(),
                 'comments_count' => 0,
                 'comments_restricted' => false,
@@ -69,12 +72,15 @@ class AnnouncementController extends Controller
      */
     public function comments(Announcement $announcement): JsonResponse
     {
+        $announcement->loadMissing('comments.user.role', 'comments.user.privileges');
+
         $comments = $announcement->comments->map(fn (AnnouncementComment $c) => [
             'id' => $c->id,
             'body' => $c->body,
             'author_name' => $c->author_name,
             'author_initials' => $c->author_initials,
             'is_admin' => $c->is_admin,
+            'author_tag' => $c->user?->roleTag(),
             'posted_at' => $c->created_at->diffForHumans(),
         ]);
 
@@ -119,6 +125,7 @@ class AnnouncementController extends Controller
                 'author_name' => $comment->author_name,
                 'author_initials' => $comment->author_initials,
                 'is_admin' => $comment->is_admin,
+                'author_tag' => $comment->user?->roleTag(),
                 'posted_at' => $comment->created_at->diffForHumans(),
             ],
             'comments_count' => $announcement->comments()->count(),

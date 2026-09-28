@@ -40,14 +40,14 @@
   .btn.primary:hover:not(:disabled){ background:var(--green-btn-hover); }
   .btn.warn{ background:#fbeceb; border-color:#f2cfcc; color:var(--status-occupied); }
   .btn.warn:hover:not(:disabled){ background:#f6d9d7; }
-  .btn.sm{ padding:7px 13px; font-size:11.5px; }
+  .btn.sm{ padding:7px 13px; font-size:12px; }
 
   /* One flat strip, not two competing icon-in-a-box cards. A single
      hairline divider does the separating instead of two shadowed boxes. */
   .stats-row{ display:flex; background:var(--card-bg); border:1px solid var(--border); border-radius:6px; margin-bottom:24px; }
   .stat-block{ flex:1; padding:16px 24px; }
   .stat-block + .stat-block{ border-left:1px solid var(--border); }
-  .stat-label{ font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; color:var(--text-light); margin-bottom:4px; }
+  .stat-label{ font-size:13px; font-weight:500; color:var(--text-mid); margin-bottom:4px; }
   .stat-value{ font-size:26px; font-weight:700; color:var(--text-dark); line-height:1.2; font-variant-numeric:tabular-nums; }
 
   .filters-row{ display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
@@ -65,11 +65,11 @@
      the brand, just varied one step in lightness so rows stay tellable
      apart without introducing new hues. */
   .avatar{ width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11.5px; color:var(--green-dark); background:var(--status-vacant-bg); border:1px solid #c3e3c6; flex-shrink:0; }
-  .admin-name{ font-weight:600; }
-  .you-tag{ font-size:10px; font-weight:600; color:var(--text-light); margin-left:6px; text-transform:uppercase; letter-spacing:.3px; }
+  .admin-name{ font-weight:600; white-space:nowrap; }
+  .you-tag{ font-size:12px; font-weight:500; color:var(--text-mid); margin-left:6px; }
   .status-text{ font-weight:600; font-size:12.5px; }
   .status-text.active{ color:var(--green-accent); }
-  .status-text.inactive{ color:var(--text-light); }
+  .status-text.inactive{ color:var(--text-mid); }
 
   /* Privileges read as a short line of text, not a row of colored pills.
      manage_users (the "Owner" gate) is the one thing worth calling out,
@@ -77,17 +77,18 @@
   .privilege-line{ font-size:12.5px; color:var(--text-mid); max-width:300px; line-height:1.6; }
   .privilege-line .owner-flag{ display:inline-flex; align-items:center; gap:5px; font-weight:700; color:var(--text-dark); }
   .privilege-line .owner-flag::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--green-accent); }
-  .privilege-line .none{ color:var(--text-light); font-style:italic; }
+  .privilege-line .none{ color:var(--text-mid); font-style:italic; }
 
-  .row-actions{ display:flex; align-items:center; gap:14px; }
+  .row-actions{ display:flex; align-items:center; gap:14px; white-space:nowrap; }
   .row-actions .btn{ padding:7px 14px; }
   /* Revoke is destructive but secondary to Manage — a text action, not a
      second competing button, so there's a clear primary per row. */
-  .revoke-link{ background:none; border:none; padding:0; font-size:12.5px; font-weight:600; color:var(--status-occupied); cursor:pointer; font-family:var(--font-body); }
+  .revoke-link{ background:none; border:none; padding:0; font-size:12.5px; font-weight:600; color:var(--danger-text); cursor:pointer; font-family:var(--font-body); min-height:44px; }
   .revoke-link:hover:not(:disabled){ text-decoration:underline; }
-  .revoke-link:disabled{ color:var(--text-light); cursor:not-allowed; }
+  .revoke-self{ font-size:12px; color:var(--text-mid); white-space:nowrap; }
+  .date-cell{ white-space:nowrap; }
 
-  .empty-row td{ text-align:center; color:var(--text-light); font-style:italic; padding:34px; }
+  .empty-row td{ text-align:center; color:var(--text-mid); font-style:italic; padding:34px; }
 
   .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; align-items:center; justify-content:center; padding:20px; }
   .modal-overlay.open{ display:flex; }
@@ -96,24 +97,48 @@
   .modal-head h2{ font-size:16px; font-weight:700; margin:0; }
   .modal-body{ padding:22px 24px; }
   .modal-body .fld{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
-  .modal-body label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
+  .modal-body label{ font-size:13px; font-weight:600; color:var(--text-dark); }
   .modal-body input{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); width:100%; }
   .modal-error{ display:none; background:#fbeceb; border:1px solid #f2cfcc; color:var(--status-occupied); border-radius:8px; padding:10px 13px; font-size:12.5px; margin-bottom:14px; }
   .modal-error.visible{ display:block; }
   .modal-actions{ display:flex; gap:10px; padding:0 24px 24px 24px; }
-  .modal-section-title{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--green-accent); margin:4px 0 12px 0; }
+  .modal-section-title{ font-size:14px; font-weight:700; color:var(--text-dark); margin:6px 0 12px 0; }
   .checkbox-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .checkbox-fld{ display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:12.5px; }
   .checkbox-fld input{ width:auto; flex-shrink:0; }
   .checkbox-fld.disabled{ opacity:.55; }
   .password-box{ background:#fbfcfb; border:1px dashed var(--border); border-radius:8px; padding:16px; text-align:center; margin:0 24px 24px 24px; }
   .password-box .pw{ font-size:20px; font-weight:700; letter-spacing:1px; color:var(--green-accent); margin:8px 0; font-family:monospace; }
-  .password-box .note{ font-size:11.5px; color:var(--text-light); }
+  .password-box .note{ font-size:12.5px; color:var(--text-mid); }
+
+  /* ---- Login Tracker (Owner only; the whole page is Owner-only) ---- */
+  .tracker{ margin-top:32px; }
+  .tracker-head{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:12px; }
+  .tracker-head h2{ font-size:16px; font-weight:700; margin:0; color:var(--text-dark); }
+  .tracker-head p{ font-size:12.5px; color:var(--text-mid); margin:4px 0 0; }
+  .online-now{ font-size:12.5px; color:var(--text-mid); display:flex; align-items:center; gap:8px; }
+  .online-now strong{ color:var(--text-dark); font-weight:600; }
+  .live-dot{ width:8px; height:8px; border-radius:50%; background:#3f9a52; box-shadow:0 0 0 3px #d9f2dd; flex-shrink:0; }
+  .tracker table{ min-width:760px; }
+  .tracker-more{ display:inline-flex; align-items:center; margin-top:12px; padding:0 16px; min-height:44px; border:1px solid var(--border); border-radius:6px; background:var(--card-bg); font-size:12.5px; font-weight:600; color:var(--green-accent); text-decoration:none; }
+  .tracker-more:hover{ background:#f7f9f7; }
+  .tracker .empty-row td{ color:var(--text-mid); }
+  .tracker-more:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; }
+  .tracker .when{ font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .tracker .when small{ display:block; font-size:12px; color:var(--text-mid); margin-top:2px; }
+  .tracker .muted{ color:var(--text-mid); }
+  .session-state{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; white-space:nowrap; }
+  .session-state.online{ color:#2f7a3f; }
+  .session-state.logged_out{ color:var(--text-mid); font-weight:500; }
+  .session-state.ended{ color:#9a6b12; font-weight:500; }
+  .device{ font-size:12.5px; color:var(--text-mid); }
+  .device small{ display:block; font-size:12px; color:var(--text-mid); font-variant-numeric:tabular-nums; margin-top:2px; }
 
   .toast{ position:fixed; bottom:22px; right:22px; background:var(--green-accent); color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; display:none; z-index:99; box-shadow:0 6px 18px rgba(0,0,0,.2); }
   .toast.error{ background:var(--status-occupied); }
   .toast.visible{ display:block; }
 </style>
+@include('partials.role-tag-style')
 </head>
 <body>
 <div class="app">
@@ -136,11 +161,11 @@
 
       <div class="stats-row">
         <div class="stat-block">
-          <div class="stat-label">Active Admins</div>
+          <div class="stat-label">Active admins</div>
           <div class="stat-value" id="statActiveAdmins">{{ $activeAdminsCount }}</div>
         </div>
         <div class="stat-block">
-          <div class="stat-label">Privileges Assigned</div>
+          <div class="stat-label">Privileges assigned</div>
           <div class="stat-value" id="statTotalGrants">{{ $totalGrants }}</div>
         </div>
       </div>
@@ -165,6 +190,68 @@
           <tbody id="tableBody"></tbody>
         </table>
       </div>
+
+      @php $onlineNow = $loginSessions->where('state', 'online')->pluck('name')->unique()->values(); @endphp
+      <section class="tracker" aria-labelledby="trackerTitle">
+        <div class="tracker-head">
+          <div>
+            <h2 id="trackerTitle">Login Tracker</h2>
+            <p>When other admin accounts signed in and out. Only you, as Owner, can see this.</p>
+          </div>
+          <div class="online-now">
+            @if($onlineNow->isNotEmpty())
+              <span class="live-dot" aria-hidden="true"></span>
+              <span>Signed in now: <strong>{{ $onlineNow->join(', ', ' and ') }}</strong></span>
+            @else
+              <span>No other admin is signed in right now.</span>
+            @endif
+          </div>
+        </div>
+        <div class="table-panel">
+          <table>
+            <thead>
+              <tr><th>Admin</th><th>Logged in</th><th>Logged out</th><th>Duration</th><th>Device</th></tr>
+            </thead>
+            <tbody>
+              @forelse($loginSessions as $s)
+                @php
+                  $end = $s['logged_out_at'] ?? ($s['state'] === 'online' ? now() : null);
+                  $mins = $end ? (int) $s['logged_in_at']->diffInMinutes($end) : null;
+                  $duration = is_null($mins) ? null : ($mins < 1 ? 'Under a minute' : ($mins < 60 ? $mins . ' min' : intdiv($mins, 60) . ' hr ' . ($mins % 60) . ' min'));
+                  $initials = collect(explode(' ', $s['name']))->map(fn ($w) => mb_substr($w, 0, 1))->take(2)->join('');
+                @endphp
+                <tr>
+                  <td>
+                    <div class="admin-cell">
+                      <div class="avatar">{{ strtoupper($initials) }}</div>
+                      <div><div class="admin-name">{{ $s['name'] }}@include('partials.role-tag', ['tag' => $s['tag']])</div>@if($s['email'])<div class="muted" style="font-size:12px;">{{ $s['email'] }}</div>@endif</div>
+                    </div>
+                  </td>
+                  <td class="when">{{ $s['logged_in_at']->format('M j, Y · g:i A') }}<small>{{ $s['logged_in_at']->diffForHumans() }}</small></td>
+                  <td class="when">
+                    @if($s['state'] === 'logged_out')
+                      <span class="session-state logged_out">{{ $s['logged_out_at']->format('M j, Y · g:i A') }}</span>
+                    @elseif($s['state'] === 'online')
+                      <span class="session-state online"><span class="live-dot" aria-hidden="true"></span>Still signed in</span>
+                      @if($s['last_active'])<small>Last active {{ $s['last_active']->diffForHumans() }}</small>@endif
+                    @else
+                      <span class="session-state ended">Didn't log out</span>
+                      <small>Session timed out or browser was closed</small>
+                    @endif
+                  </td>
+                  <td class="when">{{ $duration ?? '—' }}</td>
+                  <td><div class="device">{{ $s['device'] }}@if($s['ip'])<small>IP {{ $s['ip'] }}</small>@endif</div></td>
+                </tr>
+              @empty
+                <tr class="empty-row"><td colspan="5">No sign-ins from other admins yet. The next time one logs in, it will show up here.</td></tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+        @if($loginSessionsHasMore)
+          <a class="tracker-more" href="{{ route('admin-privileges.index', ['tracker' => $loginSessions->count() + 30]) }}#trackerTitle">Show older sign-ins</a>
+        @endif
+      </section>
     </div>
   </div>
 </div>
@@ -177,7 +264,7 @@
       <div class="modal-error" id="addModalError"></div>
       <div class="fld"><label for="addName">Full Name</label><input type="text" id="addName"></div>
       <div class="fld"><label for="addEmail">Email</label><input type="email" id="addEmail"></div>
-      <div class="modal-section-title">Starting Privileges</div>
+      <div class="modal-section-title">Starting privileges</div>
       <div class="checkbox-grid" id="addPrivilegeGrid"></div>
     </div>
     <div class="modal-actions">
@@ -253,6 +340,9 @@
     el.classList.add('visible');
     setTimeout(() => el.classList.remove('visible'), 3000);
   }
+
+  // Owner / Admin tag next to staff names (styles: partials/role-tag-style).
+  const roleTag = t => t ? `<span class="role-tag role-tag-${t}">${t === 'owner' ? 'Owner' : 'Admin'}</span>` : '';
 
   function esc(s){
     const d = document.createElement('div');
@@ -338,17 +428,17 @@
           <td>
             <div class="admin-cell">
               <div class="avatar">${esc(initials(a.name))}</div>
-              <span class="admin-name">${esc(a.name)}${isSelf ? '<span class="you-tag">You</span>' : ''}</span>
+              <span class="admin-name">${esc(a.name)}${roleTag(a.role_tag)}${isSelf ? '<span class="you-tag">(you)</span>' : ''}</span>
             </div>
           </td>
           <td>${esc(a.email)}</td>
           <td><div class="privilege-line">${privilegeText}</div></td>
           <td><span class="status-text ${a.is_active ? 'active' : 'inactive'}">${a.is_active ? 'Active' : 'Inactive'}</span></td>
-          <td>${formatDate(a.granted_at)}</td>
+          <td class="date-cell">${formatDate(a.granted_at)}</td>
           <td>
             <div class="row-actions">
               <button class="btn sm" data-manage="${a.id}">Manage Privileges</button>
-              <button class="revoke-link" data-revoke="${a.id}" ${isSelf ? 'disabled title="You cannot revoke your own access"' : ''}>Revoke</button>
+              ${isSelf ? '<span class="revoke-self">Can\'t revoke yourself</span>' : `<button class="revoke-link" data-revoke="${a.id}">Revoke</button>`}
             </div>
           </td>
         </tr>`;
@@ -412,6 +502,7 @@
         email: result.user.email,
         is_active: true,
         privileges: selectedPrivileges('addPrivilegeGrid'),
+        role_tag: selectedPrivileges('addPrivilegeGrid').includes('manage_users') ? 'owner' : 'admin',
         granted_at: new Date().toISOString(),
       });
 
@@ -464,7 +555,7 @@
       });
 
       const admin = admins.find(a => a.id === privModalUserId);
-      if(admin) admin.privileges = selected;
+      if(admin){ admin.privileges = selected; admin.role_tag = selected.includes('manage_users') ? 'owner' : 'admin'; }
 
       $('privModal').classList.remove('open');
       refreshStats();

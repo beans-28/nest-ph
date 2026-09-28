@@ -85,6 +85,9 @@ public function login(Request $request)
 
     $request->session()->regenerate();
 
+    // Login Tracker (Admin Privileges page) -- admins only.
+    \App\Models\AdminLoginSession::recordLogin($user, $request);
+
     return response()->json([
         'message' => 'Logged in successfully.',
         'user' => [
@@ -98,6 +101,8 @@ public function login(Request $request)
 
     public function logout(Request $request)
     {
+        \App\Models\AdminLoginSession::recordLogout($request->user(), $request);
+
         Auth::logout();
 
         $request->session()->invalidate();

@@ -39,29 +39,29 @@
   .app-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:18px; cursor:pointer; display:flex; flex-direction:column; gap:10px; transition:box-shadow .15s ease, border-color .15s ease; }
   .app-card:hover{ box-shadow:0 4px 14px rgba(20,30,20,0.08); border-color:#cfd8d0; }
   .ac-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-  .ac-num{ font-size:11.5px; color:var(--text-light); font-weight:600; }
   .ac-title{ font-size:14.5px; font-weight:700; color:var(--text-dark); margin:2px 0 0 0; }
-  .ac-meta{ font-size:12px; color:var(--text-mid); }
-  .ac-cat{ font-size:11.5px; color:var(--text-mid); background:#f4f7f4; border-radius:6px; padding:4px 9px; display:inline-block; width:fit-content; }
+  .ac-meta{ font-size:12.5px; color:var(--text-mid); margin-top:2px; }
+  /* Status reads as text with a coloured dot, not a pill; Overdue is bold
+     red text on the same line. Colours checked at >= 4.5:1 on white. */
+  .ac-status{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; font-size:12.5px; }
+  .status-dot{ display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--text-dark); }
+  .status-dot::before{ content:''; width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  .status-dot.open::before{ background:#2f55b0; }
+  .status-dot.seen::before{ background:#5646b8; }
+  .status-dot.in_progress::before{ background:var(--status-maintenance); }
+  .status-dot.resolved::before{ background:var(--green-accent); }
+  .status-dot.rejected::before{ background:#b3261e; }
+  .overdue-text{ font-weight:700; color:#b3261e; }
 
-  .badge{ font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; display:inline-block; white-space:nowrap; }
-  .badge.open{ background:var(--blue-bg); color:var(--blue); }
-  .badge.seen{ background:var(--purple-bg); color:var(--purple); }
-  .badge.in_progress{ background:var(--status-maintenance-bg); color:var(--status-maintenance); }
-  .badge.resolved{ background:var(--status-vacant-bg); color:var(--green-accent); }
-  .badge.rejected{ background:var(--status-occupied-bg); color:var(--status-occupied); }
 
-  /* #b3261e instead of --status-occupied: that red is 2.9:1 on this pink and 3.9:1 on white, below WCAG AA. */
-  .overdue-flag{ font-size:11px; font-weight:700; color:#b3261e; background:var(--status-occupied-bg); border-radius:20px; padding:4px 10px; display:inline-flex; align-items:center; gap:5px; width:fit-content; }
-  .overdue-flag svg{ width:11px; height:11px; }
-  .auto-escalated-flag{ font-size:11px; font-weight:700; color:#b3261e; border:1px dashed #b3261e; border-radius:20px; padding:3px 10px; width:fit-content; }
+  .auto-escalated-flag{ font-size:12px; color:#8f2a22; }
   .mb-attachment-grid{ display:flex; gap:8px; flex-wrap:wrap; }
-  .unresolved-note{ font-size:11.5px; color:var(--text-light); }
+  .unresolved-note{ font-size:12px; color:var(--text-mid); }
 
   .ac-bottom{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:auto; padding-top:10px; border-top:1px solid #f0f2f0; }
-  .priority-select{ font-size:11.5px; border:1px solid var(--border); border-radius:6px; padding:5px 8px; font-family:var(--font-body); background:#fff; color:var(--text-mid); }
-  .priority-select.urgent{ color:var(--status-occupied); border-color:#f2cfcc; background:var(--status-occupied-bg); font-weight:700; }
-  .ac-assigned{ font-size:11.5px; color:var(--text-light); }
+  .priority-select{ font-size:12.5px; min-height:36px; border:1px solid var(--border); border-radius:6px; padding:5px 8px; font-family:var(--font-body); background:#fff; color:var(--text-mid); }
+  .priority-select.urgent{ color:#b3261e; border-color:#f2cfcc; background:#fdf3f2; font-weight:600; }
+  .ac-assigned{ font-size:12px; color:var(--text-mid); }
 
   .lightbox{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:90; align-items:center; justify-content:center; padding:30px; }
   .lightbox.open{ display:flex; }
@@ -93,6 +93,7 @@
   .toast.error{ background:var(--status-occupied); }
   .toast.visible{ display:block; }
 </style>
+@include('partials.role-tag-style')
 </head>
 <body>
 <div class="app">
@@ -123,7 +124,7 @@
           <div><div class="stat-label">In Progress</div><div class="stat-value" id="statProgress">{{ $inProgressCount }}</div></div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon overdue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></div>
+          <div class="stat-icon overdue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></div>
           <div><div class="stat-label">Overdue</div><div class="stat-value" id="statOverdue">{{ $overdueCount }}</div></div>
         </div>
       </div>
@@ -235,6 +236,9 @@
     setTimeout(() => el.classList.remove('visible'), 2800);
   }
 
+  // Owner / Admin tag next to staff names (styles: partials/role-tag-style).
+  const roleTag = t => t ? `<span class="role-tag role-tag-${t}">${t === 'owner' ? 'Owner' : 'Admin'}</span>` : '';
+
   function esc(s){
     const d = document.createElement('div');
     d.textContent = s ?? '';
@@ -293,16 +297,14 @@
 
     $('ticketGrid').innerHTML = list.map(t => `
       <div class="app-card" data-open="${t.id}" tabindex="0" role="button" aria-label="Open ticket ${esc(t.title)}">
-        <div class="ac-top">
-          <div>
-            <div class="ac-num">Ticket#${t.id}</div>
-            <div class="ac-title">${esc(t.title)}</div>
-            <div class="ac-meta">${esc(t.tenant_name ?? 'Unknown tenant')}${t.room_no ? ', Room ' + esc(t.room_no) : ''}</div>
-          </div>
-          <span class="badge ${t.status}">${esc(t.status_label)}</span>
+        <div>
+          <div class="ac-title">${esc(t.title)}</div>
+          <div class="ac-meta">${esc(t.tenant_name ?? 'Unknown tenant')}${t.room_no ? ', Room ' + esc(t.room_no) : ''} · ${esc(t.category_label)} · #${t.id}</div>
         </div>
-        <span class="ac-cat">${esc(t.category_label)}</span>
-        ${t.is_overdue ? `<span class="overdue-flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>Overdue</span>` : (t.unresolved_for ? `<span class="unresolved-note">${esc(t.unresolved_for)}</span>` : '')}
+        <div class="ac-status">
+          <span class="status-dot ${t.status}">${esc(t.status_label)}</span>
+          ${t.is_overdue ? '<span class="overdue-text">Overdue</span>' : (t.unresolved_for ? `<span class="unresolved-note">${esc(t.unresolved_for)}</span>` : '')}
+        </div>
         ${t.is_auto_escalated ? `<span class="auto-escalated-flag">Auto-escalated to Urgent · open {{ \App\Models\MaintenanceTicket::NON_URGENT_ESCALATE_DAYS }}+ days</span>` : ''}
         <div class="ac-bottom">
           <select class="priority-select ${t.priority ?? ''}" data-priority-for="${t.id}">${priorityOptionsHtml(t.priority)}</select>
@@ -369,7 +371,7 @@
       $('mStatusSelect').value = detail.status;
 
       $('mReplyThread').innerHTML = detail.replies.length
-        ? detail.replies.map(r => `<div class="reply-item">${esc(r.message)}<div class="r-meta">${esc(r.author)}, ${esc(r.created_at)}</div></div>`).join('')
+        ? detail.replies.map(r => `<div class="reply-item">${esc(r.message)}<div class="r-meta">${esc(r.author)}${roleTag(r.author_tag)} · ${esc(r.created_at)}</div></div>`).join('')
         : '<div class="reply-item" style="color:var(--text-light);font-style:italic;">No replies yet.</div>';
 
       $('mReplyInput').value = '';

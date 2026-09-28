@@ -1,3 +1,27 @@
+# NEST.PH
+
+## Setting up NEST.PH for a new dormitory
+
+A fresh installation has no admin accounts, and admin accounts can only be
+created by the Dormitory Owner from the Admin Privileges page. So the very
+first account, the Owner, is created from the server's terminal:
+
+```
+php artisan migrate
+php artisan nestph:create-owner
+```
+
+The command asks for the Owner's name, email and password (typing the password
+is hidden), then creates an admin account with every privilege. The Owner then
+logs in at `/login/admin` and adds the other admins from **Admin Privileges**.
+
+Do **not** run `php artisan db:seed` on a real dormitory's installation. The
+seeder creates test accounts (`owner@nestph.test`, `admin@nestph.test`,
+`tenant@nestph.test`) that all use the password `password123`. It is only for
+the development team's own computers.
+
+---
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

@@ -28,6 +28,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('payments', function (Blueprint $table) {
+            // Same MySQL rule as escalation_logs: the tenant_id foreign key
+            // must always keep an index, and MySQL dropped its automatic one
+            // when this composite index took over. Restore it before dropping.
+            $table->index('tenant_id');
             $table->dropIndex(['tenant_id', 'status']);
             $table->dropForeign(['reviewed_by']);
             $table->dropColumn(['status', 'proof_path', 'review_notes', 'reviewed_by', 'reviewed_at']);

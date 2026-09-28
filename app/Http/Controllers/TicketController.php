@@ -59,7 +59,7 @@ class TicketController extends Controller
             'tenant',
             'bed.room',
             'assignedTo',
-            'replies' => fn ($q) => $q->with('user')->oldest('created_at'),
+            'replies' => fn ($q) => $q->with('user.role', 'user.privileges')->oldest('created_at'),
         ]);
 
         return response()->json(array_merge(
@@ -71,6 +71,7 @@ class TicketController extends Controller
                     'id' => $r->id,
                     'message' => $r->message,
                     'author' => $r->user?->name ?? 'Admin',
+                    'author_tag' => $r->user?->roleTag() ?? 'admin',
                     'created_at' => $r->created_at->format('M j, Y g:ia'),
                 ]),
                 'assignable_admins' => User::whereHas('role', fn ($q) => $q->where('role_name', 'admin'))

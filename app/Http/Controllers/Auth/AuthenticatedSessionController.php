@@ -28,6 +28,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Login Tracker (Admin Privileges page) -- admins only.
+        \App\Models\AdminLoginSession::recordLogin($request->user(), $request);
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -36,6 +39,9 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Login Tracker (Admin Privileges page) -- admins only.
+        \App\Models\AdminLoginSession::recordLogout($request->user(), $request);
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
