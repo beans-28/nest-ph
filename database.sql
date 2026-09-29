@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 29, 2026 at 08:26 AM
+-- Generation Time: Sep 29, 2026 at 06:07 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -41,10 +41,12 @@ CREATE TABLE `admin_access_logs` (
 --
 
 INSERT INTO `admin_access_logs` (`id`, `user_id`, `performed_by`, `action`, `note`, `created_at`) VALUES
-(1, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_billing, view_reports', '2026-09-07 13:09:41'),
-(2, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_billing, manage_users, view_reports', '2026-09-25 12:41:19'),
-(3, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_billing, view_reports', '2026-09-25 12:41:22'),
-(4, 2, 3, 'privileges_updated', 'Privileges updated: manage_tenants, manage_rooms, manage_contracts, manage_billing, view_reports', '2026-09-26 05:57:28');
+(1, 124, 3, 'granted', 'Admin access granted: manage_tenants, manage_rooms, manage_contracts, manage_billing, view_reports', '2026-04-06 16:00:00'),
+(2, 125, 3, 'granted', 'Admin access granted: manage_billing, view_reports', '2026-04-15 16:00:00'),
+(3, 126, 3, 'granted', 'Admin access granted: manage_tenants, manage_rooms', '2026-04-24 16:00:00'),
+(4, 127, 3, 'granted', 'Admin access granted: manage_tenants, view_reports', '2026-05-03 16:00:00'),
+(5, 125, 3, 'privileges_updated', 'Privileges updated: manage_billing, view_reports', '2026-08-19 16:00:00'),
+(6, 127, 3, 'revoked', 'Admin access revoked. Reason: No longer employed at the dormitory.', '2026-09-07 16:00:00');
 
 -- --------------------------------------------------------
 
@@ -67,7 +69,27 @@ CREATE TABLE `admin_login_sessions` (
 --
 
 INSERT INTO `admin_login_sessions` (`id`, `user_id`, `session_id`, `ip_address`, `user_agent`, `logged_in_at`, `logged_out_at`) VALUES
-(3, 3, 'lPaBSQXGORQPbjH19cKyIo9W1xnDVyJHMOmx2aDU', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36', '2026-09-29 13:45:56', '2026-09-29 13:57:48');
+(1, 3, '6f48b4c1c7e059e011ee09ea08d7210483c6623c', '192.168.1.21', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-28 09:13:00', '2026-09-28 12:25:00'),
+(2, 3, 'a880e9c6d2c517caf3e62a27ca110452c7d50a9d', '192.168.1.22', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-27 10:16:00', '2026-09-27 13:28:00'),
+(3, 3, '55d735efa7c3a336e3175a729db7a38fb2a98294', '192.168.1.24', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-25 12:22:00', '2026-09-25 15:34:00'),
+(4, 3, 'fe2be0930830e405dc1a5bd64931b559786994bd', '192.168.1.26', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-23 09:28:00', '2026-09-23 12:40:00'),
+(5, 3, 'a9a9d0e311f7e0a6910e53e577a9ad4b47472930', '192.168.1.29', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-20 12:37:00', '2026-09-20 15:49:00'),
+(6, 3, '1b99d65eba5acd0ed947fa21572b1ae94011f8f8', '192.168.1.33', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-16 11:49:00', '2026-09-16 15:01:00'),
+(7, 124, '77139c0fd23959d6e63725e3b2043b8bbbb22e89', '192.168.1.20', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-29 08:10:00', NULL),
+(8, 124, '1ab8c61dd58363dc85d8a6fde3b0fc0c809dfa84', '192.168.1.21', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-28 09:13:00', '2026-09-28 12:25:00'),
+(9, 124, '886d77437aa1d33e92ee168c042da8c5942c3580', '192.168.1.22', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-27 10:16:00', '2026-09-27 13:28:00'),
+(10, 124, '61dafe95d7bd86d2cf11511da627d5d74818a4ce', '192.168.1.23', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-26 11:19:00', '2026-09-26 14:31:00'),
+(11, 124, 'eb978e017bd8912b824279016139cbbe045149da', '192.168.1.25', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-24 08:25:00', '2026-09-24 11:37:00'),
+(12, 124, '74bca56e08cdead82e4a432b0282675a9e300080', '192.168.1.27', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-22 10:31:00', '2026-09-22 13:43:00'),
+(13, 124, '150f24609e20256a6a261c8a4cfb0a81db2e2135', '192.168.1.28', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-21 11:34:00', '2026-09-21 14:46:00'),
+(14, 125, 'e96297accd758f24e0bbe8ffc41efe28851b56f0', '192.168.1.21', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-28 09:13:00', '2026-09-28 12:25:00'),
+(15, 125, '7e8ad862e977f077049ea961f2468cbf5531393b', '192.168.1.23', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-26 11:19:00', '2026-09-26 14:31:00'),
+(16, 125, '66314511d0af8a15b13f1e97c269dfcc84b38273', '192.168.1.26', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-23 09:28:00', '2026-09-23 12:40:00'),
+(17, 125, '8920cbd27b466896817a97a27236286b0675d9c6', '192.168.1.30', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-19 08:40:00', '2026-09-19 11:52:00'),
+(18, 126, 'a55984525f9e44bea122b6ddaec3d8b76b50842e', '192.168.1.20', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-29 08:10:00', NULL),
+(19, 126, '7965bd3715717b69b07a8be6871017df15753914', '192.168.1.22', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-27 10:16:00', '2026-09-27 13:28:00'),
+(20, 126, '8404b875831be93fe68d6843bbac5795310ac9bf', '192.168.1.24', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-25 12:22:00', '2026-09-25 15:34:00'),
+(21, 126, '784646905d7694508c2c9ae1d24487673d13dfe6', '192.168.1.31', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36', '2026-09-18 09:43:00', '2026-09-18 12:55:00');
 
 -- --------------------------------------------------------
 
@@ -88,17 +110,21 @@ CREATE TABLE `admin_privileges` (
 --
 
 INSERT INTO `admin_privileges` (`id`, `user_id`, `granted_by`, `privilege_name`, `granted_at`) VALUES
-(1, 3, NULL, 'manage_tenants', '2026-07-25 06:12:00'),
-(2, 3, NULL, 'manage_rooms', '2026-07-25 06:12:00'),
-(3, 3, NULL, 'manage_contracts', '2026-07-25 06:12:00'),
-(4, 3, NULL, 'manage_billing', '2026-07-25 06:12:00'),
-(5, 3, NULL, 'manage_users', '2026-07-25 06:12:00'),
-(6, 3, NULL, 'view_reports', '2026-07-25 06:12:00'),
-(7, 2, NULL, 'manage_tenants', '2026-07-25 06:12:00'),
-(8, 2, NULL, 'manage_rooms', '2026-07-25 06:12:00'),
-(9, 2, NULL, 'manage_billing', '2026-07-25 06:12:00'),
-(10, 2, NULL, 'view_reports', '2026-07-25 06:12:00'),
-(12, 2, 3, 'manage_contracts', '2026-09-26 05:57:28');
+(1, 3, NULL, 'manage_tenants', '2026-01-28 16:00:00'),
+(2, 3, NULL, 'manage_rooms', '2026-01-28 16:00:00'),
+(3, 3, NULL, 'manage_contracts', '2026-01-28 16:00:00'),
+(4, 3, NULL, 'manage_billing', '2026-01-28 16:00:00'),
+(5, 3, NULL, 'manage_users', '2026-01-28 16:00:00'),
+(6, 3, NULL, 'view_reports', '2026-01-28 16:00:00'),
+(40, 124, 3, 'manage_tenants', '2026-04-06 16:00:00'),
+(41, 124, 3, 'manage_rooms', '2026-04-06 16:00:00'),
+(42, 124, 3, 'manage_contracts', '2026-04-06 16:00:00'),
+(43, 124, 3, 'manage_billing', '2026-04-06 16:00:00'),
+(44, 124, 3, 'view_reports', '2026-04-06 16:00:00'),
+(45, 125, 3, 'manage_billing', '2026-04-15 16:00:00'),
+(46, 125, 3, 'view_reports', '2026-04-15 16:00:00'),
+(47, 126, 3, 'manage_tenants', '2026-04-24 16:00:00'),
+(48, 126, 3, 'manage_rooms', '2026-04-24 16:00:00');
 
 -- --------------------------------------------------------
 
@@ -120,7 +146,9 @@ CREATE TABLE `announcements` (
 --
 
 INSERT INTO `announcements` (`id`, `user_id`, `body`, `comments_restricted`, `created_at`, `updated_at`) VALUES
-(1, 3, 'ss', 0, '2026-09-16 13:35:39', '2026-09-16 13:54:05');
+(1, 3, '📢 SCHEDULED WATER INTERRUPTION\n\nMaynilad will have a water interruption this Saturday from 9:00 AM to 4:00 PM. Please store enough water the night before. Salamat po sa pag-unawa!', 0, '2026-09-28 00:30:00', '2026-09-28 00:30:00'),
+(2, 124, 'Reminder: Rent for this month is due on your billing due date. You may pay via Cash (admin office), GCash, or BDO. Please upload your proof of payment in the portal so we can verify it right away.', 0, '2026-09-23 00:30:00', '2026-09-23 00:30:00'),
+(3, 3, 'Fire drill and building inspection next Wednesday, 3:00 PM. Attendance is required for all tenants who are in the building. Comments are turned off for this post.', 1, '2026-09-19 00:30:00', '2026-09-19 00:30:00');
 
 -- --------------------------------------------------------
 
@@ -142,8 +170,11 @@ CREATE TABLE `announcement_comments` (
 --
 
 INSERT INTO `announcement_comments` (`id`, `announcement_id`, `user_id`, `tenant_id`, `body`, `created_at`) VALUES
-(4, 1, NULL, 32, 'hey', '2026-09-16 13:52:10'),
-(5, 1, NULL, 31, 'sasa', '2026-09-25 13:02:06');
+(1, 1, NULL, 1, 'Noted po, thank you sa heads up!', '2026-09-28 01:30:00'),
+(2, 1, NULL, 7, 'Buong araw po ba walang tubig sa lahat ng floors?', '2026-09-28 03:30:00'),
+(3, 1, 124, NULL, 'Opo, lahat ng floors po. May drum ng tubig sa ground floor na pwede gamitin.', '2026-09-28 05:30:00'),
+(4, 2, NULL, 8, 'Pwede po ba partial muna ngayong week?', '2026-09-23 01:30:00'),
+(5, 2, 125, NULL, 'Pwede po, pero may 10% late fee kung lumampas sa 3-day grace period ang natitirang balance.', '2026-09-23 03:30:00');
 
 -- --------------------------------------------------------
 
@@ -194,18 +225,37 @@ CREATE TABLE `applications` (
 --
 
 INSERT INTO `applications` (`id`, `inquiry_id`, `tenant_id`, `first_name`, `last_name`, `birthdate`, `gender`, `nationality`, `medical_condition`, `occupation`, `school_company`, `school_company_address`, `contact_number`, `email`, `landline`, `home_address`, `emergency_contact_name`, `emergency_contact_number`, `emergency_contact_email`, `emergency_contact_landline`, `emergency_contact_relation`, `bed_id`, `preferred_start_date`, `tenant_end_date`, `type_of_tenant`, `id_document_path`, `signed_contract_path`, `dpa_consent`, `status`, `rejection_reason`, `re_application_note`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
-(8, NULL, 13, 'adasdasdas', 'adasdasdas', '2026-08-13', 'female', 'Filipino', 'None', 'adadasda', 'sdadasd', 'sadasdsd', '09223213123', 'adadas@gmail.com', NULL, 'asdadasdasd', 'asdsadasdasd', '092131231232', 'sadasdasdsad@gmail.com', NULL, NULL, 34, '2026-09-02', '2026-11-26', 'student', 'application-documents/xdM4EJ5QZo9hWXroCtu3E6kfYOw0GqBkVdzXRbe5.jpg', 'application-documents/shhDmU4ZxvyXMhMj2ZAFmAxJl3STz2QCQBOSdNt6.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 06:16:41', '2026-09-10 05:56:47'),
-(9, NULL, 14, 'Test Tenant', '1', '2026-08-12', 'female', 'Filipino', 'None', 'assadasdasddsa', 'sdadsd', 'sdadasd', '09778643524', 'testtenant1@gmail.com', NULL, 'asdasdasd', 'parents', '09573426732', 'parents@gmail.com', NULL, NULL, 38, '2026-09-03', '2026-12-23', 'student', 'application-documents/uesfq0GVNL0tc8y3dFTloKnAIpePXiTGudlj3azU.jpg', 'application-documents/iY01Hw1mW8CceLrI5195ioAA0VOnRvrPSSK3K5ih.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-08-31 10:52:25', '2026-09-10 05:56:47'),
-(10, NULL, 25, 'Valid ID', 'Check', '2005-06-04', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09867354632', 'validIDcheck@gmail.com', NULL, 'Pampanga', 'ID Mother', '09673526321', 'idparent@gmail.com', '23421', NULL, 42, '2026-09-08', '2027-01-20', 'student', 'application-documents/w7J1TMMwHZFVd9utDat9ONw0oNcZSy4mOKuOWSL0.jpg', 'application-documents/mpENdhsErV3jGsQfbEALu6S4JVSPn4l9hIalA0bD.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 05:58:12', '2026-09-10 05:56:47'),
-(11, NULL, 26, 'Valid ID', 'CheckTwo', '2008-07-04', 'male', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09273648212', 'validid2@gmail.com', NULL, 'Sta Mesa', 'Valid Mother', '09364729591', 'validmom@gmail.com', '133334', NULL, 43, '2026-09-10', '2027-02-16', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:12:49', '2026-09-10 05:56:47'),
-(12, NULL, 27, 'Tenant Check', 'One', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09362537482', 'tenantcheck1@gmail.com', NULL, 'asdasdads', 'Tenant Mother One', '097726373482', 'tenantmom1@gmail.com', '54213', NULL, 39, '2026-09-05', '2027-01-16', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 06:49:48', '2026-09-10 05:56:47'),
-(13, NULL, 28, 'Tenant Check', 'Two', '2026-09-01', 'female', 'Filipino', 'None', 'Student', 'pup', 'Sta. mesa', '09546374234', 'tenantcheck2@gmail.com', '34231', 'San Sebastian', 'Tenant Mother Two', '0936474328', 'tenantmom2@gmail.com', '44312', NULL, 40, '2026-09-05', '2026-12-16', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 10:39:58', '2026-09-10 05:56:47'),
-(14, NULL, 30, 'Beans', 'Lope', '2014-02-07', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta Mesa', '09289811408', 'vincelopez@gmail.com', NULL, 'Manila', 'Arlene Lopez', '09289811476', 'arlenelopez@gmail.com', '21212', NULL, 41, '2026-09-10', '2026-12-15', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-04 12:38:04', '2026-09-10 05:56:47'),
-(15, NULL, 31, 'Shayne', 'Bagui', '2004-08-13', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta. Mesa', '09212408565', 'shaynebagui@gmail.com', '121342', 'Sta Mesa Road 4 block 1234', 'Marie Bagui', '09212408568', 'mariebagui@gmail.com', NULL, NULL, 46, '2026-09-12', '2026-12-19', 'student', 'application-documents/7kDFU28JRBf080PHvgF2ZpC9eRTi3KyWArsakZ2g.jpg', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-10 01:14:28', '2026-09-10 05:56:47'),
-(16, NULL, 32, 'First', 'Name', '2026-09-01', 'female', 'Filipino', 'Nonerz', 'Student', 'NEST.PH', 'San Sebastian, Tarlac City', '09289811489', 'first@gmail.com', NULL, 'San Sebastian, Tarlac City', 'Emergency Contact', '09289833405', 'emergency@gmail.com', '543535', 'parent', 47, '2026-09-19', '2026-12-31', 'student', 'application-documents/3LWq2xbgs0Xcx5Z8GCa9fJv7ypkLLAEs3wWsRD7y.jpg', 'application-documents/signed-contracts/ff9755ee-f1c4-4933-96df-975451fab131.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-11 14:38:21', '2026-09-11 14:39:02'),
-(17, NULL, NULL, 'Second', 'Acc', '2004-07-14', 'male', 'Filipino', 'None', 'Student', 'NEST.PH', 'San Sebastian, Manila', '09289822305', 'second@gmail.com', '111111', 'San Sebastian, Manila', 'Second Mother', '09489811467', 'secondmom@gmail.com', '1121212', 'parent', 48, '2026-09-25', '2026-12-24', 'student', 'application-documents/PumgBwUEVDrEVxwSsTyagfQGLkQhtzuH9iupYYvG.jpg', 'application-documents/signed-contracts/d9ddb565-5731-4c99-891c-722390a1c556.pdf', 1, 're_application_requested', NULL, 'Invalid ID', NULL, 3, '2026-09-24 12:54:47', '2026-09-24 12:56:39'),
-(18, NULL, 33, 'Second', 'Acc', '2004-07-14', 'male', 'Filipino', 'None', 'Student', 'NEST.PH', 'San Sebastian, Manila', '09289822305', 'second@gmail.com', '111111', 'San Sebastian, Manila', 'Second Mother', '09349811467', 'secondmom@gmail.com', NULL, 'parent', 48, '2026-09-24', '2026-12-24', 'student', 'application-documents/5oBuSAlpN4t0Mas1EOYIIpJibDKibFWuDCOegOWW.jpg', 'application-documents/signed-contracts/5f1b612f-ccf0-4773-b5f4-068297b758ef.pdf', 1, 'approved', NULL, NULL, NULL, 3, '2026-09-24 12:59:58', '2026-09-24 13:05:26'),
-(19, NULL, NULL, 'Ayranne', 'Pelea', '2026-02-10', 'female', 'Filipino', 'None', 'Student', 'PUP', 'Sta. Mesa', '09212408565', 'ayrannepelea@gmail.com', NULL, 'Sta Mesa Road 4 block 1245', 'Father Pelea', '09212408576', 'fatherpelea@gmail.com', '2121212', 'parent', 34, '2026-09-26', '2026-12-26', 'student', 'application-documents/uOzzHMWtK5UKwYtynULAzWlk8o3T3Bly2tBVQ28s.jpg', 'application-documents/signed-contracts/e51d518e-b7f0-4493-aeee-4a01a15031dd.pdf', 1, 'pending', NULL, NULL, NULL, NULL, '2026-09-26 05:20:19', '2026-09-26 05:20:19');
+(1, NULL, 1, 'Maria Angelica', 'Santos', '2004-03-14', 'female', 'Filipino', 'None', 'Student', 'University of Santo Tomas', 'España Blvd., Sampaloc, Manila', '09181242486', 'maria.santos@gmail.com', NULL, 'Brgy. San Isidro, Angono, Rizal', 'Rodelio Santos', '09182034386', 'rodelio.santos.parent@gmail.com', NULL, 'Father', 1, '2026-04-19', '2027-03-18', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-04-08 02:15:00', '2026-04-10 02:15:00'),
+(2, NULL, 2, 'Kimberly Anne', 'Dela Cruz', '2005-07-02', 'female', 'Filipino', 'None', 'Student', 'Far Eastern University', 'Nicanor Reyes St., Sampaloc, Manila', '09271250405', 'kimberly.delacruz@gmail.com', NULL, '123 Rizal St., Brgy. Poblacion, Tarlac City, Tarlac', 'Marites Dela Cruz', '09272042305', 'marites.delacruz.parent@gmail.com', NULL, 'Mother', 2, '2026-06-27', '2027-03-26', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-06-15 03:15:00', '2026-06-17 03:15:00'),
+(3, NULL, 3, 'Patricia Mae', 'Gonzales', '2003-11-21', 'female', 'Filipino', 'None', 'Student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila', '09391258324', 'patricia.gonzales@gmail.com', NULL, 'Purok 4, Brgy. Maligaya, San Jose, Nueva Ecija', 'Lorna Gonzales', '09392050224', 'lorna.gonzales.parent@gmail.com', NULL, 'Mother', 3, '2026-07-25', '2027-03-24', 'working_student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-07-12 04:15:00', '2026-07-14 04:15:00'),
+(4, NULL, 4, 'Nicole Joy', 'Ramos', '2004-01-09', 'female', 'Filipino', 'None', 'Student', 'Technological University of the Philippines', 'Ayala Blvd., Ermita, Manila', '09451266243', 'nicole.ramos@gmail.com', NULL, 'Blk 5 Lot 12, Villa Verde Subd., Dasmariñas, Cavite', 'Ernesto Ramos', '09452058143', 'ernesto.ramos.parent@gmail.com', NULL, 'Father', 28, '2026-07-17', '2026-10-19', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-07-03 05:15:00', '2026-07-05 05:15:00'),
+(5, NULL, 5, 'Juan Miguel', 'Reyes', '1999-05-30', 'male', 'Filipino', 'None', 'Employee', 'Accenture Philippines', 'Cyber One Bldg., Eastwood City, Quezon City', '09561274162', 'juan.reyes@gmail.com', NULL, '45 Mabini St., Brgy. Poblacion, Lipa City, Batangas', 'Carmelita Reyes', '09562066062', 'carmelita.reyes.parent@gmail.com', NULL, 'Mother', 5, '2026-03-14', '2027-03-13', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-03-04 06:15:00', '2026-03-06 06:15:00'),
+(6, NULL, 6, 'John Paul', 'Mendoza', '2004-08-17', 'male', 'Filipino', 'Asthma (mild, with inhaler)', 'Student', 'Mapúa University', 'Muralla St., Intramuros, Manila', '09289811405', 'john.mendoza@gmail.com', NULL, 'Brgy. Bagong Silang, Lucena City, Quezon', 'Rosalie Mendoza', '09289811405', 'rosalie.mendoza.parent@gmail.com', NULL, 'Mother', 34, '2026-06-15', '2027-03-14', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-06-04 07:15:00', '2026-06-06 07:15:00'),
+(7, NULL, 7, 'Mark Joseph', 'Aquino', '2005-02-11', 'male', 'Filipino', 'None', 'Student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila', '09981290000', 'mark.aquino@gmail.com', NULL, 'Sitio Malinis, Brgy. San Roque, Antipolo City, Rizal', 'Josefina Aquino', '09982081900', 'josefina.aquino.parent@gmail.com', NULL, 'Mother', 7, '2026-08-24', '2027-03-23', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-08-12 08:15:00', '2026-08-14 08:15:00'),
+(8, NULL, 8, 'Christian Dave', 'Torres', '2002-12-03', 'male', 'Filipino', 'None', 'Employee', 'Jollibee Foods Corp. (V. Mapa branch)', 'V. Mapa St., Sta. Mesa, Manila', '09081297919', 'christian.torres@gmail.com', NULL, '78 Bonifacio St., Brgy. Centro, Iriga City, Camarines Sur', 'Dante Torres', '09082089819', 'dante.torres.parent@gmail.com', NULL, 'Father', 8, '2026-05-26', '2027-03-25', 'part_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-05-13 01:15:00', '2026-05-15 01:15:00'),
+(9, NULL, 9, 'Benjamin', 'Robles', '2004-06-25', 'male', 'Filipino', 'None', 'Student', 'National University', 'M.F. Jhocson St., Sampaloc, Manila', '09289811405', 'benjamin.robles@gmail.com', NULL, 'Brgy. Santo Cristo, San Fernando, Pampanga', 'Evelyn Robles', '09289811405', 'evelyn.robles.parent@gmail.com', NULL, 'Mother', 9, '2026-06-21', '2027-03-20', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-06-07 02:15:00', '2026-06-09 02:15:00'),
+(10, NULL, 10, 'Rafael Luis', 'Navarro', '2001-09-14', 'male', 'Filipino', 'None', 'Employee', 'BDO Unibank, Sta. Mesa Branch', 'Ramon Magsaysay Blvd., Sta. Mesa, Manila', '09171313757', 'rafael.navarro@gmail.com', NULL, '12 Aguinaldo Hwy., Brgy. Zapote, Bacoor, Cavite', 'Gloria Navarro', '09172105657', 'gloria.navarro.parent@gmail.com', NULL, 'Mother', 37, '2026-04-17', '2026-09-26', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-04-07 03:15:00', '2026-04-09 03:15:00'),
+(11, NULL, 11, 'Angela Marie', 'Villanueva', '1998-04-19', 'female', 'Filipino', 'None', 'Employee', 'Philippine General Hospital', 'Taft Ave., Ermita, Manila', '09181321676', 'angela.villanueva@gmail.com', NULL, 'Brgy. Poblacion, Tuguegarao City, Cagayan', 'Arnel Villanueva', '09182113576', 'arnel.villanueva.parent@gmail.com', NULL, 'Father', 12, '2026-01-09', '2027-03-08', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2025-12-29 04:15:00', '2025-12-31 04:15:00'),
+(12, NULL, 12, 'Jasmine Rose', 'Garcia', '2005-10-05', 'female', 'Filipino', 'Asthma (mild, with inhaler)', 'Student', 'Centro Escolar University', 'Mendiola St., San Miguel, Manila', '09271329595', 'jasmine.garcia@gmail.com', NULL, 'Purok 2, Brgy. Talon, Las Piñas City', 'Ramil Garcia', '09272121495', 'ramil.garcia.parent@gmail.com', NULL, 'Father', 13, '2026-07-28', '2027-03-27', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-07-16 05:15:00', '2026-07-18 05:15:00'),
+(13, NULL, 13, 'Camille Louise', 'Flores', '2004-12-28', 'female', 'Filipino', 'None', 'Student', 'Lyceum of the Philippines University', 'Muralla St., Intramuros, Manila', '09289811405', 'camille.flores@gmail.com', NULL, 'Brgy. Mabini, Batangas City, Batangas', 'Susan Flores', '09289811405', 'susan.flores.parent@gmail.com', NULL, 'Mother', 14, '2026-06-18', '2027-03-17', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-06-05 06:15:00', '2026-06-07 06:15:00'),
+(14, NULL, 14, 'Bea Katrina', 'Pascual', '2003-05-16', 'female', 'Filipino', 'None', 'Student', 'University of the East', 'C.M. Recto Ave., Sampaloc, Manila', '09451345433', 'bea.pascual@gmail.com', NULL, 'Brgy. Sta. Rita, Olongapo City, Zambales', 'Gerardo Pascual', '09452137333', 'gerardo.pascual.parent@gmail.com', NULL, 'Father', 15, '2026-06-29', '2027-03-28', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-06-15 07:15:00', '2026-06-17 07:15:00'),
+(15, NULL, 15, 'Princess Joy', 'Manalo', '2002-08-08', 'female', 'Filipino', 'None', 'Student', 'Pamantasan ng Lungsod ng Maynila', 'General Luna St., Intramuros, Manila', '09561353352', 'princess.manalo@gmail.com', NULL, 'Brgy. Parian, Calamba City, Laguna', 'Cristina Manalo', '09562145252', 'cristina.manalo.parent@gmail.com', NULL, 'Mother', 16, '2026-06-22', '2027-03-21', 'working_student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-06-12 08:15:00', '2026-06-14 08:15:00'),
+(16, NULL, 16, 'Kathleen Mae', 'Salazar', '2006-01-30', 'female', 'Filipino', 'None', 'Student', 'University of Santo Tomas', 'España Blvd., Sampaloc, Manila', '09661361271', 'kathleen.salazar@gmail.com', NULL, 'Brgy. Poblacion, Tagum City, Davao del Norte', 'Rogelio Salazar', '09662153171', 'rogelio.salazar.parent@gmail.com', NULL, 'Father', 17, '2026-10-03', '2027-04-02', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-09-22 01:15:00', '2026-09-24 01:15:00'),
+(17, NULL, 17, 'Carlo Miguel', 'Bautista', '2000-03-03', 'male', 'Filipino', 'None', 'Employee', 'Globe Telecom', 'The Globe Tower, BGC, Taguig City', '09981369190', 'carlo.bautista@gmail.com', NULL, 'San Pablo City, Laguna', 'Nenita Bautista', '09982161090', 'nenita.bautista.parent@gmail.com', NULL, 'Mother', 18, '2026-07-20', '2027-03-19', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-07-08 02:15:00', '2026-07-10 02:15:00'),
+(18, NULL, 18, 'Joshua Emmanuel', 'Lim', '2004-11-11', 'male', 'Filipino', 'Asthma (mild, with inhaler)', 'Student', 'De La Salle University', 'Taft Ave., Malate, Manila', '09081377109', 'joshua.lim@gmail.com', NULL, 'Sta. Cruz, Laguna', 'Wilson Lim', '09082169009', 'wilson.lim.parent@gmail.com', NULL, 'Father', 20, '2026-05-11', '2027-03-10', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-04-28 03:15:00', '2026-04-30 03:15:00'),
+(19, NULL, 19, 'Paolo Andres', 'Ocampo', '2005-04-22', 'male', 'Filipino', 'None', 'Student', 'Adamson University', 'San Marcelino St., Ermita, Manila', '09951385028', 'paolo.ocampo@gmail.com', NULL, 'Brgy. Poblacion, Malolos City, Bulacan', 'Amelia Ocampo', '09952176928', 'amelia.ocampo.parent@gmail.com', NULL, 'Mother', 21, '2026-10-03', '2027-04-02', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-09-19 04:15:00', '2026-09-21 04:15:00'),
+(20, NULL, 20, 'Andrea Nicole', 'Tan', '1997-09-09', 'female', 'Filipino', 'None', 'Employee', 'SM Supermalls Corporate Office', 'Mall of Asia Complex, Pasay City', '09171392947', 'andrea.tan@gmail.com', NULL, 'Brgy. Kauswagan, Cagayan de Oro City', 'Rebecca Tan', '09172184847', 'rebecca.tan.parent@gmail.com', NULL, 'Mother', 24, '2026-04-23', '2027-03-22', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-04-13 05:15:00', '2026-04-15 05:15:00'),
+(21, NULL, 21, 'Erika Jane', 'Morales', '2004-07-07', 'female', 'Filipino', 'None', 'Student', 'Far Eastern University', 'Nicanor Reyes St., Sampaloc, Manila', '09181400866', 'erika.morales@gmail.com', NULL, 'Brgy. Pantal, Dagupan City, Pangasinan', 'Ronaldo Morales', '09182192766', 'ronaldo.morales.parent@gmail.com', NULL, 'Father', 25, '2026-06-16', '2027-03-15', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-06-05 06:15:00', '2026-06-07 06:15:00'),
+(22, NULL, 22, 'Hannah Grace', 'Soriano', '2006-02-14', 'female', 'Filipino', 'None', 'Student', 'Philippine Normal University', 'Taft Ave., Ermita, Manila', '09271408785', 'hannah.soriano@gmail.com', NULL, 'Brgy. Dolores, Taytay, Rizal', 'Marilou Soriano', '09272200685', 'marilou.soriano.parent@gmail.com', NULL, 'Mother', 26, '2026-08-25', '2027-03-24', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-08-13 07:15:00', '2026-08-15 07:15:00'),
+(23, NULL, 23, 'Gabriel Jose', 'Rivera', '2001-06-01', 'male', 'Filipino', 'None', 'Employee', 'Meralco', 'Ortigas Ave., Pasig City', '09391416704', 'gabriel.rivera@gmail.com', NULL, 'Brgy. San Antonio, Biñan, Laguna', 'Imelda Rivera', '09392208604', 'imelda.rivera.parent@gmail.com', NULL, 'Mother', 29, '2026-03-21', '2026-08-20', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-03-08 08:15:00', '2026-03-10 08:15:00'),
+(24, NULL, 24, 'Joseph Allan', 'Cruz', '2003-03-27', 'male', 'Filipino', 'Asthma (mild, with inhaler)', 'Student', 'Emilio Aguinaldo College', 'Gen. Malvar St., Malate, Manila', '09289811405', 'joseph.cruz@gmail.com', NULL, 'Brgy. Tabing Ilog, Marilao, Bulacan', 'Nora Cruz', '09289811405', 'nora.cruz.parent@gmail.com', NULL, 'Mother', 31, '2026-04-10', '2027-02-09', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'approved', NULL, NULL, NULL, 124, '2026-03-27 01:15:00', '2026-03-29 01:15:00'),
+(25, NULL, NULL, 'Ana Beatriz', 'Salonga', '2006-03-08', 'female', 'Filipino', 'None', 'Student', 'University of Santo Tomas', 'Manila', '09289811405', 'ana.salonga@gmail.com', NULL, 'Brgy. Poblacion, Bontoc, Mountain Province', 'Ramon Salonga', '09173610267', NULL, NULL, 'Father', 19, '2026-10-02', '2027-03-29', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'pending', NULL, NULL, NULL, NULL, '2026-09-27 05:05:00', '2026-09-27 05:05:00'),
+(26, NULL, NULL, 'Ryan Christopher', 'Santiago', '2005-09-18', 'male', 'Filipino', 'None', 'Student', 'University of Santo Tomas', 'Manila', '09182826286', 'ryan.santiago@gmail.com', NULL, 'Brgy. Bagumbayan, Taguig City', 'Rommel Santiago', '09183618186', NULL, NULL, 'Mother', 22, '2026-10-05', '2027-03-29', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'pending', NULL, NULL, NULL, NULL, '2026-09-28 06:05:00', '2026-09-28 06:05:00'),
+(27, NULL, NULL, 'Alyssa Mae', 'Mercado', '2006-04-03', 'female', 'Filipino', 'None', 'Student', 'Far Eastern University', 'Manila', '09272834205', 'alyssa.mercado@gmail.com', NULL, 'Brgy. Malinta, Valenzuela City', 'Liza Mercado', '09273626105', NULL, NULL, 'Father', 27, '2026-10-08', '2027-03-29', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'pending', NULL, NULL, NULL, NULL, '2026-09-29 07:05:00', '2026-09-29 07:05:00'),
+(28, NULL, NULL, 'Kevin James', 'Dizon', '2000-10-10', 'male', 'Filipino', 'None', 'Employee', 'Concentrix Philippines', 'Manila', '09392842124', 'kevin.dizon@gmail.com', NULL, 'Brgy. San Isidro, Cainta, Rizal', 'Jun Dizon', '09393634024', NULL, NULL, 'Mother', 30, '2026-10-11', '2027-03-29', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'pending', NULL, NULL, NULL, NULL, '2026-09-27 08:05:00', '2026-09-27 08:05:00'),
+(29, NULL, NULL, 'Sophia Isabel', 'Lopez', '2004-05-25', 'female', 'Filipino', 'None', 'Student', 'San Beda University', 'Manila', '09452850043', 'sophia.lopez@gmail.com', NULL, 'Brgy. Poblacion, Muntinlupa City', 'Maricel Lopez', '09453641943', NULL, NULL, 'Father', 32, '2026-10-14', '2027-03-29', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'rejected', 'Requested stay is only 1 month; the dormitory requires a minimum 3-month contract.', NULL, NULL, NULL, '2026-09-23 09:05:00', '2026-09-24 09:05:00'),
+(30, NULL, NULL, 'Daniel Lorenzo', 'Cruz', '2005-01-15', 'male', 'Filipino', 'None', 'Student', 'Mapúa University', 'Manila', '09562857962', 'daniel.cruz@gmail.com', NULL, 'Brgy. Tambo, Parañaque City', 'Bong Cruz', '09563649862', NULL, NULL, 'Mother', 33, '2026-10-17', '2027-03-29', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 're_application_requested', NULL, 'Uploaded ID is blurry and the name cannot be read. Please re-apply with a clear photo of a valid school or government ID.', NULL, NULL, '2026-09-25 10:05:00', '2026-09-26 10:05:00'),
+(31, NULL, NULL, 'Mika Ella', 'Santos', '2006-08-12', 'female', 'Filipino', 'None', 'Student', 'Centro Escolar University', 'Manila', '09662865881', 'mika.santos@gmail.com', NULL, 'Brgy. Sto. Niño, Marikina City', 'Tess Santos', '09663657781', NULL, NULL, 'Father', 35, '2026-10-20', '2027-03-29', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 1, 'cancelled', NULL, NULL, NULL, NULL, '2026-09-20 11:05:00', '2026-09-21 11:05:00');
 
 -- --------------------------------------------------------
 
@@ -227,21 +277,43 @@ CREATE TABLE `beds` (
 --
 
 INSERT INTO `beds` (`id`, `room_id`, `bed_label`, `status`, `created_at`, `updated_at`) VALUES
-(34, 16, 'Bed 1', 'reserved', '2026-08-30 18:57:43', '2026-09-26 05:20:19'),
-(35, 16, 'Bed 2', 'occupied', '2026-08-30 18:57:43', '2026-09-03 07:57:06'),
-(36, 16, 'Bed 3', 'occupied', '2026-08-30 18:57:43', '2026-09-03 11:13:25'),
-(38, 17, 'Bed 1', 'occupied', '2026-08-31 10:49:31', '2026-08-31 11:21:55'),
-(39, 17, 'Bed 2', 'occupied', '2026-08-31 10:49:31', '2026-09-04 06:53:18'),
-(40, 17, 'Bed 3', 'occupied', '2026-08-31 10:49:31', '2026-09-04 10:44:34'),
-(41, 17, 'Bed 4', 'vacant', '2026-08-31 10:49:31', '2026-09-10 07:41:45'),
-(42, 18, 'Bed 1', 'occupied', '2026-09-03 06:27:16', '2026-09-15 12:47:06'),
-(43, 18, 'Bed 2', 'occupied', '2026-09-03 06:27:16', '2026-09-04 06:20:12'),
-(44, 18, 'Bed 3', 'occupied', '2026-09-03 06:27:16', '2026-09-04 11:14:43'),
-(45, 18, 'Bed 4', 'vacant', '2026-09-03 06:27:16', '2026-09-03 06:27:16'),
-(46, 19, 'Bed 1', 'occupied', '2026-09-04 13:04:53', '2026-09-10 01:30:05'),
-(47, 19, 'Bed 2', 'occupied', '2026-09-04 13:04:53', '2026-09-11 14:40:59'),
-(48, 19, 'Bed 3', 'occupied', '2026-09-04 13:04:53', '2026-09-24 13:17:22'),
-(49, 19, 'Bed 4', 'vacant', '2026-09-04 13:04:53', '2026-09-04 13:04:53');
+(1, 16, 'Bed 1', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(2, 16, 'Bed 2', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(3, 16, 'Bed 3', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(4, 16, 'Bed 4', 'vacant', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(5, 17, 'Bed 1', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(6, 17, 'Bed 2', 'vacant', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(7, 18, 'Bed 1', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(8, 18, 'Bed 2', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(9, 18, 'Bed 3', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(10, 18, 'Bed 4', 'vacant', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(11, 44, 'Bed 1', 'maintenance', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(12, 19, 'Bed 1', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(13, 19, 'Bed 2', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(14, 19, 'Bed 3', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(15, 19, 'Bed 4', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(16, 19, 'Bed 5', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(17, 19, 'Bed 6', 'reserved', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(18, 45, 'Bed 1', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(19, 45, 'Bed 2', 'reserved', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(20, 46, 'Bed 1', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(21, 46, 'Bed 2', 'reserved', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(22, 46, 'Bed 3', 'reserved', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(23, 46, 'Bed 4', 'maintenance', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(24, 47, 'Bed 1', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(25, 48, 'Bed 1', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(26, 48, 'Bed 2', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(27, 48, 'Bed 3', 'reserved', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(28, 48, 'Bed 4', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(29, 49, 'Bed 1', 'vacant', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(30, 49, 'Bed 2', 'reserved', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(31, 50, 'Bed 1', 'vacant', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(32, 50, 'Bed 2', 'vacant', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(33, 50, 'Bed 3', 'vacant', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(34, 50, 'Bed 4', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(35, 50, 'Bed 5', 'vacant', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(36, 50, 'Bed 6', 'vacant', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(37, 51, 'Bed 1', 'occupied', '2026-01-28 16:00:00', '2026-09-29 15:45:52');
 
 -- --------------------------------------------------------
 
@@ -272,30 +344,128 @@ CREATE TABLE `billing_statements` (
 --
 
 INSERT INTO `billing_statements` (`id`, `contract_id`, `tenant_id`, `type`, `billing_period_start`, `billing_period_end`, `due_date`, `base_rent`, `utilities_amount`, `wifi_amount`, `penalty_amount`, `total_amount`, `status`, `created_at`, `updated_at`) VALUES
-(5, 14, 13, 'move_in', '2026-09-02', '2026-09-02', '2026-09-02', 10000.00, 0.00, 0.00, 0.00, 10000.00, 'paid', '2026-08-31 10:04:14', '2026-09-01 10:56:54'),
-(6, 15, 14, 'move_in', '2026-09-03', '2026-09-03', '2026-09-03', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-08-31 10:53:46', '2026-08-31 11:21:55'),
-(15, 24, 23, 'monthly', '2026-07-24', '2026-08-23', '2026-08-24', 4000.00, 300.00, 200.00, 150.00, 4650.00, 'overdue', '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(16, 25, 24, 'monthly', '2026-08-01', '2026-08-31', '2026-08-24', 5000.00, 0.00, 0.00, 500.00, 5500.00, 'overdue', '2026-09-03 11:25:35', '2026-09-04 12:57:10'),
-(17, 26, 25, 'move_in', '2026-09-08', '2026-09-08', '2026-09-08', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'overdue', '2026-09-04 05:59:16', '2026-09-09 07:46:31'),
-(18, 27, 26, 'move_in', '2026-09-10', '2026-09-10', '2026-09-10', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'paid', '2026-09-04 06:13:15', '2026-09-04 06:20:12'),
-(19, 28, 27, 'move_in', '2026-09-05', '2026-09-05', '2026-09-05', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-09-04 06:50:33', '2026-09-04 06:53:18'),
-(20, 29, 28, 'move_in', '2026-09-05', '2026-09-05', '2026-09-05', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-09-04 10:42:06', '2026-09-04 10:44:34'),
-(21, 31, 30, 'move_in', '2026-09-10', '2026-09-10', '2026-09-10', 4250.00, 0.00, 0.00, 0.00, 4250.00, 'paid', '2026-09-04 12:38:43', '2026-09-04 12:41:58'),
-(22, 30, 29, 'monthly', '2026-08-09', '2026-09-09', '2026-08-29', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-09 12:05:23', '2026-09-09 12:34:55'),
-(23, 32, 31, 'move_in', '2026-09-12', '2026-09-12', '2026-09-12', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'paid', '2026-09-10 01:26:19', '2026-09-10 01:30:04'),
-(24, 32, 31, 'monthly', '2026-08-10', '2026-09-10', '2026-09-03', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-10 01:48:02', '2026-09-10 01:49:01'),
-(25, 33, 32, 'move_in', '2026-09-19', '2026-09-19', '2026-09-19', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'paid', '2026-09-11 14:39:02', '2026-09-11 14:40:59'),
-(26, 34, 33, 'move_in', '2026-09-24', '2026-09-24', '2026-09-24', 3250.00, 0.00, 0.00, 0.00, 3250.00, 'paid', '2026-09-24 13:05:26', '2026-09-24 13:17:22'),
-(27, 15, 14, 'monthly', '2026-09-04', '2026-10-03', '2026-09-09', 2125.00, 0.00, 0.00, 0.00, 2125.00, 'overdue', '2026-09-25 05:36:51', '2026-09-25 05:36:53'),
-(28, 24, 23, 'monthly', '2026-08-24', '2026-09-23', '2026-08-29', 4000.00, 0.00, 0.00, 0.00, 4000.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
-(29, 25, 24, 'monthly', '2026-09-01', '2026-09-30', '2026-09-06', 5000.00, 0.00, 0.00, 0.00, 5000.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
-(30, 26, 25, 'monthly', '2026-09-09', '2026-10-08', '2026-09-14', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
-(31, 28, 27, 'monthly', '2026-09-06', '2026-10-05', '2026-09-11', 2125.00, 0.00, 0.00, 0.00, 2125.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
-(32, 29, 28, 'monthly', '2026-09-06', '2026-10-05', '2026-09-11', 2125.00, 0.00, 0.00, 0.00, 2125.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
-(33, 30, 29, 'monthly', '2026-09-10', '2026-10-09', '2026-09-15', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 05:36:53'),
-(34, 32, 31, 'monthly', '2026-09-13', '2026-10-12', '2026-09-15', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-25 05:36:52', '2026-09-26 05:29:11'),
-(35, 33, 32, 'monthly', '2026-09-20', '2026-10-19', '2026-09-25', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'overdue', '2026-09-25 05:36:52', '2026-09-25 16:08:27'),
-(36, 34, 33, 'monthly', '2026-09-25', '2026-10-24', '2026-09-30', 1625.00, 0.00, 0.00, 0.00, 1625.00, 'unpaid', '2026-09-25 05:36:52', '2026-09-25 05:36:52');
+(1, 1, 1, 'move_in', '2026-04-19', '2026-04-19', '2026-04-19', 7000.00, 0.00, 0.00, 0.00, 7000.00, 'paid', '2026-04-10 02:15:00', '2026-09-29 15:45:53'),
+(2, 1, 1, 'monthly', '2026-04-19', '2026-05-18', '2026-04-24', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-04-18 16:05:00', '2026-09-29 15:45:53'),
+(3, 1, 1, 'monthly', '2026-05-19', '2026-06-18', '2026-05-24', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-05-18 16:05:00', '2026-09-29 15:45:53'),
+(4, 1, 1, 'monthly', '2026-06-19', '2026-07-18', '2026-06-24', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-06-18 16:05:00', '2026-09-29 15:45:53'),
+(5, 1, 1, 'monthly', '2026-07-19', '2026-08-18', '2026-07-24', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-07-18 16:05:00', '2026-09-29 15:45:53'),
+(6, 1, 1, 'monthly', '2026-08-19', '2026-09-18', '2026-08-24', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-08-18 16:05:00', '2026-09-29 15:45:53'),
+(7, 1, 1, 'monthly', '2026-09-19', '2026-10-18', '2026-09-24', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-09-18 16:05:00', '2026-09-29 15:45:53'),
+(8, 2, 2, 'move_in', '2026-06-27', '2026-06-27', '2026-06-27', 7000.00, 0.00, 0.00, 0.00, 7000.00, 'paid', '2026-06-17 03:15:00', '2026-09-29 15:45:53'),
+(9, 2, 2, 'monthly', '2026-06-27', '2026-07-26', '2026-07-02', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-06-26 16:05:00', '2026-09-29 15:45:53'),
+(10, 2, 2, 'monthly', '2026-07-27', '2026-08-26', '2026-08-01', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-07-26 16:05:00', '2026-09-29 15:45:53'),
+(11, 2, 2, 'monthly', '2026-08-27', '2026-09-26', '2026-09-01', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-08-26 16:05:00', '2026-09-29 15:45:53'),
+(12, 2, 2, 'monthly', '2026-09-27', '2026-10-26', '2026-10-02', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'unpaid', '2026-09-26 16:05:00', '2026-09-29 15:45:53'),
+(13, 3, 3, 'move_in', '2026-07-25', '2026-07-25', '2026-07-25', 7000.00, 0.00, 0.00, 0.00, 7000.00, 'paid', '2026-07-14 04:15:00', '2026-09-29 15:45:53'),
+(14, 3, 3, 'monthly', '2026-07-25', '2026-08-24', '2026-07-30', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-07-24 16:05:00', '2026-09-29 15:45:53'),
+(15, 3, 3, 'monthly', '2026-08-25', '2026-09-24', '2026-08-30', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-08-24 16:05:00', '2026-09-29 15:45:53'),
+(16, 3, 3, 'monthly', '2026-09-25', '2026-10-24', '2026-09-30', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'unpaid', '2026-09-24 16:05:00', '2026-09-29 15:45:53'),
+(17, 4, 4, 'move_in', '2026-07-17', '2026-07-17', '2026-07-17', 6800.00, 0.00, 0.00, 0.00, 6800.00, 'paid', '2026-07-05 05:15:00', '2026-09-29 15:45:53'),
+(18, 4, 4, 'monthly', '2026-07-17', '2026-08-16', '2026-07-22', 3400.00, 500.00, 250.00, 0.00, 4150.00, 'paid', '2026-07-16 16:05:00', '2026-09-29 15:45:53'),
+(19, 4, 4, 'monthly', '2026-08-17', '2026-09-16', '2026-08-22', 3400.00, 500.00, 250.00, 0.00, 4150.00, 'paid', '2026-08-16 16:05:00', '2026-09-29 15:45:53'),
+(20, 4, 4, 'monthly', '2026-09-17', '2026-10-16', '2026-09-22', 3400.00, 500.00, 250.00, 0.00, 4150.00, 'paid', '2026-09-16 16:05:00', '2026-09-29 15:45:53'),
+(21, 5, 5, 'move_in', '2026-03-14', '2026-03-14', '2026-03-14', 9000.00, 0.00, 0.00, 0.00, 9000.00, 'paid', '2026-03-06 06:15:00', '2026-09-29 15:45:53'),
+(22, 5, 5, 'monthly', '2026-03-14', '2026-04-13', '2026-03-19', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-03-13 16:05:00', '2026-09-29 15:45:53'),
+(23, 5, 5, 'monthly', '2026-04-14', '2026-05-13', '2026-04-19', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-04-13 16:05:00', '2026-09-29 15:45:53'),
+(24, 5, 5, 'monthly', '2026-05-14', '2026-06-13', '2026-05-19', 4500.00, 600.00, 300.00, 450.00, 5850.00, 'paid', '2026-05-13 16:05:00', '2026-09-29 15:45:53'),
+(25, 5, 5, 'monthly', '2026-06-14', '2026-07-13', '2026-06-19', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-06-13 16:05:00', '2026-09-29 15:45:53'),
+(26, 5, 5, 'monthly', '2026-07-14', '2026-08-13', '2026-07-19', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-07-13 16:05:00', '2026-09-29 15:45:53'),
+(27, 5, 5, 'monthly', '2026-08-14', '2026-09-13', '2026-08-19', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-08-13 16:05:00', '2026-09-29 15:45:53'),
+(28, 5, 5, 'monthly', '2026-09-14', '2026-10-13', '2026-09-19', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-09-13 16:05:00', '2026-09-29 15:45:53'),
+(29, 6, 6, 'move_in', '2026-06-15', '2026-06-15', '2026-06-15', 5200.00, 0.00, 0.00, 0.00, 5200.00, 'paid', '2026-06-06 07:15:00', '2026-09-29 15:45:53'),
+(30, 6, 6, 'monthly', '2026-06-15', '2026-07-14', '2026-06-20', 2600.00, 400.00, 200.00, 0.00, 3200.00, 'paid', '2026-06-14 16:05:00', '2026-09-29 15:45:53'),
+(31, 6, 6, 'monthly', '2026-07-15', '2026-08-14', '2026-07-20', 2600.00, 400.00, 200.00, 0.00, 3200.00, 'paid', '2026-07-14 16:05:00', '2026-09-29 15:45:53'),
+(32, 6, 6, 'monthly', '2026-08-15', '2026-09-14', '2026-08-20', 2600.00, 400.00, 200.00, 0.00, 3200.00, 'paid', '2026-08-14 16:05:00', '2026-09-29 15:45:53'),
+(33, 6, 6, 'monthly', '2026-09-15', '2026-10-14', '2026-09-20', 2600.00, 400.00, 200.00, 260.00, 3460.00, 'overdue', '2026-09-14 16:05:00', '2026-09-29 15:45:53'),
+(34, 7, 7, 'move_in', '2026-08-24', '2026-08-24', '2026-08-24', 6500.00, 0.00, 0.00, 0.00, 6500.00, 'paid', '2026-08-14 08:15:00', '2026-09-29 15:45:53'),
+(35, 7, 7, 'monthly', '2026-08-24', '2026-09-23', '2026-08-29', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'paid', '2026-08-23 16:05:00', '2026-09-29 15:45:53'),
+(36, 7, 7, 'monthly', '2026-09-24', '2026-10-23', '2026-09-29', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'paid', '2026-09-23 16:05:00', '2026-09-29 15:45:53'),
+(37, 8, 8, 'move_in', '2026-05-26', '2026-05-26', '2026-05-26', 6500.00, 0.00, 0.00, 0.00, 6500.00, 'paid', '2026-05-15 01:15:00', '2026-09-29 15:45:53'),
+(38, 8, 8, 'monthly', '2026-05-26', '2026-06-25', '2026-05-31', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'paid', '2026-05-25 16:05:00', '2026-09-29 15:45:53'),
+(39, 8, 8, 'monthly', '2026-06-26', '2026-07-25', '2026-07-01', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'paid', '2026-06-25 16:05:00', '2026-09-29 15:45:53'),
+(40, 8, 8, 'monthly', '2026-07-26', '2026-08-25', '2026-07-31', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'paid', '2026-07-25 16:05:00', '2026-09-29 15:45:53'),
+(41, 8, 8, 'monthly', '2026-08-26', '2026-09-25', '2026-08-31', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'paid', '2026-08-25 16:05:00', '2026-09-29 15:45:53'),
+(42, 8, 8, 'monthly', '2026-09-26', '2026-10-25', '2026-10-01', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'partial', '2026-09-25 16:05:00', '2026-09-29 15:45:53'),
+(43, 9, 9, 'move_in', '2026-06-21', '2026-06-21', '2026-06-21', 6500.00, 0.00, 0.00, 0.00, 6500.00, 'paid', '2026-06-09 02:15:00', '2026-09-29 15:45:53'),
+(44, 9, 9, 'monthly', '2026-06-21', '2026-07-20', '2026-06-26', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'paid', '2026-06-20 16:05:00', '2026-09-29 15:45:53'),
+(45, 9, 9, 'monthly', '2026-07-21', '2026-08-20', '2026-07-26', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'paid', '2026-07-20 16:05:00', '2026-09-29 15:45:53'),
+(46, 9, 9, 'monthly', '2026-08-21', '2026-09-20', '2026-08-26', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'paid', '2026-08-20 16:05:00', '2026-09-29 15:45:53'),
+(47, 9, 9, 'monthly', '2026-09-21', '2026-10-20', '2026-09-26', 3250.00, 500.00, 250.00, 0.00, 4000.00, 'overdue', '2026-09-20 16:05:00', '2026-09-29 15:45:53'),
+(48, 10, 10, 'move_in', '2026-04-17', '2026-04-17', '2026-04-17', 15600.00, 0.00, 0.00, 0.00, 15600.00, 'paid', '2026-04-09 03:15:00', '2026-09-29 15:45:53'),
+(49, 10, 10, 'monthly', '2026-04-17', '2026-05-16', '2026-04-22', 7800.00, 800.00, 500.00, 0.00, 9100.00, 'paid', '2026-04-16 16:05:00', '2026-09-29 15:45:53'),
+(50, 10, 10, 'monthly', '2026-05-17', '2026-06-16', '2026-05-22', 7800.00, 800.00, 500.00, 0.00, 9100.00, 'paid', '2026-05-16 16:05:00', '2026-09-29 15:45:53'),
+(51, 10, 10, 'monthly', '2026-06-17', '2026-07-16', '2026-06-22', 7800.00, 800.00, 500.00, 0.00, 9100.00, 'paid', '2026-06-16 16:05:00', '2026-09-29 15:45:53'),
+(52, 10, 10, 'monthly', '2026-07-17', '2026-08-16', '2026-07-22', 7800.00, 800.00, 500.00, 0.00, 9100.00, 'paid', '2026-07-16 16:05:00', '2026-09-29 15:45:53'),
+(53, 10, 10, 'monthly', '2026-08-17', '2026-09-16', '2026-08-22', 7800.00, 800.00, 500.00, 0.00, 9100.00, 'paid', '2026-08-16 16:05:00', '2026-09-29 15:45:53'),
+(54, 10, 10, 'monthly', '2026-09-17', '2026-10-16', '2026-09-22', 7800.00, 800.00, 500.00, 0.00, 9100.00, 'paid', '2026-09-16 16:05:00', '2026-09-29 15:45:53'),
+(55, 11, 11, 'move_in', '2026-01-09', '2026-01-09', '2026-01-09', 4500.00, 0.00, 0.00, 0.00, 4500.00, 'paid', '2025-12-31 04:15:00', '2026-09-29 15:45:53'),
+(56, 11, 11, 'monthly', '2026-01-09', '2026-02-08', '2026-01-14', 2250.00, 400.00, 200.00, 0.00, 2850.00, 'paid', '2026-01-08 16:05:00', '2026-09-29 15:45:53'),
+(57, 11, 11, 'monthly', '2026-02-09', '2026-03-08', '2026-02-14', 2250.00, 400.00, 200.00, 0.00, 2850.00, 'paid', '2026-02-08 16:05:00', '2026-09-29 15:45:53'),
+(58, 11, 11, 'monthly', '2026-03-09', '2026-04-08', '2026-03-14', 2250.00, 400.00, 200.00, 0.00, 2850.00, 'paid', '2026-03-08 16:05:00', '2026-09-29 15:45:53'),
+(59, 11, 11, 'monthly', '2026-04-09', '2026-05-08', '2026-04-14', 2250.00, 400.00, 200.00, 0.00, 2850.00, 'paid', '2026-04-08 16:05:00', '2026-09-29 15:45:53'),
+(60, 11, 11, 'monthly', '2026-05-09', '2026-06-08', '2026-05-14', 2250.00, 400.00, 200.00, 0.00, 2850.00, 'paid', '2026-05-08 16:05:00', '2026-09-29 15:45:53'),
+(61, 11, 11, 'monthly', '2026-06-09', '2026-07-08', '2026-06-14', 2250.00, 400.00, 200.00, 0.00, 2850.00, 'paid', '2026-06-08 16:05:00', '2026-09-29 15:45:53'),
+(62, 11, 11, 'monthly', '2026-07-09', '2026-08-08', '2026-07-14', 2250.00, 400.00, 200.00, 0.00, 2850.00, 'paid', '2026-07-08 16:05:00', '2026-09-29 15:45:53'),
+(63, 11, 11, 'monthly', '2026-08-09', '2026-09-08', '2026-08-14', 2250.00, 400.00, 200.00, 0.00, 2850.00, 'paid', '2026-08-08 16:05:00', '2026-09-29 15:45:53'),
+(64, 11, 11, 'monthly', '2026-09-09', '2026-10-08', '2026-09-14', 2250.00, 400.00, 200.00, 0.00, 2850.00, 'paid', '2026-09-08 16:05:00', '2026-09-29 15:45:53'),
+(65, 12, 12, 'move_in', '2026-07-28', '2026-07-28', '2026-07-28', 5000.00, 0.00, 0.00, 0.00, 5000.00, 'paid', '2026-07-18 05:15:00', '2026-09-29 15:45:53'),
+(66, 12, 12, 'monthly', '2026-07-28', '2026-08-27', '2026-08-02', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-07-27 16:05:00', '2026-09-29 15:45:53'),
+(67, 12, 12, 'monthly', '2026-08-28', '2026-09-27', '2026-09-02', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-08-27 16:05:00', '2026-09-29 15:45:53'),
+(68, 12, 12, 'monthly', '2026-09-28', '2026-10-27', '2026-10-03', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'unpaid', '2026-09-27 16:05:00', '2026-09-29 15:45:53'),
+(69, 13, 13, 'move_in', '2026-06-18', '2026-06-18', '2026-06-18', 5000.00, 0.00, 0.00, 0.00, 5000.00, 'paid', '2026-06-07 06:15:00', '2026-09-29 15:45:53'),
+(70, 13, 13, 'monthly', '2026-06-18', '2026-07-17', '2026-06-23', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-06-17 16:05:00', '2026-09-29 15:45:53'),
+(71, 13, 13, 'monthly', '2026-07-18', '2026-08-17', '2026-07-23', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-07-17 16:05:00', '2026-09-29 15:45:53'),
+(72, 13, 13, 'monthly', '2026-08-18', '2026-09-17', '2026-08-23', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-08-17 16:05:00', '2026-09-29 15:45:53'),
+(73, 13, 13, 'monthly', '2026-09-18', '2026-10-17', '2026-09-23', 2500.00, 400.00, 200.00, 250.00, 3350.00, 'overdue', '2026-09-17 16:05:00', '2026-09-29 15:45:53'),
+(74, 14, 14, 'move_in', '2026-06-29', '2026-06-29', '2026-06-29', 5000.00, 0.00, 0.00, 0.00, 5000.00, 'paid', '2026-06-17 07:15:00', '2026-09-29 15:45:53'),
+(75, 14, 14, 'monthly', '2026-06-29', '2026-07-28', '2026-07-04', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-06-28 16:05:00', '2026-09-29 15:45:53'),
+(76, 14, 14, 'monthly', '2026-07-29', '2026-08-28', '2026-08-03', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-07-28 16:05:00', '2026-09-29 15:45:53'),
+(77, 14, 14, 'monthly', '2026-08-29', '2026-09-28', '2026-09-03', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-08-28 16:05:00', '2026-09-29 15:45:53'),
+(78, 14, 14, 'monthly', '2026-09-29', '2026-10-28', '2026-10-04', 2500.00, 400.00, 200.00, 800.00, 3900.00, 'unpaid', '2026-09-28 16:05:00', '2026-09-29 15:45:53'),
+(79, 15, 15, 'move_in', '2026-06-22', '2026-06-22', '2026-06-22', 5000.00, 0.00, 0.00, 0.00, 5000.00, 'paid', '2026-06-14 08:15:00', '2026-09-29 15:45:53'),
+(80, 15, 15, 'monthly', '2026-06-22', '2026-07-21', '2026-06-27', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-06-21 16:05:00', '2026-09-29 15:45:53'),
+(81, 15, 15, 'monthly', '2026-07-22', '2026-08-21', '2026-07-27', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-07-21 16:05:00', '2026-09-29 15:45:53'),
+(82, 15, 15, 'monthly', '2026-08-22', '2026-09-21', '2026-08-27', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-08-21 16:05:00', '2026-09-29 15:45:53'),
+(83, 15, 15, 'monthly', '2026-09-22', '2026-10-21', '2026-09-27', 2500.00, 400.00, 200.00, 0.00, 3100.00, 'paid', '2026-09-21 16:05:00', '2026-09-29 15:45:53'),
+(84, 16, 16, 'move_in', '2026-10-03', '2026-10-03', '2026-10-03', 5000.00, 0.00, 0.00, 0.00, 5000.00, 'unpaid', '2026-09-24 01:15:00', '2026-09-29 15:45:53'),
+(85, 17, 17, 'move_in', '2026-07-20', '2026-07-20', '2026-07-20', 9500.00, 0.00, 0.00, 0.00, 9500.00, 'paid', '2026-07-10 02:15:00', '2026-09-29 15:45:53'),
+(86, 17, 17, 'monthly', '2026-07-20', '2026-08-19', '2026-07-25', 4750.00, 600.00, 300.00, 0.00, 5650.00, 'paid', '2026-07-19 16:05:00', '2026-09-29 15:45:53'),
+(87, 17, 17, 'monthly', '2026-08-20', '2026-09-19', '2026-08-25', 4750.00, 600.00, 300.00, 0.00, 5650.00, 'paid', '2026-08-19 16:05:00', '2026-09-29 15:45:53'),
+(88, 17, 17, 'monthly', '2026-09-20', '2026-10-19', '2026-09-25', 4750.00, 600.00, 300.00, 0.00, 5650.00, 'paid', '2026-09-19 16:05:00', '2026-09-29 15:45:53'),
+(89, 18, 18, 'move_in', '2026-05-11', '2026-05-11', '2026-05-11', 7000.00, 0.00, 0.00, 0.00, 7000.00, 'paid', '2026-04-30 03:15:00', '2026-09-29 15:45:53'),
+(90, 18, 18, 'monthly', '2026-05-11', '2026-06-10', '2026-05-16', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-05-10 16:05:00', '2026-09-29 15:45:53'),
+(91, 18, 18, 'monthly', '2026-06-11', '2026-07-10', '2026-06-16', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-06-10 16:05:00', '2026-09-29 15:45:53'),
+(92, 18, 18, 'monthly', '2026-07-11', '2026-08-10', '2026-07-16', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-07-10 16:05:00', '2026-09-29 15:45:53'),
+(93, 18, 18, 'monthly', '2026-08-11', '2026-09-10', '2026-08-16', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-08-10 16:05:00', '2026-09-29 15:45:53'),
+(94, 18, 18, 'monthly', '2026-09-11', '2026-10-10', '2026-09-16', 3500.00, 500.00, 250.00, 0.00, 4250.00, 'paid', '2026-09-10 16:05:00', '2026-09-29 15:45:53'),
+(95, 19, 19, 'move_in', '2026-10-03', '2026-10-03', '2026-10-03', 7000.00, 0.00, 0.00, 0.00, 7000.00, 'unpaid', '2026-09-21 04:15:00', '2026-09-29 15:45:53'),
+(96, 20, 20, 'move_in', '2026-04-23', '2026-04-23', '2026-04-23', 16000.00, 0.00, 0.00, 0.00, 16000.00, 'paid', '2026-04-15 05:15:00', '2026-09-29 15:45:53'),
+(97, 20, 20, 'monthly', '2026-04-23', '2026-05-22', '2026-04-28', 8000.00, 800.00, 500.00, 0.00, 9300.00, 'paid', '2026-04-22 16:05:00', '2026-09-29 15:45:53'),
+(98, 20, 20, 'monthly', '2026-05-23', '2026-06-22', '2026-05-28', 8000.00, 800.00, 500.00, 0.00, 9300.00, 'paid', '2026-05-22 16:05:00', '2026-09-29 15:45:53'),
+(99, 20, 20, 'monthly', '2026-06-23', '2026-07-22', '2026-06-28', 8000.00, 800.00, 500.00, 0.00, 9300.00, 'paid', '2026-06-22 16:05:00', '2026-09-29 15:45:53'),
+(100, 20, 20, 'monthly', '2026-07-23', '2026-08-22', '2026-07-28', 8000.00, 800.00, 500.00, 0.00, 9300.00, 'paid', '2026-07-22 16:05:00', '2026-09-29 15:45:53'),
+(101, 20, 20, 'monthly', '2026-08-23', '2026-09-22', '2026-08-28', 8000.00, 800.00, 500.00, 0.00, 9300.00, 'paid', '2026-08-22 16:05:00', '2026-09-29 15:45:53'),
+(102, 20, 20, 'monthly', '2026-09-23', '2026-10-22', '2026-09-28', 8000.00, 800.00, 500.00, 0.00, 9300.00, 'paid', '2026-09-22 16:05:00', '2026-09-29 15:45:53'),
+(103, 21, 21, 'move_in', '2026-06-16', '2026-06-16', '2026-06-16', 6800.00, 0.00, 0.00, 0.00, 6800.00, 'paid', '2026-06-07 06:15:00', '2026-09-29 15:45:53'),
+(104, 21, 21, 'monthly', '2026-06-16', '2026-07-15', '2026-06-21', 3400.00, 500.00, 250.00, 0.00, 4150.00, 'paid', '2026-06-15 16:05:00', '2026-09-29 15:45:53'),
+(105, 21, 21, 'monthly', '2026-07-16', '2026-08-15', '2026-07-21', 3400.00, 500.00, 250.00, 0.00, 4150.00, 'paid', '2026-07-15 16:05:00', '2026-09-29 15:45:53'),
+(106, 21, 21, 'monthly', '2026-08-16', '2026-09-15', '2026-08-21', 3400.00, 500.00, 250.00, 0.00, 4150.00, 'paid', '2026-08-15 16:05:00', '2026-09-29 15:45:53'),
+(107, 21, 21, 'monthly', '2026-09-16', '2026-10-15', '2026-09-21', 3400.00, 500.00, 250.00, 0.00, 4150.00, 'paid', '2026-09-15 16:05:00', '2026-09-29 15:45:53'),
+(108, 22, 22, 'move_in', '2026-08-25', '2026-08-25', '2026-08-25', 6800.00, 0.00, 0.00, 0.00, 6800.00, 'paid', '2026-08-15 07:15:00', '2026-09-29 15:45:53'),
+(109, 22, 22, 'monthly', '2026-08-25', '2026-09-24', '2026-08-30', 3400.00, 500.00, 250.00, 0.00, 4150.00, 'paid', '2026-08-24 16:05:00', '2026-09-29 15:45:53'),
+(110, 22, 22, 'monthly', '2026-09-25', '2026-10-24', '2026-09-30', 3400.00, 500.00, 250.00, 0.00, 4150.00, 'paid', '2026-09-24 16:05:00', '2026-09-29 15:45:53'),
+(111, 23, 23, 'move_in', '2026-03-21', '2026-03-21', '2026-03-21', 9000.00, 0.00, 0.00, 0.00, 9000.00, 'paid', '2026-03-10 08:15:00', '2026-09-29 15:45:53'),
+(112, 23, 23, 'monthly', '2026-03-21', '2026-04-20', '2026-03-26', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-03-20 16:05:00', '2026-09-29 15:45:53'),
+(113, 23, 23, 'monthly', '2026-04-21', '2026-05-20', '2026-04-26', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-04-20 16:05:00', '2026-09-29 15:45:53'),
+(114, 23, 23, 'monthly', '2026-05-21', '2026-06-20', '2026-05-26', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-05-20 16:05:00', '2026-09-29 15:45:53'),
+(115, 23, 23, 'monthly', '2026-06-21', '2026-07-20', '2026-06-26', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-06-20 16:05:00', '2026-09-29 15:45:53'),
+(116, 23, 23, 'monthly', '2026-07-21', '2026-08-20', '2026-07-26', 4500.00, 600.00, 300.00, 0.00, 5400.00, 'paid', '2026-07-20 16:05:00', '2026-09-29 15:45:53'),
+(117, 24, 24, 'move_in', '2026-04-10', '2026-04-10', '2026-04-10', 5200.00, 0.00, 0.00, 0.00, 5200.00, 'paid', '2026-03-29 01:15:00', '2026-09-29 15:45:53'),
+(118, 24, 24, 'monthly', '2026-04-10', '2026-05-09', '2026-04-15', 2600.00, 400.00, 200.00, 0.00, 3200.00, 'paid', '2026-04-09 16:05:00', '2026-09-29 15:45:53'),
+(119, 24, 24, 'monthly', '2026-05-10', '2026-06-09', '2026-05-15', 2600.00, 400.00, 200.00, 0.00, 3200.00, 'paid', '2026-05-09 16:05:00', '2026-09-29 15:45:53'),
+(120, 24, 24, 'monthly', '2026-06-10', '2026-07-09', '2026-06-15', 2600.00, 400.00, 200.00, 0.00, 3200.00, 'paid', '2026-06-09 16:05:00', '2026-09-29 15:45:53'),
+(121, 24, 24, 'monthly', '2026-07-10', '2026-08-09', '2026-07-15', 2600.00, 400.00, 200.00, 0.00, 3200.00, 'paid', '2026-07-09 16:05:00', '2026-09-29 15:45:53'),
+(122, 24, 24, 'monthly', '2026-08-10', '2026-09-09', '2026-08-15', 2600.00, 400.00, 200.00, 260.00, 3460.00, 'overdue', '2026-08-09 16:05:00', '2026-09-29 15:45:53');
 
 -- --------------------------------------------------------
 
@@ -346,7 +516,7 @@ CREATE TABLE `damages` (
 --
 
 INSERT INTO `damages` (`id`, `tenant_id`, `room_id`, `bed_id`, `description`, `cost`, `date_incurred`, `photo_path`, `created_by`, `created_at`, `updated_at`) VALUES
-(2, 14, 17, 38, 'Lababo', 200.00, '2026-09-01', NULL, 3, '2026-09-01 11:24:38', '2026-09-01 11:24:38');
+(1, 14, 19, 15, 'Broken cabinet door hinge (bed-side locker)', 800.00, '2026-09-17', NULL, 126, '2026-09-16 16:00:00', '2026-09-16 16:00:00');
 
 -- --------------------------------------------------------
 
@@ -459,29 +629,26 @@ CREATE TABLE `escalation_logs` (
 --
 
 INSERT INTO `escalation_logs` (`id`, `tenant_id`, `billing_id`, `stage`, `action_type`, `message_content`, `status`, `performed_by`, `created_at`, `updated_at`) VALUES
-(43, 23, 15, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(44, 23, 15, 2, 'sms_reminder_day1', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(45, 23, 15, 2, 'sms_reminder_day3', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(46, 23, 15, 2, 'sms_reminder_day7', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(47, 23, 15, 3, 'portal_restricted', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(48, 23, 15, 4, 'emergency_contact_notified', '[pre-seeded for testing, not actually sent]', 'sent', NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(49, 23, 15, 5, 'demand_letter_generated', 'demand-letters/23_15.pdf', 'sent', NULL, '2026-09-03 07:58:15', '2026-09-03 07:58:15'),
-(128, 24, 16, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(129, 24, 16, 2, 'sms_reminder_day1', '[TEST SEED — not actually sent] Reminder: overdue balance.', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(130, 24, 16, 2, 'sms_reminder_day3', '[TEST SEED — not actually sent] Reminder: overdue balance.', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(131, 24, 16, 2, 'sms_reminder_day7', '[TEST SEED — not actually sent] URGENT: overdue balance.', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(132, 24, 16, 3, 'portal_restricted', '[TEST SEED — not actually sent] Portal access restricted.', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(133, 24, 16, 4, 'emergency_contact_notified', '[TEST SEED — not actually sent] Emergency contact notified.', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(134, 24, 16, 5, 'demand_letter_generated', 'demand-letters/(test-seed-no-real-pdf).pdf', 'sent', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(135, 24, 16, 6, 'delinquent_blacklisted', NULL, 'resolved', NULL, '2026-09-04 12:57:10', '2026-09-04 12:57:10'),
-(158, 31, 34, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-26 05:25:49', '2026-09-26 05:25:49'),
-(159, 31, 34, 2, 'sms_reminder_day2', 'Reminder: Your account with NEST PH is now 2 day(s) overdue. Outstanding balance (incl. penalties): PHP 1,625.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-26 05:25:51', '2026-09-26 05:25:51'),
-(160, 31, 34, 2, 'sms_reminder_day4', 'Reminder: Your account with NEST PH is now 4 day(s) overdue. Outstanding balance (incl. penalties): PHP 1,625.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-26 05:25:53', '2026-09-26 05:25:53'),
-(161, 31, 34, 2, 'sms_reminder_day7', 'URGENT: Your account with NEST PH is now 7 day(s) overdue. Outstanding balance (incl. penalties): PHP 1,625.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-26 05:25:55', '2026-09-26 05:25:55'),
-(162, 31, 34, 3, 'portal_restricted', 'Your account access has been restricted due to unpaid balance. Please settle your balance to restore full access. - NEST PH', 'sent', NULL, '2026-09-26 05:27:34', '2026-09-26 05:27:34'),
-(163, 31, 34, 4, 'emergency_contact_notified', 'This is to inform you that Shayne Bagui\'s account at NEST PH is 10 days overdue, balance PHP 1,625.00. Please encourage them to settle it as soon as possible.', 'sent', NULL, '2026-09-26 05:28:10', '2026-09-26 05:28:10'),
-(164, 31, 34, 5, 'demand_letter_generated', 'demand-letters/31_34.pdf', 'sent', NULL, '2026-09-26 05:28:11', '2026-09-26 05:28:11'),
-(165, 31, 34, 6, 'delinquent_blacklisted', NULL, 'resolved', NULL, '2026-09-26 05:29:11', '2026-09-26 05:29:11');
+(1, 6, 33, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-19 22:00:00', '2026-09-19 22:00:00'),
+(2, 6, 33, 2, 'sms_reminder_day2', 'Reminder: Your account with NEST.PH is now 2 day(s) overdue. Outstanding balance (incl. penalties): PHP 3,460.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-21 22:00:00', '2026-09-21 22:00:00'),
+(3, 6, 33, 2, 'sms_reminder_day4', 'Reminder: Your account with NEST.PH is now 4 day(s) overdue. Outstanding balance (incl. penalties): PHP 3,460.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-23 22:00:00', '2026-09-23 22:00:00'),
+(4, 6, 33, 2, 'sms_reminder_day7', 'URGENT: Your account with NEST.PH is now 7 day(s) overdue. Outstanding balance (incl. penalties): PHP 3,460.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-26 22:00:00', '2026-09-26 22:00:00'),
+(5, 6, 33, 3, 'portal_restricted', 'Your account access has been restricted due to unpaid balance. Please settle your balance to restore full access. - NEST.PH', 'sent', NULL, '2026-09-27 22:00:00', '2026-09-27 22:00:00'),
+(6, 6, 33, 4, 'emergency_contact_notified', 'This is to inform you that John Paul Mendoza\'s account at NEST.PH is 9 days overdue, balance PHP 3,460.00. Please encourage them to settle it as soon as possible.', 'sent', NULL, '2026-09-28 22:00:00', '2026-09-28 22:00:00'),
+(7, 9, 47, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-25 22:00:00', '2026-09-25 22:00:00'),
+(8, 9, 47, 2, 'sms_reminder_day2', 'Reminder: Your account with NEST.PH is now 2 day(s) overdue. Outstanding balance (incl. penalties): PHP 4,000.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-27 22:00:00', '2026-09-27 22:00:00'),
+(9, 13, 73, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-09-22 22:00:00', '2026-09-22 22:00:00'),
+(10, 13, 73, 2, 'sms_reminder_day2', 'Reminder: Your account with NEST.PH is now 2 day(s) overdue. Outstanding balance (incl. penalties): PHP 3,350.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-24 22:00:00', '2026-09-24 22:00:00'),
+(11, 13, 73, 2, 'sms_reminder_day4', 'Reminder: Your account with NEST.PH is now 4 day(s) overdue. Outstanding balance (incl. penalties): PHP 3,350.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-09-26 22:00:00', '2026-09-26 22:00:00'),
+(12, 13, NULL, 2, 'admin_override_pause', 'Paused by admin: tenant agreed to a payment plan (half on the 15th, half on the 30th).', 'resolved', 124, '2026-09-28 06:20:00', '2026-09-28 06:20:00'),
+(13, 24, 122, 1, 'account_flagged', NULL, 'resolved', NULL, '2026-08-14 22:00:00', '2026-08-14 22:00:00'),
+(14, 24, 122, 2, 'sms_reminder_day2', 'Reminder: Your account with NEST.PH is now 2 day(s) overdue. Outstanding balance (incl. penalties): PHP 3,460.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-08-16 22:00:00', '2026-08-16 22:00:00'),
+(15, 24, 122, 2, 'sms_reminder_day4', 'Reminder: Your account with NEST.PH is now 4 day(s) overdue. Outstanding balance (incl. penalties): PHP 3,460.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-08-18 22:00:00', '2026-08-18 22:00:00'),
+(16, 24, 122, 2, 'sms_reminder_day7', 'URGENT: Your account with NEST.PH is now 7 day(s) overdue. Outstanding balance (incl. penalties): PHP 3,460.00. Please pay via the tenant portal to avoid further account restrictions.', 'sent', NULL, '2026-08-21 22:00:00', '2026-08-21 22:00:00'),
+(17, 24, 122, 3, 'portal_restricted', 'Your account access has been restricted due to unpaid balance. Please settle your balance to restore full access. - NEST.PH', 'sent', NULL, '2026-08-22 22:00:00', '2026-08-22 22:00:00'),
+(18, 24, 122, 4, 'emergency_contact_notified', 'This is to inform you that Joseph Allan Cruz\'s account at NEST.PH is 9 days overdue, balance PHP 3,460.00. Please encourage them to settle it as soon as possible.', 'sent', NULL, '2026-08-23 22:00:00', '2026-08-23 22:00:00'),
+(19, 24, 122, 5, 'demand_letter_generated', 'demand-letters/24_122.pdf', 'sent', NULL, '2026-08-24 22:00:00', '2026-08-24 22:00:00'),
+(20, 24, 122, 6, 'delinquent_blacklisted', NULL, 'resolved', NULL, '2026-08-25 22:00:00', '2026-08-25 22:00:00');
 
 -- --------------------------------------------------------
 
@@ -521,8 +688,9 @@ CREATE TABLE `floors` (
 --
 
 INSERT INTO `floors` (`id`, `floor_name`, `monthly_utility_cost`, `monthly_wifi_cost`, `floor_number`, `description`, `created_at`, `updated_at`) VALUES
-(3, 'Second Floor', 0.00, 0.00, 1, 'Shared rooms, east wing', '2026-07-29 22:22:25', '2026-08-26 05:49:20'),
-(11, 'Floor 2', 0.00, 0.00, 2, NULL, '2026-09-04 13:04:53', '2026-09-04 13:04:53');
+(3, 'Ground Floor', 0.00, 0.00, 1, 'Lobby, receiving area and study hall. Mixed rooms near the entrance.', '2026-07-29 22:22:25', '2026-09-29 15:45:52'),
+(11, 'Second Floor', 0.00, 0.00, 2, 'Shared rooms and quiet solo units for working tenants.', '2026-09-04 13:04:53', '2026-09-29 15:45:52'),
+(12, 'Third Floor', 0.00, 0.00, 3, 'Newly renovated rooms with balcony access.', '2026-09-29 13:00:54', '2026-09-29 15:45:52');
 
 -- --------------------------------------------------------
 
@@ -552,12 +720,12 @@ CREATE TABLE `inquiries` (
 --
 
 INSERT INTO `inquiries` (`id`, `full_name`, `contact_number`, `email`, `room_id`, `message`, `reply_message`, `replied_at`, `replied_by`, `preferred_room_type`, `dpa_consent`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Juan Dela Cruz', NULL, 'juan@example.com', NULL, 'Interested in a shared room for August', NULL, NULL, NULL, NULL, 1, 'closed', '2026-08-23 23:00:38', '2026-08-30 05:20:59'),
-(3, 'Vince Lopez', '09289811405', 'vincehh28@gmail.com', NULL, 'Up to ilan yung pede sa room po?', 'hello! up to 4', '2026-08-30 05:17:57', 3, 'Standard', 1, 'contacted', '2026-08-30 05:15:43', '2026-08-30 05:17:57'),
-(4, 'John Wick', '09289811405', 'johnwick@gmail.com', NULL, 'may aso po ba d2?', 'wala ssob', '2026-08-30 05:27:02', 3, NULL, 1, 'contacted', '2026-08-30 05:25:58', '2026-08-30 05:27:02'),
-(5, 'Tung Tung', '09289811405', 'tungtungsahur@gmail.com', NULL, 'hey', NULL, NULL, NULL, 'Standard', 1, 'new', '2026-08-30 05:30:35', '2026-08-30 05:30:35'),
-(6, 'Beans Lopez', '09289811407', 'vincelopez@gmail.com', 18, 'How is the faucet', 'good', '2026-09-04 12:33:34', 3, 'Standard', 1, 'closed', '2026-09-04 12:32:33', '2026-09-04 13:05:38'),
-(7, 'Shayne Bagui', '09289811408', 'shaynebagui@gmail.com', 17, 'How is the water pressure??', 'goods lang po', '2026-09-10 01:01:20', 3, 'Standard', 1, 'contacted', '2026-09-10 00:58:57', '2026-09-10 01:01:20');
+(1, 'Aira Nicole Dimaculangan', '09174402167', 'aira.dimaculangan@gmail.com', 48, 'Hello po! May available pa po bang bedspace for female this November? Magkano po ang quad sharing?', NULL, NULL, NULL, 'Quad Sharing', 1, 'new', '2026-09-29 12:45:54', '2026-09-29 12:45:54'),
+(2, 'Rhenz Adrian Pacheco', '09184410086', 'rhenz.pacheco@gmail.com', 51, 'Good day! Pwede po ba mag-ocular visit this Saturday? Working po ako sa Makati, looking for a solo room.', NULL, NULL, NULL, 'Solo Room', 1, 'new', '2026-09-28 03:12:00', '2026-09-28 03:12:00'),
+(3, 'Janella Marie Quiambao', '09274418005', 'janella.quiambao@gmail.com', NULL, 'Kasama na po ba ang WiFi at kuryente sa monthly rate?', 'Hi Janella! Hiwalay po ang utilities at WiFi pero hati-hati ang room mates, around ₱900/month per bed para sa quad. Welcome po kayong mag-visit!', '2026-09-26 10:12:00', 124, 'Double Sharing', 1, 'contacted', '2026-09-26 05:12:00', '2026-09-26 10:12:00'),
+(4, 'Luis Gabriel Soriano', '09394425924', 'luis.soriano@gmail.com', 50, 'Is there a curfew? I have night classes until 9 PM.', 'Hello Luis! Curfew is 11 PM to 4 AM, so 9 PM classes are no problem. Feel free to apply online through our website.', '2026-09-24 12:12:00', 124, '6-Bed Dormitory', 1, 'contacted', '2026-09-24 07:12:00', '2026-09-24 12:12:00'),
+(5, 'Ryan Christopher Santiago', '09454433843', 'ryan.santiago@gmail.com', 46, 'Interested po ako sa Room 203, pwede po ba mag-apply online?', 'Yes po! Na-send na namin ang link. Paki-fill up lang po ang application form.', '2026-09-22 14:12:00', 124, 'Quad Sharing', 1, 'converted', '2026-09-22 09:12:00', '2026-09-22 14:12:00'),
+(6, 'Mylene Castillo', '09564441762', 'mylene.castillo@gmail.com', NULL, 'Pwede po ba ang pets? May maliit po akong pusa.', 'Sorry po, strict NO PETS policy po kami. Salamat sa interest!', '2026-09-17 16:12:00', 124, NULL, 1, 'closed', '2026-09-17 11:12:00', '2026-09-17 16:12:00');
 
 -- --------------------------------------------------------
 
@@ -629,19 +797,30 @@ CREATE TABLE `lease_contracts` (
 --
 
 INSERT INTO `lease_contracts` (`id`, `application_id`, `tenant_id`, `bed_id`, `inquiry_id`, `start_date`, `end_date`, `monthly_rate`, `discount_amount`, `esign_status`, `signed_document_url`, `signed_at`, `status`, `termination_reason`, `terminated_at`, `last_renewed_at`, `last_renewed_by`, `created_by`, `approved_by`, `created_at`, `updated_at`) VALUES
-(14, 8, 13, 34, NULL, '2026-09-02', '2026-11-26', 5000.00, NULL, 'signed', 'signed-contracts/5FYVdnBPMocx6j22WH29lux4n25icoqRuQRrEhkW.pdf', '2026-08-31 16:00:00', 'terminated', 'Move-out recorded (Table 16).', '2026-09-14 16:00:00', NULL, NULL, 3, 3, '2026-08-31 10:04:14', '2026-09-15 12:47:32'),
-(15, 9, 14, 38, NULL, '2026-09-03', '2026-12-23', 2125.00, NULL, 'signed', 'signed-contracts/mezX8KAOVqUaMIzhmsqxuYfocP0dJcPPNPnklwW6.pdf', '2026-08-31 16:00:00', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-08-31 10:53:46', '2026-09-01 11:23:04'),
-(24, NULL, 23, 35, NULL, '2026-07-03', NULL, 4000.00, NULL, 'pending', NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-03 07:57:06', '2026-09-03 07:57:06'),
-(25, NULL, 24, 36, NULL, '2026-07-03', NULL, 5000.00, NULL, 'signed', NULL, NULL, 'active', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-03 11:13:25', '2026-09-03 11:13:25'),
-(26, 10, 25, 42, NULL, '2026-09-08', '2027-01-20', 1625.00, NULL, 'signed', 'signed-contracts/kWCtNSE2guatuGtBSxT21hhi4yGq7NrJvElRnlXE.pdf', '2026-09-04 06:02:02', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 05:59:16', '2026-09-04 06:02:02'),
-(27, 11, 26, 43, NULL, '2026-09-10', '2027-02-16', 1625.00, NULL, 'pending', NULL, NULL, 'pending', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 06:13:15', '2026-09-04 06:13:15'),
-(28, 12, 27, 39, NULL, '2026-09-05', '2027-01-16', 2125.00, NULL, 'signed', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', '2026-09-04 06:50:33', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 06:50:33', '2026-09-04 06:50:33'),
-(29, 13, 28, 40, NULL, '2026-09-05', '2026-12-16', 2125.00, NULL, 'signed', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', '2026-09-04 10:42:06', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 10:42:06', '2026-09-04 10:42:06'),
-(30, NULL, 29, 44, NULL, '2026-09-05', '2027-01-10', 1625.00, NULL, 'signed', 'tenant-documents/y6WIdA8dDS01fDE62sJHGrUWyTDvI9xjMVhoyve9.pdf', '2026-09-04 11:14:43', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-04 11:14:43', '2026-09-04 11:14:43'),
-(31, 14, 30, 41, NULL, '2026-09-10', '2026-12-15', 2125.00, NULL, 'signed', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', '2026-09-04 12:38:43', 'terminated', 'Moved out', '2026-09-10 07:41:45', NULL, NULL, 3, 3, '2026-09-04 12:38:43', '2026-09-10 07:41:45'),
-(32, 15, 31, 46, NULL, '2026-09-12', '2026-12-19', 1625.00, NULL, 'signed', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', '2026-09-10 01:26:19', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-10 01:26:19', '2026-09-10 01:26:19'),
-(33, 16, 32, 47, NULL, '2026-09-19', '2026-12-31', 1625.00, NULL, 'signed', 'application-documents/signed-contracts/ff9755ee-f1c4-4933-96df-975451fab131.pdf', '2026-09-11 14:39:02', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-11 14:39:02', '2026-09-11 14:39:02'),
-(34, 18, 33, 48, NULL, '2026-09-24', '2026-12-24', 1625.00, NULL, 'signed', 'application-documents/signed-contracts/5f1b612f-ccf0-4773-b5f4-068297b758ef.pdf', '2026-09-24 13:05:26', 'active', NULL, NULL, NULL, NULL, 3, 3, '2026-09-24 13:05:26', '2026-09-24 13:05:26');
+(1, 1, 1, 1, NULL, '2026-04-19', '2027-03-18', 3500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-04-09 02:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-04-10 02:15:00', '2026-09-29 15:45:53'),
+(2, 2, 2, 2, NULL, '2026-06-27', '2027-03-26', 3500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-06-16 03:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-06-17 03:15:00', '2026-09-29 15:45:53'),
+(3, 3, 3, 3, NULL, '2026-07-25', '2027-03-24', 3500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-07-13 04:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-07-14 04:15:00', '2026-09-29 15:45:53'),
+(4, 4, 4, 28, NULL, '2026-07-17', '2026-10-19', 3400.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-07-04 05:15:00', 'expiring_soon', NULL, NULL, NULL, NULL, 124, 124, '2026-07-05 05:15:00', '2026-09-29 15:45:53'),
+(5, 5, 5, 5, NULL, '2026-03-14', '2027-03-13', 4500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-03-05 06:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-03-06 06:15:00', '2026-09-29 15:45:53'),
+(6, 6, 6, 34, NULL, '2026-06-15', '2027-03-14', 2600.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-06-05 07:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-06-06 07:15:00', '2026-09-29 15:45:53'),
+(7, 7, 7, 7, NULL, '2026-08-24', '2027-03-23', 3250.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-08-13 08:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-08-14 08:15:00', '2026-09-29 15:45:53'),
+(8, 8, 8, 8, NULL, '2026-05-26', '2027-03-25', 3250.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-05-14 01:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-05-15 01:15:00', '2026-09-29 15:45:53'),
+(9, 9, 9, 9, NULL, '2026-06-21', '2027-03-20', 3250.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-06-08 02:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-06-09 02:15:00', '2026-09-29 15:45:53'),
+(10, 10, 10, 37, NULL, '2026-04-17', '2026-09-26', 7800.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-04-08 03:15:00', 'expired', NULL, NULL, NULL, NULL, 124, 124, '2026-04-09 03:15:00', '2026-09-29 15:45:53'),
+(11, 11, 11, 12, NULL, '2026-01-09', '2027-03-08', 2250.00, 250.00, 'signed', 'contracts/dormitory-contract.pdf', '2025-12-30 04:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2025-12-31 04:15:00', '2026-09-29 15:45:53'),
+(12, 12, 12, 13, NULL, '2026-07-28', '2027-03-27', 2500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-07-17 05:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-07-18 05:15:00', '2026-09-29 15:45:53'),
+(13, 13, 13, 14, NULL, '2026-06-18', '2027-03-17', 2500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-06-06 06:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-06-07 06:15:00', '2026-09-29 15:45:53'),
+(14, 14, 14, 15, NULL, '2026-06-29', '2027-03-28', 2500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-06-16 07:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-06-17 07:15:00', '2026-09-29 15:45:53'),
+(15, 15, 15, 16, NULL, '2026-06-22', '2027-03-21', 2500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-06-13 08:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-06-14 08:15:00', '2026-09-29 15:45:53'),
+(16, 16, 16, 17, NULL, '2026-10-03', '2027-04-02', 2500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-09-23 01:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-09-24 01:15:00', '2026-09-29 15:45:53'),
+(17, 17, 17, 18, NULL, '2026-07-20', '2027-03-19', 4750.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-07-09 02:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-07-10 02:15:00', '2026-09-29 15:45:53'),
+(18, 18, 18, 20, NULL, '2026-05-11', '2027-03-10', 3500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-04-29 03:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-04-30 03:15:00', '2026-09-29 15:45:53'),
+(19, 19, 19, 21, NULL, '2026-10-03', '2027-04-02', 3500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-09-20 04:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-09-21 04:15:00', '2026-09-29 15:45:53'),
+(20, 20, 20, 24, NULL, '2026-04-23', '2027-03-22', 8000.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-04-14 05:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-04-15 05:15:00', '2026-09-29 15:45:53'),
+(21, 21, 21, 25, NULL, '2026-06-16', '2027-03-15', 3400.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-06-06 06:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-06-07 06:15:00', '2026-09-29 15:45:53'),
+(22, 22, 22, 26, NULL, '2026-08-25', '2027-03-24', 3400.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-08-14 07:15:00', 'active', NULL, NULL, NULL, NULL, 124, 124, '2026-08-15 07:15:00', '2026-09-29 15:45:53'),
+(23, 23, 23, 29, NULL, '2026-03-21', '2026-08-20', 4500.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-03-09 08:15:00', 'expired', NULL, NULL, NULL, NULL, 124, 124, '2026-03-10 08:15:00', '2026-09-29 15:45:53'),
+(24, 24, 24, 31, NULL, '2026-04-10', '2027-02-09', 2600.00, NULL, 'signed', 'contracts/dormitory-contract.pdf', '2026-03-28 01:15:00', 'terminated', 'Terminated for non-payment after full delinquency escalation (Stage 6).', '2026-08-29 16:00:00', NULL, NULL, 124, 124, '2026-03-29 01:15:00', '2026-09-29 15:45:53');
 
 -- --------------------------------------------------------
 
@@ -670,7 +849,15 @@ CREATE TABLE `maintenance_tickets` (
 --
 
 INSERT INTO `maintenance_tickets` (`id`, `tenant_id`, `bed_id`, `title`, `category`, `description`, `attachment_paths`, `priority`, `status`, `assigned_to`, `resolved_at`, `created_at`, `updated_at`) VALUES
-(1, 30, 41, 'Faulty outlet', 'electrical_issue', 'Outlet near bed 2 is faulty', '[\"ticket-attachments\\/YSjp9c3pd6BMqGnSRgM3aR9vnArYsWczH9qlzFtn.jpg\",\"ticket-attachments\\/zSVYgiskuekYI41w0k2b36HbEnIf92cp8kcEJ4yV.png\"]', 'urgent', 'in_progress', 3, NULL, '2026-09-08 05:30:48', '2026-09-24 12:55:59');
+(1, 1, 1, 'Aircon not cooling', 'maintenance_repairs', 'The aircon in Room 101 blows air but it is not cold anymore since last night.', NULL, 'non_urgent', 'resolved', 126, '2026-09-11 03:30:00', '2026-09-09 03:30:00', '2026-09-09 07:30:00'),
+(2, 2, 2, 'Sparking outlet near Bed 2', 'electrical_issue', 'The outlet beside my bed sparked when I plugged in my charger. I stopped using it.', NULL, 'urgent', 'open', NULL, NULL, '2026-09-29 13:45:53', '2026-09-29 14:45:53'),
+(3, 5, 5, 'Low water pressure in CR', 'plumbing_water_emergency', 'Mahina po ang tulo ng tubig sa shower tuwing 6-7 AM.', NULL, 'non_urgent', 'in_progress', 126, NULL, '2026-09-25 07:30:00', '2026-09-25 09:30:00'),
+(4, 8, 8, 'Noisy neighbors after curfew', 'noise_roommate_concern', 'May maingay po sa kabilang room (104?) past 12 midnight, 3 nights na.', NULL, 'non_urgent', 'seen', NULL, NULL, '2026-09-27 02:30:00', '2026-09-27 03:30:00'),
+(5, 11, 12, 'Request for a bigger study table in the lobby', 'suggestion_feedback', 'Suggestion lang po: sana may mas malaking study table sa lobby for group study.', NULL, 'non_urgent', 'rejected', 124, NULL, '2026-09-14 05:30:00', '2026-09-14 07:30:00'),
+(6, 12, 13, 'Question about my rejected GCash payment', 'billing_payment_concern', 'Bakit po na-reject yung payment ko? Nagbayad naman po ako.', NULL, 'non_urgent', 'in_progress', 125, NULL, '2026-09-29 13:45:53', '2026-09-29 15:45:53'),
+(7, 15, 16, 'Broken door lock', 'security_concern', 'Hindi po nagla-lock nang maayos ang pinto ng Room 201, kailangan pang itulak.', NULL, 'urgent', 'resolved', 126, '2026-09-22 09:30:00', '2026-09-20 09:30:00', '2026-09-20 11:30:00'),
+(8, 18, 20, 'WiFi keeps disconnecting', 'facilities_amenities', 'The WiFi on the 2nd floor drops every 10-15 minutes, hard to attend online classes.', NULL, 'non_urgent', 'open', NULL, NULL, '2026-09-28 04:30:00', '2026-09-28 05:30:00'),
+(9, 20, 24, 'Ceiling leak in solo room', 'structural_damage', 'May tumutulo po sa kisame tuwing malakas ang ulan, malapit sa bintana.', NULL, 'urgent', 'in_progress', 126, NULL, '2026-09-26 06:30:00', '2026-09-26 09:30:00');
 
 -- --------------------------------------------------------
 
@@ -764,7 +951,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (74, '2026_09_25_000002_create_payment_methods_table', 47),
 (75, '2026_09_25_000003_add_default_cash_payment_method', 48),
 (77, '2026_09_28_000001_create_admin_login_sessions_table', 49),
-(78, '2026_09_29_000001_add_brand_logo_path_to_dormitory_profile_table', 50);
+(78, '2026_09_29_000001_add_brand_logo_path_to_dormitory_profile_table', 50),
+(79, '2026_09_29_000001_add_filled_path_to_vr_scenes', 51),
+(80, '2026_09_29_000002_add_photo_updated_at_to_vr_scenes', 52);
 
 -- --------------------------------------------------------
 
@@ -820,16 +1009,121 @@ CREATE TABLE `payments` (
 --
 
 INSERT INTO `payments` (`id`, `billing_id`, `tenant_id`, `amount_paid`, `payment_method`, `payment_method_label`, `reference_number`, `payment_date`, `status`, `proof_path`, `notes`, `review_notes`, `reviewed_by`, `reviewed_at`, `recorded_by`, `created_at`) VALUES
-(3, 5, 13, 10000.00, 'gcash', NULL, '1234 5467 8162', '2026-08-31', 'approved', 'payment-proofs/ypW8WoUCXSEIwMVyWEXnv1tTS7hIyxZv3itPcP6G.png', 'Time of payment: 18:19. Here po', NULL, 3, '2026-09-01 10:56:54', NULL, '2026-08-31 10:19:22'),
-(4, 6, 14, 4250.00, 'gcash', NULL, '1234 5467 8161', '2026-08-31', 'approved', 'payment-proofs/Mi8dv1TOqcEKFhjqS8y37ACZbze4b233k0yVoikl.png', 'Time of payment: 18:56. sadasd', NULL, 3, '2026-08-31 11:21:55', NULL, '2026-08-31 10:56:26'),
-(5, 17, 25, 3250.00, 'gcash', NULL, '1234 5467 8163', '2026-09-04', 'pending', 'payment-proofs/OzbHZkJeSFxSM89zLztosYAY4SjhnJMT2nL8Y9YL.png', 'Time of payment: 14:00. paid', NULL, NULL, NULL, NULL, '2026-09-04 06:00:36'),
-(6, 18, 26, 3250.00, 'gcash', NULL, '1234 5467 8165', '2026-09-04', 'approved', 'payment-proofs/CBnUuknJf3uSv95dRLtFY0woh0Cy8uBuhBgLsPz8.png', 'Time of payment: 14:14. paid', NULL, 3, '2026-09-04 06:20:12', NULL, '2026-09-04 06:14:10'),
-(7, 19, 27, 4250.00, 'gcash', NULL, '1234 5467 8176', '2026-09-04', 'approved', 'payment-proofs/aj8kAipxg9LVurlIRYX9fchoMdHg91AFuGEDk4ch.png', 'Time of payment: 14:51.', NULL, 3, '2026-09-04 06:53:18', NULL, '2026-09-04 06:51:48'),
-(8, 20, 28, 4250.00, 'gcash', NULL, '1234 5467 7283', '2026-09-04', 'approved', 'payment-proofs/BzBFZyMM9H6hS6QHZrDtoXTd5KyRh7jXUF5EKmBt.png', 'Time of payment: 18:43. paid', NULL, 3, '2026-09-04 10:44:34', NULL, '2026-09-04 10:43:57'),
-(9, 21, 30, 4250.00, 'gcash', NULL, '1234 5467 8077', '2026-09-04', 'approved', 'payment-proofs/ttdolxcRraCutBfbEnmzpOFUBLgvilh0fMO3DEky.png', 'Time of payment: 20:40. paid', NULL, 3, '2026-09-04 12:41:58', NULL, '2026-09-04 12:41:07'),
-(10, 23, 31, 3250.00, 'gcash', NULL, '1234 5678 7632', '2026-09-10', 'approved', 'payment-proofs/DfXZGKpGxS9ECRJS9zXbAsffRy6IfTMELC21vLrt.png', 'Time of payment: 09:28. paid', NULL, 3, '2026-09-10 01:30:04', NULL, '2026-09-10 01:29:21'),
-(11, 25, 32, 3250.00, 'gcash', NULL, '1234 5467 8166', '2026-09-11', 'approved', 'payment-proofs/hgcaH1ph1gOAgocg1VoqhH5oG5GXKNC1fGTBiOJG.png', 'Time of payment: 22:40. asa', NULL, 3, '2026-09-11 14:40:59', NULL, '2026-09-11 14:40:26'),
-(12, 26, 33, 3250.00, 'gcash', NULL, '1234 1212 23232', '2026-09-24', 'approved', 'payment-proofs/ELxDkpdTzG7APwbTjC07IYDeYzmXgn5g5qgLp57S.png', 'Time of payment: 21:16. asasa', NULL, 3, '2026-09-24 13:17:22', NULL, '2026-09-24 13:16:12');
+(1, 1, 1, 7000.00, 'cash', 'Cash Payment', NULL, '2026-04-18', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-04-18 02:15:00'),
+(2, 2, 1, 4250.00, 'gcash', 'GCash', '1000048319271', '2026-04-23', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-04-24 02:00:00', NULL, '2026-04-23 03:15:00'),
+(3, 3, 1, 4250.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1002', '2026-05-22', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-05-23 02:00:00', NULL, '2026-05-22 04:15:00'),
+(4, 4, 1, 4250.00, 'cash', 'Cash Payment', NULL, '2026-06-21', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-06-21 05:15:00'),
+(5, 5, 1, 4250.00, 'gcash', 'GCash', '1000048415813', '2026-07-20', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-21 02:00:00', NULL, '2026-07-20 06:15:00'),
+(6, 6, 1, 4250.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1004', '2026-08-24', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-25 02:00:00', NULL, '2026-08-24 07:15:00'),
+(7, 7, 1, 4250.00, 'cash', 'Cash Payment', NULL, '2026-09-23', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-09-23 08:15:00'),
+(8, 8, 2, 7000.00, 'cash', 'Cash Payment', NULL, '2026-06-26', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-06-26 09:15:00'),
+(9, 9, 2, 4250.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1005', '2026-06-30', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-01 02:00:00', NULL, '2026-06-30 01:15:00'),
+(10, 10, 2, 4250.00, 'cash', 'Cash Payment', NULL, '2026-07-29', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-07-29 02:15:00'),
+(11, 11, 2, 4250.00, 'gcash', 'GCash', '1000048560626', '2026-08-28', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-29 02:00:00', NULL, '2026-08-28 03:15:00'),
+(12, 13, 3, 7000.00, 'cash', 'Cash Payment', NULL, '2026-07-24', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-07-24 05:15:00'),
+(13, 14, 3, 4250.00, 'cash', 'Cash Payment', NULL, '2026-07-27', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-07-27 06:15:00'),
+(14, 15, 3, 4250.00, 'gcash', 'GCash', '1000048608897', '2026-08-26', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-27 02:00:00', NULL, '2026-08-26 07:15:00'),
+(15, 16, 3, 4250.00, 'gcash', 'GCash', '1000048657168', '2026-09-29', 'pending', 'demo/sample-payment-proof.png', 'Time of payment: 08:42. Full payment for this month po.', NULL, NULL, NULL, NULL, '2026-09-29 08:15:00'),
+(16, 17, 4, 6800.00, 'cash', 'Cash Payment', NULL, '2026-07-16', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-07-16 09:15:00'),
+(17, 18, 4, 4150.00, 'gcash', 'GCash', '1000048705439', '2026-07-18', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-19 02:00:00', NULL, '2026-07-18 01:15:00'),
+(18, 19, 4, 4150.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1010', '2026-08-22', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-23 02:00:00', NULL, '2026-08-22 02:15:00'),
+(19, 20, 4, 4150.00, 'cash', 'Cash Payment', NULL, '2026-09-21', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-09-21 03:15:00'),
+(20, 21, 5, 9000.00, 'cash', 'Cash Payment', NULL, '2026-03-13', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-03-13 04:15:00'),
+(21, 22, 5, 5400.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1011', '2026-03-19', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-03-20 02:00:00', NULL, '2026-03-19 05:15:00'),
+(22, 23, 5, 5400.00, 'cash', 'Cash Payment', NULL, '2026-04-18', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-04-18 06:15:00'),
+(23, 24, 5, 5850.00, 'gcash', 'GCash', '1000048850252', '2026-05-25', 'approved', 'demo/sample-payment-proof.png', 'Sorry po late, na-delay sweldo.', NULL, 125, '2026-05-26 02:00:00', NULL, '2026-05-25 07:15:00'),
+(24, 25, 5, 5400.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1013', '2026-06-16', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-06-17 02:00:00', NULL, '2026-06-16 08:15:00'),
+(25, 26, 5, 5400.00, 'cash', 'Cash Payment', NULL, '2026-07-15', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-07-15 09:15:00'),
+(26, 27, 5, 5400.00, 'gcash', 'GCash', '1000048946794', '2026-08-19', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-20 02:00:00', NULL, '2026-08-19 01:15:00'),
+(27, 28, 5, 5400.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1015', '2026-09-18', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-09-19 02:00:00', NULL, '2026-09-18 02:15:00'),
+(28, 29, 6, 5200.00, 'cash', 'Cash Payment', NULL, '2026-06-14', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-06-14 03:15:00'),
+(29, 30, 6, 3200.00, 'cash', 'Cash Payment', NULL, '2026-06-19', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-06-19 04:15:00'),
+(30, 31, 6, 3200.00, 'gcash', 'GCash', '1000049043336', '2026-07-18', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-19 02:00:00', NULL, '2026-07-18 05:15:00'),
+(31, 32, 6, 3200.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1017', '2026-08-17', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-18 02:00:00', NULL, '2026-08-17 06:15:00'),
+(32, 34, 7, 6500.00, 'cash', 'Cash Payment', NULL, '2026-08-23', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-08-23 08:15:00'),
+(33, 35, 7, 4000.00, 'gcash', 'GCash', '1000049139878', '2026-08-27', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-28 02:00:00', NULL, '2026-08-27 09:15:00'),
+(34, 36, 7, 4000.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1019', '2026-09-26', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-09-27 02:00:00', NULL, '2026-09-26 01:15:00'),
+(35, 37, 8, 6500.00, 'cash', 'Cash Payment', NULL, '2026-05-25', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-05-25 02:15:00'),
+(36, 38, 8, 4000.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1020', '2026-05-28', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-05-29 02:00:00', NULL, '2026-05-28 03:15:00'),
+(37, 39, 8, 4000.00, 'cash', 'Cash Payment', NULL, '2026-06-27', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-06-27 04:15:00'),
+(38, 40, 8, 4000.00, 'gcash', 'GCash', '1000049284691', '2026-07-31', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-01 02:00:00', NULL, '2026-07-31 05:15:00'),
+(39, 41, 8, 4000.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1022', '2026-08-30', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-31 02:00:00', NULL, '2026-08-30 06:15:00'),
+(40, 42, 8, 2000.00, 'cash', 'Cash Payment', NULL, '2026-09-28', 'approved', NULL, 'Partial muna po, babayaran ko yung natitira sa sweldo.', NULL, NULL, NULL, 125, '2026-09-28 07:15:00'),
+(41, 43, 9, 6500.00, 'cash', 'Cash Payment', NULL, '2026-06-20', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-06-20 08:15:00'),
+(42, 44, 9, 4000.00, 'cash', 'Cash Payment', NULL, '2026-06-22', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-06-22 09:15:00'),
+(43, 45, 9, 4000.00, 'gcash', 'GCash', '1000049381233', '2026-07-26', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-27 02:00:00', NULL, '2026-07-26 01:15:00'),
+(44, 46, 9, 4000.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1024', '2026-08-25', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-26 02:00:00', NULL, '2026-08-25 02:15:00'),
+(45, 48, 10, 15600.00, 'cash', 'Cash Payment', NULL, '2026-04-16', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-04-16 04:15:00'),
+(46, 49, 10, 9100.00, 'gcash', 'GCash', '1000049477775', '2026-04-22', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-04-23 02:00:00', NULL, '2026-04-22 05:15:00'),
+(47, 50, 10, 9100.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1026', '2026-05-21', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-05-22 02:00:00', NULL, '2026-05-21 06:15:00'),
+(48, 51, 10, 9100.00, 'cash', 'Cash Payment', NULL, '2026-06-20', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-06-20 07:15:00'),
+(49, 52, 10, 9100.00, 'gcash', 'GCash', '1000049574317', '2026-07-19', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-20 02:00:00', NULL, '2026-07-19 08:15:00'),
+(50, 53, 10, 9100.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1028', '2026-08-18', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-19 02:00:00', NULL, '2026-08-18 09:15:00'),
+(51, 54, 10, 9100.00, 'cash', 'Cash Payment', NULL, '2026-09-22', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-09-22 01:15:00'),
+(52, 55, 11, 4500.00, 'cash', 'Cash Payment', NULL, '2026-01-08', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-01-08 02:15:00'),
+(53, 56, 11, 2850.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1029', '2026-01-13', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-01-14 02:00:00', NULL, '2026-01-13 03:15:00'),
+(54, 57, 11, 2850.00, 'cash', 'Cash Payment', NULL, '2026-02-12', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-02-12 04:15:00'),
+(55, 58, 11, 2850.00, 'gcash', 'GCash', '1000049719130', '2026-03-11', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-03-12 02:00:00', NULL, '2026-03-11 05:15:00'),
+(56, 59, 11, 2850.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1031', '2026-04-10', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-04-11 02:00:00', NULL, '2026-04-10 06:15:00'),
+(57, 60, 11, 2850.00, 'cash', 'Cash Payment', NULL, '2026-05-14', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-05-14 07:15:00'),
+(58, 61, 11, 2850.00, 'gcash', 'GCash', '1000049815672', '2026-06-13', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-06-14 02:00:00', NULL, '2026-06-13 08:15:00'),
+(59, 62, 11, 2850.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1033', '2026-07-12', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-13 02:00:00', NULL, '2026-07-12 09:15:00'),
+(60, 63, 11, 2850.00, 'cash', 'Cash Payment', NULL, '2026-08-11', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-08-11 01:15:00'),
+(61, 64, 11, 2850.00, 'gcash', 'GCash', '1000049912214', '2026-09-10', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-09-11 02:00:00', NULL, '2026-09-10 02:15:00'),
+(62, 65, 12, 5000.00, 'cash', 'Cash Payment', NULL, '2026-07-27', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-07-27 03:15:00'),
+(63, 66, 12, 3100.00, 'cash', 'Cash Payment', NULL, '2026-07-31', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-07-31 04:15:00'),
+(64, 67, 12, 3100.00, 'gcash', 'GCash', '1000049960485', '2026-08-30', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-31 02:00:00', NULL, '2026-08-30 05:15:00'),
+(65, 68, 12, 3100.00, 'gcash', 'GCash', '1000050008756', '2026-09-28', 'rejected', 'demo/sample-payment-proof.png', 'Bayad ko po for this month.', 'Screenshot is cropped -- the reference number and amount are not visible. Please upload the full receipt.', 125, '2026-09-29 02:00:00', NULL, '2026-09-28 06:15:00'),
+(66, 69, 13, 5000.00, 'cash', 'Cash Payment', NULL, '2026-06-17', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-06-17 07:15:00'),
+(67, 70, 13, 3100.00, 'gcash', 'GCash', '1000050057027', '2026-06-20', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-06-21 02:00:00', NULL, '2026-06-20 08:15:00'),
+(68, 71, 13, 3100.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1038', '2026-07-19', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-20 02:00:00', NULL, '2026-07-19 09:15:00'),
+(69, 72, 13, 3100.00, 'cash', 'Cash Payment', NULL, '2026-08-23', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-08-23 01:15:00'),
+(70, 74, 14, 5000.00, 'cash', 'Cash Payment', NULL, '2026-06-28', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-06-28 03:15:00'),
+(71, 75, 14, 3100.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1039', '2026-06-30', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-01 02:00:00', NULL, '2026-06-30 04:15:00'),
+(72, 76, 14, 3100.00, 'cash', 'Cash Payment', NULL, '2026-08-03', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-08-03 05:15:00'),
+(73, 77, 14, 3100.00, 'gcash', 'GCash', '1000050201840', '2026-09-02', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-09-03 02:00:00', NULL, '2026-09-02 06:15:00'),
+(74, 79, 15, 5000.00, 'cash', 'Cash Payment', NULL, '2026-06-21', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-06-21 08:15:00'),
+(75, 80, 15, 3100.00, 'cash', 'Cash Payment', NULL, '2026-06-27', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-06-27 09:15:00'),
+(76, 81, 15, 3100.00, 'gcash', 'GCash', '1000050250111', '2026-07-26', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-27 02:00:00', NULL, '2026-07-26 01:15:00'),
+(77, 82, 15, 3100.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1042', '2026-08-25', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-26 02:00:00', NULL, '2026-08-25 02:15:00'),
+(78, 83, 15, 3100.00, 'cash', 'Cash Payment', NULL, '2026-09-24', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-09-24 03:15:00'),
+(79, 85, 17, 9500.00, 'cash', 'Cash Payment', NULL, '2026-07-19', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-07-19 05:15:00'),
+(80, 86, 17, 5650.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1043', '2026-07-23', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-24 02:00:00', NULL, '2026-07-23 06:15:00'),
+(81, 87, 17, 5650.00, 'cash', 'Cash Payment', NULL, '2026-08-22', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-08-22 07:15:00'),
+(82, 88, 17, 5650.00, 'gcash', 'GCash', '1000050394924', '2026-09-21', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-09-22 02:00:00', NULL, '2026-09-21 08:15:00'),
+(83, 89, 18, 7000.00, 'cash', 'Cash Payment', NULL, '2026-05-10', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-05-10 09:15:00'),
+(84, 90, 18, 4250.00, 'cash', 'Cash Payment', NULL, '2026-05-13', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-05-13 01:15:00'),
+(85, 91, 18, 4250.00, 'gcash', 'GCash', '1000050443195', '2026-06-12', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-06-13 02:00:00', NULL, '2026-06-12 02:15:00'),
+(86, 92, 18, 4250.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1046', '2026-07-16', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-17 02:00:00', NULL, '2026-07-16 03:15:00'),
+(87, 93, 18, 4250.00, 'cash', 'Cash Payment', NULL, '2026-08-15', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-08-15 04:15:00'),
+(88, 94, 18, 4250.00, 'gcash', 'GCash', '1000050539737', '2026-09-14', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-09-15 02:00:00', NULL, '2026-09-14 05:15:00'),
+(89, 95, 19, 7000.00, 'gcash', 'GCash', '1000050588008', '2026-09-28', 'pending', 'demo/sample-payment-proof.png', 'Move-in fee (deposit + advance). Sent via GCash po.', NULL, NULL, NULL, NULL, '2026-09-28 06:15:00'),
+(90, 96, 20, 16000.00, 'cash', 'Cash Payment', NULL, '2026-04-22', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-04-22 07:15:00'),
+(91, 97, 20, 9300.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1049', '2026-04-28', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-04-29 02:00:00', NULL, '2026-04-28 08:15:00'),
+(92, 98, 20, 9300.00, 'cash', 'Cash Payment', NULL, '2026-05-27', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-05-27 09:15:00'),
+(93, 99, 20, 9300.00, 'gcash', 'GCash', '1000050684550', '2026-06-26', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-06-27 02:00:00', NULL, '2026-06-26 01:15:00'),
+(94, 100, 20, 9300.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1051', '2026-07-25', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-26 02:00:00', NULL, '2026-07-25 02:15:00'),
+(95, 101, 20, 9300.00, 'cash', 'Cash Payment', NULL, '2026-08-24', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-08-24 03:15:00'),
+(96, 102, 20, 9300.00, 'gcash', 'GCash', '1000050781092', '2026-09-28', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-09-29 02:00:00', NULL, '2026-09-28 04:15:00'),
+(97, 103, 21, 6800.00, 'cash', 'Cash Payment', NULL, '2026-06-15', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-06-15 05:15:00'),
+(98, 104, 21, 4150.00, 'cash', 'Cash Payment', NULL, '2026-06-20', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-06-20 06:15:00'),
+(99, 105, 21, 4150.00, 'gcash', 'GCash', '1000050829363', '2026-07-19', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-07-20 02:00:00', NULL, '2026-07-19 07:15:00'),
+(100, 106, 21, 4150.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1054', '2026-08-18', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-19 02:00:00', NULL, '2026-08-18 08:15:00'),
+(101, 107, 21, 4150.00, 'cash', 'Cash Payment', NULL, '2026-09-17', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-09-17 09:15:00'),
+(102, 108, 22, 6800.00, 'cash', 'Cash Payment', NULL, '2026-08-24', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-08-24 01:15:00'),
+(103, 109, 22, 4150.00, 'gcash', 'GCash', '1000050925905', '2026-08-28', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-08-29 02:00:00', NULL, '2026-08-28 02:15:00'),
+(104, 110, 22, 4150.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1056', '2026-09-27', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-09-28 02:00:00', NULL, '2026-09-27 03:15:00'),
+(105, 111, 23, 9000.00, 'cash', 'Cash Payment', NULL, '2026-03-20', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-03-20 04:15:00'),
+(106, 112, 23, 5400.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1057', '2026-03-23', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-03-24 02:00:00', NULL, '2026-03-23 05:15:00'),
+(107, 113, 23, 5400.00, 'cash', 'Cash Payment', NULL, '2026-04-22', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-04-22 06:15:00'),
+(108, 114, 23, 5400.00, 'gcash', 'GCash', '1000051070718', '2026-05-26', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-05-27 02:00:00', NULL, '2026-05-26 07:15:00'),
+(109, 115, 23, 5400.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1059', '2026-06-25', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-06-26 02:00:00', NULL, '2026-06-25 08:15:00'),
+(110, 116, 23, 5400.00, 'cash', 'Cash Payment', NULL, '2026-07-24', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-07-24 09:15:00'),
+(111, 117, 24, 5200.00, 'cash', 'Cash Payment', NULL, '2026-04-09', 'approved', NULL, 'Move-in fee paid at the admin office.', NULL, NULL, NULL, 125, '2026-04-09 01:15:00'),
+(112, 118, 24, 3200.00, 'cash', 'Cash Payment', NULL, '2026-04-11', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-04-11 02:15:00'),
+(113, 119, 24, 3200.00, 'gcash', 'GCash', '1000051167260', '2026-05-15', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-05-16 02:00:00', NULL, '2026-05-15 03:15:00'),
+(114, 120, 24, 3200.00, 'bank_transfer', 'BDO Bank Transfer', 'BDO-260929-1061', '2026-06-14', 'approved', 'demo/sample-payment-proof.png', NULL, NULL, 125, '2026-06-15 02:00:00', NULL, '2026-06-14 04:15:00'),
+(115, 121, 24, 3200.00, 'cash', 'Cash Payment', NULL, '2026-07-13', 'approved', NULL, NULL, NULL, NULL, NULL, 125, '2026-07-13 05:15:00');
 
 -- --------------------------------------------------------
 
@@ -884,8 +1178,13 @@ CREATE TABLE `penalties` (
 --
 
 INSERT INTO `penalties` (`id`, `tenant_id`, `damage_id`, `billing_id`, `type`, `description`, `amount`, `date_incurred`, `status`, `created_by`, `created_at`, `updated_at`) VALUES
-(3, 13, NULL, NULL, 'manual', 'Late payment fee', 250.00, NULL, 'active', NULL, '2026-09-01 10:41:18', '2026-09-01 10:41:18'),
-(4, 14, 2, NULL, 'damage', 'Damage: Lababo', 200.00, NULL, 'waived', 3, '2026-09-01 11:24:38', '2026-09-01 11:30:43');
+(1, 5, NULL, 24, 'manual', 'Late payment fee (10% of monthly rent)', 450.00, '2026-05-23', 'active', 124, '2026-05-22 16:00:00', '2026-05-22 16:00:00'),
+(2, 6, NULL, 33, 'manual', 'Late payment fee (10% of monthly rent)', 260.00, '2026-09-24', 'active', 124, '2026-09-23 16:00:00', '2026-09-23 16:00:00'),
+(3, 13, NULL, 73, 'manual', 'Late payment fee (10% of monthly rent)', 250.00, '2026-09-27', 'active', 124, '2026-09-26 16:00:00', '2026-09-26 16:00:00'),
+(4, 14, 1, 78, 'damage', 'Damage: Broken cabinet door hinge (bed-side locker)', 800.00, '2026-09-17', 'active', 124, '2026-09-16 16:00:00', '2026-09-16 16:00:00'),
+(5, 14, NULL, NULL, 'manual', 'Lost room key replacement', 50.00, '2026-08-20', 'waived', 124, '2026-08-19 16:00:00', '2026-08-19 16:00:00'),
+(6, 15, NULL, NULL, 'manual', 'House rule violation: butane stove found in room (hazardous goods)', 500.00, '2026-09-27', 'active', 124, '2026-09-26 16:00:00', '2026-09-26 16:00:00'),
+(7, 24, NULL, 122, 'manual', 'Late payment fee (10% of monthly rent)', 260.00, '2026-08-19', 'active', 124, '2026-08-18 16:00:00', '2026-08-18 16:00:00');
 
 -- --------------------------------------------------------
 
@@ -907,8 +1206,14 @@ CREATE TABLE `penalty_audit_logs` (
 --
 
 INSERT INTO `penalty_audit_logs` (`id`, `penalty_id`, `action`, `performed_by`, `reason`, `created_at`) VALUES
-(6, 4, 'created', 3, 'Auto-created from damage record #2', '2026-09-01 11:24:38'),
-(7, 4, 'waived', 3, 'Paid', '2026-09-01 11:30:43');
+(1, 1, 'created', 124, NULL, '2026-05-22 16:00:00'),
+(2, 2, 'created', 124, NULL, '2026-09-23 16:00:00'),
+(3, 3, 'created', 124, NULL, '2026-09-26 16:00:00'),
+(4, 4, 'created', 124, NULL, '2026-09-16 16:00:00'),
+(5, 5, 'created', 124, NULL, '2026-08-19 16:00:00'),
+(6, 5, 'waived', 3, 'Key was found by the guard the next day. First offense -- waived.', '2026-08-20 16:00:00'),
+(7, 6, 'created', 124, NULL, '2026-09-26 16:00:00'),
+(8, 7, 'created', 124, NULL, '2026-08-18 16:00:00');
 
 -- --------------------------------------------------------
 
@@ -955,7 +1260,14 @@ CREATE TABLE `reviews` (
 --
 
 INSERT INTO `reviews` (`id`, `tenant_id`, `rating`, `comment`, `is_approved`, `status`, `flag_reasons`, `moderated_by`, `moderated_at`, `moderation_note`, `created_at`, `updated_at`) VALUES
-(1, 30, 5, 'Nice staff, spacious room, nice privacy.', 1, 'published', NULL, NULL, NULL, NULL, '2026-09-10 08:06:35', '2026-09-10 08:06:35');
+(1, 1, 5, 'Sobrang linis ng rooms and very accommodating ang staff. Malapit pa sa UST, walking distance lang. Highly recommended!', 1, 'published', NULL, NULL, NULL, NULL, '2026-09-22 16:00:00', '2026-09-22 16:00:00'),
+(2, 5, 4, 'Maayos ang WiFi at tahimik sa gabi. Minsan lang medyo mahina ang tubig sa umaga pero agad naman inaayos.', 1, 'published', NULL, NULL, NULL, NULL, '2026-09-18 16:00:00', '2026-09-18 16:00:00'),
+(3, 11, 5, 'Almost a year na ako dito. Safe, may curfew, at mabait si Ma\'am Tess. Perfect para sa mga nurse na shifting.', 1, 'published', NULL, NULL, NULL, NULL, '2026-09-12 16:00:00', '2026-09-12 16:00:00'),
+(4, 15, 3, 'Okay naman overall. Sana lang may kitchen na pwedeng gamitin kasi bawal magluto sa room.', 1, 'published', NULL, NULL, NULL, NULL, '2026-09-08 16:00:00', '2026-09-08 16:00:00'),
+(5, 18, 4, 'Good value for money. Malinis ang CR at laging may tubig. Medyo strict sa visitors pero understandable.', 1, 'published', NULL, NULL, NULL, NULL, '2026-09-05 16:00:00', '2026-09-05 16:00:00'),
+(6, 23, 5, 'Nag-move out na ako kasi lumipat ang work ko, pero sobrang saya ng stay ko dito. Salamat NEST.PH!', 1, 'published', NULL, NULL, NULL, NULL, '2026-09-20 16:00:00', '2026-09-20 16:00:00'),
+(7, 12, 1, 'Mas mura sa amin! Visit www.cheapdorms-manila.com for promo, message 0917-000-0000', 0, 'hidden', '[\"Contains a link\",\"Contains a phone number\"]', NULL, NULL, NULL, '2026-09-25 16:00:00', '2026-09-25 16:00:00'),
+(8, 17, 2, 'Pangit ugali ng roommate ko, [name removed] sobrang ingay.', 0, 'removed', NULL, 124, '2026-09-22 16:00:00', 'Removed: names another tenant. Concern was redirected to a support ticket instead.', '2026-09-21 16:00:00', '2026-09-22 16:00:00');
 
 -- --------------------------------------------------------
 
@@ -1004,10 +1316,18 @@ CREATE TABLE `rooms` (
 --
 
 INSERT INTO `rooms` (`id`, `floor_id`, `room_no`, `room_type`, `amenities`, `monthly_rate`, `monthly_utility_cost`, `monthly_wifi_cost`, `status`, `vr_asset_path`, `vr_caption`, `vr_visibility`, `created_at`, `updated_at`) VALUES
-(16, 3, '1', 'Standard', '[]', 5000.00, 500.00, 1000.00, 'full', NULL, 'Living Area', 'public', '2026-08-30 18:57:43', '2026-09-26 05:20:19'),
-(17, 3, '2', 'Standard', '[]', 8500.00, 500.00, 1000.00, 'available', NULL, 'Random Caption', 'public', '2026-08-31 10:49:31', '2026-09-25 06:09:00'),
-(18, 3, '3', 'Standard', '[]', 6500.00, 500.00, 1000.00, 'available', NULL, NULL, 'draft', '2026-09-03 06:27:16', '2026-09-25 06:09:09'),
-(19, 11, '5', 'Standard', '[]', 6500.00, 500.00, 1000.00, 'available', NULL, NULL, 'draft', '2026-09-04 13:04:53', '2026-09-25 06:09:22');
+(16, 3, '101', 'Quad Sharing', '[\"Air-conditioned\",\"Study table\",\"Cabinet per bed\",\"Shared CR\"]', 14000.00, 2000.00, 1000.00, 'available', NULL, 'Bright quad room beside the study hall', 'public', '2026-08-30 18:57:43', '2026-09-29 15:45:52'),
+(17, 3, '102', 'Double Sharing', '[\"Air-conditioned\",\"Study table\",\"Private CR\"]', 9000.00, 1200.00, 600.00, 'available', NULL, 'Cozy double room with private CR', 'public', '2026-08-31 10:49:31', '2026-09-29 15:45:52'),
+(18, 3, '103', 'Quad Sharing', '[\"Air-conditioned\",\"Study table\",\"Shared CR\"]', 13000.00, 2000.00, 1000.00, 'available', NULL, 'Spacious quad room with computer corner', 'public', '2026-09-03 06:27:16', '2026-09-29 15:45:52'),
+(19, 11, '201', '6-Bed Dormitory', '[\"Air-conditioned\",\"Double-deck beds\",\"Lockers\",\"Shared CR\"]', 15000.00, 2400.00, 1200.00, 'full', NULL, NULL, 'draft', '2026-09-04 13:04:53', '2026-09-29 15:45:52'),
+(44, 3, '104', 'Solo Room', '[\"Air-conditioned\",\"Private CR\",\"Mini fridge\"]', 7500.00, 800.00, 500.00, 'maintenance', NULL, NULL, 'draft', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(45, 11, '202', 'Double Sharing', '[\"Air-conditioned\",\"Study table\",\"Private CR\"]', 9500.00, 1200.00, 600.00, 'full', NULL, NULL, 'draft', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(46, 11, '203', 'Quad Sharing', '[\"Air-conditioned\",\"Study table\",\"Cabinet per bed\"]', 14000.00, 2000.00, 1000.00, 'full', NULL, NULL, 'draft', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(47, 11, '204', 'Solo Room', '[\"Air-conditioned\",\"Private CR\",\"Balcony\"]', 8000.00, 800.00, 500.00, 'full', NULL, NULL, 'draft', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(48, 12, '301', 'Quad Sharing', '[\"Air-conditioned\",\"Study table\",\"Balcony access\"]', 13600.00, 2000.00, 1000.00, 'full', NULL, NULL, 'draft', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(49, 12, '302', 'Double Sharing', '[\"Air-conditioned\",\"Private CR\"]', 9000.00, 1200.00, 600.00, 'available', NULL, NULL, 'draft', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(50, 12, '303', '6-Bed Dormitory', '[\"Air-conditioned\",\"Double-deck beds\",\"Lockers\"]', 15600.00, 2400.00, 1200.00, 'available', NULL, NULL, 'draft', '2026-01-28 16:00:00', '2026-09-29 15:45:52'),
+(51, 12, '304', 'Solo Room', '[\"Air-conditioned\",\"Private CR\",\"Work desk\"]', 7800.00, 800.00, 500.00, 'full', NULL, NULL, 'draft', '2026-01-28 16:00:00', '2026-09-29 15:45:52');
 
 -- --------------------------------------------------------
 
@@ -1038,110 +1358,6 @@ CREATE TABLE `sessions` (
   `payload` longtext NOT NULL,
   `last_activity` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `sessions`
---
-
-INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('0ollLwjKz2266dDiOBQuEXkq6vrj2kWai3Ekgzlo', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoialUyUFZNR3NGQXhFUXZROEJ5aWF4ZGFYY1VDMGJLOWVmS3M1OTNkcSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662092),
-('0zdbgnZB2nGvYKi3rk18varEl6xDudibDvqrNxNN', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTGdYOXlyNEFtT2hGdmN3dkVnc1JjaENzOEN4ZUZiNVNNZFk5SGxBdiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661995),
-('25Gy5HzvfkOKygua6DZ9UrNSHVeMBB0FVfdTfp5o', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRmlDUnBoVWFFTFR3c2V2WEphNTRUVTlVaG5XRDFIUlR0ZU41dW1wbyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662563),
-('2anP7LhKadi990bbunDd3I3gzQb034vxtWGzPBia', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicGNldXJCeUtQSnhoamg3VjU0VWJ0Uk5laVNkeEl5TzNTZExGMzNXayI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662093),
-('2gjQMnhgk5fK2X3lUzepuV2HbkwK5yNd2QJM7c1F', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicTMxN1NCQU5jNzdZTXhaYXNWeDRGQ1ZxUDE1NzhwdVlmeEI2cmgzViI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661775),
-('2RMv9SnGDvDSZB5LvUjvqa09pATdmWUZeRszl6Y6', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNTRKVzZ3RjZucE5DdVBuQnB0THY1NnlLbFlwTERmbU5kRWl4TmdybiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661993),
-('33EinR9y2q0XGvA2DG6mtKtKC0itoT5xU2v8lygr', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiN1I2Q0tZTDYwV2xPVno5ZGNPZVh1dUpIcjAzTU1TSnkxMzIwVFBRbyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661690),
-('3DBmeTzl581VFO2NCX1aQvC8teBnWvuW56U9qke5', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRFlFSEZkcEV4cjd6UGtxOTdzWk1CTVBrOWFrZlVsbm82ZERvWm9HNSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662088),
-('3df7yJuPTHS2WfJ8z21GhF51Vm3FqpjSFUOKWvD7', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWVU2WUZYaTkzZnFxRVlxQWVNMU1BVW14Sk5neGNuRFRXczgzNlhmeiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662091),
-('3fi2Opi7ArIi2xWj6L8Z1N44ZwJikM7mrd5LJbNO', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUDBIVm1jSTlZdkdjdmRXWDVlbHFkNTNrYURCTXU3T21JY1ppcnBNSiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661977),
-('3gFVG0Rjjrm1fxrWgooxNNaIHGlPU3COPmNGIu0r', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNXFCSVZaTExhTmdxZ3M1NGJWZXhmcTA4WnRTZ2FVS0gxZGZnc0plWSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662092),
-('4Ng8FGlrYxUhdU3XkMaIlBLkkcvpfxT3qKL1K1Ku', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMkp1ZDhXMHNPWE9IR2xieFpWNmgyT1hjR0ZZaWpYdEYzdVFwWkg5YSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661976),
-('57A58IGVAZTQLG7tfyvjuq4itmaITm2ssHcFwU4R', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoibWQzSGp4Y2VBNk96STh0bzk5UXRsNDNsYXRiZUhxQTVVNVlSR2N5MSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662087),
-('5ErW2jXa1oKbAzx28VrlPg6fW8mHXKI6igenY1Oh', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiYnpOeUtlenV3ZmQ4SUgzSnZDS1hubkE2ZUFVSGdzellxUEFFVnNFSSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790662017),
-('5WNgbg4zWIDkbXlsIa8cruav5iSqQ1naahB0n8z6', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiYUtXRjR0dTJDMVRvWGczN0k2N0ZhYm5FSnVhT1VZR3JXd0YwRnR0VyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662091),
-('8fyglG9r8btlEl02yPaJ4vzynUmdnFCmGB8nhdbT', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRmxNcU5mcDV0MGN6aDE0SnlnTFpLeWRHSkY3YUthdHczUmNsejltZCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661689),
-('8tqImF0QWOA7ofQMSbdR08k4MUJydZdIryeinXng', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiOUU2Zjhnc1ZjTWx3WloydW8zQ1FmaVFEMTY4dU5ORHlRM3YxaHFyTiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661974),
-('9ZKXmvzELfyqTw8ANwCcpbUd76aaf4goQebRrRrw', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMlR4TUV0cTJGRHZBd3dRUVM0Q1p1WXIxRWs4VERGWW1nOEtEQkI1bSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662112),
-('AKeulM49KibTx4XLnOcu9vKKHI6zoImpgiRjP4dG', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiT2RTZUhpMnNNT1dBU25CWHZzRmRmVlhyalpIREZpa2pjdm0yc3ozbyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790661857),
-('Amu5HVeDyufGhgFDjPcLlhaMTpg3ClXMmPMD7A1t', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQ0R6R1h1N0prT29yNHhsVFpxN1VqNjM2MDk5Y1F4ZmZ3QkVMNTlwRyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661973),
-('AsA9nBcZNTOJmJQjALVS1Ck7Xxn4Uexf56BuCKoS', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiem5ia1VyejBjdG9BeThIZUd2SDJVVFlzUFFqM2hUY0d1TlRPc1RDWiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662089),
-('B5dadbTAWh5mRkMJ53w3OQ5AcwQheKIrdxEhS1Id', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoielFFbzhVSVkzNm1OcFpKOFEzYnhkU0E3b3U3SzBhempCWFNibFIxNSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662091),
-('bBHos7y6vyWEBQtlFhaw4lIjgQmBMNb6Ie1kRKd2', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiYXhud2lKREJjWE4xU0k4b2YyRHdyNHlCUmEzWlVlaXptY1hlU3pGSSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661975),
-('BcqkkJgR0qy5Ujxh1jKnrGfT44rDSmVZo7vMTHat', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidlRDV09DUFBaT1FlSXpqTEpoc3RiRU1ZTldYZTlhYWJucHQ1Z3hrViI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662090),
-('bdEYm8R1z5IRwJKyeuvkngMfKoINRsEVkv4DBxCt', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiU2RpNkxXQXdOWTMzVjhFRk9MQURaMkcxREp6dXRodnpwVFRoa1J4RiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790662017),
-('C3zJsHpprZyJIGBgtklYgqnlYPw2EmkQh9ZRfkFS', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiSWN3dFdxZFVoZ0NsNVZSekdVNHI2Y0NCckRhZllxY3lPdGhRbmtPbyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661977),
-('C7r7qIoWtYT7K3FkvvonAhrhIoJMWXooPxLnGiTK', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiVGRmaGQ1UHJOSzJBWmk3RE9sa0JPOGFGQVJLMGdvMlAyV3JOakI0MyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662093),
-('CB5MO8Nza1IZtrq8hdIQIvupnKRuGWBP35Mdm3vB', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQXVBWmxHQW5sTVlnanJBUVhibEd2bG1qM2k3aHZKakpncUpZdWR0USI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662561),
-('CBQ0mPV568GfY2hMtgpqZ2NFoGWskRaN8MuaY97X', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTXd4cm5FT0VhblV1N1JRWWx4RmJ0NnhCbnlMZ0N1ck9ZT0dEMjl4NiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662093),
-('Ci194qZ1Jnek9MMXmB02rwTPd87qrsKOEtGwsAbz', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiT1pkekNkZ2w3bm5seVF3S3RjOFE1ZVV0WU1vTG02bUpFSTdqT0RHRCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661973),
-('CnXbMkphK9SdktGNj5BJc4aMPEiVxsH8Hk6CN0CL', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRTVpVmxPdmdtRGJkTXJERVVzcTNyU1hveU02MW05T2Vrd21nZGFHZSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790661858),
-('CswRtXkr4NDCMjzSxXILtDVWSlPyMeH7GD4vC2Ur', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidFQ4RlF2b01ON20xQ0NzWE1WUExPYUlmaHRtZFM0ejN0TThWalRXdiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662088),
-('DelOMWJKjggWdoEHOOYTFGlbxFaw1wdmRmg9WAmB', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiVXZ2TnBIQlZNYVRiNW5PV2plakJVRkxDSUhKMjRkRlVFOE0zNmdkQSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662095),
-('dHztTslynmeezrqgNi1ts8EQeodybjHwArCc137S', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiSVV5ak9JS3VaM25qYTlRMXRGRTZCdWF0YWp1SUUzSFpjOFFtejZYeCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661994),
-('DjlTV1UgGKnHXHRrMF9Uq7MAD5J8Qtmz6D4qtYsu', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWnZqdUV0WUlyUzJvamtqbUI2V2hnc3laT25LSlJCS3dDS3dQWFl2TiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661995),
-('EJEF4a6gjgXhj0RRd3g7QO8czgpNiLHikEjUS9gZ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiVVhyYms4RFVGWnpjd3Q3NXR0TVBKM01WZHhHUUN6VWp2RVBMeHNtQiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661690),
-('fECZ4b8CJ3DCtyQD7UD71mARnKYEyT0axt9I31nA', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMmQyVDFFN0NDb29DYVBXMnhWUTNWODdaazhmSHNwWmc3VzJwR2tOaCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661994),
-('FOMPWvvZU8LZDCGWfOU7Ze8JWTUznjsqxkuHPTyq', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiblNLQXBLalZ0TllEc3A1cEZLbUVId2VZMVdYV3c0WTVVTXJ4Z05vSiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661998),
-('FPHK9sF21nBBKxbXsRinh2QNKunmSRFlbb0sdYZV', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWnlwVEtqMmR2Y2ZzN1ZMYUdmTmlXaWZGOERxdVMxN1cyV1B2ZDdpTyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661774),
-('FrVJcZ8oNLKT00kS5odQ1PWHtobSApYI0DnhcpXS', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicGQ0VmhnRlpxWW9veGtkWHJMdnZ2ZG16WDNwcjRyeXZ4ZnlHOWJwZCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661976),
-('fyHqJmygJ4Rg1UhAZDtbxiPKGha4WrVSsd4pivrb', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWmthZjliV0FiTjRlaTN2SEZnUGFOMkdXcjdBb3dFRHJBYzBNUWZseiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661991),
-('G3YUW7YCj05lC7PYY4Fzq0qdSBDoqilOnk1OG8fJ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiYkFuUnNEUE9lTjgyOERsdHd5OG9aMHphQk45TU1pTG1Ec2xWMFhYYSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662092),
-('GEXFIMk1aku9A9Dj8Ml6TRDhjYlxE7rRN86XwGRy', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNEJ6ZTRUNE5tcDN0Q2E0NWt6RXZjZU11UW5HMkZlbXR1MUNlTExKVCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661976),
-('gjhwTgrZ6hMKonwS7vKZNfSnx4iA1pbnmAzCfRZF', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUXh2NDd5UDh6M2lxcElndEdWM25sTTBZd09vckp6VEgzWVo3b1hkRSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662092),
-('gsOo0QDwq1FPdGNrCkpKQZ6V1nQ75zNiosqzEocv', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiS0tBRXdJZHJNeE05M003MzlCM0Zkekg4MGRFWDZjbDF6eEtxT0xIUyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO319', 1790662048),
-('h20TECIvIO6Z6DQrHd7i1EsuK0zVjx0fsobh9vcx', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiYWZ5MUdLdlRkU1ZKUktoV29UVWVSVGVxRVk4N3FOamxZMFdyM3hUaCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661993),
-('HMFLJFkNq3IuMfYHMbUTjrD7C70RsG0Ov3dBoMVs', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiS1h6UnNzbHR5bTFiQ2xISUsyN0lPaEZEaU1DQzFRRzhXampoVThxNiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661996),
-('HmM9sVAiFSv5YGEBWWUC2aiX3mwMPzQ3tRsEAWuY', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoieUNiSENFQWFieURIQ0hLakg4NVNUQjBKaEp6ZTZ4OGo3ZTczdjd6OSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662113),
-('HNNDOlYcCVt6jqJOWbLMU3QdaRIBg4TncFh2C4tB', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicEpGNXNsYzVGVmFSTVFhb1BHVHJVSWo4N1RRaTQ4ZW1vdVNWNEpzZCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662560),
-('hUBw9XEdYsDxru91W3sGi0oBE45ArJ1pOgKYAaHm', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiV2xnMm0xdUtIUDE0WndhNEhRcXlxbUp1N0pLQnZISlRkT0QwTFByVSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662016),
-('I8tnc7EweL25FW2hRhRQxGxThv8goK3e5uAPlzsH', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoid2hkQ0Vybms2em9qbVU0NkoyYUxIQWZjaW93NnVmM09TSFBVRktvUyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661995),
-('iepUWzNutJ6WqLmOAg5ADP0fWqR49lq3kiKLMqmF', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiSmRYMFVIeGp1MDQzSmYxTWN6Rlpvc0p5TkJ6V0hjQ1ZhTkd5RHE3MCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662088),
-('j1RHBZWuCabuMFhR4PPUmhlG9QdKOVOQKiMVibw5', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoibU9JWlQ3MDhZU1ZtbHZGRjI3cUlndVZTWkxwZmlhZElXb2piWmNOMSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661334),
-('J8OJFCuLfAYGhIqkq8k6EPN9s9ECBnDIod5UvrOG', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMDRtRjE5VHdaSW9SZHJsQVpWY1Izb1JzUFBiRm94RTBTejc0WVNmQSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661994),
-('jcgJZ5YKPVwDlHo1kU8srKVEEOEXS7PJl0a5Ii5m', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicHRIVDRZV0pMVEd4ckNVNGxLV2F5SFl3R0dVRFVtUmVUV2kxcTh3WCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662563),
-('JGFnHXXEv7GGIAj2VHN9RQnNoxSNaSRItCOWi5tL', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiT3Z1QnZ0Nm51Tzh2azJreERoR2JTdDRGOWhOZW5jZkdpSmF3dUVXbSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661974),
-('jjxEqtsuK0ZNlkUAY04j2Tho5zIChdolQaFJec3a', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiYTAyMDZibkV4RndZQ3pFdURCNkp3cUl6ZVdrbWxRRE4ycHp6YU0zaCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662091),
-('jrpMoov7LMjE8Ay8ZScuCDQPFNHxcseqdgA7h2kD', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNjhNbFJ2bHNPaHIwT1pUUlN1OGIyNnlvenlGOHBjSjBrSHEwdGxkZyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662093),
-('KhPSEFzQqv8hhh7HuW0E16gCCkUTKiItlqizVZl2', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTUVYcDg3OG5YUVVlVFE5aEtpQUpsRDM5ZEJUZjNHdW51MEV2czhVdSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661992),
-('kYluukPD2l2UY2bmj1EfsrklOffRPrGqVRx8oAJ1', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicHpkc0I5b2pIYk1PandhdU5lcXhoM0hCTnV2WFM5U2xueDhlWmEwVyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662561),
-('kZYIjEA1QxioMAa1KcO5ANP0EYZJGx76W43x2wBQ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUlVZYnVGOVZxbmFreVV4Q1lnNmJIWkJ3MUhheDBlSk5OODZBYTMxZyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661995),
-('MCbVz4F7kJDNLgmeMOwnT6f5BW236M4jBoKKvBBf', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWUJhZGswTXB5eFVPOUtGcjBYZmJac2xmRFJ6eldhSGtVM2JNWVRNNyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790662113),
-('mCsJufKxJvcicadud2MYhXhaDgT4aNe8keLRxzuu', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiclBkdWZBUDd5Zm5TbUpWOWpDVUNjZ1VDNVdLcXp4NjZQUHhRWG9pZCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNCI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790661971),
-('MD4phPEILRYg66T8uiyqJGCpukFl8ysqXSmdxx7B', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiY1p5VDU2eXVnRE93T0htUGxvNG42cmdCSDE4QW9VZkJlM0xmcGFLbCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662091),
-('MHIPzMd0cl1ptlXOB6rKiONvlxUUtUMuJkv1wmkY', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiSWl3NllmSm5XZVdwZ1pqZEFpMmlXWFRrQm1QTHRQTDYxSVhEYUhMMiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661992),
-('mVobHG7TgwoaSD9tBLO0YeLXK7dRsBVIjB7Xqmx5', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoib3FxQmgyRnVuTDJlejZyc09mVlBKR3AwNjZQTEFxM09xaGFtaGhQVCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661975),
-('N0iLBAoKcX2N9kC3p9gzs3ZajnM85BEVjH6PKbXv', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRnBJZ2dYWTdxTEw3NlhVQW9WYzFmTHpjNk9vQTZrVmhtZ0dXT25uQiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661353),
-('N81ig5ZuYph8jiZXXwlGPlvq1F939Myyd0G07D5f', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTkNZUTZvaUVEOFh3ZHhkVFVkYkJ5c2hRSlNPRm1YSEdOempaSDhpWiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662094),
-('nZcK2n16UXfWaRQLqblUww3eQfq3rMitW7HkzaKk', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiM3ZDaWc5d3pTNlpiQmRmSzNmZDJXRlR1bHl4SDR6bnJmWG5Ta2RUSSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661355),
-('O9HBYNIeRztzXuU045veExEPkU7oYEFrfuPL8Onu', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoieGN0R1JlWjZwa3BWUmRXTWZzNDVqREpKRVRqckx0ZWFuUjdpYzJsTyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661998),
-('Oc6Z0JJ1zCU5OYy5BIJ34tioztnqxE0QJynyvcJT', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZkNadVlXWVBFZXJIdlZoUTN2djFuVTJmY1o5T0t6N29oYnh5R3FIdSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661974),
-('OxVtHHpP2x4kl6YcGboWvOaRFWXY4iF3wfCOoaHC', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiekltbGc2bWVEWmdRVlpsMTk1TkFKMkkybU9XRUU2MGh2enFGOHVlTCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662088),
-('pK5771BfOSLkgVuJnAjouXPLQEEokJ0FuabLzz3v', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWVRqbzV3eHNVTEhTMTA4MHZabzVxdFhXYzZONFR5Ykg2QWpNWUtTcCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661992),
-('PuFVCRtjwIwOERC4OMUjhb56yx8iRxVTaAxLFOTa', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiU1hUbUVaZzlXOU9VaTBEYUNraDZnOGtLbEpaNEFNWWtvamJWSzNpSSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661996),
-('q4CgwyaCHBTlFFO9i6ODO1Jm6naJOxph6cso4Cnr', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMllaRXoyNlNES2cxbENyeEFXZGxoN2R3ZHhmbmtjMDFoVE9pRFVndiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662093),
-('reT7IECladubUpvBmxzPLSFgNBqGN81snFIwWSs2', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUks5cUpkUkRmOGV5bUZPN28ybmJUZ1l3QkhEeXAyTUJJUm1ScERMTyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662089),
-('Rk4tr16Nrf79DuCrEd6mfP7KEr7lTaSnYjn5fXmd', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNE9xUmlFZkhxaWJrTGp2UE1FanZQdzk4MWVJRzZITVRNaVg4TXNWQSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661976),
-('sn2fcvQ9Ece7UZnXGYPrbPF0YNxOAvNXEZJV2OTY', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZmZUMmFJUVlJeTdZRXlta3FacTVqYmhOeFVMaFZYTkl2dlAybUFqOCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662089),
-('SuHjGcscbA9jTleQqtMoJh5zEs5Dkb9qVibeJbdb', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQWRrM0c4bXhjNzBhZ3ExbkVkaW9KTVlKQ3FGVExiVE44S3F3MDJGOSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662092),
-('TrGzwvSriFiDeGZrc8aEY1YTWqep1UMuQEbnKNqU', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQXh3THVFVldGMlZac3RSYURoWm41dmFxckxKb3dBQkdhVzJCUVhieCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662095),
-('TTvU1WVqcutGP1aKpxqQuKGmaAmRLKUsBh8DxWzF', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTUR3NFVlaFhDYjBLRXZ6c1BzS052bmRxM3oxa0xwd3RJc2J6OWNJaCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661995),
-('TUkqQks8GOwdxWFsWyUagPIlwuX8pNbM1q0C3sFx', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoid0x2TGt2OHVyNWZlSGxvU0d4UGpySnU3S3hTSDdEZDNsY3hkSHRKVCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661996),
-('UDCMN84po9n2Nj0MSdJS28g9ozAnOqsgJDu7iD4D', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiU3RtRXZ3cnZJUFl1bkFCbnA4SE1mNjZNRlBIRFZvSVVsQWh1b1hoNCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662093),
-('ugd7iPR32lacCMgWp2o9CdC54VpFDrY6zIZ5bZRi', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUk93ZmY3RlY4OGlRbU1HWjA2THVIUzRUeGtkVm1UZzB2Mjk3WWNwMiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662089),
-('uKeu1mqBhch0uTo4LjQbtUewauUA8S3iCR5LuWdr', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiY0dDTXpGMFl6ZWRnYmNnMGpjZ2dlVU14djk2ajB5cHFPS09ZcnF0ViI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661974),
-('URDI30z9fFSBGZGMfUUTxG6JkPlxpMlSkrOoBMWo', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidkZCaGIwRHlxdWVnOTkyVWU1clF2andaWmpBQ3BGQ2JqcDQzdU4yYiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790662113),
-('UZvKqOfClM4s6IUWh5iEroSXti5pXGKM08tIfTWp', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUDY2OGxuOENpclk2aVNaWkJPWXlHNVEzTFhRa0pIMlhCdFlMMmoycCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661976),
-('v5oam8e6rFCGQ01IGSPhiAPLaYgCV461yNr9byWk', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRlhvOW5tejJBU21WSUVlbUh6dlhKT3RxbTUyVWRGOU0zNDZBTnBsMSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662090),
-('vcektXeVrXhD3ABhm7wHsPVpt4mTik9A3ET8HLsj', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiUUcwSTdDTXBQeHNpR2tlTlVQZWNNRnNYdWhselc1b3NXZVliOWV2TCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662090),
-('VGKYPZBuhzzXaXUFGH6Eop3Jr2UKy0rgnrD1bEb0', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZEhCb1FDUUUxTlo2ZGVOazRpYmNETTcxenR3VElCUUZTZ0tzcHRFOCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662091),
-('vGVc2fiEwXrelm9TXj5zr6KJQJojxMTJcjMiVpOc', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiR1FqbkFhbDdsZUFXakZHa2diYzFtOE9WaG9LeTNwdHRzUEU5NGxxTCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9wYXNzd29yZHMiO3M6NToicm91dGUiO3M6OToicGFzc3dvcmRzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1790662092),
-('vkMBsBCRcDZkU4T5YQESdJlf5HeuIgae9OvjEygS', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiaXU2WVBsc2Z6UG5VSzdEalZCZEZzNmU3ZEpaeFd6ekJHSGR5ajlyUCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661374),
-('WOLEjMBfk1H6g9Xx2EYSdsmGJQPJxovncKh2Xwhz', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicTN2THJIbzdFSW9xbDZ4Tlp4Q09aclBHZzRhSjR1dE5qbW53V01mdiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661975),
-('XcVORfYoevDnzT0BY9Njr2RORvPvFAuJVSA0WmZW', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiM0tzTEllbGxIU1E4dHF1YWs1UWJUWEJvYzVHUTIwbzJUMmdiQTNLdiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzM6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi9hZG1pbiI7czo1OiJyb3V0ZSI7czoxMToibG9naW4uYWRtaW4iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1790661995),
-('YD8LWkDnclR07w5ECVX4A3BlsZZJnOSRhICWQZyX', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiU3NocnBPakI3ekltM3JEbGcxVWhJc0tFTmlGbjBRS2VzVDd0MFN0NSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661996),
-('Ynwmg5qM3db5ABvqcFT0E4hyLKRZwtNWqRWTxHo8', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNm1WV2VSRTIxaUExaU9rWmJabVZYMlp1dms5TGI0RXdHOG91a28weCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661994),
-('YU5bV7PhR3yw5RpYTL7LS9Q1AfM6oaUoLxOPcCqQ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNjZldnREYUd4ZElkNnRTS01SNDhSNXVzNXFrakJkM0xEblpuZ1B4QiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661992),
-('zr2gXCVkLohIvHdZVRp83JfT3jxNq3niv0Ju0PMi', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoibEd6YUxLWUc0U2JlMmlzOVpEeUJKdVlzRXNPZTN6cW1Xemo1OHNmOSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzQ6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyNC9sb2dpbi90ZW5hbnQiO3M6NToicm91dGUiO3M6MTI6ImxvZ2luLnRlbmFudCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1790661993);
 
 -- --------------------------------------------------------
 
@@ -1179,19 +1395,30 @@ CREATE TABLE `tenants` (
 --
 
 INSERT INTO `tenants` (`id`, `user_id`, `first_name`, `last_name`, `contact_number`, `email`, `emergency_contact_name`, `emergency_contact_number`, `date_of_birth`, `home_address`, `tenant_type`, `id_document_path`, `signed_contract_path`, `status`, `deactivation_reason`, `deactivated_at`, `deactivated_by`, `is_blacklisted`, `portal_restricted`, `escalation_paused`, `created_at`, `updated_at`) VALUES
-(13, 18, 'adasdasdas', 'adasdasdas', '09223213123', 'adadas@gmail.com', 'asdsadasdasd', '092131231232', NULL, NULL, NULL, NULL, NULL, 'inactive', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:04:14', '2026-09-25 05:39:54'),
-(14, 19, 'Test Tenant', '1', '09778643524', 'testtenant1@gmail.com', 'parents', '09573426732', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-31 10:53:46', '2026-09-10 05:56:50'),
-(23, NULL, 'Test Delinquent - Stage 5', 'Only', '00000000000', 'test.delinquent.stage5only@nestph.test', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending_move_in_payment', NULL, NULL, NULL, 0, 1, 0, '2026-09-03 07:57:06', '2026-09-10 05:56:51'),
-(24, 20, 'Delinquency Test', 'Tenant', '09171234567', 'delinquency.test@nestph.test', 'Test Emergency Contact', '09179876543', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 1, 1, 0, '2026-09-03 11:13:24', '2026-09-10 05:56:51'),
-(25, 21, 'Valid ID', 'Check', '09867354632', 'validIDcheck@gmail.com', 'ID Mother', '09673526321', NULL, NULL, NULL, NULL, NULL, 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 05:59:16', '2026-09-15 12:47:06'),
-(26, 22, 'Valid ID', 'CheckTwo', '09273648212', 'validid2@gmail.com', 'Valid Mother', '09364729591', '2008-07-04', 'Sta Mesa', 'student', 'application-documents/TOFczC49z8YC8L7F0ByePeuWycWMrnziMdTQ8gpG.jpg', 'application-documents/6GRQ8iAXX5F2xoXmL0mOkKGcho5Fu4uE3u0qmOAp.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:13:15', '2026-09-10 05:56:51'),
-(27, 23, 'Tenant Check', 'One', '09362537482', 'tenantcheck1@gmail.com', 'Tenant Mother One', '097726373482', '2026-09-01', 'asdasdads', 'student', 'application-documents/iCC60BARPEwmBDlUFQq0dCTNRG0uvDMtewSdfjAw.jpg', 'application-documents/W7BBmTsPzJYQWg8jMx38fCrYVHT6W5V4hFBukQPd.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 06:50:33', '2026-09-10 05:56:51'),
-(28, 24, 'Tenant Check', 'Two', '09546374234', 'tenantcheck2@gmail.com', 'Tenant Mother Two', '0936474328', '2026-09-01', 'San Sebastian', 'student', 'application-documents/6x1AHasIov0Yo6D1N16G1gfJveTrCb0Bx9oeekKw.jpg', 'application-documents/UvZswdjeNJ7kZbq7hUk8LxagJshtgKoTIS9ZSZSP.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 10:42:06', '2026-09-10 05:56:51'),
-(29, 25, 'Add New Tenant', 'Test', '09389703563', 'addnewtenant@gmail.com', 'Add New Mom', '09613571155', '2004-07-07', 'Commonwealth, Quezon City', 'student', 'tenant-documents/BIMDbxuna9NH8pTN5NO9usN43u1m7POb9IQDWrBG.jpg', 'tenant-documents/y6WIdA8dDS01fDE62sJHGrUWyTDvI9xjMVhoyve9.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 11:14:43', '2026-09-10 05:56:51'),
-(30, 26, 'Beans', 'Lopez', '09613571155', 'vincelopez@gmail.com', 'Arlene Lopez', '09289811476', '2014-02-07', 'Manila', 'student', 'application-documents/nUGNWV7eRiDW6TAaIhntgwIkPzCjwLjN4eQCM8Yb.jpg', 'application-documents/YlMCHGecv6Ucy524BVt2UawpPbmpvjF8CluIMRzd.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-04 12:38:43', '2026-09-25 05:40:22'),
-(31, 27, 'Shayne', 'Bagui', '09212408565', 'shaynebagui@gmail.com', 'Marie Bagui', '09212408568', '2004-08-13', 'Sta Mesa Road 4 block 1234', 'student', 'application-documents/7kDFU28JRBf080PHvgF2ZpC9eRTi3KyWArsakZ2g.jpg', 'application-documents/jv46NYrQDVhv0BADiAu2Ac8eoHYgp5x7GGKe5VGL.pdf', 'active', NULL, NULL, NULL, 1, 1, 0, '2026-09-10 01:26:19', '2026-09-26 05:29:11'),
-(32, 28, 'First', 'Name', '09289811489', 'first@gmail.com', 'Emergency Contact', '09289833405', '2026-09-01', 'San Sebastian, Tarlac City', 'student', 'application-documents/3LWq2xbgs0Xcx5Z8GCa9fJv7ypkLLAEs3wWsRD7y.jpg', 'application-documents/signed-contracts/ff9755ee-f1c4-4933-96df-975451fab131.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-11 14:39:02', '2026-09-11 14:40:59'),
-(33, 29, 'Second', 'Acc', '09289822305', 'second@gmail.com', 'Second Mother', '09349811467', '2004-07-14', 'San Sebastian, Manila', 'student', 'application-documents/5oBuSAlpN4t0Mas1EOYIIpJibDKibFWuDCOegOWW.jpg', 'application-documents/signed-contracts/5f1b612f-ccf0-4773-b5f4-068297b758ef.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-09-24 13:05:26', '2026-09-24 13:17:22');
+(1, 128, 'Maria Angelica', 'Santos', '09181242486', 'maria.santos@gmail.com', 'Rodelio Santos', '09182034386', '2004-03-14', 'Brgy. San Isidro, Angono, Rizal', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-04-10 02:15:00', '2026-09-29 15:45:53'),
+(2, 129, 'Kimberly Anne', 'Dela Cruz', '09271250405', 'kimberly.delacruz@gmail.com', 'Marites Dela Cruz', '09272042305', '2005-07-02', '123 Rizal St., Brgy. Poblacion, Tarlac City, Tarlac', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-06-17 03:15:00', '2026-09-29 15:45:53'),
+(3, 130, 'Patricia Mae', 'Gonzales', '09391258324', 'patricia.gonzales@gmail.com', 'Lorna Gonzales', '09392050224', '2003-11-21', 'Purok 4, Brgy. Maligaya, San Jose, Nueva Ecija', 'working_student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-07-14 04:15:00', '2026-09-29 15:45:53'),
+(4, 131, 'Nicole Joy', 'Ramos', '09451266243', 'nicole.ramos@gmail.com', 'Ernesto Ramos', '09452058143', '2004-01-09', 'Blk 5 Lot 12, Villa Verde Subd., Dasmariñas, Cavite', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-07-05 05:15:00', '2026-09-29 15:45:53'),
+(5, 132, 'Juan Miguel', 'Reyes', '09561274162', 'juan.reyes@gmail.com', 'Carmelita Reyes', '09562066062', '1999-05-30', '45 Mabini St., Brgy. Poblacion, Lipa City, Batangas', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-03-06 06:15:00', '2026-09-29 15:45:53'),
+(6, 133, 'John Paul', 'Mendoza', '09289811405', 'john.mendoza@gmail.com', 'Rosalie Mendoza', '09289811405', '2004-08-17', 'Brgy. Bagong Silang, Lucena City, Quezon', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 1, 0, '2026-06-06 07:15:00', '2026-09-29 15:45:53'),
+(7, 134, 'Mark Joseph', 'Aquino', '09981290000', 'mark.aquino@gmail.com', 'Josefina Aquino', '09982081900', '2005-02-11', 'Sitio Malinis, Brgy. San Roque, Antipolo City, Rizal', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-14 08:15:00', '2026-09-29 15:45:53'),
+(8, 135, 'Christian Dave', 'Torres', '09081297919', 'christian.torres@gmail.com', 'Dante Torres', '09082089819', '2002-12-03', '78 Bonifacio St., Brgy. Centro, Iriga City, Camarines Sur', 'part_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-05-15 01:15:00', '2026-09-29 15:45:53'),
+(9, 136, 'Benjamin', 'Robles', '09289811405', 'benjamin.robles@gmail.com', 'Evelyn Robles', '09289811405', '2004-06-25', 'Brgy. Santo Cristo, San Fernando, Pampanga', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-06-09 02:15:00', '2026-09-29 15:45:53'),
+(10, 137, 'Rafael Luis', 'Navarro', '09171313757', 'rafael.navarro@gmail.com', 'Gloria Navarro', '09172105657', '2001-09-14', '12 Aguinaldo Hwy., Brgy. Zapote, Bacoor, Cavite', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-04-09 03:15:00', '2026-09-29 15:45:53'),
+(11, 138, 'Angela Marie', 'Villanueva', '09181321676', 'angela.villanueva@gmail.com', 'Arnel Villanueva', '09182113576', '1998-04-19', 'Brgy. Poblacion, Tuguegarao City, Cagayan', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2025-12-31 04:15:00', '2026-09-29 15:45:53'),
+(12, 139, 'Jasmine Rose', 'Garcia', '09271329595', 'jasmine.garcia@gmail.com', 'Ramil Garcia', '09272121495', '2005-10-05', 'Purok 2, Brgy. Talon, Las Piñas City', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-07-18 05:15:00', '2026-09-29 15:45:53'),
+(13, 140, 'Camille Louise', 'Flores', '09289811405', 'camille.flores@gmail.com', 'Susan Flores', '09289811405', '2004-12-28', 'Brgy. Mabini, Batangas City, Batangas', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 1, '2026-06-07 06:15:00', '2026-09-29 15:45:53'),
+(14, 141, 'Bea Katrina', 'Pascual', '09451345433', 'bea.pascual@gmail.com', 'Gerardo Pascual', '09452137333', '2003-05-16', 'Brgy. Sta. Rita, Olongapo City, Zambales', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-06-17 07:15:00', '2026-09-29 15:45:53'),
+(15, 142, 'Princess Joy', 'Manalo', '09561353352', 'princess.manalo@gmail.com', 'Cristina Manalo', '09562145252', '2002-08-08', 'Brgy. Parian, Calamba City, Laguna', 'working_student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-06-14 08:15:00', '2026-09-29 15:45:53'),
+(16, 143, 'Kathleen Mae', 'Salazar', '09661361271', 'kathleen.salazar@gmail.com', 'Rogelio Salazar', '09662153171', '2006-01-30', 'Brgy. Poblacion, Tagum City, Davao del Norte', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'pending_move_in_payment', NULL, NULL, NULL, 0, 0, 0, '2026-09-24 01:15:00', '2026-09-29 15:45:53'),
+(17, 144, 'Carlo Miguel', 'Bautista', '09981369190', 'carlo.bautista@gmail.com', 'Nenita Bautista', '09982161090', '2000-03-03', 'San Pablo City, Laguna', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-07-10 02:15:00', '2026-09-29 15:45:53'),
+(18, 145, 'Joshua Emmanuel', 'Lim', '09081377109', 'joshua.lim@gmail.com', 'Wilson Lim', '09082169009', '2004-11-11', 'Sta. Cruz, Laguna', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-04-30 03:15:00', '2026-09-29 15:45:53'),
+(19, 146, 'Paolo Andres', 'Ocampo', '09951385028', 'paolo.ocampo@gmail.com', 'Amelia Ocampo', '09952176928', '2005-04-22', 'Brgy. Poblacion, Malolos City, Bulacan', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'pending_move_in_payment', NULL, NULL, NULL, 0, 0, 0, '2026-09-21 04:15:00', '2026-09-29 15:45:53'),
+(20, 147, 'Andrea Nicole', 'Tan', '09171392947', 'andrea.tan@gmail.com', 'Rebecca Tan', '09172184847', '1997-09-09', 'Brgy. Kauswagan, Cagayan de Oro City', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-04-15 05:15:00', '2026-09-29 15:45:53'),
+(21, 148, 'Erika Jane', 'Morales', '09181400866', 'erika.morales@gmail.com', 'Ronaldo Morales', '09182192766', '2004-07-07', 'Brgy. Pantal, Dagupan City, Pangasinan', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-06-07 06:15:00', '2026-09-29 15:45:53'),
+(22, 149, 'Hannah Grace', 'Soriano', '09271408785', 'hannah.soriano@gmail.com', 'Marilou Soriano', '09272200685', '2006-02-14', 'Brgy. Dolores, Taytay, Rizal', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 0, 0, 0, '2026-08-15 07:15:00', '2026-09-29 15:45:53'),
+(23, 150, 'Gabriel Jose', 'Rivera', '09391416704', 'gabriel.rivera@gmail.com', 'Imelda Rivera', '09392208604', '2001-06-01', 'Brgy. San Antonio, Biñan, Laguna', 'full_time_employee', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'inactive', 'Moved out at the end of contract -- transferred to a job in Laguna.', '2026-08-20 16:00:00', 124, 0, 0, 0, '2026-03-10 08:15:00', '2026-09-29 15:45:53'),
+(24, 151, 'Joseph Allan', 'Cruz', '09289811405', 'joseph.cruz@gmail.com', 'Nora Cruz', '09289811405', '2003-03-27', 'Brgy. Tabing Ilog, Marilao, Bulacan', 'student', 'demo/sample-valid-id.png', 'contracts/dormitory-contract.pdf', 'active', NULL, NULL, NULL, 1, 1, 0, '2026-03-29 01:15:00', '2026-09-29 15:45:53');
 
 -- --------------------------------------------------------
 
@@ -1213,8 +1440,15 @@ CREATE TABLE `ticket_replies` (
 --
 
 INSERT INTO `ticket_replies` (`id`, `ticket_id`, `user_id`, `tenant_id`, `message`, `created_at`) VALUES
-(1, 1, 3, NULL, 'Gagawin na ni manong mamaya', '2026-09-08 05:35:43'),
-(2, 1, NULL, 30, 'oke poo', '2026-09-08 05:38:57');
+(1, 1, 126, NULL, 'Noted po. Papupuntahin namin ang technician bukas ng umaga.', '2026-09-09 06:30:00'),
+(2, 1, NULL, 1, 'Salamat po!', '2026-09-09 09:30:00'),
+(3, 1, 126, NULL, 'Nalinis na po ang filter at na-recharge ang freon. Paki-check po kung okay na.', '2026-09-09 12:30:00'),
+(4, 3, 126, NULL, 'Chine-check na po ng plumber ang main line. Update po kami mamaya.', '2026-09-25 10:30:00'),
+(5, 5, 124, NULL, 'Thank you for the suggestion! Hindi po kasya sa space ng lobby sa ngayon, pero isasama namin sa renovation plan next year.', '2026-09-14 08:30:00'),
+(6, 6, 125, NULL, 'Hi Jasmine, naka-crop po kasi yung screenshot kaya hindi makita ang reference number. Paki-upload po ulit yung buong receipt.', '2026-09-29 15:45:53'),
+(7, 7, 126, NULL, 'Napalitan na po ang lock. Paki-kuha po ang bagong susi sa front desk.', '2026-09-20 12:30:00'),
+(8, 9, 126, NULL, 'Na-inspect na po, may crack sa roof gutter. Schedule ang repair ngayong Sabado.', '2026-09-26 09:30:00'),
+(9, 9, NULL, 20, 'Sige po, thank you. Ililipat ko muna yung gamit ko.', '2026-09-26 12:30:00');
 
 -- --------------------------------------------------------
 
@@ -1240,23 +1474,35 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role_id`, `is_active`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Test Tenant', 'tenant@nestph.test', NULL, '$2y$12$dxcMGpzmn1dy2l1.L96SEellNJOxyS8gWEm0haGvhn858I.HVXzP6', 1, 1, NULL, '2026-07-24 22:11:59', '2026-08-28 18:36:17'),
-(2, 'Test Admin', 'admin@nestph.test', NULL, '$2y$12$If2FiAnM0xiHlnJA9.cgDOAChO1s6Nsp0YvsDdodxHkZKeBe4xmkm', 2, 1, NULL, '2026-07-24 22:11:59', '2026-07-24 22:11:59'),
-(3, 'Test Owner', 'owner@nestph.test', NULL, '$2y$12$tBbYyy35ASpYBp1J16pNkOLef7.5rNtW/O/3jO5M.0Vkg/xe4CHfK', 2, 1, NULL, '2026-07-24 22:12:00', '2026-07-24 22:12:00'),
-(9, 'John Dela Cruz', 'delacruz@gmail.com', NULL, '$2y$12$k3PCXiSoLTXe4G3NnIT24eaeQtjFdK3ckRw0kMS71z5IYiu.Jjt9a', 1, 1, NULL, '2026-08-30 06:11:32', '2026-08-30 06:11:32'),
-(10, 'Carla Bugasto', 'carla@gmail.com', NULL, '$2y$12$zpurO4Udqsfep0Dga16Emuuo29pZblCvUUzyuZS1V0tFID9ToKEm2', 1, 1, NULL, '2026-08-30 19:05:31', '2026-08-30 19:05:31'),
-(18, 'adasdasdas', 'adadas@gmail.com', NULL, '$2y$12$jYvF.c77Jy9w5.7rMNqogeHuWorg/.ULCOXujNRuZeDdZ24d1/yn2', 1, 0, NULL, '2026-08-31 10:04:14', '2026-09-15 12:47:32'),
-(19, 'Test Tenant 1', 'testtenant1@gmail.com', NULL, '$2y$12$3B5WRI0MHOAO5U/p7mPhR.QeXvj.ZEQvZiubtg9/h1.J0wY/V8UoG', 1, 1, NULL, '2026-08-31 10:53:46', '2026-08-31 10:53:46'),
-(20, 'Delinquency Test Tenant', 'delinquency.test@nestph.test', NULL, '$2y$12$ohxhd4y464pFWZBuaTbBIOMbtEPBm9OkpUT92nMoskkbwbWa88ZMu', 1, 1, NULL, '2026-09-03 11:13:24', '2026-09-04 12:57:10'),
-(21, 'Valid ID Check', 'validIDcheck@gmail.com', NULL, '$2y$12$2Jut6k1qH/hlL0YX9zdste2jp9SN/AjlAWPHnrWJlsKdRtCaAghCG', 1, 1, NULL, '2026-09-04 05:59:16', '2026-09-04 05:59:16'),
-(22, 'Valid ID CheckTwo', 'validid2@gmail.com', NULL, '$2y$12$wmUAZqRpGFnyrEU4mHMV5OPW5MDbmSU47lIhy6VGEXD5fK4UY2PWu', 1, 1, NULL, '2026-09-04 06:13:15', '2026-09-04 06:35:23'),
-(23, 'Tenant Check One', 'tenantcheck1@gmail.com', NULL, '$2y$12$86PWBv4cs27dKuFh9BiyFe1AYppLjEp3PHkd3CYXoUitpBBmI6lwi', 1, 1, NULL, '2026-09-04 06:50:33', '2026-09-04 06:50:33'),
-(24, 'Tenant Check Two', 'tenantcheck2@gmail.com', NULL, '$2y$12$Yi2.thry2D2YtJ5.NErnTuiqQ2.60wRs641QBQL5HCWc9J69yzZxC', 1, 1, NULL, '2026-09-04 10:42:06', '2026-09-04 10:48:21'),
-(25, 'Add New Tenant Test', 'addnewtenant@gmail.com', NULL, '$2y$12$uB/Cd3nK3uQgwpTkY5.mD.JimwhakCbZhpn2cruMjERuLS9/nn4FW', 1, 1, NULL, '2026-09-04 11:14:43', '2026-09-04 11:14:43'),
-(26, 'Beans Lopez', 'vincelopez@gmail.com', NULL, '$2y$12$8gVdwj6Ze5HMYOAPWkKdHOXdsOVdzmRQgFRkyxzo2jv4QHj3MrvfS', 1, 0, NULL, '2026-09-04 12:38:43', '2026-09-10 07:41:45'),
-(27, 'Shayne Bagui', 'shaynebagui@gmail.com', NULL, '$2y$12$D0VwVxLqAmTXZjI3hInM6uaWiU2.x.sIVbkOOKGvBU0Mkavdd3IqW', 1, 1, NULL, '2026-09-10 01:26:19', '2026-09-10 01:26:19'),
-(28, 'First Name', 'first@gmail.com', NULL, '$2y$12$95RZgrm0PdkB3P2RZhkbYez3j37dD6kCoPPGdYbo6c3Qmq/x4G75G', 1, 1, NULL, '2026-09-11 14:39:02', '2026-09-11 14:39:02'),
-(29, 'Second Acc', 'second@gmail.com', NULL, '$2y$12$/MfoY1ibr5KduDkRkvUK.OO8b.t2YdYg74fKkGHYG6wV0CDHcgX3i', 1, 1, NULL, '2026-09-24 13:05:26', '2026-09-24 13:21:20');
+(3, 'Teresita Mendoza', 'owner@nestph.test', NULL, '$2y$12$zQxT7KB4BbEa875oGtGnou7nmZhWdHr5vw5TBO8Qo9PWNH3Fb3g0S', 2, 1, NULL, '2026-07-24 22:12:00', '2026-09-29 15:45:52'),
+(124, 'Kristine Joy Bautista', 'kristine.bautista@nestph.test', NULL, '$2y$12$zQxT7KB4BbEa875oGtGnou7nmZhWdHr5vw5TBO8Qo9PWNH3Fb3g0S', 2, 1, NULL, '2026-04-06 16:00:00', '2026-04-06 16:00:00'),
+(125, 'Mark Anthony Villanueva', 'mark.villanueva@nestph.test', NULL, '$2y$12$zQxT7KB4BbEa875oGtGnou7nmZhWdHr5vw5TBO8Qo9PWNH3Fb3g0S', 2, 1, NULL, '2026-04-15 16:00:00', '2026-04-15 16:00:00'),
+(126, 'Jerome Castillo', 'jerome.castillo@nestph.test', NULL, '$2y$12$zQxT7KB4BbEa875oGtGnou7nmZhWdHr5vw5TBO8Qo9PWNH3Fb3g0S', 2, 1, NULL, '2026-04-24 16:00:00', '2026-04-24 16:00:00'),
+(127, 'Lea Mae Fernandez', 'lea.fernandez@nestph.test', NULL, '$2y$12$zQxT7KB4BbEa875oGtGnou7nmZhWdHr5vw5TBO8Qo9PWNH3Fb3g0S', 2, 0, NULL, '2026-05-03 16:00:00', '2026-05-03 16:00:00'),
+(128, 'Maria Angelica Santos', 'maria.santos@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-04-10 02:15:00', '2026-04-10 02:15:00'),
+(129, 'Kimberly Anne Dela Cruz', 'kimberly.delacruz@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-06-17 03:15:00', '2026-06-17 03:15:00'),
+(130, 'Patricia Mae Gonzales', 'patricia.gonzales@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-07-14 04:15:00', '2026-07-14 04:15:00'),
+(131, 'Nicole Joy Ramos', 'nicole.ramos@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-07-05 05:15:00', '2026-07-05 05:15:00'),
+(132, 'Juan Miguel Reyes', 'juan.reyes@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-03-06 06:15:00', '2026-03-06 06:15:00'),
+(133, 'John Paul Mendoza', 'john.mendoza@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-06-06 07:15:00', '2026-06-06 07:15:00'),
+(134, 'Mark Joseph Aquino', 'mark.aquino@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-08-14 08:15:00', '2026-08-14 08:15:00'),
+(135, 'Christian Dave Torres', 'christian.torres@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-05-15 01:15:00', '2026-05-15 01:15:00'),
+(136, 'Benjamin Robles', 'benjamin.robles@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-06-09 02:15:00', '2026-06-09 02:15:00'),
+(137, 'Rafael Luis Navarro', 'rafael.navarro@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-04-09 03:15:00', '2026-04-09 03:15:00'),
+(138, 'Angela Marie Villanueva', 'angela.villanueva@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2025-12-31 04:15:00', '2025-12-31 04:15:00'),
+(139, 'Jasmine Rose Garcia', 'jasmine.garcia@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-07-18 05:15:00', '2026-07-18 05:15:00'),
+(140, 'Camille Louise Flores', 'camille.flores@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-06-07 06:15:00', '2026-06-07 06:15:00'),
+(141, 'Bea Katrina Pascual', 'bea.pascual@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-06-17 07:15:00', '2026-06-17 07:15:00'),
+(142, 'Princess Joy Manalo', 'princess.manalo@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-06-14 08:15:00', '2026-06-14 08:15:00'),
+(143, 'Kathleen Mae Salazar', 'kathleen.salazar@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-09-24 01:15:00', '2026-09-24 01:15:00'),
+(144, 'Carlo Miguel Bautista', 'carlo.bautista@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-07-10 02:15:00', '2026-07-10 02:15:00'),
+(145, 'Joshua Emmanuel Lim', 'joshua.lim@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-04-30 03:15:00', '2026-04-30 03:15:00'),
+(146, 'Paolo Andres Ocampo', 'paolo.ocampo@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-09-21 04:15:00', '2026-09-21 04:15:00'),
+(147, 'Andrea Nicole Tan', 'andrea.tan@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-04-15 05:15:00', '2026-04-15 05:15:00'),
+(148, 'Erika Jane Morales', 'erika.morales@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-06-07 06:15:00', '2026-06-07 06:15:00'),
+(149, 'Hannah Grace Soriano', 'hannah.soriano@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-08-15 07:15:00', '2026-08-15 07:15:00'),
+(150, 'Gabriel Jose Rivera', 'gabriel.rivera@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 0, NULL, '2026-03-10 08:15:00', '2026-03-10 08:15:00'),
+(151, 'Joseph Allan Cruz', 'joseph.cruz@gmail.com', NULL, '$2y$12$PA9JM72C33wpR1cKAfonAeHBazTBR0eO8rYd4J/.461P4XzeZdgHe', 1, 1, NULL, '2026-03-29 01:15:00', '2026-03-29 01:15:00');
 
 -- --------------------------------------------------------
 
@@ -1281,9 +1527,7 @@ CREATE TABLE `vr_hotspots` (
 
 INSERT INTO `vr_hotspots` (`id`, `vr_scene_id`, `target_scene_id`, `pitch`, `yaw`, `label`, `created_at`, `updated_at`) VALUES
 (3, 4, 5, -7.5450, -172.6935, 'Living Room', '2026-09-04 12:00:47', '2026-09-04 12:00:47'),
-(4, 5, 4, -9.4008, 19.1198, 'Lobby', '2026-09-04 12:01:09', '2026-09-04 12:01:09'),
-(6, 6, 7, -6.7022, -166.4216, 'TV area', '2026-09-04 13:07:52', '2026-09-04 13:07:52'),
-(7, 7, 6, -8.2906, 15.6466, 'Entrance', '2026-09-04 13:08:26', '2026-09-04 13:08:26');
+(4, 5, 4, -9.4008, 19.1198, 'Lobby', '2026-09-04 12:01:09', '2026-09-04 12:01:09');
 
 -- --------------------------------------------------------
 
@@ -1296,6 +1540,8 @@ CREATE TABLE `vr_scenes` (
   `room_id` bigint(20) UNSIGNED NOT NULL,
   `title` varchar(100) NOT NULL,
   `panorama_path` varchar(255) NOT NULL,
+  `filled_path` varchar(255) DEFAULT NULL,
+  `photo_updated_at` timestamp NULL DEFAULT NULL,
   `is_default` tinyint(1) NOT NULL DEFAULT 0,
   `sort_order` smallint(5) UNSIGNED NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -1310,11 +1556,12 @@ CREATE TABLE `vr_scenes` (
 -- Dumping data for table `vr_scenes`
 --
 
-INSERT INTO `vr_scenes` (`id`, `room_id`, `title`, `panorama_path`, `is_default`, `sort_order`, `created_at`, `updated_at`, `haov`, `vaov`, `v_offset`, `is_partial`) VALUES
-(4, 16, 'Lobby', 'vr-scenes/O3TaGpevnZjt4UBPxWr0pJ1eXkNI652UeaLkegMg.jpg', 0, 0, '2026-09-04 11:58:02', '2026-09-04 11:58:41', 360.00, 53.73, 0.00, 0),
-(5, 16, 'Living Room', 'vr-scenes/JQTAEtHNbTZtu63MKDrAT2WnaQtOr5jptx6uKvs3.jpg', 0, 1, '2026-09-04 11:59:22', '2026-09-04 11:59:54', 360.00, 64.30, 0.00, 0),
-(6, 17, 'Entrance', 'vr-scenes/fvwzAPPPNJ4u8LruXwnxA14x9FTFHsVwfcBv5rd4.jpg', 0, 0, '2026-09-04 13:06:27', '2026-09-04 13:06:36', 360.00, 53.73, 0.00, 1),
-(7, 17, 'TV area', 'vr-scenes/Acj8y3hVLZ32YredRJavA32SEafC3oSgMbvv9n3c.jpg', 0, 1, '2026-09-04 13:06:53', '2026-09-04 13:06:53', 335.91, 60.00, 0.00, 1);
+INSERT INTO `vr_scenes` (`id`, `room_id`, `title`, `panorama_path`, `filled_path`, `photo_updated_at`, `is_default`, `sort_order`, `created_at`, `updated_at`, `haov`, `vaov`, `v_offset`, `is_partial`) VALUES
+(4, 16, 'Lobby', 'vr-scenes/O3TaGpevnZjt4UBPxWr0pJ1eXkNI652UeaLkegMg.jpg', 'vr-scenes/filled/84b8bb86-50b3-4d96-94fa-c037a15c65ee.jpg', '2026-09-04 11:58:02', 0, 0, '2026-09-04 11:58:02', '2026-09-29 07:01:53', 360.00, 53.73, 0.00, 0),
+(5, 16, 'Living Room', 'vr-scenes/JQTAEtHNbTZtu63MKDrAT2WnaQtOr5jptx6uKvs3.jpg', 'vr-scenes/filled/4b98e0f8-a9d6-42d3-8c1f-5c02e07298c4.jpg', '2026-09-04 11:59:22', 0, 1, '2026-09-04 11:59:22', '2026-09-29 07:01:54', 360.00, 64.30, 0.00, 0),
+(6, 17, 'Entrance', 'vr-scenes/fvwzAPPPNJ4u8LruXwnxA14x9FTFHsVwfcBv5rd4.jpg', 'vr-scenes/filled/69e4c5ee-ed47-4b16-9ef3-19c048ef5ace.jpg', '2026-09-04 13:06:27', 0, 0, '2026-09-04 13:06:27', '2026-09-29 07:01:55', 360.00, 53.73, 0.00, 1),
+(7, 17, 'TV area', 'vr-scenes/Acj8y3hVLZ32YredRJavA32SEafC3oSgMbvv9n3c.jpg', 'vr-scenes/filled/3de7ba45-9bdd-43de-839b-8113706ec4e9.jpg', '2026-09-04 13:06:53', 0, 1, '2026-09-04 13:06:53', '2026-09-29 07:01:56', 335.91, 60.00, 0.00, 1),
+(8, 18, 'Computer Room', 'vr-scenes/lMdjSMn8A122wbntaKbN868Fm7zATkwqiwu0GwOT.jpg', 'vr-scenes/filled/e522f4b9-f751-4777-9568-f832200ce33e.jpg', '2026-09-29 07:20:06', 1, 0, '2026-09-29 07:20:06', '2026-09-29 07:25:44', 360.00, 180.00, 0.00, 0);
 
 --
 -- Indexes for dumped tables
@@ -1644,25 +1891,25 @@ ALTER TABLE `vr_scenes`
 -- AUTO_INCREMENT for table `admin_access_logs`
 --
 ALTER TABLE `admin_access_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `admin_login_sessions`
 --
 ALTER TABLE `admin_login_sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `admin_privileges`
 --
 ALTER TABLE `admin_privileges`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `announcements`
 --
 ALTER TABLE `announcements`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `announcement_comments`
@@ -1674,25 +1921,25 @@ ALTER TABLE `announcement_comments`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT for table `beds`
 --
 ALTER TABLE `beds`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `billing_statements`
 --
 ALTER TABLE `billing_statements`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=123;
 
 --
 -- AUTO_INCREMENT for table `damages`
 --
 ALTER TABLE `damages`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `dormitory_amenities`
@@ -1716,7 +1963,7 @@ ALTER TABLE `dormitory_profile`
 -- AUTO_INCREMENT for table `escalation_logs`
 --
 ALTER TABLE `escalation_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=166;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1728,13 +1975,13 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `floors`
 --
 ALTER TABLE `floors`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `inquiries`
 --
 ALTER TABLE `inquiries`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -1746,25 +1993,25 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `lease_contracts`
 --
 ALTER TABLE `lease_contracts`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `maintenance_tickets`
 --
 ALTER TABLE `maintenance_tickets`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=116;
 
 --
 -- AUTO_INCREMENT for table `payment_methods`
@@ -1776,13 +2023,13 @@ ALTER TABLE `payment_methods`
 -- AUTO_INCREMENT for table `penalties`
 --
 ALTER TABLE `penalties`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `penalty_audit_logs`
 --
 ALTER TABLE `penalty_audit_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `personal_access_tokens`
@@ -1794,7 +2041,7 @@ ALTER TABLE `personal_access_tokens`
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -1806,7 +2053,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `room_photos`
@@ -1818,19 +2065,19 @@ ALTER TABLE `room_photos`
 -- AUTO_INCREMENT for table `tenants`
 --
 ALTER TABLE `tenants`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `ticket_replies`
 --
 ALTER TABLE `ticket_replies`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
 
 --
 -- AUTO_INCREMENT for table `vr_hotspots`
@@ -1842,7 +2089,7 @@ ALTER TABLE `vr_hotspots`
 -- AUTO_INCREMENT for table `vr_scenes`
 --
 ALTER TABLE `vr_scenes`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
