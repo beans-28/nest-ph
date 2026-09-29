@@ -12,6 +12,7 @@ class VrScene extends Model
         'room_id',
         'title',
         'panorama_path',
+        'filled_path',
         'is_default',
         'sort_order',
         'haov',

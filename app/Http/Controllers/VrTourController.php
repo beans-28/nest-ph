@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Room;
 use App\Models\VrHotspot;
 use App\Models\VrScene;
+use App\Services\PanoramaFillService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +29,7 @@ class VrTourController extends Controller
      * angles are estimated from the image's shape so a non-technical admin can
      * upload straight from their phone's Panorama mode without a second app.
      */
-    public function storeScene(Request $request, Room $room): JsonResponse
+    public function storeScene(Request $request, Room $room, PanoramaFillService $filler): JsonResponse
     {
         $data = $request->validate([
             'title' => ['required', 'string', 'max:100'],
@@ -50,6 +51,10 @@ class VrTourController extends Controller
             'v_offset' => 0,
             'is_partial' => $fov['is_partial'],
         ]);
+
+        // Paint a soft ceiling/floor onto phone panoramas so visitors can
+        // look all the way up and down.
+        $filler->fill($scene);
 
         return response()->json($this->transformScene($scene->load('hotspots.targetScene:id,title')), 201);
     }
@@ -89,7 +94,7 @@ class VrTourController extends Controller
      * Lets the admin correct the estimated sweep by dragging a slider while
      * watching a live preview — no angle maths required on their part.
      */
-    public function updateSceneView(Request $request, VrScene $scene): JsonResponse
+    public function updateSceneView(Request $request, VrScene $scene, PanoramaFillService $filler): JsonResponse
     {
         $data = $request->validate([
             'haov' => ['required', 'numeric', 'between:30,360'],
@@ -108,6 +113,9 @@ class VrTourController extends Controller
             'v_offset' => $data['v_offset'] ?? 0,
             'is_partial' => $haov < 359.5,
         ]);
+
+        // The painted ceiling/floor depend on the sweep, so redo them.
+        $filler->fill($scene);
 
         return response()->json($this->transformScene($scene->fresh('hotspots.targetScene')));
     }
@@ -151,6 +159,9 @@ class VrTourController extends Controller
             // Arrows in other scenes that lead here would otherwise dead-end.
             $scene->incomingHotspots()->delete();
             Storage::disk('public')->delete($scene->panorama_path);
+            if ($scene->filled_path) {
+                Storage::disk('public')->delete($scene->filled_path);
+            }
             $scene->delete();
         });
 
@@ -222,6 +233,7 @@ class VrTourController extends Controller
             'id' => $scene->id,
             'title' => $scene->title,
             'panorama_url' => Storage::disk('public')->url($scene->panorama_path),
+            'filled_url' => $scene->filled_path ? Storage::disk('public')->url($scene->filled_path) : null,
             'is_default' => $scene->is_default,
             'sort_order' => $scene->sort_order,
             'haov' => $scene->haov,

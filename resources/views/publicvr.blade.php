@@ -16,26 +16,26 @@
             --green-dark: #567357;
             --green-darker: #197335;
             --ink: #292420;
-            --cream: #dcd8d7;
-            --cream-light: #f2f4f8;
+            --mint: #92db9f;
+            --glass: rgba(20, 24, 21, 0.62);
+            --glass-text: #f3f1ec;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* The whole page is locked to the viewport — no page scrolling, so the
-           panorama fills the space between the nav and the room strip and the
-           strip is always visible without needing sticky positioning. */
+        /* The whole page is locked to the viewport — no page scrolling. The
+           panorama fills everything under the nav. */
         html, body { height: 100%; overflow: hidden; }
 
         body {
             font-family: 'Roboto', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            background: linear-gradient(90deg, #4e7454 0%, #92db9f 100%);
+            background: #141714;
             display: flex;
             flex-direction: column;
         }
 
         a:focus-visible, button:focus-visible {
-            outline: 2px solid var(--green-darker);
+            outline: 2px solid var(--mint);
             outline-offset: 2px;
         }
         .topnav a:focus-visible, .topnav .buttons a:focus-visible {
@@ -43,7 +43,6 @@
             outline-offset: 2px;
         }
         .btn-white:focus-visible { outline-color: var(--ink); }
-        .room-thumb:focus-visible { outline: 2px solid var(--green-light); outline-offset: 2px; }
 
         .textured { position: relative; overflow: hidden; }
         .textured .bg-texture {
@@ -55,7 +54,7 @@
 
         .topnav {
             background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
-            padding: 14px clamp(20px, 5vw, 64px);
+            padding: 10px clamp(20px, 5vw, 64px);
             display: flex; align-items: center; gap: clamp(16px, 3vw, 40px);
             flex-shrink: 0;
         }
@@ -74,99 +73,209 @@
         .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
-            height: 44px; padding: 0 18px; border: 2px solid #fff;
+            height: 40px; padding: 0 18px; border: 2px solid #fff;
             font-weight: 500; font-size: 13.5px; cursor: pointer;
             white-space: nowrap; text-decoration: none;
         }
         .btn-white { background: #fff; color: var(--ink); }
         .btn-outline-white { background: transparent; color: #fff; }
 
-        /* Title bar */
-        .vr-titlebar {
-            background: linear-gradient(90deg, var(--cream), var(--cream-light));
-            padding: 10px clamp(20px, 5vw, 64px);
-            box-shadow: 0 4px 4px rgba(0,0,0,0.2), inset 0 4px 4px rgba(0,0,0,0.12);
-            flex-shrink: 0;
-        }
-        .vr-titlebar h1 { font-size: clamp(15px, 1.8vw, 20px); font-weight: 700; color: #2a241f; }
+        /* ===== Immersive stage =====
+           The panorama fills everything below the nav. All other UI floats
+           on top of it as small see-through panels, so the room itself is
+           the page instead of a box squeezed between bars. */
+        .stage { position: relative; flex: 1; min-height: 0; background: #141714; overflow: hidden; }
+        .stage:fullscreen { width: 100vw; height: 100vh; }
+        #panorama { position: absolute; inset: 0; }
 
-        /* Viewer — takes whatever height is left between nav and strip */
-        .viewer-shell {
-            position: relative; background: #1a1a18;
-            flex: 1; min-height: 0; display: flex; flex-direction: column;
+        /* Soft dark fades at the top and bottom so the floating text stays
+           readable on bright walls and ceilings. */
+        .stage::before, .stage::after {
+            content: ''; position: absolute; left: 0; right: 0; z-index: 2; pointer-events: none;
         }
-        #panorama { width: 100%; flex: 1; min-height: 0; }
-        .viewer-message {
-            display: flex; align-items: center; justify-content: center;
-            flex: 1; color: #e6e6e2; font-size: 14px; text-align: center;
-            padding: 20px;
+        .stage::before { top: 0; height: 140px; background: linear-gradient(rgba(10,12,10,0.5), transparent); }
+        .stage::after { bottom: 0; height: 190px; background: linear-gradient(transparent, rgba(10,12,10,0.55)); }
+
+        .glass {
+            background: var(--glass);
+            -webkit-backdrop-filter: blur(14px) saturate(1.2);
+            backdrop-filter: blur(14px) saturate(1.2);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--glass-text);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.28);
         }
-        /* Room picker strip — pinned to the bottom of the viewport so it stays
-           reachable while looking around the panorama. */
-        .rooms-strip {
-            flex-shrink: 0;
-            background: linear-gradient(8deg, rgba(93,71,62,0.96) -20%, rgba(28,20,17,0.96) 85%);
-            padding: 8px clamp(14px, 3vw, 28px) 10px;
-            box-shadow: 0 -6px 20px rgba(0,0,0,0.28);
-            border-top: 1px solid rgba(255,255,255,0.1);
+        .overlay { position: absolute; z-index: 5; }
+
+        /* Room info card (top-left) */
+        .info-card {
+            top: 18px; left: 18px; width: min(340px, calc(100% - 100px));
+            border-radius: 16px; padding: 16px 18px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
-        .rooms-strip h2 {
-            color: rgba(255,255,255,0.75); font-size: 10.5px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 0.09em;
-            text-align: center; margin-bottom: 9px;
+        .info-card.is-hidden { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+        .info-eyebrow {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+            color: var(--mint); margin-bottom: 4px;
         }
+        .info-title { font-size: 26px; font-weight: 900; line-height: 1.1; letter-spacing: -0.01em; }
+        .info-meta { margin-top: 6px; font-size: 14px; color: rgba(243,241,236,0.82); }
+        .info-meta strong { color: #fff; font-weight: 700; }
+        .info-caption {
+            margin-top: 10px; font-size: 13px; line-height: 1.5; color: rgba(243,241,236,0.75);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .info-actions { display: flex; gap: 8px; margin-top: 14px; }
+        .info-actions a {
+            flex: 1; display: inline-flex; align-items: center; justify-content: center;
+            height: 40px; border-radius: 10px; font-size: 13.5px; font-weight: 700; text-decoration: none;
+            transition: background 0.2s ease;
+        }
+        .info-actions .primary { background: var(--mint); color: #10301a; }
+        .info-actions .primary:hover { background: #a9e6b4; }
+        .info-actions .ghost { border: 1px solid rgba(255,255,255,0.3); color: #fff; }
+        .info-actions .ghost:hover { background: rgba(255,255,255,0.1); }
+
+        /* Look-around controls (right edge) */
+        .controls {
+            top: 18px; right: 18px; display: flex; flex-direction: column;
+            border-radius: 14px; padding: 5px; gap: 2px;
+        }
+        .ctrl {
+            width: 42px; height: 42px; border: 0; border-radius: 10px; background: transparent;
+            color: var(--glass-text); cursor: pointer; display: grid; place-items: center;
+            transition: background 0.2s ease;
+        }
+        .ctrl:hover { background: rgba(255,255,255,0.12); }
+        .ctrl[aria-pressed="true"] { background: rgba(146,219,159,0.22); color: var(--mint); }
+        .ctrl svg { width: 20px; height: 20px; }
+        .ctrl-sep { height: 1px; margin: 3px 6px; background: rgba(255,255,255,0.14); }
+
+        /* "Drag to look around" hint (centre, fades after first touch) */
+        .hint {
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 999px;
+            font-size: 14px; font-weight: 500; pointer-events: none; white-space: nowrap;
+            transition: opacity 0.6s ease;
+        }
+        .hint svg { width: 22px; height: 22px; animation: sway 2.4s ease-in-out infinite; }
+        .hint.gone { opacity: 0; }
+        @keyframes sway { 0%,100% { transform: translateX(-5px); } 50% { transform: translateX(5px); } }
+
+        /* Bottom area: spots in this room + room dock */
+        .bottom {
+            left: 0; right: 0; bottom: 0; padding: 0 18px 16px;
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            pointer-events: none;
+        }
+        .bottom > * { pointer-events: auto; }
+
+        .spots { display: flex; gap: 6px; padding: 5px; border-radius: 999px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+        .spots::-webkit-scrollbar { display: none; }
+        .spots[hidden] { display: none; }
+        .spot {
+            border: 0; background: transparent; color: rgba(243,241,236,0.8); font: inherit;
+            font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 999px;
+            cursor: pointer; white-space: nowrap; transition: background 0.2s ease, color 0.2s ease;
+        }
+        .spot:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .spot.active { background: #fff; color: #1b221c; font-weight: 700; }
+
+        .dock { border-radius: 18px; padding: 8px; max-width: 100%; display: flex; align-items: center; gap: 8px; }
+        .dock-toggle {
+            flex-shrink: 0; border: 0; background: transparent; color: var(--glass-text); font: inherit;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+            padding: 0 10px; height: 64px; cursor: pointer; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+        }
+        .dock-toggle:hover { background: rgba(255,255,255,0.08); }
+        .dock-toggle { line-height: 1.2; text-align: center; }
+        .dock.collapsed .dock-toggle br { display: none; }
+        .dock-toggle svg { width: 16px; height: 16px; transition: transform 0.25s ease; }
+        .dock.collapsed .dock-toggle { height: 36px; flex-direction: row; gap: 6px; }
+        .dock.collapsed .dock-toggle svg { transform: rotate(180deg); }
+        .dock.collapsed .rooms-scroll { display: none; }
+
         .rooms-scroll {
-            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;
-            scroll-snap-type: x mandatory; justify-content: flex-start;
+            display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory;
+            scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.25) transparent;
         }
-        .rooms-scroll::-webkit-scrollbar { height: 5px; }
-        .rooms-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 4px; }
-
         .room-thumb {
-            position: relative; flex: 0 0 132px; height: 76px; border-radius: 8px;
-            overflow: hidden; cursor: pointer; scroll-snap-align: start;
-            background: #3f4a3f; box-shadow: 0 3px 8px rgba(0,0,0,0.35);
-            border: 2px solid transparent; padding: 0; font-family: inherit;
-            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+            position: relative; flex: 0 0 112px; height: 64px; border-radius: 11px;
+            overflow: hidden; cursor: pointer; scroll-snap-align: start; padding: 0;
+            background: #3f4a3f; border: 2px solid transparent; font-family: inherit;
+            transition: border-color 0.2s ease, transform 0.2s ease;
             animation: thumbIn 0.4s ease backwards;
         }
-        .room-thumb:hover { transform: translateY(-3px); box-shadow: 0 7px 16px rgba(0,0,0,0.42); }
-        .room-thumb.active { border-color: #92db9f; transform: translateY(-2px); }
-        .room-thumb img {
-            width: 100%; height: 100%; object-fit: cover; display: block;
-            transition: transform 0.35s ease;
-        }
-        .room-thumb:hover img { transform: scale(1.07); }
+        .room-thumb:hover { transform: translateY(-2px); }
+        .room-thumb.active { border-color: var(--mint); }
+        .room-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.85); }
+        .room-thumb::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 35%, rgba(0,0,0,0.7)); }
         .room-thumb .label {
-            position: absolute; top: 5px; left: 7px; color: #fff; font-weight: 700;
-            font-size: 13px; text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+            position: absolute; left: 8px; bottom: 6px; z-index: 1; color: #fff;
+            font-weight: 700; font-size: 13px; text-align: left; line-height: 1.1;
         }
-        .room-thumb .count {
-            position: absolute; bottom: 5px; right: 6px; color: #fff; font-size: 9px;
-            background: rgba(0,0,0,0.6); padding: 2px 7px; border-radius: 999px;
-        }
-        .strip-empty { color: #ddd8d7; text-align: center; font-size: 12px; padding: 12px; }
+        .room-thumb .label small { display: block; font-size: 10px; font-weight: 500; opacity: 0.85; }
+        .strip-empty { color: #ddd8d7; font-size: 12px; padding: 12px; }
 
-        @keyframes thumbIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to   { opacity: 1; transform: translateY(0); }
+        @keyframes thumbIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+        .viewer-message {
+            position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center;
+            color: #e6e6e2; font-size: 15px; text-align: center; padding: 24px;
         }
+
+        /* Pannellum's own pieces, restyled to match */
+        .pnlm-container { background: #141714 !important; font-family: inherit !important; }
+        .pnlm-load-box { border-radius: 14px !important; background: rgba(20,24,21,0.8) !important; }
+        .pnlm-hotspot-base.pnlm-scene {
+            width: 46px; height: 46px; border-radius: 50%; background: rgba(25,115,53,0.88);
+            border: 2px solid #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.4); cursor: pointer;
+            margin: -23px 0 0 -23px;
+        }
+        .pnlm-hotspot-base.pnlm-scene::before {
+            content: ''; position: absolute; inset: -2px; border-radius: 50%;
+            border: 2px solid rgba(146,219,159,0.9); animation: pulse 2s ease-out infinite;
+        }
+        .pnlm-hotspot-base.pnlm-scene::after {
+            content: ''; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px;
+            border-top: 3px solid #fff; border-right: 3px solid #fff;
+            transform: translate(-50%, -30%) rotate(-45deg);
+        }
+        .pnlm-hotspot-base.pnlm-scene:hover { background: var(--green-darker); }
+        .pnlm-tooltip span {
+            background: rgba(20,24,21,0.88) !important; border-radius: 8px !important;
+            font-size: 13px !important; padding: 6px 10px !important;
+        }
+        .pnlm-tooltip span::after { border-color: rgba(20,24,21,0.88) transparent transparent transparent !important; }
+        @keyframes pulse { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.6); opacity: 0; } }
 
         @media (prefers-reduced-motion: reduce) {
-            .room-thumb, .room-thumb img, .rooms-strip { animation: none; transition: none; }
+            .room-thumb, .hint svg, .pnlm-hotspot-base.pnlm-scene::before { animation: none; }
+            .info-card, .hint { transition: none; }
         }
 
-        @media (max-width: 1024px) { .topnav { padding: 14px 24px; flex-wrap: wrap; } }
+        @media (max-width: 1024px) { .topnav { padding: 10px 24px; flex-wrap: wrap; } }
 
-        /* Topnav: the flex-wrap layout at wider breakpoints packs the
-           menu, logo and button groups unpredictably at phone widths,
-           so stack them into clear rows instead. Matches welcome.blade.php. */
+        /* Phones: a compact info card, smaller controls and thumbnails. */
         @media (max-width: 640px) {
-            .topnav { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
-            .topnav .logo { order: -1; justify-content: center; }
-            .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
-            .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
-            .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
+            .info-card { top: 12px; left: 12px; width: calc(100% - 82px); padding: 12px 14px; border-radius: 14px; }
+            .info-title { font-size: 20px; }
+            .info-meta { font-size: 13px; }
+            .info-caption { display: none; }
+            .info-actions { margin-top: 10px; }
+            .info-actions a { height: 36px; font-size: 13px; }
+            .controls { top: 12px; right: 12px; }
+            .ctrl { width: 40px; height: 40px; }
+            .bottom { padding: 0 12px 12px; }
+            .dock { width: 100%; }
+            .dock.collapsed { width: auto; }
+            .dock-toggle { height: 54px; padding: 0 6px; font-size: 10px; }
+            .room-thumb { flex-basis: 92px; height: 54px; }
+            .hint { font-size: 13px; }
+        }
+        /* Short screens (e.g. phone turned sideways): keep the card small */
+        @media (max-height: 520px) {
+            .info-caption, .info-actions { display: none; }
         }
     </style>
 </head>
@@ -174,34 +283,73 @@
 
     @include('partials.public-nav')
 
-    <div class="vr-titlebar">
-        <h1>VR Room Viewing &mdash; 360&deg; Virtual Tour</h1>
-    </div>
-
-    <div class="viewer-shell">
+    <main class="stage" id="stage" aria-label="360 degree virtual tour">
         <div id="panorama"></div>
         <div class="viewer-message" id="viewerMessage" aria-live="polite">Loading virtual tours…</div>
-    </div>
 
-    <div class="rooms-strip">
-        <h2>Rooms</h2>
-        <div class="rooms-scroll" id="roomsScroll" aria-live="polite">
-            <div class="strip-empty">Loading…</div>
+        <section class="overlay glass info-card is-hidden" id="infoCard" aria-live="polite">
+            <div class="info-eyebrow" id="infoEyebrow"></div>
+            <h1 class="info-title" id="infoTitle">Virtual Tour</h1>
+            <p class="info-meta" id="infoMeta"></p>
+            <p class="info-caption" id="infoCaption"></p>
+            <div class="info-actions">
+                <a href="{{ route('public.apply') }}" class="primary">Apply now</a>
+                <a href="{{ route('public.inquiry') }}" class="ghost">Inquire</a>
+            </div>
+        </section>
+
+        <div class="overlay glass controls" role="toolbar" aria-label="View controls">
+            <button type="button" class="ctrl" id="zoomIn" aria-label="Zoom in" title="Zoom in">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button type="button" class="ctrl" id="zoomOut" aria-label="Zoom out" title="Zoom out">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+            </button>
+            <div class="ctrl-sep"></div>
+            <button type="button" class="ctrl" id="rotateBtn" aria-pressed="true" aria-label="Auto-rotate" title="Auto-rotate">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+            </button>
+            <button type="button" class="ctrl" id="fullBtn" aria-label="Full screen" title="Full screen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+            </button>
         </div>
-    </div>
+
+        <div class="overlay glass hint" id="hint" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M11 11.5v-1a1.5 1.5 0 0 1 3 0V12"/><path d="M14 11a1.5 1.5 0 0 1 3 0v1.5"/><path d="M17 12a1.5 1.5 0 0 1 3 0v3a6 6 0 0 1-6 6h-2a6 6 0 0 1-5-2.7L4.3 14.6a1.5 1.5 0 0 1 2.4-1.8L8 14.5"/></svg>
+            Drag to look around
+        </div>
+
+        <div class="overlay bottom">
+            <nav class="glass spots" id="spots" aria-label="Spots in this room" hidden></nav>
+            <div class="glass dock" id="dock">
+                <button type="button" class="dock-toggle" id="dockToggle" aria-expanded="true" aria-controls="roomsScroll">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    Available<br>rooms
+                </button>
+                <div class="rooms-scroll" id="roomsScroll" aria-live="polite">
+                    <div class="strip-empty">Loading…</div>
+                </div>
+            </div>
+        </div>
+    </main>
 
 <script>
 (function () {
     let viewer = null;
     let tours = [];
-    let activeRoomId = null;
+    let activeRoom = null;
+    let rotating = true;
+    const ROTATE_SPEED = -2; // degrees per second; matches the API default
 
-    const panoramaEl = document.getElementById('panorama');
-    const messageEl = document.getElementById('viewerMessage');
-    const roomsScroll = document.getElementById('roomsScroll');
+    const $ = id => document.getElementById(id);
+    const stage = $('stage');
+    const panoramaEl = $('panorama');
+    const messageEl = $('viewerMessage');
+    const roomsScroll = $('roomsScroll');
 
     function showMessage(text) {
         panoramaEl.style.display = 'none';
+        $('infoCard').classList.add('is-hidden');
         messageEl.style.display = 'flex';
         messageEl.textContent = text;
     }
@@ -212,14 +360,72 @@
         return d.innerHTML;
     }
 
+    function peso(amount) {
+        const n = Number(amount);
+        return isNaN(n) ? '' : '₱' + n.toLocaleString('en-PH', { maximumFractionDigits: 0 });
+    }
+
+    /** Fills the floating card with the current room's facts. */
+    function renderInfo(room) {
+        const bits = [];
+        if (room.floor) bits.push('Floor ' + room.floor);
+        if (room.vacant_beds) bits.push(room.vacant_beds + ' bed' + (room.vacant_beds === 1 ? '' : 's') + ' open');
+        $('infoEyebrow').textContent = bits.join(' · ');
+        $('infoTitle').textContent = 'Room ' + room.room_no;
+
+        const meta = [];
+        if (room.room_type) meta.push(escapeHtml(room.room_type));
+        if (room.capacity) meta.push('Good for ' + room.capacity + ' pax');
+        if (room.monthly_rate) meta.push('<strong>' + peso(room.monthly_rate) + '</strong> / month');
+        $('infoMeta').innerHTML = meta.join(' · ');
+
+        $('infoCaption').textContent = room.vr_caption || '';
+        $('infoCaption').style.display = room.vr_caption ? '' : 'none';
+        $('infoCard').classList.remove('is-hidden');
+    }
+
+    /**
+     * The "spots" bar lets visitors jump between the photos inside a room
+     * (e.g. Entrance → Bedside) without hunting for the arrows. Hidden when
+     * the room only has one photo.
+     */
+    function renderSpots(room, currentId) {
+        const scenes = Object.entries(room.tour.scenes);
+        const bar = $('spots');
+        bar.hidden = scenes.length < 2;
+        bar.innerHTML = scenes.map(([id, scene]) => `
+            <button type="button" class="spot${id === currentId ? ' active' : ''}" data-scene="${id}"${id === currentId ? ' aria-current="true"' : ''}>${escapeHtml(scene.title)}</button>
+        `).join('');
+        bar.querySelectorAll('.spot').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (viewer && btn.dataset.scene !== String(viewer.getScene())) viewer.loadScene(btn.dataset.scene);
+            });
+        });
+    }
+
+    /**
+     * Pannellum's zoom number is the view's WIDTH. On an upright phone the
+     * screen is much taller than wide, so the same width shows a huge amount
+     * of ceiling and floor and the room looks tiny. For upright screens,
+     * start zoomed in so the view is about 100° tall instead.
+     * Returns null on landscape screens (keep the API's value).
+     */
+    function portraitStartHfov() {
+        const aspect = stage.clientWidth / Math.max(1, stage.clientHeight);
+        if (aspect >= 1) return null;
+        const targetVfov = 100 * Math.PI / 180;
+        return 2 * Math.atan(Math.tan(targetVfov / 2) * aspect) * 180 / Math.PI;
+    }
+
     /**
      * Boots Pannellum with a room's full multi-scene tour config. The config
      * comes straight from the API already shaped the way Pannellum expects,
      * so scene switching and hotspot arrows work without extra wiring.
+     * Pannellum's own title and buttons are switched off because this page
+     * draws its own floating card and controls instead.
      */
     function loadTour(room) {
-        activeRoomId = room.id;
-
+        activeRoom = room;
         messageEl.style.display = 'none';
         panoramaEl.style.display = 'block';
 
@@ -228,62 +434,100 @@
             viewer = null;
         }
 
-        // Prefix each scene's title with the room number so Pannellum's own
-        // bottom-left title carries both, instead of duplicating it in a
-        // separate overlay chip.
-        const tour = {
-            default: room.tour.default,
-            scenes: Object.fromEntries(
-                Object.entries(room.tour.scenes).map(([id, scene]) => [
-                    id,
-                    Object.assign({}, scene, {
-                        title: 'Room ' + room.room_no + ': ' + scene.title,
-                    }),
-                ])
-            ),
-        };
+        const startHfov = portraitStartHfov();
+        const scenes = Object.fromEntries(
+            Object.entries(room.tour.scenes).map(([id, scene]) => {
+                const copy = Object.assign({}, scene);
+                delete copy.title; // the floating card shows the name instead
+                if (startHfov) copy.hfov = Math.max(copy.minHfov || 50, Math.min(copy.hfov, startHfov));
+                return [id, copy];
+            })
+        );
+        const defaults = Object.assign({}, room.tour.default, {
+            autoRotate: rotating ? ROTATE_SPEED : false,
+        });
 
-        viewer = pannellum.viewer('panorama', Object.assign({}, tour, {
+        viewer = pannellum.viewer('panorama', {
+            default: defaults,
+            scenes: scenes,
             autoLoad: true,
-            showControls: true,
+            showControls: false,
             hotSpotDebug: false,
-            // Pannellum's default field of view (100°) reads as quite zoomed in
-            // on a room-sized space. Starting wider shows more of the room at
-            // once; visitors can still pinch/scroll in and out from here.
-            hfov: 125,
-            minHfov: 50,
-            maxHfov: 140,
-        }));
+            // Zoom limits (hfov/minHfov/maxHfov) come per scene from the API,
+            // sized so the view never runs past the photo's edge.
+        });
 
+        viewer.on('scenechange', id => renderSpots(room, String(id)));
+        viewer.on('mousedown', hideHint);
+        viewer.on('touchstart', hideHint);
+
+        renderInfo(room);
+        renderSpots(room, String(room.tour.default.firstScene));
         markActiveThumb();
     }
 
     function markActiveThumb() {
         roomsScroll.querySelectorAll('.room-thumb').forEach(thumb => {
-            thumb.classList.toggle('active', Number(thumb.dataset.room) === activeRoomId);
+            const on = !!activeRoom && Number(thumb.dataset.room) === activeRoom.id;
+            thumb.classList.toggle('active', on);
+            thumb.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
     }
 
     function renderRoomStrip() {
         if (tours.length === 0) {
-            roomsScroll.innerHTML = '<div class="strip-empty">No virtual tours have been published yet.</div>';
+            roomsScroll.innerHTML = '<div class="strip-empty">No available rooms right now.</div>';
             return;
         }
 
         roomsScroll.innerHTML = tours.map((room, i) => `
-            <button type="button" class="room-thumb" data-room="${room.id}" style="animation-delay:${i * 55}ms" aria-label="View Room ${escapeHtml(room.room_no)} tour, ${room.scene_count} view${room.scene_count === 1 ? '' : 's'}">
+            <button type="button" class="room-thumb" data-room="${room.id}" style="animation-delay:${i * 55}ms" aria-label="View Room ${escapeHtml(room.room_no)} tour">
                 ${room.thumbnail_url ? `<img src="${room.thumbnail_url}" alt="" loading="lazy" decoding="async">` : ''}
-                <span class="label">${escapeHtml(room.room_no)}</span>
-                <span class="count">${room.scene_count} view${room.scene_count === 1 ? '' : 's'}</span>
+                <span class="label">Room ${escapeHtml(room.room_no)}<small>${[room.capacity ? room.capacity + ' pax' : '', room.monthly_rate ? peso(room.monthly_rate) + '/mo' : ''].filter(Boolean).join(' · ')}</small></span>
             </button>
         `).join('');
 
         roomsScroll.querySelectorAll('.room-thumb').forEach(thumb => {
             thumb.addEventListener('click', () => {
                 const room = tours.find(r => r.id === Number(thumb.dataset.room));
-                if (room) loadTour(room);
+                if (room && room !== activeRoom) loadTour(room);
             });
         });
+    }
+
+    // ===== Floating controls =====
+    function zoomBy(step) {
+        if (viewer) viewer.setHfov(viewer.getHfov() + step);
+    }
+    $('zoomIn').addEventListener('click', () => zoomBy(-15));
+    $('zoomOut').addEventListener('click', () => zoomBy(15));
+
+    $('rotateBtn').addEventListener('click', function () {
+        rotating = !rotating;
+        this.setAttribute('aria-pressed', rotating ? 'true' : 'false');
+        if (!viewer) return;
+        if (rotating) viewer.startAutoRotate(ROTATE_SPEED);
+        else viewer.stopAutoRotate();
+    });
+
+    // Full screen covers the whole stage (not just Pannellum's box) so the
+    // floating card and controls come along.
+    $('fullBtn').addEventListener('click', () => {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else stage.requestFullscreen();
+    });
+    if (!document.fullscreenEnabled) $('fullBtn').style.display = 'none';
+
+    $('dockToggle').addEventListener('click', function () {
+        const collapsed = $('dock').classList.toggle('collapsed');
+        this.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    });
+
+    // ===== First-visit hint =====
+    const hintTimer = setTimeout(hideHint, 6000);
+    function hideHint() {
+        clearTimeout(hintTimer);
+        $('hint').classList.add('gone');
     }
 
     fetch('/public-api/vr-tours')
@@ -293,7 +537,8 @@
             renderRoomStrip();
 
             if (tours.length === 0) {
-                showMessage('No virtual tours have been published yet. Please check back soon.');
+                showMessage('No rooms are available for viewing right now. Please check back soon.');
+                hideHint();
                 return;
             }
 
@@ -301,6 +546,7 @@
         })
         .catch(() => {
             showMessage('Could not load the virtual tours right now.');
+            hideHint();
             roomsScroll.innerHTML = '<div class="strip-empty">Could not load rooms.</div>';
         });
 })();

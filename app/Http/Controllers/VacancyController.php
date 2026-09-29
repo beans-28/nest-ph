@@ -354,6 +354,7 @@ class VacancyController extends Controller
                 'id' => $scene->id,
                 'title' => $scene->title,
                 'panorama_url' => Storage::disk('public')->url($scene->panorama_path),
+                'filled_url' => $scene->filled_path ? Storage::disk('public')->url($scene->filled_path) : null,
                 'is_default' => $scene->is_default,
                 'haov' => $scene->haov,
                 'vaov' => $scene->vaov,

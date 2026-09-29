@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DormitoryProfile;
 use App\Models\Floor;
 use App\Models\Room;
+use App\Models\VrScene;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +15,15 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PublicController extends Controller
 {
+    /**
+     * Virtual tour zoom limits, in degrees of view width. 125° starts wide
+     * enough to take in most of a room; each scene may lower the zoom-out
+     * limit further so the view never goes past the edge of its photo.
+     */
+    private const VIEWER_START_HFOV = 125;
+    private const VIEWER_MIN_HFOV = 50;
+    private const VIEWER_MAX_HFOV = 140;
+
    /**
     * Landing page. Server-renders "Beds Available" and "Happy Tenants" from
     * real data; star ratings come from the Review model. Happy Tenants uses
@@ -180,8 +190,16 @@ class PublicController extends Controller
      */
     public function vrTours(): JsonResponse
     {
+        // Only rooms someone can actually move into: the tour page labels
+        // this list "Available rooms", so full or under-maintenance rooms
+        // are left out.
         $rooms = Room::with(['floor:id,floor_number', 'vrScenes.hotspots.targetScene:id,title'])
+            ->withCount([
+                'beds', // total beds = how many people the room fits
+                'beds as vacant_beds_count' => fn ($q) => $q->where('status', 'vacant'),
+            ])
             ->where('vr_visibility', 'public')
+            ->where('status', 'available')
             ->whereHas('vrScenes')
             ->orderBy('room_no')
             ->get();
@@ -194,6 +212,8 @@ class PublicController extends Controller
                 'room_type' => $room->room_type,
                 'monthly_rate' => $room->monthly_rate,
                 'vr_caption' => $room->vr_caption,
+                'vacant_beds' => $room->vacant_beds_count,
+                'capacity' => $room->beds_count,
                 'scene_count' => $room->vrScenes->count(),
                 'thumbnail_url' => $room->vrScenes->isNotEmpty()
                     ? Storage::disk('public')->url(
@@ -216,39 +236,90 @@ class PublicController extends Controller
         $scenes = [];
 
         foreach ($room->vrScenes as $scene) {
-            // A partial (phone) panorama has no image data above or below its
-            // captured band, which renders as black. Constraining pitch to the
-            // photo's real vertical coverage keeps the visitor inside the
-            // photographed area instead of letting them tilt into the void.
-            $halfVaov = max(1, (float) $scene->vaov / 2);
-            $isFullSphere = (float) $scene->vaov >= 179;
-
-            $scenes[(string) $scene->id] = [
-                'title' => $scene->title,
-                'panorama' => Storage::disk('public')->url($scene->panorama_path),
-                // Partial (phone) panoramas need their real coverage angles,
-                // otherwise Pannellum stretches them across a full sphere.
-                'haov' => (float) $scene->haov,
-                'vaov' => (float) $scene->vaov,
-                'vOffset' => (float) $scene->v_offset,
-                'minPitch' => $isFullSphere ? -90 : round((float) $scene->v_offset - $halfVaov, 2),
-                'maxPitch' => $isFullSphere ? 90 : round((float) $scene->v_offset + $halfVaov, 2),
-                'hotSpots' => $scene->hotspots->map(fn ($hotspot) => [
-                    'pitch' => (float) $hotspot->pitch,
-                    'yaw' => (float) $hotspot->yaw,
-                    'type' => 'scene',
-                    'text' => $hotspot->label ?: ('Go to ' . $hotspot->targetScene?->title),
-                    'sceneId' => (string) $hotspot->target_scene_id,
-                ])->values()->all(),
-            ];
+            $scenes[(string) $scene->id] = array_merge(
+                ['title' => $scene->title],
+                $this->sceneView($scene),
+                [
+                    'hotSpots' => $scene->hotspots->map(fn ($hotspot) => [
+                        'pitch' => (float) $hotspot->pitch,
+                        'yaw' => (float) $hotspot->yaw,
+                        'type' => 'scene',
+                        'text' => $hotspot->label ?: ('Go to ' . $hotspot->targetScene?->title),
+                        'sceneId' => (string) $hotspot->target_scene_id,
+                    ])->values()->all(),
+                ],
+            );
         }
 
         return [
             'default' => [
                 'firstScene' => (string) $default->id,
                 'sceneFadeDuration' => 900,
+                // Slowly turn the room on its own so it feels alive before the
+                // visitor touches it; it stops as soon as they drag, and
+                // resumes after a few idle seconds.
+                'autoRotate' => -2,
+                'autoRotateInactivityDelay' => 5000,
             ],
             'scenes' => $scenes,
+        ];
+    }
+
+    /**
+     * Which image to show and how far the visitor may look and zoom.
+     *
+     * - True 360 photo (e.g. from the 360 Photo Cam app): free look in every
+     *   direction.
+     * - Phone panorama with a painted ceiling/floor (filled_path): the filled
+     *   image covers the full 180° up-down, so the visitor can look straight
+     *   up and down.
+     * - Phone panorama without one (painting failed): keep the camera inside
+     *   the photographed band, as before.
+     *
+     * Zoom-out is capped so the view is never wider or taller than the photo,
+     * which is what caused black bars even when the visitor didn't tilt.
+     */
+    private function sceneView(VrScene $scene): array
+    {
+        $haov = (float) $scene->haov;
+        $vaov = (float) $scene->vaov;
+        $vOffset = (float) $scene->v_offset;
+        $isFullSphere = $vaov >= 179;
+        // filled_path is the painted copy for phone panoramas, or a shrunk
+        // phone-safe copy for large full 360 photos.
+        $filled = (bool) $scene->filled_path;
+
+        if ($isFullSphere || $filled) {
+            $view = [
+                'panorama' => Storage::disk('public')->url($filled ? $scene->filled_path : $scene->panorama_path),
+                'haov' => $haov,
+                'vaov' => 180.0,
+                'vOffset' => 0.0,
+                'minPitch' => -90,
+                'maxPitch' => 90,
+            ];
+            $maxHfov = min(self::VIEWER_MAX_HFOV, $haov);
+        } else {
+            $halfVaov = max(1, $vaov / 2);
+            $view = [
+                'panorama' => Storage::disk('public')->url($scene->panorama_path),
+                'haov' => $haov,
+                'vaov' => $vaov,
+                'vOffset' => $vOffset,
+                'minPitch' => round($vOffset - $halfVaov, 2),
+                'maxPitch' => round($vOffset + $halfVaov, 2),
+            ];
+            // On a landscape screen the view is shorter than it is wide, so
+            // capping the width at the photo's height keeps black out.
+            $maxHfov = min(self::VIEWER_MAX_HFOV, $haov, $vaov);
+        }
+
+        $maxHfov = max(self::VIEWER_MIN_HFOV + 1, round($maxHfov, 2));
+
+        return $view + [
+            'hfov' => min(self::VIEWER_START_HFOV, $maxHfov),
+            'minHfov' => self::VIEWER_MIN_HFOV,
+            'maxHfov' => $maxHfov,
         ];
     }
 

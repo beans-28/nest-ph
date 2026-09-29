@@ -82,6 +82,7 @@
   .fld{ display:flex; flex-direction:column; gap:6px; }
   .fld label{ font-size:11px; font-weight:700; letter-spacing:.4px; color:var(--text-mid); text-transform:uppercase; }
   .fld input[type=text], .fld select{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); min-width:210px; background:#fff; }
+  .tip-list{ margin:6px 0; padding-left:18px; }
   .tip{ background:#eef5ef; border:1px solid #cfe0d1; border-radius:8px; padding:10px 14px; font-size:12px; color:#33513a; line-height:1.6; margin-bottom:16px; }
 
   /* Step 2 — two column: photo left, arrows right */
@@ -192,8 +193,17 @@
           </div>
           <div class="step-body">
             <div class="tip">
-              <strong>Taking the photo:</strong> stand in the middle of the spot and use your phone's
-              <strong>Panorama</strong> mode, turning slowly in one direction. A full spin is best.
+              <strong>Best option — full 360 photo:</strong> use the free <strong>360 Photo Cam</strong> app.
+              Stand in the middle of the spot and follow the app's on-screen dots until it has captured
+              everything, including the ceiling and floor, then upload the finished photo here.
+              <br><br>
+              <strong>No app? Use your phone's Panorama mode:</strong>
+              <ul class="tip-list">
+                <li>Hold the phone <strong>upright (portrait)</strong>, not sideways — this captures more of the ceiling and floor.</li>
+                <li>If your camera has a <strong>0.5×</strong> (ultra-wide) lens, switch to it before starting.</li>
+                <li>Hold the phone at <strong>chest height</strong> and turn your body on the spot instead of walking.</li>
+              </ul>
+              Any ceiling or floor a panorama misses is softly filled in for visitors.
             </div>
 
             <div class="photo-grid" id="photoGrid"></div>
@@ -603,16 +613,19 @@
   }
 
   function viewerConfig(scene, extra){
-    // Mirror the public viewer: keep the camera inside the photo's real
-    // vertical coverage so a partial panorama doesn't show black bands.
-    const vaov = Number(scene.vaov);
-    const vOffset = Number(scene.v_offset);
+    // Mirror the public viewer. When the server has painted a soft ceiling
+    // and floor onto a phone panorama (filled_url), show that copy so the
+    // admin sees exactly what visitors see. Otherwise keep the camera inside
+    // the photo's real vertical coverage so it doesn't show black bands.
+    const filled = !!scene.filled_url;
+    const vaov = filled ? 180 : Number(scene.vaov);
+    const vOffset = filled ? 0 : Number(scene.v_offset);
     const isFullSphere = vaov >= 179;
     const halfVaov = Math.max(1, vaov / 2);
 
     return Object.assign({
       type:'equirectangular',
-      panorama: scene.panorama_url,
+      panorama: filled ? scene.filled_url : scene.panorama_url,
       autoLoad: true,
       showControls: true,
       haov: Number(scene.haov),
@@ -791,7 +804,9 @@
       const img = new Image();
       img.onload = function(){
         const ratio = img.width / img.height;
-        const preview = Object.assign({}, scene, { haov, vaov: Math.min(180, haov / ratio) });
+        // Preview the raw photo while dragging; the filled copy is rebuilt
+        // on the server once the new sweep is saved.
+        const preview = Object.assign({}, scene, { haov, vaov: Math.min(180, haov / ratio), filled_url: null });
         if(viewer){ viewer.destroy(); viewer = null; }
         viewer = pannellum.viewer('editorPanorama', viewerConfig(preview));
       };
