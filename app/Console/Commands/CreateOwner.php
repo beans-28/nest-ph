@@ -62,10 +62,16 @@ class CreateOwner extends Command
         $email = $this->askValid('Owner\'s email (used to log in)', 'email', ['required', 'email', 'max:255', 'unique:users,email']);
 
         while (true) {
-            $password = (string) $this->secret('Password (at least 8 characters, typing is hidden)');
+            $password = (string) $this->secret('Password (8+ characters with an uppercase letter, a number and a symbol; typing is hidden)');
 
-            if (strlen($password) < 8) {
-                $this->error('The password must be at least 8 characters.');
+            $check = \Illuminate\Support\Facades\Validator::make(
+                ['password' => $password],
+                ['password' => [\Illuminate\Validation\Rules\Password::defaults()]]
+            );
+            if ($check->fails()) {
+                foreach ($check->errors()->get('password') as $message) {
+                    $this->error($message);
+                }
                 continue;
             }
 

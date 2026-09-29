@@ -39,10 +39,15 @@
   table.history-table td.status { color: #194e19; font-weight: bold; }
 
   .signature { margin-top: 40px; font-size: 11.5px; }
+  .pdf-footer { position: fixed; bottom: -18px; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #8a8a8a; }
+  .brand-logo { height: 42px; width: auto; margin-bottom: 6px; }
 </style>
 </head>
 <body>
+  {{-- Dual branding: the dorm (PIC) issues this document; NEST.PH (PIP) generated it. --}}
+  <div class="pdf-footer">Issued by {{ $brandDormName }} &middot; Generated via NEST.PH Dormitory Management System</div>
   <div class="letter-header">
+    @if($brandLogoFile)<img src="{{ $brandLogoFile }}" class="brand-logo"><br>@endif
     <h1>{{ $dormName }}</h1>
     <p>Formal Demand for Payment</p>
   </div>

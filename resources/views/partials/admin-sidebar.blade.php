@@ -1,5 +1,5 @@
 <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"><span class="logo-text">NEST.PH</span></div>
+    @include('partials.sidebar-brand')
     <div class="sidebar-section-label">Quick Access</div>
     <ul class="nav-list">
         <li class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}" data-href="{{ route('dashboard') }}" tabindex="0">
@@ -60,6 +60,7 @@
             <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.4 5.6a9 9 0 11-12.8 0M12 3v8"/></svg></span>
             <span class="label">Log Out</span>
         </div>
+        @include('partials.powered-by')
     </div>
 </aside>
 <script src="{{ asset('js/sidebar-drawer.js') }}"></script>

@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Password Help | NEST.PH</title>
+    <title>Password Help · {{ $brandDormName }}</title>
+    <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
@@ -327,7 +328,39 @@
             .brand-mark { display: none; }
             .back-button { margin-bottom: 14px; }
         }
-    </style>
+        /* Real NEST.PH logo above the tagline (replaces the old drawn "N"). Phones keep hiding it via the existing .brand-mark rule. */
+        img.brand-mark { width: 72px; height: auto; margin: 0 0 28px; background: none; border-radius: 0; }
+        @media (min-width: 641px) { img.brand-mark { display: block; } }
+        /* ===== Fit the whole page in one window (no scrolling) =====
+           Same approach as the login pages: fill the height left under the top
+           bar instead of assuming it is 70px, center the step in the card, and
+           tighten spacing on shorter screens. */
+        body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+        .page-wrap { flex: 1; display: flex; flex-direction: column; }
+        .login-grid { flex: 1; min-height: 0; padding-top: clamp(10px, 2.2vh, 20px); padding-bottom: clamp(14px, 3.5vh, 44px); }
+        .login-right { display: flex; flex-direction: column; justify-content: center; padding-top: clamp(22px, 4.5vh, 52px); padding-bottom: clamp(20px, 4vh, 52px); }
+        .login-right > * { width: 100%; }
+        @media (max-width: 1024px) { .login-grid { grid-template-rows: auto auto; align-content: start; } }
+        @media (max-height: 820px) {
+            .login-right h2 { margin-top: 8px; margin-bottom: 14px; }
+            .form-group { margin-bottom: 14px; }
+            .form-group label { margin-bottom: 4px; }
+            .otp-row { margin-bottom: 16px; }
+            .btn-login { padding: 14px 0; }
+            .help-text { margin-top: 12px; }
+            img.brand-mark { margin-bottom: 18px; }
+        }
+        @media (max-height: 680px) {
+            .login-right h2 { font-size: 20px; }
+            .btn-login { padding: 12px 0; }
+            .otp-box { height: 48px; }
+        }
+        @media (max-width: 1024px) and (max-height: 820px) {
+            img.brand-mark { display: none; }
+            .back-button { margin-bottom: 10px; }
+            .login-left { padding-bottom: 12px; }
+        }
+</style>
 </head>
 <body>
 
@@ -338,8 +371,8 @@
         <div class="login-left">
             <button class="back-button" type="button" aria-label="Go back" onclick="window.location.href='{{ request('from') === 'admin' ? route('login.admin') : route('login.tenant') }}'">←</button>
             <div class="login-left-content">
-                <h1>Study hard, make friends, and live your<span class="accent">NEST life.</span></h1>
-                <div class="brand-mark"><span>N</span></div>
+                <img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="brand-mark" width="72" height="68">
+                <h1>Malayo sa bahay,<span class="accent">pero at home.</span></h1>
             </div>
         </div>
 
@@ -394,7 +427,8 @@
                         <input type="hidden" name="code" id="resetCodeField" value="">
                         <div class="form-group">
                             <label for="password">New Password</label>
-                            <input id="password" name="password" type="password" placeholder="Enter new password" required minlength="8" />
+                            <input id="password" name="password" type="password" placeholder="Enter new password" required minlength="8" aria-describedby="passwordRules" autocomplete="new-password" />
+                            @include('partials.password-rules', ['for' => 'password'])
                         </div>
                         <div class="form-group">
                             <label for="password_confirmation">Confirm Password</label>

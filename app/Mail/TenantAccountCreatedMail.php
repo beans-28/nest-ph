@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\DormitoryProfile;
 use App\Models\Tenant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -24,7 +25,7 @@ class TenantAccountCreatedMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('Your NEST.PH tenant account has been created')
+        return $this->subject('Your ' . DormitoryProfile::current()->dorm_name . ' tenant account has been created')
             ->view('emails.tenant-account-created');
     }
 }

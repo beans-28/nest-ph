@@ -16,6 +16,12 @@
     .topnav .nav-logout-form .btn { height: 38px; padding: 0 16px; font-size: 13px; }
     /* The logo is a link now; some pages' own styles don't remove the link underline */
     .topnav .logo, .topnav .logo:hover { text-decoration: none; color: #fff; }
+    /* The dorm's own logo/name (dual branding). Long names wrap to a second
+       line instead of being cut off with "...". */
+    .topnav .logo { white-space: normal; }
+    .topnav .logo .logo-name { max-width: 16em; line-height: 1.15; overflow-wrap: anywhere; text-wrap: balance; }
+    .topnav .logo .logo-img { flex-shrink: 0; }
+    .topnav .logo .logo-img-dorm { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: #fff; padding: 2px; }
     .topnav .menu a[aria-current="page"] { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
     /* Current page on the pill link: filled white instead of underlined (desktop; the phone menu has no pill shape) */
     @media (min-width: 861px) {
@@ -31,6 +37,9 @@
         }
         .topnav .logo { grid-column: 1; grid-row: 1; order: 0; justify-content: flex-start; font-size: 17px; }
         .topnav .logo .logo-img { height: 26px; }
+        .topnav .logo { min-width: 0; font-size: 16px; }
+        .topnav .logo .logo-name { max-width: none; }
+        .topnav .logo .logo-img-dorm { width: 28px; height: 28px; }
         .topnav .nav-apply {
             display: inline-flex; grid-column: 2; grid-row: 1;
             height: 38px; padding: 0 16px; font-size: 13px;
@@ -74,7 +83,7 @@
         <a href="{{ route('public.vr') }}" @if(request()->routeIs('public.vr')) aria-current="page" @endif>VR TOUR</a>
         <a href="{{ route('public.dorminfo') }}" class="pill" @if(request()->routeIs('public.dorminfo')) aria-current="page" @endif>About the Dorm</a>
     </div>
-    <a href="{{ route('home') }}" class="logo"><img src="{{ asset('images/nestph.png') }}" alt="" class="logo-img"> NEST.PH</a>
+    <a href="{{ route('home') }}" class="logo" title="{{ $brandDormName }}"><img src="{{ $brandLogoUrl ?? asset('images/nestph.png') }}" alt="" class="logo-img{{ $brandLogoUrl ? ' logo-img-dorm' : '' }}"> <span class="logo-name">{{ $brandDormName }}</span></a>
     @if(!empty($tenantSession))
     {{-- Signed-in tenant mid move-in: Log Out replaces Apply / Log In / Admin --}}
     <form method="POST" action="{{ route('logout') }}" class="nav-apply nav-logout-form">

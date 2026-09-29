@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\DormitoryProfile;
 use App\Models\LeaseContract;
 use App\Models\Tenant;
 use Illuminate\Bus\Queueable;
@@ -18,7 +19,7 @@ class MoveInPermitMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('Your Move-In Permit - NEST.PH')
+        return $this->subject('Your Move-In Permit - ' . DormitoryProfile::current()->dorm_name)
             ->view('emails.move-in-permit');
     }
 }

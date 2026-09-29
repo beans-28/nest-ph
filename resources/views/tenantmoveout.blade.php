@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH - Account Closed</title>
+<title>Account Closed · {{ $brandDormName }}</title>
+<link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -128,7 +129,7 @@
 <body>
 
   <div class="topbar">
-    <div class="topbar-logo"><img src="{{ asset('images/nestph.png') }}" alt="" class="logo-img"><span>NEST.PH</span></div>
+    <div class="topbar-logo"><img src="{{ $brandLogoUrl ?? asset('images/nestph.png') }}" alt="" class="logo-img"><span>{{ $brandDormName }}</span></div>
     <div class="topbar-right">
       <span class="topbar-username">{{ $tenant->full_name ?? 'Tenant' }}</span>
       <button type="button" class="logout-link" id="logoutBtn">Log Out</button>

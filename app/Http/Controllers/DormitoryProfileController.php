@@ -120,6 +120,36 @@ class DormitoryProfileController extends Controller
     }
 
     /**
+     * "Dorm Logo" — the dorm's own square logo, shown in the sidebar, login
+     * page, browser tab and emails, with "Powered by NEST.PH" alongside it.
+     * Separate from the cover photo because a wide banner can't shrink into
+     * a small icon.
+     */
+    public function uploadBrandLogo(Request $request): JsonResponse
+    {
+        $request->validate([
+            'brand_logo' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        $profile = DormitoryProfile::current();
+        if (! $profile->exists) {
+            $profile->save();
+        }
+
+        if ($profile->brand_logo_path && Storage::disk('public')->exists($profile->brand_logo_path)) {
+            Storage::disk('public')->delete($profile->brand_logo_path);
+        }
+
+        $path = $request->file('brand_logo')->store('dormitory-profile', 'public');
+        $profile->update(['brand_logo_path' => $path]);
+
+        return response()->json([
+            'message' => 'Dorm logo updated.',
+            'brand_logo_url' => Storage::disk('public')->url($path),
+        ]);
+    }
+
+    /**
      * Step 3 — upload or replace the combined legal policies & house rules
      * PDF that the public Dorm Info page displays.
      */

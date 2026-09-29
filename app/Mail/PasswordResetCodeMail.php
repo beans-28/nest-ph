@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\DormitoryProfile;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -16,7 +17,7 @@ class PasswordResetCodeMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('Your NEST.PH Password Reset Code')
+        return $this->subject('Your ' . DormitoryProfile::current()->dorm_name . ' Password Reset Code')
             ->view('emails.password-reset-code');
     }
 }

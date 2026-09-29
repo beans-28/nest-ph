@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH - My Profile</title>
+<title>My Profile · {{ $brandDormName }}</title>
+<link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -244,12 +245,12 @@
             <div class="pw-form-group">
               <label for="newPassword">New Password</label>
               <div class="pw-input-wrap">
-                <input id="newPassword" type="password" placeholder="Enter new password" autocomplete="new-password" minlength="8" required aria-describedby="newPasswordError">
+                <input id="newPassword" type="password" placeholder="Enter new password" autocomplete="new-password" minlength="8" required aria-describedby="newPasswordError newPasswordRules">
                 <button type="button" class="pw-toggle" data-target="newPassword" aria-label="Show password"></button>
               </div>
               <div class="field-error" id="newPasswordError" role="alert"></div>
             </div>
-            <div class="pw-hint">At least 8 characters.</div>
+            @include('partials.password-rules', ['for' => 'newPassword'])
 
             <div class="pw-form-group">
               <label for="confirmPassword">Confirm New Password</label>

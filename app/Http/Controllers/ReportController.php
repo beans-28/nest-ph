@@ -90,7 +90,7 @@ class ReportController extends Controller
             $filename = 'occupancy-report-' . now()->format('Y-m-d_His') . '.csv';
 
             $rows = [];
-            $rows[] = ['NEST.PH - Occupancy Report'];
+            $rows[] = [\App\Models\DormitoryProfile::current()->dorm_name.' - Occupancy Report (generated via NEST.PH)'];
             $rows[] = ['Generated', $report['generated_at']];
             $rows[] = [];
             $rows[] = ['Summary'];
@@ -121,7 +121,7 @@ class ReportController extends Controller
             $filename = 'financial-report-' . now()->format('Y-m-d_His') . '.csv';
 
             $rows = [];
-            $rows[] = ['NEST.PH - Financial / Billing Report'];
+            $rows[] = [\App\Models\DormitoryProfile::current()->dorm_name.' - Financial / Billing Report (generated via NEST.PH)'];
             $rows[] = ['Period', $report['range']['start'] . ' to ' . $report['range']['end']];
             $rows[] = [];
             $rows[] = ['Metric', 'Amount (PHP)'];

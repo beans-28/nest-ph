@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\DormitoryProfile;
 use App\Models\Inquiry;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -17,7 +18,7 @@ class InquiryAcknowledgmentMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('We received your inquiry - NEST.PH')
+        return $this->subject('We received your inquiry - ' . DormitoryProfile::current()->dorm_name)
             ->view('emails.inquiry-acknowledgment');
     }
 }

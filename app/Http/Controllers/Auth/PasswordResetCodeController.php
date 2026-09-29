@@ -74,7 +74,7 @@ class PasswordResetCodeController extends Controller
         $request->validate([
             'email' => ['required', 'email'],
             'code' => ['required', 'digits:5'],
-            'password' => ['required', 'confirmed', 'min:8'],
+            'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
         ]);
 
         if (! $this->codeIsValid($request->email, $request->code)) {

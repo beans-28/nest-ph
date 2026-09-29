@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\DormitoryProfile;
 use App\Models\Application;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -20,7 +21,7 @@ class ApplicationApprovedMail extends Mailable
 
     public function build(): self
     {
-        return $this->subject('Your NEST.PH application has been approved!')
+        return $this->subject('Your ' . DormitoryProfile::current()->dorm_name . ' application has been approved!')
             ->view('emails.application-approved');
     }
 }

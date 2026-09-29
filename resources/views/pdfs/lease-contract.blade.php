@@ -26,17 +26,22 @@
   .sig-line img { max-height: 44px; max-width: 100%; }
   .sig-caption { font-size: 10px; margin-top: 5px; }
   .sig-date { font-size: 10.5px; margin-top: 10px; }
+  .pdf-footer { position: fixed; bottom: -18px; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #8a8a8a; }
+  .brand-logo { height: 42px; width: auto; margin-bottom: 6px; }
 </style>
 </head>
 <body>
+  {{-- Dual branding: the dorm (PIC) issues this document; NEST.PH (PIP) generated it. --}}
+  <div class="pdf-footer">Issued by {{ $brandDormName }} &middot; Generated via NEST.PH Dormitory Management System</div>
 
   <div class="header">
-    <h1>NEST.PH</h1>
-    <p>Pureza Station Dormitory Lease Contract</p>
+    @if($brandLogoFile)<img src="{{ $brandLogoFile }}" class="brand-logo"><br>@endif
+    <h1>{{ $brandDormName }}</h1>
+    <p>Dormitory Lease Contract</p>
   </div>
 
   <p class="intro">
-    This Lease Contract ("Contract") is executed by and between NEST.PH Pureza Station Dormitory,
+    This Lease Contract ("Contract") is executed by and between {{ $brandDormName }},
     represented by its duly authorized administrator (hereinafter referred to as "Management"), and
     the tenant identified below (hereinafter referred to as "Tenant"). The parties agree to be bound
     by the terms and conditions set forth in this Contract, which shall govern the Tenant's occupancy

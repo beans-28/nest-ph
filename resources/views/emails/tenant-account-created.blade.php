@@ -3,15 +3,13 @@
 <body style="font-family: Arial, Helvetica, sans-serif; background:#f4f6f4; padding:40px 0; margin:0;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;">
         <tr>
-            <td style="background:linear-gradient(90deg,#567357,#a2d9a4);padding:22px 32px;">
-                <span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:0.02em;">NEST.PH</span>
-            </td>
+            @include('emails.partials.header')
         </tr>
         <tr>
             <td style="padding:32px;">
                 <h2 style="color:#292420;margin:0 0 12px;font-size:20px;">Welcome, {{ $tenant->full_name }}!</h2>
                 <p style="color:#4b5f4c;font-size:14px;line-height:1.6;margin:0 0 20px;">
-                    A tenant account has been created for you at NEST.PH by the dormitory administrator.
+                    A tenant account has been created for you at {{ $brandDormName }} by the dormitory administrator.
                 </p>
 
                 <div style="background:#eeeded;border-radius:10px;padding:16px 18px;margin:0 0 20px;">
@@ -29,6 +27,7 @@
                 </p>
             </td>
         </tr>
+        @include('emails.partials.footer')
     </table>
 </body>
 </html>

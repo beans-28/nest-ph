@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH - Dormitory Profile</title>
+<title>Dormitory Profile · {{ $brandDormName }}</title>
+<link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -49,6 +50,20 @@
   .card h2{ font-size:15px; font-weight:700; color:var(--green-accent); margin:0 0 4px 0; }
   .card .card-sub{ font-size:12px; color:var(--text-light); margin:0 0 18px 0; }
 
+  /* Dorm Logo card */
+  .brand-logo-row{ display:grid; grid-template-columns:auto 1fr auto; gap:20px; align-items:center; }
+  .brand-logo-tile{ width:96px; height:96px; border-radius:12px; background:#f4f6f4; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
+  .brand-logo-tile img{ width:72px; height:72px; object-fit:contain; }
+  .brand-logo-status{ font-size:13px; font-weight:600; color:var(--text-dark); margin:0 0 4px 0; }
+  .brand-logo-hint{ font-size:12px; color:var(--text-mid); margin:0 0 12px 0; }
+  .brand-logo-preview{ width:200px; }
+  .brand-logo-preview-label{ display:block; font-size:11px; font-weight:600; color:var(--text-mid); margin-bottom:6px; }
+  .brand-logo-preview-bar{ display:flex; align-items:center; gap:8px; padding:12px 14px; border-radius:10px; background:linear-gradient(180deg, var(--green-sidebar-top), var(--green-sidebar-bottom)); color:#fff; font-size:14px; font-weight:700; line-height:1.25; }
+  .brand-logo-preview-bar img{ width:24px; height:24px; object-fit:contain; flex-shrink:0; }
+  .brand-logo-preview-bar img.is-dorm{ background:#fff; border-radius:5px; padding:2px; }
+  .brand-logo-preview-bar span{ min-width:0; overflow-wrap:anywhere; text-wrap:balance; }
+  @media (max-width:900px){ .brand-logo-row{ grid-template-columns:auto 1fr; } .brand-logo-preview{ grid-column:1 / -1; width:auto; max-width:240px; } }
+  @media (max-width:420px){ .brand-logo-tile{ width:76px; height:76px; } .brand-logo-tile img{ width:56px; height:56px; } .brand-logo-row{ gap:14px; } }
   /* Cover photo */
   .cover-wrap{ position:relative; border-radius:12px; overflow:hidden; background:#e2e6e2; height:220px; margin-bottom:0; }
   .cover-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -293,6 +308,36 @@
               </div>
             </div>
             <input type="file" id="coverPhotoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
+          </div>
+
+          {{-- Dorm Logo (dual branding: dorm = PIC, NEST.PH = PIP) --}}
+          <div class="card">
+            <h2>Dorm Logo</h2>
+            <p class="card-sub">Your dorm's own mark. It appears in the sidebar, login page, browser tab, emails and PDFs, with a small "Powered by NEST.PH" beside it.</p>
+            <div class="brand-logo-row">
+              <div class="brand-logo-tile">
+                <img src="{{ $brandLogoOnLightUrl }}" id="brandLogoImg" alt="{{ $brandLogoUrl ? 'Current dorm logo' : 'NEST.PH logo (used until you upload one)' }}" width="80" height="80">
+              </div>
+              <div class="brand-logo-body">
+                <p class="brand-logo-status" id="brandLogoStatus">
+                  @if($brandLogoUrl)
+                    Your logo is live across the system.
+                  @else
+                    No dorm logo yet. The NEST.PH logo is shown in its place.
+                  @endif
+                </p>
+                <p class="brand-logo-hint">Square PNG, JPG or WEBP, up to 2 MB. A transparent background looks best.</p>
+                <button type="button" class="btn" id="changeBrandLogoBtn">{{ $brandLogoUrl ? 'Replace Logo' : 'Upload Logo' }}</button>
+              </div>
+              <div class="brand-logo-preview" aria-hidden="true">
+                <span class="brand-logo-preview-label">Sidebar preview</span>
+                <div class="brand-logo-preview-bar">
+                  <img src="{{ $brandLogoUrl ?? asset('images/nestph.png') }}" id="brandLogoPreviewImg" alt="" class="{{ $brandLogoUrl ? 'is-dorm' : '' }}">
+                  <span>{{ $brandDormName }}</span>
+                </div>
+              </div>
+            </div>
+            <input type="file" id="brandLogoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
           </div>
 
           {{-- Dormitory Information --}}
@@ -687,6 +732,35 @@
 
       toast('Cover photo updated.');
     } catch(e){ toast(e.message, true); }
+    this.value = '';
+  });
+
+  // ===== Dorm Logo =====
+  // Updates the card, its sidebar preview, and the real sidebar in place so
+  // the admin sees the result without reloading.
+  $('changeBrandLogoBtn').addEventListener('click', () => $('brandLogoInput').click());
+  $('brandLogoInput').addEventListener('change', async function(){
+    const file = this.files[0];
+    if(!file) return;
+    const btn = $('changeBrandLogoBtn');
+    const fd = new FormData();
+    fd.append('brand_logo', file);
+    btn.disabled = true;
+    btn.textContent = 'Uploading...';
+    try {
+      const body = await api('{{ route('dormitory-profile.brand-logo') }}', { method: 'POST', body: fd });
+      const url = body.brand_logo_url + '?t=' + Date.now();
+      $('brandLogoImg').src = url;
+      $('brandLogoImg').alt = 'Current dorm logo';
+      $('brandLogoPreviewImg').src = url;
+      $('brandLogoPreviewImg').classList.add('is-dorm');
+      const sideImg = document.querySelector('.sidebar-logo .logo-img');
+      if(sideImg){ sideImg.src = url; sideImg.classList.add('logo-img-dorm'); }
+      $('brandLogoStatus').textContent = 'Your logo is live across the system.';
+      toast('Dorm logo updated.');
+    } catch(e){ toast(e.message, true); }
+    btn.disabled = false;
+    btn.textContent = $('brandLogoPreviewImg').classList.contains('is-dorm') ? 'Replace Logo' : 'Upload Logo';
     this.value = '';
   });
 

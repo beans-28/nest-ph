@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Apply for Occupancy | NEST.PH</title>
+    <title>Apply for Occupancy · {{ $brandDormName }}</title>
+    <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
@@ -381,7 +382,10 @@
             .brand-mark { display: none; }
             .back-button { margin-bottom: 14px; }
         }
-    </style>
+            /* Real NEST.PH logo above the tagline (replaces the old drawn "N"). Phones keep hiding it via the existing .brand-mark rule. */
+        img.brand-mark { width: 72px; height: auto; margin: 0 0 28px; background: none; border-radius: 0; }
+        @media (min-width: 641px) { img.brand-mark { display: block; } }
+</style>
 </head>
 <body>
 
@@ -392,8 +396,8 @@
         <div class="apply-left">
             <button class="back-button" type="button" aria-label="Go back" onclick="window.location.href='{{ route('home') }}'">←</button>
             <div class="apply-left-content">
-                <h1>Study hard, make friends, and live your<span class="accent">NEST life.</span></h1>
-                <div class="brand-mark"><span>N</span></div>
+                <img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="brand-mark" width="72" height="68">
+                <h1>Malayo sa bahay,<span class="accent">pero at home.</span></h1>
             </div>
         </div>
 

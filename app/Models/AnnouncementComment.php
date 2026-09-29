@@ -33,7 +33,7 @@ class AnnouncementComment extends Model
     public function getAuthorNameAttribute(): string
     {
         if ($this->user_id) {
-            return $this->user?->name ?? 'NEST PH Admin';
+            return $this->user?->name ?? (DormitoryProfile::current()->dorm_name.' Admin');
         }
 
         return $this->tenant?->full_name ?? '(no name on record)';

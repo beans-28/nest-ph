@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>404 Not Found - NEST.PH</title>
+    <title>404 Not Found · {{ $brandDormName }}</title>
+    <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -70,7 +71,7 @@
     </style>
 </head>
 <body>
-    <div class="logo"><img src="{{ asset('images/nestph.png') }}" alt="">NEST.PH</div>
+    <div class="logo"><img src="{{ asset('images/nestphgreen.png') }}" alt="">NEST.PH</div>
     <div class="error-page">
         <h1>404</h1>
         <h2>This page doesn't exist</h2>

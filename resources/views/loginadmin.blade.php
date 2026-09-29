@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin Login | NEST.PH</title>
+    <title>Admin Login · {{ $brandDormName }}</title>
+    <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
@@ -139,21 +140,12 @@
             font-size: clamp(28px, 3.6vw, 40px);
             margin-top: 4px;
         }
+        /* The real NEST.PH logo (white version, for this dark background) */
         .brand-mark {
-            margin-top: 36px;
-            width: 150px;
-            height: 150px;
-            background: linear-gradient(180deg, #567357 0%, #a2d9a4 100%);
-            border-radius: 0 80px 80px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .brand-mark span {
-            font-family: 'Agbalumo', cursive;
-            font-size: 96px;
-            color: #fff;
-            line-height: 1;
+            display: block;
+            width: 72px;
+            height: auto;
+            margin-bottom: 28px;
         }
 
         .login-right-wrap {
@@ -275,8 +267,7 @@
         @media (max-width: 640px) {
             .login-left h1 { font-size: 22px; }
             .login-left h1 .accent { font-size: 26px; }
-            .brand-mark { width: 110px; height: 110px; }
-            .brand-mark span { font-size: 70px; }
+            .brand-mark { width: 56px; margin-bottom: 20px; }
             .tab-header a { padding: 13px 16px; font-size: 12.5px; min-height: 44px; }
 
             /* Topnav: the flex-wrap layout at wider breakpoints packs the
@@ -401,6 +392,55 @@
             .brand-mark { display: none; }
             .back-button { margin-bottom: 14px; }
         }
+        /* Dual branding: the dorm owns the login, NEST.PH is the platform */
+        .login-dorm-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+        .login-dorm-brand img { width: 52px; height: 52px; flex-shrink: 0; object-fit: contain; border-radius: 12px; background: #fff; padding: 4px; box-shadow: 0 1px 3px rgba(41,36,32,0.12); }
+        .login-dorm-brand span { min-width: 0; font-size: 20px; font-weight: 700; color: #292420; line-height: 1.2; overflow-wrap: anywhere; text-wrap: balance; }
+        .login-powered-by { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 24px 0 0; font-size: 12px; color: #5f5a57; }
+        .login-powered-by img { height: 14px; width: auto; }
+        .login-powered-by strong { color: #197335; letter-spacing: 0.02em; }
+        @media (max-width: 640px) { .login-dorm-brand img { width: 44px; height: 44px; } .login-dorm-brand span { font-size: 18px; } }
+        /* ===== Fit the whole login screen in one window (no scrolling) =====
+           The page used to assume the top bar is 70px tall; when it is taller
+           (browser scaling, wrapped nav) the page overflowed a little. Now the
+           login area simply fills whatever height is left under the bar, and
+           spacing shrinks on shorter screens so everything still fits. */
+        body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+        .page-wrap { flex: 1; display: flex; flex-direction: column; }
+        .login-grid { flex: 1; min-height: 0; padding-top: clamp(10px, 2.2vh, 20px); padding-bottom: clamp(14px, 3.5vh, 44px); }
+        .login-right { padding-top: clamp(22px, 4.5vh, 52px); padding-bottom: clamp(20px, 4vh, 52px); }
+        @media (max-height: 820px) {
+            .login-dorm-brand { margin-bottom: 12px; }
+            .login-dorm-brand img { width: 44px; height: 44px; }
+            .login-right h2 { margin-top: 8px; margin-bottom: 14px; }
+            .form-group { margin-bottom: 14px; }
+            .form-group label { margin-bottom: 4px; }
+            .btn-login { padding: 14px 0; }
+            .help-text { margin-top: 12px; }
+            .login-powered-by { margin-top: 12px; }
+            .brand-mark { margin-bottom: 18px; }
+        }
+        @media (max-height: 680px) {
+            .login-dorm-brand img { width: 36px; height: 36px; }
+            .login-dorm-brand span { font-size: 17px; }
+            .login-right h2 { font-size: 20px; }
+            .btn-login { padding: 12px 0; }
+        }
+        /* Tablets in landscape: tagline sits above the form, so drop the
+           decorative logo (NEST.PH still shows under the form) to fit. */
+        @media (max-width: 1024px) and (max-height: 820px) {
+            .brand-mark { display: none; }
+            .back-button { margin-bottom: 10px; }
+            .login-left { padding-bottom: 12px; }
+        }
+        /* The card fills the leftover height, so center the form inside it
+           instead of leaving an empty band at the bottom. */
+        .login-right { display: flex; flex-direction: column; justify-content: center; }
+        .login-right > * { width: 100%; }
+        /* Stacked layout: the tagline takes only its own height, the card the rest. */
+        @media (max-width: 1024px) {
+            .login-grid { grid-template-rows: auto auto; align-content: start; }
+        }
     </style>
 </head>
 <body>
@@ -412,8 +452,8 @@
         <div class="login-left">
             <button class="back-button" type="button" aria-label="Go back" onclick="window.location.href='{{ route('home') }}'">←</button>
             <div class="login-left-content">
-                <h1>Study hard, make friends, and live your<span class="accent">NEST life.</span></h1>
-                <div class="brand-mark"><span>N</span></div>
+                <img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="brand-mark" width="72" height="68">
+                <h1>Malayo sa bahay,<span class="accent">pero at home.</span></h1>
             </div>
         </div>
 
@@ -430,6 +470,10 @@
             </div>
 
             <div class="login-right">
+                <div class="login-dorm-brand">
+                    <img src="{{ $brandLogoOnLightUrl }}" alt="" width="48" height="48">
+                    <span>{{ $brandDormName }}</span>
+                </div>
                 <h2>Admin Log In</h2>
 
                 <form id="login-form" action="/admin/login" method="POST">
@@ -455,6 +499,7 @@
                 </form>
 
                 <p class="help-text">Did you forget your password? <a href="{{ route('passwords', ['from' => 'admin']) }}">Forgot Password</a></p>
+                <p class="login-powered-by">Powered by <img src="{{ asset('images/nestphgreen.png') }}" alt="" width="15" height="14"> <strong>NEST.PH</strong></p>
             </div>
         </div>
     </div>

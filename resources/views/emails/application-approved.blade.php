@@ -3,9 +3,7 @@
 <body style="font-family: Arial, Helvetica, sans-serif; background:#f4f6f4; padding:40px 0; margin:0;">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;">
         <tr>
-            <td style="background:linear-gradient(90deg,#567357,#a2d9a4);padding:22px 32px;">
-                <span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:0.02em;">NEST.PH</span>
-            </td>
+            @include('emails.partials.header')
         </tr>
         <tr>
             <td style="padding:32px;">
@@ -20,7 +18,7 @@
                     @if($temporaryPassword)
                         <p style="margin:0;font-size:14px;color:#292420;"><strong>Temporary Password:</strong> {{ $temporaryPassword }}</p>
                     @else
-                        <p style="margin:0;font-size:13px;color:#6b6b6b;">Use your existing NEST.PH account password to log in.</p>
+                        <p style="margin:0;font-size:13px;color:#6b6b6b;">Use your existing tenant portal password to log in.</p>
                     @endif
                 </div>
 
@@ -35,6 +33,7 @@
                 </p>
             </td>
         </tr>
+        @include('emails.partials.footer')
     </table>
 </body>
 </html>

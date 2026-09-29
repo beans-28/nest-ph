@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEST.PH - Study hard, make friends, and live your NEST life.</title>
+    <title>{{ $brandDormName }} · Malayo sa bahay, pero at home.</title>
+    <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -328,7 +329,7 @@
 
     <footer>
         <div class="footer-top">
-            <div class="footer-logo"><img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="logo-img"> NEST.PH</div>
+            <div class="footer-logo"><img src="{{ $brandLogoUrl ?? asset('images/nestph.png') }}" alt="" class="logo-img"> {{ $brandDormName }}</div>
             <form class="newsletter" onsubmit="return false;">
                 <label for="newsletter-email" class="visually-hidden">Email address</label>
                 <input id="newsletter-email" type="email" name="email" placeholder="Enter your email to inquire" autocomplete="email" required>
@@ -375,7 +376,7 @@
         </div>
 
         <div class="footer-bottom">
-            <span>Powered by {{ $dormName ?? 'NEST.PH' }} Dormitory Management System &copy; 2026. All rights reserved.</span>
+            <span>&copy; 2026 {{ $brandDormName }}. All rights reserved. &middot; Powered by NEST.PH Dormitory Management System</span>
         </div>
     </footer>
     </div>

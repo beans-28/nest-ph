@@ -728,7 +728,7 @@ class ApplicationController extends Controller
             $tenantUser = User::where('email', $application->email)->first();
 
             if (! $tenantUser) {
-                $temporaryPassword = Str::random(12);
+                $temporaryPassword = \App\Support\TemporaryPassword::generate();
 
                 $tenantUser = User::forceCreate([
                     'name' => $application->full_name,

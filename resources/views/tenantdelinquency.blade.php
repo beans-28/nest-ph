@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>NEST.PH - Delinquency Status</title>
+<title>Delinquency Status · {{ $brandDormName }}</title>
+<link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
@@ -167,7 +168,7 @@
         </div>
         <h1 class="blacklist-headline">WE'RE SORRY, {{ strtoupper(explode(' ', trim($tenant->full_name))[0] ?? 'TENANT') }}.</h1>
         <h1 class="blacklist-headline">YOUR ACCOUNT HAS BEEN FLAGGED AS <span class="flagged-word">DELINQUENT</span></h1>
-        <p class="blacklist-subtext">Despite multiple notices, reminders, and an emergency contact notification, your outstanding balance remains unsettled. As a result, your NEST.PH account has been permanently deactivated and added to our blacklist.</p>
+        <p class="blacklist-subtext">Despite multiple notices, reminders, and an emergency contact notification, your outstanding balance remains unsettled. As a result, your {{ $brandDormName }} tenant account has been permanently deactivated and added to our blacklist.</p>
 
         <div class="blacklist-stage-dots">
           @foreach($stages as $s)

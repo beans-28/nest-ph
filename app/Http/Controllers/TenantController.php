@@ -155,7 +155,7 @@ class TenantController extends Controller
 
         [$tenant, $temporaryPassword] = DB::transaction(function () use ($data, $bed, $idDocPath, $signedContractPath, $request) {
             $tenantRole = Role::firstOrCreate(['role_name' => 'tenant']);
-            $temporaryPassword = Str::random(12);
+            $temporaryPassword = \App\Support\TemporaryPassword::generate();
 
             // The `users` table only has a single `name` column -- there is
             // no first_name/last_name there, so we combine them here rather

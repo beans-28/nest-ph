@@ -47,7 +47,7 @@
 
 <header class="app-topbar">
     <div class="left">
-        <span class="logo">NEST.PH</span>
+        <span class="logo">{{ $brandDormName }}</span>
 
         @auth
             @php

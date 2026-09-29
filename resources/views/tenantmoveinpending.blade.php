@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Under Review | NEST.PH</title>
+    <title>Payment Under Review · {{ $brandDormName }}</title>
+    <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
@@ -21,8 +22,8 @@
         <div class="login-left">
             <a class="back-button" href="{{ route('home') }}" aria-label="Back to home">←</a>
             <div class="login-left-content">
-                <h1>Study hard, make friends, and live your<span class="accent">NEST life.</span></h1>
-                <div class="brand-mark" aria-hidden="true"><span>N</span></div>
+                <img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="brand-mark" width="72" height="68">
+                <h1>Malayo sa bahay,<span class="accent">pero at home.</span></h1>
             </div>
         </div>
 

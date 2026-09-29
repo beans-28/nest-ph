@@ -9,12 +9,16 @@
   .meta td { padding: 3px 8px; }
   .box { border: 2px solid #cd0000; padding: 14px; margin: 18px 0; background: #fff5f5; }
   .signature { margin-top: 50px; }
+  .pdf-footer { position: fixed; bottom: -18px; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #8a8a8a; }
+  .brand-logo { height: 42px; width: auto; margin-bottom: 6px; }
 </style>
 </head>
 <body>
+  {{-- Dual branding: the dorm (PIC) issues this document; NEST.PH (PIP) generated it. --}}
+  <div class="pdf-footer">Issued by {{ $brandDormName }} &middot; Generated via NEST.PH Dormitory Management System</div>
   <div class="header">
     <h1>NOTICE OF EVICTION</h1>
-    <p>NEST PH Dormitory Management</p>
+    <p>{{ $brandDormName }} Management</p>
   </div>
 
   <table class="meta">
@@ -27,7 +31,7 @@
 
   <p>
     This letter serves as formal notice that, due to persistent non-compliance
-    with your financial obligations under your lease agreement with NEST PH,
+    with your financial obligations under your lease agreement with {{ $brandDormName }},
     your account has been flagged as <strong>Delinquent</strong> and you have
     been placed on the dormitory's internal blacklist.
   </p>
@@ -40,7 +44,7 @@
   <p>
     You are hereby required to vacate your assigned unit/bedspace
     (<strong>{{ $room }}</strong>) on or before the date stated above, and to
-    settle any outstanding balance owed to NEST PH prior to your departure.
+    settle any outstanding balance owed to {{ $brandDormName }} prior to your departure.
   </p>
 
   <p>
@@ -50,7 +54,7 @@
 
   <div class="signature">
     <p>Sincerely,</p>
-    <p><strong>NEST PH Management</strong></p>
+    <p><strong>{{ $brandDormName }} Management</strong></p>
   </div>
 </body>
 </html>

@@ -39,7 +39,7 @@ NEST.PH's differentiator is that it spans the full dorm lifecycle in one system 
 
 ## Brand Commitments
 
-- Name/brand: **NEST.PH** — tagline "Study hard, make friends, and live your NEST life."
+- Name/brand: **NEST.PH** — tagline "Malayo sa bahay, pero at home." ("Far from home, but at home.")
 - Palette (from current public front end): green-light `#a2d9a4`, green-dark `#567357`, green-darker `#197335`, ink `#292420`, ink-alt `#21272a`, cream `#dcd8d7`, cream-light `#f2f4f8`, gray-border `#c1c7cd`.
 - Typeface: Roboto (400/500/700) via Google Fonts, falling back to system UI sans-serif.
 - Logo assets: `public/images/nestph.png`, `public/images/nestphgreen.png`.

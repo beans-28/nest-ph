@@ -15,6 +15,7 @@ class DormitoryProfile extends Model
         'contact_number',
         'contact_email',
         'logo_path',
+        'brand_logo_path',
         'policies_file_path',
         'contract_template_path',
         'business_permit_path',
@@ -36,6 +37,17 @@ class DormitoryProfile extends Model
         return static::first() ?? new static([
             'dorm_name' => 'NEST.PH',
         ]);
+    }
+
+    /**
+     * Public URL of the dorm's own logo, or null when none was uploaded
+     * (callers then fall back to the NEST.PH mark).
+     */
+    public function brandLogoUrl(): ?string
+    {
+        return $this->brand_logo_path
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->brand_logo_path)
+            : null;
     }
 
     /**

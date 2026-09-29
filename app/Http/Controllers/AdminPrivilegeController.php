@@ -131,7 +131,7 @@ class AdminPrivilegeController extends Controller
         ]);
 
         $adminRole = Role::where('role_name', 'admin')->firstOrFail();
-        $temporaryPassword = Str::random(10);
+        $temporaryPassword = \App\Support\TemporaryPassword::generate();
 
         $user = DB::transaction(function () use ($data, $adminRole, $temporaryPassword, $request) {
             $user = User::forceCreate([

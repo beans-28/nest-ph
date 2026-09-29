@@ -26,7 +26,7 @@ class Announcement extends Model
 
     public function getPosterNameAttribute(): string
     {
-        return $this->poster?->name ?? 'NEST PH Admin';
+        return $this->poster?->name ?? (DormitoryProfile::current()->dorm_name.' Admin');
     }
 
     public function getPosterInitialsAttribute(): string

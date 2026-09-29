@@ -201,4 +201,7 @@
         .btn-login { width: 100%; padding: 0 20px; }
         input, select, textarea { font-size: 16px !important; } /* avoid iOS zoom-on-focus */
     }
+    /* Real NEST.PH logo above the tagline (replaces the old drawn "N"). Phones keep hiding it via the existing .brand-mark rule. */
+    img.brand-mark { width: 72px; height: auto; margin: 0 0 28px; background: none; border-radius: 0; }
+    @media (min-width: 641px) { img.brand-mark { display: block; } }
 </style>
