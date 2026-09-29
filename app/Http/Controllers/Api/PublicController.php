@@ -237,7 +237,11 @@ class PublicController extends Controller
 
         foreach ($room->vrScenes as $scene) {
             $scenes[(string) $scene->id] = array_merge(
-                ['title' => $scene->title],
+                [
+                    'title' => $scene->title,
+                    // Shown as "Last updated on ..." over the photo.
+                    'updatedAt' => $scene->photo_updated_at?->toIso8601String(),
+                ],
                 $this->sceneView($scene),
                 [
                     'hotSpots' => $scene->hotspots->map(fn ($hotspot) => [

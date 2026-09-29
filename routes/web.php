@@ -155,6 +155,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/vr-tours/rooms/{room}/scenes', [VrTourController::class, 'storeScene']);
     Route::patch('/vr-tours/scenes/{scene}', [VrTourController::class, 'updateScene']);
     Route::patch('/vr-tours/scenes/{scene}/view', [VrTourController::class, 'updateSceneView']);
+    Route::post('/vr-tours/scenes/{scene}/photo', [VrTourController::class, 'replaceScenePhoto']);
     Route::post('/vr-tours/scenes/{scene}/default', [VrTourController::class, 'setDefaultScene']);
     Route::delete('/vr-tours/scenes/{scene}', [VrTourController::class, 'destroyScene']);
     Route::post('/vr-tours/scenes/{scene}/hotspots', [VrTourController::class, 'storeHotspot']);

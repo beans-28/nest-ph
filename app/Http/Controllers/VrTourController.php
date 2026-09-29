@@ -44,6 +44,7 @@ class VrTourController extends Controller
         $scene = $room->vrScenes()->create([
             'title' => $data['title'],
             'panorama_path' => $file->store('vr-scenes', 'public'),
+            'photo_updated_at' => now(),
             'is_default' => $isFirst,
             'sort_order' => ($room->vrScenes()->max('sort_order') ?? -1) + 1,
             'haov' => $fov['haov'],
@@ -115,6 +116,40 @@ class VrTourController extends Controller
         ]);
 
         // The painted ceiling/floor depend on the sweep, so redo them.
+        $filler->fill($scene);
+
+        return response()->json($this->transformScene($scene->fresh('hotspots.targetScene')));
+    }
+
+    /**
+     * Swaps the picture of an existing spot for a new one, keeping its name,
+     * its place in the tour and its arrows. The coverage is re-estimated from
+     * the new photo, the old file is deleted, and photo_updated_at is set so
+     * the public tour shows the new "Last updated on ..." date.
+     */
+    public function replaceScenePhoto(Request $request, VrScene $scene, PanoramaFillService $filler): JsonResponse
+    {
+        $request->validate([
+            'panorama' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:20480'],
+        ]);
+
+        $file = $request->file('panorama');
+        $fov = $this->estimateFieldOfView($file->getRealPath());
+        $oldPath = $scene->panorama_path;
+
+        $scene->update([
+            'panorama_path' => $file->store('vr-scenes', 'public'),
+            'photo_updated_at' => now(),
+            'haov' => $fov['haov'],
+            'vaov' => $fov['vaov'],
+            'v_offset' => 0,
+            'is_partial' => $fov['is_partial'],
+        ]);
+
+        Storage::disk('public')->delete($oldPath);
+
+        // Rebuild the painted ceiling/floor from the new photo (this also
+        // deletes the old painted copy).
         $filler->fill($scene);
 
         return response()->json($this->transformScene($scene->fresh('hotspots.targetScene')));
@@ -234,6 +269,7 @@ class VrTourController extends Controller
             'title' => $scene->title,
             'panorama_url' => Storage::disk('public')->url($scene->panorama_path),
             'filled_url' => $scene->filled_path ? Storage::disk('public')->url($scene->filled_path) : null,
+            'photo_updated_at' => $scene->photo_updated_at?->format('M j, Y'),
             'is_default' => $scene->is_default,
             'sort_order' => $scene->sort_order,
             'haov' => $scene->haov,

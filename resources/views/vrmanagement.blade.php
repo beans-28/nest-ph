@@ -25,6 +25,12 @@
   .vr-btn.primary:hover:not(:disabled){ background:var(--green-btn-hover); }
   .vr-btn.warn{ background:#fbeceb; border-color:#f2cfcc; color:var(--status-occupied); }
   .vr-btn.sm{ padding:6px 11px; font-size:11px; }
+  /* Keyboard users: show which control is selected when moving with Tab.
+     :focus-visible keeps the ring off for mouse clicks. */
+  .main a:focus-visible, .main button:focus-visible, .main [tabindex]:focus-visible,
+  .main input:focus-visible, .main select:focus-visible, .main textarea:focus-visible{
+    outline:2px solid var(--green-accent); outline-offset:2px;
+  }
 
   /* ===== LIST VIEW ===== */
   .vr-card-panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:22px 24px 26px 24px; }
@@ -288,6 +294,8 @@
 
                 <div class="scene-tools">
                   <button class="vr-btn sm" id="setDefaultBtn" type="button">Set as start</button>
+                  <button class="vr-btn sm" id="replaceSceneBtn" type="button">Replace photo</button>
+                  <input type="file" id="replaceScenePhoto" accept="image/jpeg,image/png" hidden>
                   <button class="vr-btn warn sm" id="deleteSceneBtn" type="button">Delete photo</button>
                 </div>
               </div>
@@ -508,6 +516,7 @@
             <div class="pt-title">${esc(scene.title)}</div>
             ${scene.is_default ? '<div class="pt-flags">Starting spot</div>' : ''}
             <div class="pt-links">${arrows} arrow${arrows===1?'':'s'} out</div>
+            ${scene.photo_updated_at ? `<div class="pt-links">Photo from ${esc(scene.photo_updated_at)}</div>` : ''}
           </div>
         </div>`;
     }).join('');
@@ -761,6 +770,44 @@
       renderPhotoGrid();
       toast('Starting spot updated.');
     } catch(e){ toast(e.message, true); }
+  });
+
+  // Replace photo: opens the file picker, then uploads the new picture for
+  // the spot being edited. Its name and arrows stay the same.
+  $('replaceSceneBtn').addEventListener('click', () => $('replaceScenePhoto').click());
+
+  $('replaceScenePhoto').addEventListener('change', async function(){
+    const file = this.files[0];
+    if(!file) return;
+    if(file.size > 20 * 1024 * 1024){
+      this.value = '';
+      return toast('That photo is over 20MB. Please choose a smaller one.', true);
+    }
+    const scene = activeScene();
+    if(!confirm(`Replace the photo for "${scene.title}"? Check the arrows afterwards, since the new photo may face a different way.`)){
+      this.value = '';
+      return;
+    }
+
+    const form = new FormData();
+    form.append('panorama', file);
+
+    const btn = $('replaceSceneBtn');
+    btn.disabled = true;
+    btn.textContent = 'Uploading…';
+    btn.setAttribute('aria-busy', 'true');
+    try {
+      const updated = await api(`/vr-tours/scenes/${activeSceneId}/photo`, { method:'POST', body: form });
+      const room = activeRoom();
+      const idx = room.scenes.findIndex(s => s.id === updated.id);
+      if(idx !== -1) room.scenes[idx] = updated;
+      renderAll();
+      toast('Photo replaced.');
+    } catch(e){ toast(e.message, true); }
+    btn.disabled = false;
+    btn.textContent = 'Replace photo';
+    btn.removeAttribute('aria-busy');
+    this.value = '';
   });
 
   $('deleteSceneBtn').addEventListener('click', async function(){

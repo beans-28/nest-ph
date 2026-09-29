@@ -13,6 +13,7 @@ class VrScene extends Model
         'title',
         'panorama_path',
         'filled_path',
+        'photo_updated_at',
         'is_default',
         'sort_order',
         'haov',
@@ -27,6 +28,7 @@ class VrScene extends Model
         'haov' => 'float',
         'vaov' => 'float',
         'v_offset' => 'float',
+        'photo_updated_at' => 'datetime',
     ];
 
     public function room(): BelongsTo

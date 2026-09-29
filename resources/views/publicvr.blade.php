@@ -124,6 +124,8 @@
             margin-top: 10px; font-size: 13px; line-height: 1.5; color: rgba(243,241,236,0.75);
             display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
         }
+        .info-updated { margin-top: 6px; font-size: 12px; color: rgba(243,241,236,0.65); }
+        .info-updated:empty { display: none; }
         .info-actions { display: flex; gap: 8px; margin-top: 14px; }
         .info-actions a {
             flex: 1; display: inline-flex; align-items: center; justify-content: center;
@@ -292,6 +294,7 @@
             <h1 class="info-title" id="infoTitle">Virtual Tour</h1>
             <p class="info-meta" id="infoMeta"></p>
             <p class="info-caption" id="infoCaption"></p>
+            <p class="info-updated" id="infoUpdated"></p>
             <div class="info-actions">
                 <a href="{{ route('public.apply') }}" class="primary">Apply now</a>
                 <a href="{{ route('public.inquiry') }}" class="ghost">Inquire</a>
@@ -384,12 +387,21 @@
         $('infoCard').classList.remove('is-hidden');
     }
 
+    /** Shows when the photo currently on screen was last changed. */
+    function renderUpdated(scene) {
+        const date = scene && scene.updatedAt ? new Date(scene.updatedAt) : null;
+        $('infoUpdated').textContent = date && !isNaN(date)
+            ? 'Last updated on ' + date.toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })
+            : '';
+    }
+
     /**
      * The "spots" bar lets visitors jump between the photos inside a room
      * (e.g. Entrance → Bedside) without hunting for the arrows. Hidden when
      * the room only has one photo.
      */
     function renderSpots(room, currentId) {
+        renderUpdated(room.tour.scenes[currentId]);
         const scenes = Object.entries(room.tour.scenes);
         const bar = $('spots');
         bar.hidden = scenes.length < 2;
