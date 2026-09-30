@@ -223,6 +223,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/reports/occupancy', [ReportController::class, 'occupancy']);
     Route::get('/reports/financial', [ReportController::class, 'financial']);
     Route::get('/reports/export', [ReportController::class, 'export']);
+    Route::get('/reports/expenses', [ReportController::class, 'showExpenses']);
+    Route::post('/reports/expenses', [ReportController::class, 'saveExpenses']);
 
     // --- Dormitory Profile (Manage Dormitory Profile, Table 38) ---
     Route::get('/dormitory-profile', [DormitoryProfileController::class, 'page'])->name('dormitory-profile.index');

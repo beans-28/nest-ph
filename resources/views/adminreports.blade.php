@@ -59,6 +59,73 @@
   .results-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
   .results-head h2{ font-size:15px; margin:0; }
   .generated-note{ font-size:11.5px; color:var(--text-light); margin-bottom:14px; }
+
+  [hidden]{ display:none !important; }
+  .content{ min-width:0; }
+  .report-tabs{ flex-wrap:wrap; }
+  @media (max-width:560px){
+    .content{ padding:18px 16px; }
+    .stats-row.money .stat-card:last-child{ grid-column:1 / -1; }
+    .controls-row{ padding:14px; }
+    .controls-row .field{ flex:1 1 130px; }
+    .controls-row .field input{ width:100%; box-sizing:border-box; min-height:44px; }
+    .stat-value{ font-size:19px; }
+    .chart-card{ padding:14px; }
+    .chart-box{ height:220px; }
+    .expense-grid{ grid-template-columns:1fr 1fr; padding:14px; }
+    .expense-grid .field input{ min-height:44px; }
+    .expense-footer .btn{ width:100%; min-height:44px; }
+    .profit-sum .part strong{ font-size:17px; }
+  }
+  .stat-value, .num, .report-table td{ font-variant-numeric:tabular-nums; }
+  .report-table tr[data-month]:hover td{ background:#f4f7f4; }
+  .report-table tr[data-month]:focus-visible{ outline:2px solid var(--green-btn); outline-offset:-2px; }
+  .link-btn{ background:none; border:none; padding:0; font:inherit; color:inherit; font-weight:600; text-decoration:underline; cursor:pointer; }
+  .link-btn:focus-visible{ outline:2px solid var(--green-btn); outline-offset:2px; border-radius:2px; }
+
+  /* Charts (same Chart.js build as the Admin Dashboard) */
+  .chart-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:20px; }
+  .chart-card h3{ font-size:13.5px; margin:0 0 2px; }
+  .chart-card .chart-sub{ font-size:11.5px; color:var(--text-light); margin:0 0 12px; }
+  .chart-box{ position:relative; height:260px; }
+  .chart-fallback{ position:absolute; inset:0; margin:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:12px; font-size:12.5px; color:var(--text-mid); background:#f7f9f7; border-radius:8px; }
+  .chart-legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:11.5px; color:var(--text-mid); margin-bottom:8px; }
+  .chart-legend span::before{ content:""; display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:-1px; background:var(--swatch); }
+  .stat-card.profit{ background:#dcebdc; border-color:#b9d6b9; }
+  .stat-card.profit .stat-value{ color:#194e19; }
+  .stat-card.loss{ background:#fbe9e9; border-color:#efc5c5; }
+  .stat-card.loss .stat-value{ color:#ba2828; }
+  .missing-note{ font-size:12px; color:#8a5a00; background:#fff6e0; border:1px solid #f0dca8; border-radius:8px; padding:9px 12px; margin-bottom:16px; }
+  .table-scroll{ overflow-x:auto; margin-bottom:20px; }
+  .num{ text-align:right !important; }
+  .neg{ color:#ba2828 !important; }
+
+  /* Monthly Expenses form */
+  .expense-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:14px; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:14px; }
+  .expense-grid .field input{ width:100%; box-sizing:border-box; }
+  .expense-grid .field.wide{ grid-column:1 / -1; }
+  .field .hint{ font-size:11px; color:var(--text-light); }
+  .expense-footer{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+  .profit-sum{ display:grid; grid-template-columns:1fr auto 1fr auto 1.2fr; align-items:center; gap:10px; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:14px; }
+  .profit-sum .part{ min-width:0; }
+  .profit-sum .part span{ display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); margin-bottom:4px; }
+  .profit-sum .part strong{ font-size:20px; font-variant-numeric:tabular-nums; }
+  .profit-sum .op{ font-size:20px; color:var(--text-light); }
+  .profit-sum .result{ background:#dcebdc; border-radius:10px; padding:10px 14px; }
+  .profit-sum .result strong{ color:#194e19; }
+  .profit-sum .result.loss{ background:#fbe9e9; }
+  .profit-sum .result.loss strong{ color:#ba2828; }
+  .save-state{ font-size:12.5px; color:var(--text-light); }
+  .save-state.unsaved{ color:#8a5a00; font-weight:600; }
+  .profit-note{ font-size:11.5px; color:var(--text-light); margin:-6px 0 14px; }
+  @media (max-width:720px){
+    .profit-sum{ grid-template-columns:1fr 1fr; }
+    .profit-sum .op{ display:none; }
+    .profit-sum .result{ grid-column:1 / -1; }
+  }
+  .form-msg{ font-size:12.5px; margin:0 0 14px; display:none; }
+  .form-msg.ok{ display:block; color:#194e19; }
+  .form-msg.err{ display:block; color:#ba2828; }
 </style>
 </head>
 <body>
@@ -83,9 +150,10 @@
       <div class="report-tabs">
         <button type="button" class="report-tab active" data-type="occupancy">Occupancy Report</button>
         <button type="button" class="report-tab" data-type="financial">Financial / Billing Report</button>
+        <button type="button" class="report-tab" data-type="expenses">Expenses &amp; Profit</button>
       </div>
 
-      <div class="controls-row">
+      <div class="controls-row" id="reportControls">
         <div class="field" id="startField">
           <label for="startDate">From</label>
           <input type="date" id="startDate">
@@ -105,10 +173,50 @@
       <div id="resultsArea">
         <div class="empty-note">Pick a report type and click Generate to see the numbers.</div>
       </div>
+
+      {{-- Monthly Expenses: the dorm's own bills for a month. The Financial
+           report subtracts these from payments collected to get Net Profit. --}}
+      <div id="expensesArea" hidden>
+        <div class="controls-row">
+          <div class="field">
+            <label for="expenseMonth">Month</label>
+            <input type="month" id="expenseMonth">
+          </div>
+          <p class="occupancy-note" style="margin:0 0 4px;">Enter the whole building's bills for the month. Saving a month again replaces what was saved before.</p>
+        </div>
+        <form id="expenseForm" novalidate>
+          <div class="expense-grid">
+            <div class="field"><label for="exElectricity">Electricity (Meralco)</label><input type="number" id="exElectricity" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+            <div class="field"><label for="exWater">Water</label><input type="number" id="exWater" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+            <div class="field"><label for="exInternet">Internet / WiFi</label><input type="number" id="exInternet" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+            <div class="field"><label for="exSalaries">Staff Salaries</label><input type="number" id="exSalaries" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><span class="hint">Caretaker, cleaners, guards, etc.</span></div>
+            <div class="field"><label for="exOther">Others</label><input type="number" id="exOther" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+            <div class="field wide"><label for="exOtherNotes">What were the "Others"? (optional)</label><input type="text" id="exOtherNotes" maxlength="255" placeholder="e.g. Plumbing repair, cleaning supplies"></div>
+          </div>
+          {{-- Money in minus money out for the picked month. Updates as the
+               expense amounts are typed, before saving. --}}
+          <div class="profit-sum" aria-live="polite">
+            <div class="part"><span id="collectedLabel">Collected</span><strong id="sumCollected">&#8369;0.00</strong></div>
+            <div class="op" aria-hidden="true">&minus;</div>
+            <div class="part"><span>Expenses</span><strong id="expenseTotal">&#8369;0.00</strong></div>
+            <div class="op" aria-hidden="true">=</div>
+            <div class="part result" id="sumResult"><span>Net Profit</span><strong id="sumNet">&#8369;0.00</strong></div>
+          </div>
+          <p class="profit-note">Collected = approved tenant payments dated within the month (rent, utilities, move-in fees, penalties).</p>
+          <p class="form-msg" id="expenseMsg" role="status"></p>
+          <div class="expense-footer">
+            <span class="save-state" id="saveState"></span>
+            <button type="submit" class="btn primary" id="saveExpenseBtn">Save Expenses</button>
+          </div>
+        </form>
+        <div class="results-head"><h2>Profit by Month</h2></div>
+        <div class="table-scroll" id="expenseHistory"></div>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 (function(){
   const csrf = document.querySelector('meta[name="csrf-token"]').content;
@@ -157,9 +265,13 @@
   }
 
   function toggleDateFields(){
-    $('startField').style.display = 'flex';
-    $('endField').style.display = 'flex';
+    const isExpenses = currentType === 'expenses';
+    $('reportControls').hidden = isExpenses;
+    $('resultsArea').hidden = isExpenses;
+    $('expensesArea').hidden = !isExpenses;
+    $('exportError').classList.remove('visible');
     $('occupancyNote').style.display = currentType === 'occupancy' ? 'block' : 'none';
+    if (isExpenses) loadExpenses();
   }
 
   document.querySelectorAll('.report-tab').forEach(tab => {
@@ -168,6 +280,7 @@
       this.classList.add('active');
       currentType = this.dataset.type;
       hasResults = false;
+      destroyCharts();
       $('exportBtn').disabled = true;
       $('exportPdfBtn').disabled = true;
       $('resultsArea').innerHTML = '<div class="empty-note">Pick a report type and click Generate to see the numbers.</div>';
@@ -189,6 +302,24 @@
     return params;
   }
 
+  // ---- Charts ----
+  const C = { green:'#194e19', greenSoft:'rgba(25,78,25,0.12)', olive:'#8fb48f', red:'#c0504d', grid:'rgba(0,0,0,0.06)' };
+  let charts = [];
+  function destroyCharts(){ charts.forEach(c => c.destroy()); charts = []; }
+  function chartOrFallback(id, config){
+    const canvas = $(id);
+    if (typeof Chart === 'undefined') {
+      canvas.parentElement.innerHTML = '<p class="chart-fallback">Chart couldn&#39;t load. The table below still has the same numbers.</p>';
+      return;
+    }
+    charts.push(new Chart(canvas, config));
+  }
+  const shortPeso = v => '₱' + (Math.abs(v) >= 1000 ? (v / 1000).toLocaleString('en-PH', {maximumFractionDigits:1}) + 'k' : v);
+  const tooltip = { backgroundColor:'#1f2a1f', padding:10, cornerRadius:6 };
+  // "Jan 2026" -> "Jan '26" so 12 months fit on a phone without tilted labels
+  const shortMonth = l => l.replace(/ \d{2}(\d{2})$/, " '$1");
+  const xAxis = { grid:{ display:false }, border:{ display:false }, ticks:{ maxRotation:0, autoSkip:true, autoSkipPadding:8 } };
+
   function renderOccupancy(data){
     let html = `
       <div class="results-head"><h2>Occupancy Report</h2></div>
@@ -202,7 +333,7 @@
         <div class="stat-card"><div class="stat-label">Maintenance</div><div class="stat-value">${data.maintenance}</div></div>
         <div class="stat-card"><div class="stat-label">Occupancy Rate</div><div class="stat-value">${data.occupancy_rate}%</div></div>
       </div>
-      <table class="report-table">
+      <div class="table-scroll"><table class="report-table">
         <thead><tr><th>Floor</th><th>Total Beds</th><th>Occupied</th><th>Vacant</th><th>Reserved</th><th>Maintenance</th><th>Occupancy %</th></tr></thead>
         <tbody>`;
     if(data.by_floor.length === 0){
@@ -212,16 +343,66 @@
         html += `<tr><td>${f.label}</td><td>${f.total_beds}</td><td>${f.occupied}</td><td>${f.vacant}</td><td>${f.reserved}</td><td>${f.maintenance}</td><td>${f.occupancy_rate}%</td></tr>`;
       });
     }
-    html += `</tbody></table>`;
+    html += `</tbody></table></div>`;
+
+    html += `
+      <div class="results-head" style="margin-top:26px;"><h2>Occupancy Trend</h2></div>
+      <div class="chart-card">
+        <h3>Occupancy rate, last 12 months</h3>
+        <p class="chart-sub">Rate at the end of each month, based on when tenants moved in and moved out. Bars show move-ins and move-outs.</p>
+        <div class="chart-legend"><span style="--swatch:${C.green}">Occupancy rate</span><span style="--swatch:${C.olive}">Moved in</span><span style="--swatch:${C.red}">Moved out</span></div>
+        <div class="chart-box"><canvas id="trendChart" role="img" aria-label="Line chart of monthly occupancy rate over the last 12 months"></canvas></div>
+      </div>
+      <div class="table-scroll"><table class="report-table">
+        <thead><tr><th>Month</th><th>Total Beds</th><th>Occupied</th><th>Moved In</th><th>Moved Out</th><th>Occupancy %</th></tr></thead>
+        <tbody>${data.trend.map(t => `<tr><td>${t.label}</td><td>${t.total_beds}</td><td>${t.occupied}</td><td>${t.moved_in}</td><td>${t.moved_out}</td><td>${t.occupancy_rate}%</td></tr>`).join('')}</tbody>
+      </table></div>`;
     $('resultsArea').innerHTML = html;
+
+    const t = data.trend;
+    chartOrFallback('trendChart', {
+      data:{ labels:t.map(x => shortMonth(x.label)), datasets:[
+        { type:'line', label:'Occupancy rate', data:t.map(x => x.occupancy_rate), yAxisID:'y', borderColor:C.green, backgroundColor:C.greenSoft,
+          fill:true, tension:0, pointRadius:3, pointBackgroundColor:C.green, order:0 },
+        { type:'bar', label:'Moved in', data:t.map(x => x.moved_in), yAxisID:'y2', backgroundColor:C.olive, borderRadius:3, maxBarThickness:14, order:1 },
+        { type:'bar', label:'Moved out', data:t.map(x => x.moved_out), yAxisID:'y2', backgroundColor:C.red, borderRadius:3, maxBarThickness:14, order:1 },
+      ] },
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{ label: c =>
+          c.dataset.yAxisID === 'y' ? ` Occupancy: ${c.parsed.y}% (${t[c.dataIndex].occupied}/${t[c.dataIndex].total_beds} beds)` : ` ${c.dataset.label}: ${c.parsed.y}` } } },
+        scales:{
+          x:xAxis,
+          y:{ min:0, max:100, border:{ display:false }, grid:{ color:C.grid }, ticks:{ stepSize:25, callback:v => v + '%' } },
+          y2:{ position:'right', beginAtZero:true, suggestedMax:6, grid:{ display:false }, border:{ display:false }, ticks:{ precision:0 },
+            title:{ display:true, text:'Tenants', font:{ size:10 } } }
+        } }
+    });
   }
 
   function renderFinancial(data){
+    const profitClass = data.net_profit < 0 ? 'loss' : 'profit';
+    const missing = data.months_missing_expenses || [];
     let html = `
       <div class="results-head"><h2>Financial / Billing Report</h2></div>
       <div class="generated-note">Period: ${data.range.start} to ${data.range.end}</div>
+      ${missing.length ? `<div class="missing-note">No expenses recorded yet for ${missing.join(', ')}, so Net Profit may look higher than it really is. <button type="button" class="link-btn" id="goExpenses">Record expenses</button></div>` : ''}
+      <div class="stats-row money">
+        <div class="stat-card"><div class="stat-label">Revenue (Collected)</div><div class="stat-value">${money(data.total_collected)}</div></div>
+        <div class="stat-card"><div class="stat-label">Total Expenses</div><div class="stat-value">${money(data.total_expenses)}</div></div>
+        <div class="stat-card ${profitClass}"><div class="stat-label">Net Profit</div><div class="stat-value">${money(data.net_profit)}</div></div>
+      </div>
+      <div class="chart-card">
+        <h3>Collected vs. expenses per month</h3>
+        <p class="chart-sub">The green line is net profit (collected minus expenses). Months with no expenses recorded have no profit point.</p>
+        <div class="chart-legend"><span style="--swatch:${C.olive}">Collected</span><span style="--swatch:${C.red}">Expenses</span><span style="--swatch:${C.green}">Net profit</span></div>
+        <div class="chart-box"><canvas id="profitChart" role="img" aria-label="Bar chart of money collected versus expenses for each month"></canvas></div>
+      </div>
+      <div class="table-scroll"><table class="report-table">
+        <thead><tr><th>Month</th><th class="num">Collected</th><th class="num">Expenses</th><th class="num">Net Profit</th></tr></thead>
+        <tbody>${data.monthly.map(m => `<tr><td>${m.label}</td><td class="num">${money(m.collected)}</td><td class="num">${m.has_expenses ? money(m.expenses) : '<span style="color:var(--text-light)">Not recorded</span>'}</td><td class="num ${m.net < 0 ? 'neg' : ''}">${m.has_expenses ? money(m.net) : '<span style="color:var(--text-light)">&mdash;</span>'}</td></tr>`).join('')}</tbody>
+      </table></div>
+      <div class="results-head"><h2>Collections &amp; Receivables</h2></div>
       <div class="stats-row">
-        <div class="stat-card"><div class="stat-label">Total Collected</div><div class="stat-value">${money(data.total_collected)}</div></div>
         <div class="stat-card"><div class="stat-label">Cash</div><div class="stat-value">${money(data.cash_collected)}</div></div>
         <div class="stat-card"><div class="stat-label">Online</div><div class="stat-value">${money(data.online_collected)}</div></div>
         <div class="stat-card"><div class="stat-label">Total Outstanding</div><div class="stat-value">${money(data.total_outstanding)}</div></div>
@@ -230,9 +411,25 @@
         <div class="stat-card"><div class="stat-label">Payments Recorded</div><div class="stat-value">${data.payment_count}</div></div>
       </div>`;
     $('resultsArea').innerHTML = html;
+    const go = $('goExpenses');
+    if (go) go.addEventListener('click', () => document.querySelector('.report-tab[data-type="expenses"]').click());
+
+    const m = data.monthly;
+    chartOrFallback('profitChart', {
+      data:{ labels:m.map(x => shortMonth(x.label)), datasets:[
+        { type:'line', label:'Net profit', data:m.map(x => x.has_expenses ? x.net : null), spanGaps:false, borderColor:C.green, backgroundColor:C.green, tension:0, pointRadius:3, order:0 },
+        { type:'bar', label:'Collected', data:m.map(x => x.collected), backgroundColor:C.olive, borderRadius:4, maxBarThickness:30, order:1 },
+        { type:'bar', label:'Expenses', data:m.map(x => x.has_expenses ? x.expenses : null), backgroundColor:C.red, borderRadius:4, maxBarThickness:30, order:1 },
+      ] },
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{ label: c => ` ${c.dataset.label}: ${c.parsed.y === null ? 'not recorded' : money(c.parsed.y)}` } } },
+        scales:{ x:xAxis,
+          y:{ border:{ display:false }, grid:{ color:C.grid }, ticks:{ maxTicksLimit:5, callback:shortPeso } } } }
+    });
   }
 
   $('generateBtn').addEventListener('click', async function(){
+    destroyCharts();
     this.disabled = true;
     this.textContent = 'Generating...';
     try {
@@ -255,6 +452,95 @@
     }
     this.disabled = false;
     this.textContent = 'Generate';
+  });
+
+  // ---- Monthly Expenses tab ----
+  const EXPENSE_FIELDS = { electricity:'exElectricity', water:'exWater', internet:'exInternet', salaries:'exSalaries', other:'exOther' };
+  const now = new Date();
+  const thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  $('expenseMonth').value = thisMonth;
+  $('expenseMonth').max = thisMonth;
+
+  let monthCollected = 0;
+  function updateExpenseTotal(){
+    const total = Object.values(EXPENSE_FIELDS).reduce((sum, id) => sum + (parseFloat($(id).value) || 0), 0);
+    const net = monthCollected - total;
+    $('expenseTotal').textContent = money(total);
+    $('sumCollected').textContent = money(monthCollected);
+    $('sumNet').textContent = (net < 0 ? '-' : '') + money(Math.abs(net));
+    $('sumResult').classList.toggle('loss', net < 0);
+  }
+  Object.values(EXPENSE_FIELDS).forEach(id => $(id).addEventListener('input', updateExpenseTotal));
+
+  function showExpenseMsg(text, ok){
+    const el = $('expenseMsg');
+    el.textContent = text;
+    el.className = 'form-msg ' + (ok ? 'ok' : 'err');
+  }
+
+  function renderExpenseHistory(rows){
+    if (!rows.length) {
+      $('expenseHistory').innerHTML = '<div class="empty-note">No months recorded yet.</div>';
+      return;
+    }
+    $('expenseHistory').innerHTML = `<table class="report-table">
+      <thead><tr><th>Month</th><th class="num">Collected</th><th class="num">Meralco</th><th class="num">Water</th><th class="num">WiFi</th><th class="num">Salaries</th><th class="num">Others</th><th class="num">Total Expenses</th><th class="num">Net Profit</th></tr></thead>
+      <tbody>${rows.map(r => `<tr data-month="${r.month}" tabindex="0" style="cursor:pointer" title="Click to edit ${r.label}"><td>${r.label}</td><td class="num">${money(r.collected)}</td><td class="num">${money(r.electricity)}</td><td class="num">${money(r.water)}</td><td class="num">${money(r.internet)}</td><td class="num">${money(r.salaries)}</td><td class="num">${money(r.other)}</td><td class="num">${money(r.total)}</td><td class="num ${r.net < 0 ? 'neg' : ''}"><strong>${r.net < 0 ? '-' : ''}${money(Math.abs(r.net))}</strong></td></tr>`).join('')}</tbody>
+    </table>`;
+    $('expenseHistory').querySelectorAll('tr[data-month]').forEach(tr => {
+      const edit = () => { $('expenseMonth').value = tr.dataset.month; loadExpenses(); window.scrollTo({ top:0, behavior:'smooth' }); };
+      tr.addEventListener('click', edit);
+      tr.addEventListener('keydown', e => { if (e.key === 'Enter') edit(); });
+    });
+  }
+
+  async function loadExpenses(){
+    try {
+      const res = await fetch('/reports/expenses?month=' + encodeURIComponent($('expenseMonth').value || thisMonth), { headers:{ 'Accept':'application/json' } });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      Object.entries(EXPENSE_FIELDS).forEach(([key, id]) => { $(id).value = data.expense ? data.expense[key] : ''; });
+      $('exOtherNotes').value = data.expense ? (data.expense.other_notes || '') : '';
+      monthCollected = Number(data.collected) || 0;
+      const state = $('saveState');
+      state.textContent = data.expense ? `Saved for ${data.label}. Edit the amounts and save again to update.` : `Nothing saved for ${data.label} yet.`;
+      state.className = 'save-state' + (data.expense ? '' : ' unsaved');
+      $('collectedLabel').textContent = 'Collected in ' + data.label;
+      updateExpenseTotal();
+      renderExpenseHistory(data.history);
+    } catch(e){
+      showExpenseMsg('Could not load expenses. Please refresh the page.', false);
+    }
+  }
+  $('expenseMonth').addEventListener('change', () => { $('expenseMsg').className = 'form-msg'; loadExpenses(); });
+
+  $('expenseForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const body = { month:$('expenseMonth').value, other_notes:$('exOtherNotes').value.trim() || null };
+    if (!body.month) { showExpenseMsg('Pick a month first.', false); return; }
+    for (const [key, id] of Object.entries(EXPENSE_FIELDS)) {
+      const v = $(id).value.trim();
+      const n = v === '' ? 0 : Number(v);
+      if (!Number.isFinite(n) || n < 0) { showExpenseMsg('Amounts must be zero or more.', false); $(id).focus(); return; }
+      body[key] = n;
+    }
+
+    const btn = $('saveExpenseBtn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+    try {
+      const res = await fetch('/reports/expenses', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', 'Accept':'application/json', 'X-CSRF-TOKEN':csrf },
+        body:JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Could not save. Please check the amounts and try again.');
+      await loadExpenses();
+      showExpenseMsg(data.message, true);
+    } catch(err){
+      showExpenseMsg(err.message, false);
+    }
+    btn.disabled = false; btn.textContent = 'Save Expenses';
   });
 
   // Downloads via fetch (not a page redirect) so the button can show

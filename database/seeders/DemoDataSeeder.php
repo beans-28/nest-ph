@@ -88,7 +88,9 @@ class DemoDataSeeder extends Seeder
         $this->seedAdmins();
         $this->seedFloorsRoomsBeds();
         $this->seedTenants();
+        $this->seedFormerTenants();
         $this->seedPendingApplications();
+        $this->seedMonthlyExpenses();
         $this->seedInquiries();
         $this->seedAnnouncements();
         $this->prepareVrDemo();
@@ -119,6 +121,7 @@ class DemoDataSeeder extends Seeder
             'payments', 'billing_statements', 'lease_contracts', 'applications', 'inquiries',
             'tenants', 'beds', 'admin_access_logs', 'admin_login_sessions', 'sessions',
             'password_reset_codes', 'password_reset_tokens', 'personal_access_tokens',
+            'deposit_refunds', 'tenant_notifications', 'monthly_expenses',
         ] as $table) {
             DB::table($table)->truncate();
         }
@@ -303,7 +306,7 @@ class DemoDataSeeder extends Seeder
                 $roomId = DB::table('rooms')->insertGetId($data + [
                     'vr_caption' => null,
                     'vr_visibility' => 'draft',
-                    'created_at' => $this->today->copy()->subMonths(8),
+                    'created_at' => $this->today->copy()->subMonths(14),
                 ]);
             }
             $keepIds[] = $roomId;
@@ -319,7 +322,7 @@ class DemoDataSeeder extends Seeder
                     'room_id' => $roomId,
                     'bed_label' => "Bed {$b}",
                     'status' => $status,
-                    'created_at' => $this->today->copy()->subMonths(8),
+                    'created_at' => $this->today->copy()->subMonths(14),
                     'updated_at' => now(),
                 ]);
             }
@@ -433,6 +436,24 @@ class DemoDataSeeder extends Seeder
             ['Joseph Allan', 'Cruz', 'male', '2003-03-27', 'student', 'Emilio Aguinaldo College', 'Gen. Malvar St., Malate, Manila',
                 'Brgy. Tabing Ilog, Marilao, Bulacan', 'Nora Cruz', 'Mother', '303-1', 'overdue', 'L' => 50, 'k' => 4, 'days' => 45,
                 'lease' => 'blacklisted'],
+
+            // ---- More current tenants (fill the dorm to a realistic live level) ----
+            // Last in the list so they're processed after the former tenants of 302-1/303-1 free those beds, and so the scenario tenants' numbering (tickets, Juan's late fee) stays the same.
+            ['Stephanie Claire', 'Uy', 'female', '2004-09-02', 'student', 'University of Santo Tomas', 'España Blvd., Sampaloc, Manila',
+                'Brgy. Lourdes, Dagupan City, Pangasinan', 'Henry Uy', 'Father', '101-4', 'paid', 'L' => 16, 'k' => 7,
+                'review' => [5, 'Ang ganda ng study hall sa baba, dito ako nagre-review lagi. Mabilis din sumagot ang admin sa tickets.']],
+            ['Adrian Paul', 'Castro', 'male', '1999-12-12', 'full_time_employee', 'Teleperformance Philippines', 'Robinsons Cybergate, Mandaluyong City',
+                'Brgy. Sampaloc, Tanauan City, Batangas', 'Leticia Castro', 'Mother', '102-2', 'paid', 'L' => 11, 'k' => 3],
+            ['Vincent Ray', 'Magbanua', 'male', '2005-06-19', 'student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
+                'Brgy. Poblacion, Roxas City, Capiz', 'Ramon Magbanua', 'Father', '103-4', 'paid', 'L' => 9, 'k' => 2],
+            ['Luis Antonio', 'Del Rosario', 'male', '2003-02-27', 'working_student', 'University of the East', 'C.M. Recto Ave., Sampaloc, Manila',
+                'Brgy. Cutcut, Angeles City, Pampanga', 'Rowena Del Rosario', 'Mother', '302-1', 'proof_pending', 'L' => 21, 'k' => 0],
+            ['Jerome Anthony', 'Pineda', 'male', '2004-10-30', 'student', 'Mapúa University', 'Muralla St., Intramuros, Manila',
+                'Brgy. Poblacion, Tarlac City, Tarlac', 'Grace Pineda', 'Mother', '303-1', 'paid', 'L' => 14, 'k' => 0],
+            ['Kenneth Bryan', 'Sy', 'male', '2006-01-08', 'student', 'National University', 'M.F. Jhocson St., Sampaloc, Manila',
+                'Brgy. Balibago, Sta. Rosa City, Laguna', 'Victor Sy', 'Father', '303-5', 'unpaid', 'L' => 2, 'k' => 0],
+            ['Emmanuel Jose', 'Villareal', 'male', '2002-07-21', 'part_time_employee', '7-Eleven (Legarda branch)', 'Legarda St., Sampaloc, Manila',
+                'Brgy. San Vicente, Tacloban City, Leyte', 'Nelia Villareal', 'Mother', '303-6', 'paid', 'L' => 24, 'k' => 4],
         ];
     }
 
@@ -684,6 +705,303 @@ class DemoDataSeeder extends Seeder
                 'moderation_note' => 'Removed: names another tenant. Concern was redirected to a support ticket instead.',
                 'created_at' => $this->today->copy()->subDays(7), 'updated_at' => $this->today->copy()->subDays(6)],
         ]);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  4b. Former tenants -- 13 months of move-ins and move-outs          */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Fills the past year with tenants who already moved out, so the
+     * Occupancy Trend chart and the Financial report have real history
+     * to show. Each bed gets back-to-back stays (3-8 months each, with a
+     * gap between tenants) that all end BEFORE that bed's current tenant
+     * moved in, so no two people ever share a bed at the same time.
+     *
+     * Each former tenant gets the same records a real move-out leaves
+     * behind: inactive account, terminated contract, fully paid bills
+     * and payments, and a deposit refund.
+     */
+    private function seedFormerTenants(): void
+    {
+        mt_srand(20260930); // same "random" history every time the seeder runs
+
+        $firstNames = ['Aldrin', 'Bianca', 'Cedric', 'Danica', 'Elijah', 'Francine', 'Gian', 'Hazel', 'Ivan', 'Janelle',
+            'Kevin', 'Lianne', 'Marco', 'Nina', 'Oliver', 'Pia', 'Queenie', 'Renz', 'Sofia', 'Troy', 'Ubert', 'Vanessa',
+            'Warren', 'Ysabel', 'Zach', 'Alyssa', 'Bryan', 'Clarisse', 'Dominic', 'Ella', 'Franco', 'Gwen', 'Harold', 'Irish',
+            'Jericho', 'Kyla', 'Lance', 'Mika', 'Nathan', 'Rica'];
+        $lastNames = ['Abad', 'Buenaventura', 'Castillo', 'Dizon', 'Enriquez', 'Fernandez', 'Galang', 'Hernandez', 'Ilagan',
+            'Javier', 'Lacson', 'Macaraeg', 'Nepomuceno', 'Ortega', 'Panganiban', 'Quiambao', 'Rosales', 'Sison', 'Tolentino',
+            'Umali', 'Valdez', 'Yap', 'Zamora', 'Agustin', 'Belmonte', 'Cordero', 'Domingo', 'Estrada', 'Figueroa', 'Guevarra'];
+        $reasons = [
+            'Graduated -- moved back home to the province.',
+            'Moved out at the end of contract.',
+            'Transferred to a dorm closer to the new campus.',
+            'Found a job in another city.',
+            'Moved in with relatives in Quezon City.',
+            'Semester ended; will not be renewing.',
+        ];
+        $types = [['student', 'Student'], ['student', 'Student'], ['working_student', 'Student'], ['full_time_employee', 'Employee']];
+        $schools = ['University of Santo Tomas', 'Far Eastern University', 'Polytechnic University of the Philippines',
+            'University of the East', 'Centro Escolar University', 'National University', 'Accenture Philippines', 'Concentrix Manila'];
+
+        $tenantRole = DB::table('roles')->where('role_name', 'tenant')->value('id');
+        $password = Hash::make(self::PASSWORD);
+        $usedEmails = DB::table('users')->pluck('email')->flip()->all();
+        $historyStart = $this->today->copy()->subMonthsNoOverflow(13)->startOfMonth();
+        $n = 200; // keeps phone numbers / picks distinct from the scenario tenants
+        $made = 0;
+
+        foreach ($this->beds as $bedKey => $bedId) {
+            [$roomNo] = explode('-', $bedKey);
+            if ($roomNo === '104' || $bedKey === '203-4') {
+                continue; // under maintenance
+            }
+            $room = $this->rooms[$roomNo];
+
+            // Former stays must end a week before the bed's current/next tenant starts.
+            $nextStart = DB::table('lease_contracts')->where('bed_id', $bedId)->min('start_date');
+            $limit = $nextStart
+                ? Carbon::parse($nextStart)->subDays(7)
+                : $this->today->copy()->subDays(mt_rand(15, 240)); // empty now: last tenant left sometime this year
+
+            $cursor = $historyStart->copy()->addDays(mt_rand(0, 45));
+            while (true) {
+                $moveOut = $cursor->copy()->addMonthsNoOverflow(mt_rand(3, 8));
+                if ($moveOut->gt($limit)) {
+                    // Shorten the last stay to fit, as long as it's still 2+ months.
+                    if ($cursor->copy()->addMonthsNoOverflow(2)->gt($limit)) {
+                        break;
+                    }
+                    $moveOut = $limit->copy();
+                }
+
+                // Unique first + last name pair.
+                do {
+                    $first = $firstNames[mt_rand(0, count($firstNames) - 1)];
+                    $last = $lastNames[mt_rand(0, count($lastNames) - 1)];
+                    $email = $this->emailFor($first, $last);
+                } while (isset($usedEmails[$email]));
+                $usedEmails[$email] = true;
+
+                $n++;
+                $made++;
+                [$type, $occupation] = $types[$n % count($types)];
+                $this->formerTenant($first, $last, $email, $type, $occupation, $schools[$n % count($schools)],
+                    $reasons[$n % count($reasons)], $bedId, $room, $cursor, $moveOut, $n, $tenantRole, $password);
+
+                $cursor = $moveOut->copy()->addDays(mt_rand(5, 55));
+                if ($cursor->gte($limit)) {
+                    break;
+                }
+            }
+        }
+
+        $this->command?->info("Seeded {$made} former (moved-out) tenants.");
+    }
+
+    private function formerTenant(string $first, string $last, string $email, string $type, string $occupation, string $school,
+        string $reason, int $bedId, object $room, Carbon $start, Carbon $moveOut, int $n, int $tenantRole, string $password): void
+    {
+        $appliedAt = $start->copy()->subDays(10 + $n % 7)->setTime(9 + $n % 8, 30);
+        $phone = $this->phone($n);
+        $home = ['Brgy. Poblacion, Batangas City', 'Brgy. San Jose, Tarlac City', 'Brgy. Centro, Naga City',
+            'Brgy. Malabanias, Angeles City', 'Brgy. Bagumbayan, Lucena City'][$n % 5];
+        $parent = ['Mother', 'Father'][$n % 2];
+        $parentName = (['Teresa', 'Roberto', 'Lourdes', 'Ricardo', 'Elena', 'Manuel'][$n % 6]) . ' ' . $last;
+
+        $userId = DB::table('users')->insertGetId([
+            'name' => "{$first} {$last}",
+            'email' => $email,
+            'password' => $password,
+            'role_id' => $tenantRole,
+            'is_active' => false,
+            'created_at' => $appliedAt->copy()->addDays(2),
+            'updated_at' => $moveOut,
+        ]);
+
+        $tenantId = DB::table('tenants')->insertGetId([
+            'user_id' => $userId,
+            'first_name' => $first,
+            'last_name' => $last,
+            'contact_number' => $phone,
+            'email' => $email,
+            'emergency_contact_name' => $parentName,
+            'emergency_contact_number' => $this->phone($n + 100),
+            'date_of_birth' => $this->today->copy()->subYears($type === 'full_time_employee' ? 25 : 20)->subDays($n * 13 % 300)->toDateString(),
+            'home_address' => $home,
+            'tenant_type' => $type,
+            'id_document_path' => $this->files['id'][$n % max(count($this->files['id']), 1)] ?? null,
+            'signed_contract_path' => $this->files['contract'],
+            'status' => 'inactive',
+            'deactivation_reason' => $reason,
+            'deactivated_at' => $moveOut->copy()->setTime(10, 0),
+            'deactivated_by' => $this->admins['kristine'],
+            'is_blacklisted' => false,
+            'portal_restricted' => false,
+            'escalation_paused' => false,
+            'created_at' => $appliedAt->copy()->addDays(2),
+            'updated_at' => $moveOut,
+        ]);
+
+        $applicationId = DB::table('applications')->insertGetId([
+            'tenant_id' => $tenantId,
+            'first_name' => $first,
+            'last_name' => $last,
+            'birthdate' => $this->today->copy()->subYears(20)->toDateString(),
+            'gender' => in_array($first, ['Bianca', 'Danica', 'Francine', 'Hazel', 'Janelle', 'Lianne', 'Nina', 'Pia', 'Queenie', 'Sofia',
+                'Vanessa', 'Ysabel', 'Alyssa', 'Clarisse', 'Ella', 'Gwen', 'Irish', 'Kyla', 'Mika', 'Rica'], true) ? 'female' : 'male',
+            'nationality' => 'Filipino',
+            'medical_condition' => 'None',
+            'occupation' => $occupation,
+            'school_company' => $school,
+            'school_company_address' => 'Manila',
+            'contact_number' => $phone,
+            'email' => $email,
+            'home_address' => $home,
+            'emergency_contact_name' => $parentName,
+            'emergency_contact_number' => $this->phone($n + 100),
+            'emergency_contact_email' => $this->emailFor(explode(' ', $parentName)[0], $last, true),
+            'emergency_contact_relation' => $parent,
+            'bed_id' => $bedId,
+            'preferred_start_date' => $start->toDateString(),
+            'tenant_end_date' => $moveOut->toDateString(),
+            'type_of_tenant' => $type,
+            'id_document_path' => $this->files['id'][$n % max(count($this->files['id']), 1)] ?? null,
+            'signed_contract_path' => $this->files['contract'],
+            'dpa_consent' => true,
+            'status' => 'approved',
+            'approved_by' => $this->admins['kristine'],
+            'created_at' => $appliedAt,
+            'updated_at' => $appliedAt->copy()->addDays(2),
+        ]);
+
+        $rate = round($room->rate / $room->beds, 2);
+        $contractId = DB::table('lease_contracts')->insertGetId([
+            'application_id' => $applicationId,
+            'tenant_id' => $tenantId,
+            'bed_id' => $bedId,
+            'start_date' => $start->toDateString(),
+            'end_date' => $moveOut->toDateString(),
+            'monthly_rate' => $rate,
+            'discount_amount' => null,
+            'esign_status' => 'signed',
+            'signed_document_url' => $this->files['contract'],
+            'signed_at' => $appliedAt->copy()->addDays(1),
+            // Same result as the real "Deactivate tenant" flow (TenantController::setStatus).
+            'status' => 'terminated',
+            'termination_reason' => $reason,
+            'terminated_at' => $moveOut->copy()->setTime(10, 0),
+            'created_by' => $this->admins['kristine'],
+            'approved_by' => $this->admins['kristine'],
+            'created_at' => $appliedAt->copy()->addDays(2),
+            'updated_at' => $moveOut,
+        ]);
+
+        // Move-in fee (deposit + advance), paid.
+        $moveIn = $rate * 2;
+        $moveInBillId = DB::table('billing_statements')->insertGetId([
+            'contract_id' => $contractId,
+            'tenant_id' => $tenantId,
+            'type' => 'move_in',
+            'billing_period_start' => $start->toDateString(),
+            'billing_period_end' => $start->toDateString(),
+            'due_date' => $start->toDateString(),
+            'base_rent' => $moveIn,
+            'total_amount' => $moveIn,
+            'status' => 'paid',
+            'created_at' => $appliedAt->copy()->addDays(2),
+            'updated_at' => $start,
+        ]);
+        $this->payment($moveInBillId, $tenantId, $moveIn, 'cash', $start->copy()->subDay(), 'approved', 'Move-in fee paid at the admin office.');
+
+        // Monthly bills for every month they stayed, all paid.
+        [$utilShare, $wifiShare] = [round($room->util / $room->beds, 2), round($room->wifi / $room->beds, 2)];
+        $total = $rate + $utilShare + $wifiShare;
+        $periodStart = $start->copy();
+        $i = 0;
+        while ($periodStart->lt($moveOut)) {
+            $periodEnd = $periodStart->copy()->addMonthNoOverflow()->subDay();
+            $due = $periodStart->copy()->addDays(5);
+            $billId = DB::table('billing_statements')->insertGetId([
+                'contract_id' => $contractId,
+                'tenant_id' => $tenantId,
+                'type' => 'monthly',
+                'billing_period_start' => $periodStart->toDateString(),
+                'billing_period_end' => $periodEnd->toDateString(),
+                'due_date' => $due->toDateString(),
+                'base_rent' => $rate,
+                'utilities_amount' => $utilShare,
+                'wifi_amount' => $wifiShare,
+                'penalty_amount' => 0,
+                'total_amount' => $total,
+                'status' => 'paid',
+                'created_at' => $periodStart->copy()->setTime(0, 5),
+                'updated_at' => $due,
+            ]);
+            $method = ['cash', 'gcash', 'bank_transfer', 'gcash'][($n + $i) % 4];
+            $this->payment($billId, $tenantId, $total, $method, $due->copy()->subDays(($n + $i) % 5), 'approved');
+            $periodStart = $periodEnd->copy()->addDay();
+            $i++;
+        }
+
+        // Deposit returned after move-out (sometimes minus a small deduction).
+        $deduction = $n % 4 === 0 ? 500.0 : 0.0;
+        DB::table('deposit_refunds')->insert([
+            'tenant_id' => $tenantId,
+            'deposit_amount' => $rate,
+            'deductions_amount' => $deduction,
+            'deductions_note' => $deduction ? 'Replacement of lost room key.' : null,
+            'refund_amount' => $rate - $deduction,
+            'refund_method' => $n % 2 ? 'GCash' : 'Cash',
+            'reference_number' => $n % 2 ? $this->refNo('gcash') : null,
+            'refunded_at' => $moveOut->copy()->addDays(3)->toDateString(),
+            'recorded_by' => $this->admins['kristine'],
+            'created_at' => $moveOut->copy()->addDays(3),
+            'updated_at' => $moveOut->copy()->addDays(3),
+        ]);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  4c. Monthly expenses -- the dorm's own bills                       */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * 12 months of the building's own costs, so Reports can show Net
+     * Profit (payments collected minus these). Meralco goes up in the hot
+     * months (March-May), December has 13th-month pay, and a few months
+     * have a one-off "others" cost.
+     */
+    private function seedMonthlyExpenses(): void
+    {
+        mt_srand(4242);
+        $oneOffs = [
+            2 => [8500, 'Aircon cleaning (all rooms)'],
+            5 => [3200, 'Plumbing repair, 2F shared CR'],
+            8 => [12000, 'Repainting of hallway and lobby'],
+            10 => [2500, 'Pest control'],
+            11 => [4800, 'Replacement of water pump capacitor'],
+        ];
+
+        for ($i = 12; $i >= 1; $i--) { // the last 12 finished months; this month is left for the admin to enter
+            $month = $this->today->copy()->startOfMonth()->subMonthsNoOverflow($i);
+            $hot = in_array($month->month, [3, 4, 5], true);
+            $salaries = 27000 + ($month->month === 12 ? 27000 : 0); // caretaker 15k + cleaner 12k, plus 13th month
+            [$other, $note] = $oneOffs[$i] ?? [mt_rand(0, 1) ? mt_rand(800, 2000) : 0, 'Cleaning supplies and toiletries for common areas'];
+
+            DB::table('monthly_expenses')->insert([
+                'month' => $month->toDateString(),
+                'electricity' => round(($hot ? 58000 : 44000) + mt_rand(-3000, 4000), 2),
+                'water' => round(4600 + mt_rand(-600, 1200), 2),
+                'internet' => 3499,
+                'salaries' => $salaries,
+                'other' => $other,
+                'other_notes' => $other ? $note : null,
+                'recorded_by' => $this->admins['mark'],
+                'created_at' => $month->copy()->endOfMonth(),
+                'updated_at' => $month->copy()->endOfMonth(),
+            ]);
+        }
     }
 
     /** What happens to each scenario's latest bill. */

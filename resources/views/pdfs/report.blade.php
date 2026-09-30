@@ -38,6 +38,8 @@
   table.detail-table td.first, table.detail-table th.first { text-align: left; }
   table.detail-table td.rate { color: #194e19; font-weight: bold; }
 
+  .chart { margin: 6px 0 10px 0; page-break-inside: avoid; }
+  .chart-title { font-size: 10.5px; font-weight: bold; color: #4b5f4c; margin-top: 10px; }
   .signature { margin-top: 40px; font-size: 11.5px; }
   .pdf-footer { position: fixed; bottom: -4px; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #8a8a8a; }
   .brand-logo { height: 42px; width: auto; margin-bottom: 6px; }
@@ -55,7 +57,7 @@
   <table class="meta">
     <tr><td><strong>Date Generated:</strong></td><td>{{ now()->format('F j, Y g:i A') }}</td></tr>
     @if($type === 'occupancy')
-      <tr><td><strong>Coverage:</strong></td><td>Current room and bed status (live snapshot)</td></tr>
+      <tr><td><strong>Coverage:</strong></td><td>Current room and bed status (live snapshot), plus a 12-month trend</td></tr>
     @else
       <tr><td><strong>Period Covered:</strong></td><td>{{ $report['range']['start'] }} to {{ $report['range']['end'] }}</td></tr>
     @endif
@@ -121,11 +123,34 @@
         @endforelse
       </tbody>
     </table>
+
+    <h2 class="section" style="margin-top:26px;">Occupancy Trend (Last 12 Months)</h2>
+    <p class="body-text">Occupancy rate at the end of each month, rebuilt from tenants' move-in and move-out dates.</p>
+    <div class="chart"><img src="{{ $charts['trend'] }}" width="660"></div>
+    <div class="chart-title">Tenants moved in / moved out per month</div>
+    <div class="chart"><img src="{{ $charts['moves'] }}" width="660"></div>
+    <table class="detail-table">
+      <thead>
+        <tr><th class="first">Month</th><th>Total Beds</th><th>Occupied</th><th>Moved In</th><th>Moved Out</th><th>Occupancy</th></tr>
+      </thead>
+      <tbody>
+        @foreach($report['trend'] as $t)
+          <tr>
+            <td class="first">{{ $t['label'] }}</td>
+            <td>{{ $t['total_beds'] }}</td>
+            <td>{{ $t['occupied'] }}</td>
+            <td>{{ $t['moved_in'] }}</td>
+            <td>{{ $t['moved_out'] }}</td>
+            <td class="rate">{{ $t['occupancy_rate'] }}%</td>
+          </tr>
+        @endforeach
+      </tbody>
+    </table>
   @else
     <h2 class="section">Overview</h2>
     <p class="body-text">
       This report summarizes payments collected, outstanding balances, and
-      penalties for {{ $dormName }} from {{ $report['range']['start'] }} to
+      penalties, expenses and net profit for {{ $dormName }} from {{ $report['range']['start'] }} to
       {{ $report['range']['end'] }}.
     </p>
 
@@ -146,7 +171,25 @@
       </table>
     </div>
 
-    <h2 class="section">Collections Breakdown</h2>
+    <h2 class="section">Revenue and Profit</h2>
+    <table class="summary">
+      <thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Total Collected</td><td class="amount">PHP {{ number_format($report['total_collected'], 2) }}</td></tr>
+        <tr><td>Less: Total Expenses</td><td class="amount warn">PHP {{ number_format($report['total_expenses'], 2) }}</td></tr>
+        <tr class="sub"><td>Electricity (Meralco)</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['electricity'], 2) }}</td></tr>
+        <tr class="sub"><td>Water</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['water'], 2) }}</td></tr>
+        <tr class="sub"><td>Internet / WiFi</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['internet'], 2) }}</td></tr>
+        <tr class="sub"><td>Staff Salaries</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['salaries'], 2) }}</td></tr>
+        <tr class="sub"><td>Others</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['other'], 2) }}</td></tr>
+        <tr class="total"><td>Net Profit:</td><td class="amount {{ $report['net_profit'] < 0 ? 'warn' : '' }}">PHP {{ number_format($report['net_profit'], 2) }}</td></tr>
+      </tbody>
+    </table>
+    @if(count($report['months_missing_expenses']))
+      <p class="body-text" style="font-size:9.5px;color:#8a8a8a;margin-top:6px;">No expenses recorded yet for: {{ implode(', ', $report['months_missing_expenses']->all()) }}.</p>
+    @endif
+
+    <h2 class="section" style="margin-top:26px;">Collections Breakdown</h2>
     <table class="summary">
       <thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
       <tbody>
@@ -164,6 +207,23 @@
         <tr><td>Total Penalties Applied</td><td class="amount warn">PHP {{ number_format($report['total_penalties'], 2) }}</td></tr>
         <tr><td>Delinquent Accounts</td><td class="amount">{{ $report['delinquent_accounts'] }}</td></tr>
         <tr><td>Payments Recorded</td><td class="amount">{{ $report['payment_count'] }}</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section" style="margin-top:26px;">Monthly Breakdown</h2>
+    <div class="chart-title">Collected vs. expenses per month (line = net profit)</div>
+    <div class="chart"><img src="{{ $charts['profit'] }}" width="660"></div>
+    <table class="detail-table">
+      <thead><tr><th class="first">Month</th><th>Collected</th><th>Expenses</th><th>Net Profit</th></tr></thead>
+      <tbody>
+        @foreach($report['monthly'] as $m)
+          <tr>
+            <td class="first">{{ $m['label'] }}</td>
+            <td>PHP {{ number_format($m['collected'], 2) }}</td>
+            <td>{{ $m['has_expenses'] ? 'PHP ' . number_format($m['expenses'], 2) : 'Not recorded' }}</td>
+            <td class="rate" @if($m['net'] < 0) style="color:#ba2828;" @endif>PHP {{ number_format($m['net'], 2) }}</td>
+          </tr>
+        @endforeach
       </tbody>
     </table>
   @endif
