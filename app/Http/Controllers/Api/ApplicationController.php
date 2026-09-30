@@ -765,23 +765,27 @@ class ApplicationController extends Controller
     /**
      * Look for an existing tenant record matching this applicant, so returning
      * tenants can be flagged for a discount and keep their history. Matches on
-     * email or contact number (exact), never on name alone — names are far too
-     * easy to collide on and a false match would merge two different people.
+     * email (exact), or on contact number (exact) plus the same last name —
+     * never on name alone. A phone number by itself isn't enough: siblings
+     * and parents often share one, and a false match would merge two
+     * different people.
      */
     private function findReturningTenant(Application $application): ?Tenant
     {
-        if (empty($application->email) && empty($application->contact_number)) {
+        if (! empty($application->email)) {
+            $byEmail = Tenant::where('email', $application->email)->first();
+            if ($byEmail) {
+                return $byEmail;
+            }
+        }
+
+        if (empty($application->contact_number) || empty($application->last_name)) {
             return null;
         }
 
-        return Tenant::where(function ($query) use ($application) {
-            if (! empty($application->email)) {
-                $query->orWhere('email', $application->email);
-            }
-            if (! empty($application->contact_number)) {
-                $query->orWhere('contact_number', $application->contact_number);
-            }
-        })->first();
+        return Tenant::where('contact_number', $application->contact_number)
+            ->where('last_name', $application->last_name)
+            ->first();
     }
 
     /**

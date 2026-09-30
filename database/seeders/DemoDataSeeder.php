@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Bed;
 use App\Models\Tenant;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Capstone defense demo data.
@@ -40,7 +42,7 @@ class DemoDataSeeder extends Seeder
      * phone, never a stranger's. Change it to whichever phone you'll have at
      * the defense.
      */
-    private const DEMO_SMS_NUMBER = '09289811405';
+    private const DEMO_SMS_NUMBER = '09212408565';
 
     /**
      * Walkthrough script: Ben's texts (reminders, portal restriction,
@@ -48,7 +50,7 @@ class DemoDataSeeder extends Seeder
      * TODO: replace with Shayne's actual number -- until then it uses
      * DEMO_SMS_NUMBER so nothing is ever sent to a stranger.
      */
-    private const BEN_SMS_NUMBER = '09289811405';
+    private const BEN_SMS_NUMBER = '09212408565';
 
     /**
      * Ana gets a review-request SMS when the owner deactivates her in Part 4,
@@ -943,9 +945,20 @@ class DemoDataSeeder extends Seeder
 
         foreach ($apps as $i => [$first, $last, $gender, $dob, $type, $school, $bedKey, $status, $note, $daysAgo]) {
             $created = $this->today->copy()->subDays($daysAgo)->setTime(13 + $i, 5);
-            DB::table('applications')->insert([
+            $row = [
                 'first_name' => $first,
                 'last_name' => $last,
+                'contact_number' => $first === 'Ana Beatriz' ? self::ANA_SMS_NUMBER : $this->phone(200 + $i),
+                'email' => $this->emailFor($first, $last),
+                'emergency_contact_name' => ['Ramon', 'Rommel', 'Liza', 'Jun', 'Maricel', 'Bong', 'Tess'][$i] . " {$last}",
+                'emergency_contact_number' => $this->phone(300 + $i),
+                'emergency_contact_relation' => $i % 2 ? 'Mother' : 'Father',
+                'bed_id' => $this->beds[$bedKey],
+                'preferred_start_date' => $this->today->copy()->addDays(3 + $i * 3)->toDateString(),
+                'tenant_end_date' => $this->today->copy()->addMonths(6)->toDateString(),
+            ];
+
+            DB::table('applications')->insert($row + [
                 'birthdate' => $dob,
                 'gender' => $gender,
                 'nationality' => 'Filipino',
@@ -953,19 +966,11 @@ class DemoDataSeeder extends Seeder
                 'occupation' => $type === 'student' ? 'Student' : 'Employee',
                 'school_company' => $school,
                 'school_company_address' => 'Manila',
-                'contact_number' => $first === 'Ana Beatriz' ? self::ANA_SMS_NUMBER : $this->phone(200 + $i),
-                'email' => $this->emailFor($first, $last),
                 'home_address' => ['Brgy. Poblacion, Bontoc, Mountain Province', 'Brgy. Bagumbayan, Taguig City', 'Brgy. Malinta, Valenzuela City', 'Brgy. San Isidro, Cainta, Rizal',
                     'Brgy. Poblacion, Muntinlupa City', 'Brgy. Tambo, Parañaque City', 'Brgy. Sto. Niño, Marikina City'][$i],
-                'emergency_contact_name' => ['Ramon', 'Rommel', 'Liza', 'Jun', 'Maricel', 'Bong', 'Tess'][$i] . " {$last}",
-                'emergency_contact_number' => $this->phone(300 + $i),
-                'emergency_contact_relation' => $i % 2 ? 'Mother' : 'Father',
-                'bed_id' => $this->beds[$bedKey],
-                'preferred_start_date' => $this->today->copy()->addDays(3 + $i * 3)->toDateString(),
-                'tenant_end_date' => $this->today->copy()->addMonths(6)->toDateString(),
                 'type_of_tenant' => $type,
                 'id_document_path' => $this->files['id'][$i % max(count($this->files['id']), 1)] ?? null,
-                'signed_contract_path' => $this->files['contract'],
+                'signed_contract_path' => $this->signedApplicationContract($row, $created),
                 'dpa_consent' => true,
                 'status' => $status,
                 'rejection_reason' => $status === 'rejected' ? $note : null,
@@ -1183,6 +1188,74 @@ class DemoDataSeeder extends Seeder
         return $method === 'gcash'
             ? '10' . str_pad((string) ($this->refCounter * 48271 % 100000000000), 11, '0', STR_PAD_LEFT)
             : 'BDO-' . date('ymd') . '-' . $this->refCounter;
+    }
+
+    /**
+     * Builds the same filled-in, signed lease contract an applicant gets
+     * from the real e-sign step (ApplicationController::signContract), so
+     * "Signed Contract" in the admin panel shows the applicant's own details
+     * and a signature instead of the blank template.
+     */
+    private function signedApplicationContract(array $app, Carbon $signedAt): string
+    {
+        $bed = Bed::with('room.floor')->find($app['bed_id']);
+        $name = "{$app['first_name']} {$app['last_name']}";
+
+        $pdf = Pdf::loadView('pdfs.lease-contract', [
+            'fullName' => $name,
+            'contactNumber' => $app['contact_number'],
+            'email' => $app['email'],
+            'emergencyContactName' => $app['emergency_contact_name'],
+            'emergencyContactNumber' => $app['emergency_contact_number'],
+            'emergencyContactRelation' => $app['emergency_contact_relation'],
+            'floorLabel' => $bed?->room?->floor?->floor_number,
+            'roomNo' => $bed?->room?->room_no,
+            'bedLabel' => $bed?->bed_label,
+            'monthlyRate' => $bed?->room?->perBedRate(),
+            'moveInDate' => Carbon::parse($app['preferred_start_date'])->format('F j, Y'),
+            'moveOutDate' => Carbon::parse($app['tenant_end_date'])->format('F j, Y'),
+            'todayDate' => $signedAt->format('F j, Y'),
+            'signatureDataUrl' => 'data:image/png;base64,' . base64_encode($this->demoSignature($name)),
+        ]);
+
+        $path = 'application-documents/signed-contracts/demo-' . Str::slug($name) . '.pdf';
+        Storage::disk('public')->put($path, $pdf->output());
+
+        return $path;
+    }
+
+    /** A pen-like scribble on a transparent PNG, different for each name. */
+    private function demoSignature(string $name): string
+    {
+        $w = 360;
+        $h = 110;
+        $img = imagecreatetruecolor($w, $h);
+        imagesavealpha($img, true);
+        imagefill($img, 0, 0, imagecolorallocatealpha($img, 0, 0, 0, 127));
+        $ink = imagecolorallocate($img, 20, 40, 110);
+        imagesetthickness($img, 3);
+
+        mt_srand(crc32($name));
+        $f1 = mt_rand(8, 14) / 100;
+        $f2 = mt_rand(20, 35) / 100;
+        $amp = mt_rand(18, 28);
+        mt_srand();
+
+        $prev = null;
+        for ($x = 15; $x <= $w - 30; $x += 2) {
+            $y = (int) ($h / 2 + $amp * sin($x * $f1) * cos($x * $f2) - ($x / $w) * 15);
+            if ($prev) {
+                imageline($img, $prev[0], $prev[1], $x, $y, $ink);
+            }
+            $prev = [$x, $y];
+        }
+        imageline($img, 40, $h - 22, $w - 50, $h - 30, $ink); // underline flourish
+
+        ob_start();
+        imagepng($img);
+        imagedestroy($img);
+
+        return ob_get_clean();
     }
 
     /**
