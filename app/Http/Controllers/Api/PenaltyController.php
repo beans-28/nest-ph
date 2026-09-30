@@ -110,6 +110,10 @@ class PenaltyController extends Controller
             return $penalty;
         });
 
+        \App\Models\TenantNotification::send($penalty->tenant_id, 'penalty_added',
+            'A penalty of ₱' . number_format((float) $penalty->amount, 2) . ' was added',
+            $penalty->description . '. It will be included in your next bill.', '/billing');
+
         return response()->json([
             'message' => 'Penalty added.',
             'penalty' => $penalty,
@@ -134,6 +138,15 @@ class PenaltyController extends Controller
         ]);
 
         $amountChanged = isset($data['amount']) && (float) $data['amount'] !== (float) $penalty->amount;
+
+        // penalty_audit_logs.action only allows created/waived/reinstated,
+        // so edits are recorded in the app log (old -> new) for now.
+        \Illuminate\Support\Facades\Log::info('[penalties] edited', [
+            'penalty_id' => $penalty->id,
+            'by' => $request->user()?->id,
+            'old' => $penalty->only(['description', 'amount']),
+            'new' => $data,
+        ]);
 
         DB::transaction(function () use ($penalty, $data, $amountChanged) {
             $penalty->update($data);
@@ -189,6 +202,10 @@ class PenaltyController extends Controller
             }
         });
 
+        \App\Models\TenantNotification::send($penalty->tenant_id, 'penalty_waived',
+            'A penalty of ₱' . number_format((float) $penalty->amount, 2) . ' was waived',
+            $penalty->description . '. You no longer need to pay it.', '/billing');
+
         return response()->json([
             'message' => 'Penalty waived.',
             'penalty' => $penalty->fresh()->load('auditLogs.performedBy:id,name'),
@@ -229,6 +246,10 @@ class PenaltyController extends Controller
                 $this->resyncBillingTotals($penalty->billing_id);
             }
         });
+
+        \App\Models\TenantNotification::send($penalty->tenant_id, 'penalty_added',
+            'A penalty of ₱' . number_format((float) $penalty->amount, 2) . ' applies again',
+            $penalty->description . '. Reason: ' . $data['reason'], '/billing');
 
         return response()->json([
             'message' => 'Penalty reinstated.',

@@ -87,6 +87,8 @@
   /* ===== View drawer ===== */
   .overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:60; }
   .overlay.open{ display:block; }
+  /* A dialog opened from the side panel (Record Deposit Refund) must sit above it. */
+  #depositRefundModal{ z-index:320; }
   .drawer{ position:fixed; top:0; right:-460px; width:440px; max-width:92vw; height:100vh; background:#fff; z-index:61; transition:right .25s ease; overflow-y:auto; box-shadow:-8px 0 24px rgba(0,0,0,.12); }
   .drawer.open{ right:0; }
   .drawer-head{ padding:22px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
@@ -242,6 +244,32 @@
     <div class="modal-actions">
       <button class="btn primary" id="submitAddBtn" style="flex:1;">Register Tenant</button>
       <button class="btn" id="cancelAddBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Record Deposit Refund modal (v39) ===== -->
+<div class="modal-overlay" id="depositRefundModal">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="depositRefundTitle">
+    <div class="modal-head"><h2 id="depositRefundTitle">Record Deposit Refund</h2></div>
+    <div class="modal-body">
+      <div class="modal-error" id="drError"></div>
+      <p style="font-size:12.5px;color:var(--text-mid);margin:0 0 14px;">The deposit is half of the paid move-in fee. Suggested deductions are the tenant's unpaid balance plus penalties not yet billed; change them if needed.</p>
+      <div class="modal-row2">
+        <div class="fld"><label for="drDeposit">Deposit Amount (₱)</label><input type="number" id="drDeposit" min="0.01" step="0.01"></div>
+        <div class="fld"><label for="drDeductions">Deductions (₱)</label><input type="number" id="drDeductions" min="0" step="0.01"></div>
+      </div>
+      <div class="fld"><label for="drNote">What the deductions are for</label><input type="text" id="drNote" maxlength="500" placeholder="e.g. Unpaid October rent, broken window"></div>
+      <div class="modal-row2">
+        <div class="fld"><label for="drMethod">Refund Method</label><input type="text" id="drMethod" maxlength="60" list="drMethodList"><datalist id="drMethodList"><option value="Cash"><option value="GCash"><option value="Bank Transfer"></datalist></div>
+        <div class="fld"><label for="drDate">Refund Date</label><input type="date" id="drDate"></div>
+      </div>
+      <div class="fld"><label for="drReference">Reference No. (optional)</label><input type="text" id="drReference" maxlength="100"></div>
+      <p style="font-size:14px;margin:6px 0 0;">Amount to refund: <strong id="drRefundPreview">₱0.00</strong></p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="drSubmitBtn" style="flex:1;">Save Refund</button>
+      <button class="btn" id="drCancelBtn">Cancel</button>
     </div>
   </div>
 </div>
@@ -507,12 +535,92 @@
   $('drawerClose').addEventListener('click', closeDrawer);
   $('overlay').addEventListener('click', closeDrawer);
 
+  // ===== Security deposit (v39) =====
+  let drawerTenant = null;
+
+  function depositHtml(t){
+    const d = t.deposit || {};
+    if(d.refund){
+      const r = d.refund;
+      return `
+        <h3>Security Deposit</h3>
+        <div class="kv">
+          <div><div class="k">Deposit</div>${val(peso(r.deposit_amount))}</div>
+          <div><div class="k">Deductions</div>${val(peso(r.deductions_amount))}${r.deductions_note ? `<div class="k" style="margin-top:4px;text-transform:none;letter-spacing:0;">${esc(r.deductions_note)}</div>` : ''}</div>
+          <div><div class="k">Refunded</div>${val(peso(r.refund_amount))}</div>
+          <div><div class="k">Date &amp; Method</div>${val(r.refunded_at + ' · ' + r.refund_method)}</div>
+          <div><div class="k">Reference</div>${val(r.reference_number)}</div>
+          <div><div class="k">Recorded By</div>${val(r.recorded_by)}</div>
+        </div>`;
+    }
+    return `
+      <h3>Security Deposit</h3>
+      <div class="kv">
+        <div><div class="k">Deposit Held</div><span class="v">${d.held ? peso(d.held) : 'None on record'}</span></div>
+        <div><div class="k">Status</div><span class="v">${d.held ? 'Held until move-out' : 'Move-in fee not yet paid'}</span></div>
+      </div>
+      <button type="button" class="btn" id="openDepositRefundBtn" style="margin-top:10px;">Record Deposit Refund</button>`;
+  }
+
+  function openDepositModal(){
+    const d = drawerTenant.deposit || {};
+    $('drDeposit').value = d.held ? Number(d.held).toFixed(2) : '';
+    // Only suggest deductions against a deposit that exists; for a walk-in
+    // the admin types both amounts.
+    const suggest = d.held ? Math.min(d.suggested_deductions || 0, d.held) : 0;
+    $('drDeductions').value = suggest.toFixed(2);
+    $('drNote').value = suggest > 0 ? 'Unpaid balance and penalties' : '';
+    $('drMethod').value = 'Cash';
+    $('drReference').value = '';
+    $('drDate').value = new Date().toISOString().slice(0, 10);
+    $('drError').classList.remove('visible');
+    updateRefundPreview();
+    $('depositRefundModal').classList.add('open');
+  }
+  function updateRefundPreview(){
+    const refund = (Number($('drDeposit').value) || 0) - (Number($('drDeductions').value) || 0);
+    $('drRefundPreview').textContent = peso(Math.max(0, refund));
+  }
+  ['drDeposit', 'drDeductions'].forEach(id => $(id).addEventListener('input', updateRefundPreview));
+  $('drCancelBtn').addEventListener('click', () => $('depositRefundModal').classList.remove('open'));
+  $('drSubmitBtn').addEventListener('click', async function(){
+    this.disabled = true;
+    $('drError').classList.remove('visible');
+    try {
+      const res = await api(`/tenant-manager/${drawerTenant.id}/deposit-refund`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          deposit_amount: $('drDeposit').value,
+          deductions_amount: $('drDeductions').value || 0,
+          deductions_note: $('drNote').value.trim() || null,
+          refund_method: $('drMethod').value.trim(),
+          reference_number: $('drReference').value.trim() || null,
+          refunded_at: $('drDate').value,
+        }),
+      });
+      drawerTenant.deposit = res.deposit;
+      $('depositSec').innerHTML = depositHtml(drawerTenant);
+      $('depositRefundModal').classList.remove('open');
+      if(typeof toast === 'function') toast('Deposit refund recorded.');
+    } catch(e){
+      $('drError').textContent = e.message;
+      $('drError').classList.add('visible');
+    }
+    this.disabled = false;
+  });
+  $('drawerBody').addEventListener('click', (e) => {
+    if(e.target.id === 'openDepositRefundBtn') openDepositModal();
+  });
+
   async function openDrawer(id){
     $('drawerBody').innerHTML = 'Loading…';
     $('overlay').classList.add('open');
     $('drawer').classList.add('open');
     try {
       const t = await api(`/tenant-manager/${id}`);
+      t.id = t.id ?? id;
+      drawerTenant = t;
       $('drawerTitle').textContent = t.full_name;
       $('drawerBody').innerHTML = `
         <div class="sec">
@@ -549,7 +657,9 @@
             <div><div class="k">Outstanding Balance</div>${val(peso(t.outstanding_balance))}</div>
             <div><div class="k">Payments Recorded</div>${val(t.payments_count)}</div>
           </div>
+          <a class="doc-link" href="/tenant-manager/${t.id}/statement-of-account">Download Statement of Account (PDF)</a>
         </div>
+        <div class="sec" id="depositSec">${depositHtml(t)}</div>
         <div class="sec">
           <h3>Documents</h3>
           ${t.id_document_url ? `<a class="doc-link" href="${t.id_document_url}" target="_blank">View Valid ID</a>` : '<span class="v empty-v">No valid ID on file</span>'}

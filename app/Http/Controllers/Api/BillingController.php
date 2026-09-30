@@ -228,6 +228,12 @@ class BillingController extends Controller
             'due_date' => $bill->due_date?->toDateString(),
         ]);
 
+        // Tenant notification panel (v39): the "portal" half of the above.
+        \App\Models\TenantNotification::send($bill->tenant_id, 'bill_new',
+            'Your bill for ' . $bill->billing_period_start->format('F Y') . ' is ready',
+            'Total: ₱' . number_format((float) $bill->total_amount, 2) . ', due on ' . $bill->due_date?->format('F j, Y') . '.',
+            '/billing');
+
         return $bill;
     }
 

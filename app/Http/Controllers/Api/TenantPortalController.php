@@ -179,13 +179,14 @@ class TenantPortalController extends Controller
             return response()->json(['message' => 'Cash payments are recorded by the admin at the office, not submitted online.'], 422);
         }
 
-        $hasPending = Payment::where('billing_id', $bill->id)->where('status', 'pending')->exists();
-
-        if ($hasPending) {
-            return response()->json([
-                'message' => 'You already have a payment proof awaiting review for this statement.',
-            ], 409);
-        }
+        // "Submit Again" (move-in pending page): a new proof replaces the
+        // tenant's own proof that's still waiting for review, so the admin
+        // only ever sees one pending proof per bill. The old one is kept as
+        // 'rejected' with a note, for the record, instead of being deleted.
+        $replaced = Payment::where('billing_id', $bill->id)
+            ->where('tenant_id', $bill->tenant_id)
+            ->where('status', 'pending')
+            ->get();
 
         $payment = Payment::create([
             'billing_id' => $bill->id,
@@ -200,6 +201,14 @@ class TenantPortalController extends Controller
             'proof_path' => $request->file('proof')->store('payment-proofs', 'public'),
             'created_at' => now(),
         ]);
+
+        foreach ($replaced as $old) {
+            $old->update([
+                'status' => 'rejected',
+                'review_notes' => Payment::REPLACED_NOTE,
+                'reviewed_at' => now(),
+            ]);
+        }
 
         Log::info('[notification stub] payment.proof_submitted', [
             'payment_id' => $payment->id,
@@ -229,6 +238,24 @@ class TenantPortalController extends Controller
         }
 
         return response()->json($this->buildReceipt($payment->load('tenant', 'billingStatement')));
+    }
+
+    /**
+     * Tenant: download the official PDF receipt for one of MY approved payments.
+     */
+    public function receiptPdf(Request $request, Payment $payment)
+    {
+        if ($payment->tenant_id !== $this->tenant($request)->id || $payment->status !== 'approved') {
+            throw new NotFoundHttpException('Receipt not found.');
+        }
+
+        return \App\Services\ReceiptPdf::download($payment);
+    }
+
+    /** Tenant: download my Statement of Account PDF (v39). */
+    public function statementOfAccountPdf(Request $request)
+    {
+        return \App\Services\StatementOfAccountPdf::download($this->tenant($request));
     }
 
     private function accountSummary(Tenant $tenant): array

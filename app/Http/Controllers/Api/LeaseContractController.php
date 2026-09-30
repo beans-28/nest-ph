@@ -313,6 +313,10 @@ class LeaseContractController extends Controller
             'renewed_by' => $request->user()?->id,
         ]);
 
+        \App\Models\TenantNotification::send($leaseContract->tenant_id, 'lease_renewed',
+            'Your lease was renewed until ' . $newEndDate->format('F j, Y'),
+            'You can view your lease details on your Profile page.', '/account');
+
         return response()->json([
             'message' => 'Lease renewed successfully.',
             'contract' => $this->transformRow($leaseContract->fresh(['tenant', 'bed.room'])),

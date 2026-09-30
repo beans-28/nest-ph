@@ -9,6 +9,7 @@ use App\Models\EscalationLog;
 use App\Models\LeaseContract;
 use App\Models\Payment;
 use App\Models\PenaltyAuditLog;
+use App\Models\Review;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -31,6 +32,7 @@ class ActivityFeedService
             ->concat($this->penaltyEvents())
             ->concat($this->damageEvents())
             ->concat($this->adminAccessEvents())
+            ->concat($this->reviewModerationEvents())
             ->sortByDesc('date')
             ->values();
     }
@@ -56,6 +58,24 @@ class ActivityFeedService
                 'detail' => 'Payment received from ' . ($p->tenant?->full_name ?? 'a tenant') . ' (₱' . number_format($p->amount_paid, 0) . ')',
                 'type' => 'Payment',
                 'admin' => $this->actorName($p->reviewed_by),
+            ]);
+    }
+
+    /** An admin publishing, hiding or removing a tenant's review. */
+    private function reviewModerationEvents(): Collection
+    {
+        $verbs = ['published' => 'Published', 'hidden' => 'Hid', 'removed' => 'Removed'];
+
+        return Review::whereNotNull('moderated_by')
+            ->with('tenant:id,first_name,last_name')
+            ->latest('moderated_at')
+            ->take(self::PER_SOURCE_LIMIT)
+            ->get()
+            ->map(fn ($r) => [
+                'date' => $r->moderated_at,
+                'detail' => ($verbs[$r->status] ?? 'Moderated') . ' a review by ' . ($r->tenant?->full_name ?? 'a tenant') . " ({$r->rating}★)",
+                'type' => 'Review',
+                'admin' => $this->actorName($r->moderated_by),
             ]);
     }
 

@@ -16,7 +16,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(RolesAndTestUsersSeeder::class);
-        
+
+        if (app()->environment('production')) {
+            return; // no test users on the live site
+        }
+
         // User::factory(10)->create();
 
         User::factory()->create([

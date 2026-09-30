@@ -52,6 +52,23 @@ class AnnouncementController extends Controller
             'body' => $data['body'],
         ]);
 
+        // Tenant notification panel (v39): every current tenant, one insert.
+        $now = now();
+        $rows = \App\Models\Tenant::whereIn('status', ['active', 'pending_move_in_payment'])
+            ->pluck('id')
+            ->map(fn ($id) => [
+                'tenant_id' => $id,
+                'type' => 'announcement',
+                'title' => 'New announcement from ' . $announcement->poster_name,
+                'body' => \Illuminate\Support\Str::limit($announcement->body, 160),
+                'link' => '/dashboard',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        foreach ($rows->chunk(500) as $chunk) {
+            \App\Models\TenantNotification::insert($chunk->all());
+        }
+
         return response()->json([
             'message' => 'Announcement posted.',
             'announcement' => [

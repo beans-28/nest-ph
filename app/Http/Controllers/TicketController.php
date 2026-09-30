@@ -108,6 +108,8 @@ class TicketController extends Controller
             }
         }
 
+        $oldStatus = $ticket->status;
+
         DB::transaction(function () use ($ticket, $data, $request) {
             $wasResolved = in_array($ticket->status, ['resolved', 'rejected'], true);
             $isNowResolved = in_array($data['status'], ['resolved', 'rejected'], true);
@@ -129,6 +131,21 @@ class TicketController extends Controller
                 ]);
             }
         });
+
+        // Tenant notification panel (v39): status changes and staff replies.
+        $label = MaintenanceTicket::STATUSES[$data['status']] ?? $data['status'];
+        if ($oldStatus !== $data['status']) {
+            \App\Models\TenantNotification::send($ticket->tenant_id,
+                $data['status'] === 'resolved' ? 'ticket_resolved' : 'ticket_update',
+                "Your ticket \"{$ticket->title}\" is now {$label}",
+                ! empty($data['reply_message']) ? 'Staff replied: ' . \Illuminate\Support\Str::limit($data['reply_message'], 140) : null,
+                '/my/tickets');
+        } elseif (! empty($data['reply_message'])) {
+            \App\Models\TenantNotification::send($ticket->tenant_id, 'ticket_reply',
+                "New reply on your ticket \"{$ticket->title}\"",
+                \Illuminate\Support\Str::limit($data['reply_message'], 140),
+                '/my/tickets');
+        }
 
         return response()->json([
             'message' => 'Ticket updated successfully.',

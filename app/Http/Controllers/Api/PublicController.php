@@ -351,6 +351,13 @@ class PublicController extends Controller
             'contact_number' => $profile->contact_number,
             'contact_email' => $profile->contact_email,
             'logo_url' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
+            // Same fields the real /dorm-info page shows (dormInfoPage() below).
+            'cover_photo_url' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
+            'brand_logo_url' => $profile->brandLogoUrl(),
+            'is_bir_verified' => $profile->isBirVerified(),
+            'amenities' => \App\Models\DormitoryAmenity::where('is_enabled', true)->orderBy('sort_order')->pluck('label'),
+            'house_rules_list' => \App\Models\DormitoryHouseRule::orderBy('sort_order')->orderBy('id')->pluck('rule_text'),
+            'policies_file_url' => $profile->policies_file_path ? route('public.dorminfo.file') : null,
             'payments_and_fees' => $profile->payments_and_fees,
             'house_rules' => $profile->house_rules,
             'checkout_procedures' => $profile->checkout_procedures,
@@ -458,90 +465,13 @@ class PublicController extends Controller
     }
 
     /**
-     * Renders the public "Apply for Occupancy" page. Passes whether a
-     * contract template has been uploaded, so the page can show a graceful
-     * message instead of a broken link if the admin hasn't added one yet.
+     * Renders the public "Apply for Occupancy" page. Its contract is
+     * generated live (contract-preview / contract-sign); the old
+     * uploaded-template routes were removed in v38.
      */
     public function applyPage(): \Illuminate\View\View
     {
-        $profile = DormitoryProfile::current();
-
-        return view('publicapply', [
-            'hasContractTemplate' => (bool) $profile->contract_template_path,
-        ]);
-    }
-
-    /**
-     * Use Case Report — Apply for Occupancy, step 4.1: "Display the full
-     * dormitory contract for review." Streamed the same way as the Dorm Info
-     * policies PDF — reading directly through Storage rather than the
-     * public/storage symlink, which sidesteps a known bug where PHP's
-     * built-in dev server (php artisan serve) returns 403 for symlinked
-     * paths on Windows.
-     */
-    public function contractTemplateView()
-    {
-        $profile = DormitoryProfile::current();
-
-        abort_unless($profile->contract_template_path, 404);
-
-        return Storage::disk('public')->response($profile->contract_template_path);
-    }
-
-    /**
-     * Step 5.1: "Generate and serve the downloadable contract file."
-     */
-    public function contractTemplateDownload()
-    {
-        $profile = DormitoryProfile::current();
-
-        abort_unless($profile->contract_template_path, 404);
-
-        return Storage::disk('public')->download(
-            $profile->contract_template_path,
-            'NEST-PH-Dormitory-Contract.pdf'
-        );
-    }
-    /**
-     * Renders the public "Dorm Info" page.
-     */
-    public function dormInfoPage(): \Illuminate\View\View
-    {
-        $profile = DormitoryProfile::current();
-
-        // Reviews & Ratings (Table 41) — the full breakdown bar + individual
-        // review list live here, on the "listing" page, rather than the
-        // homepage, which only carries the lightweight average+count teaser.
-        $reviewStats = \App\Models\Review::aggregate();
-
-        return view('publicdorminfo', [
-            'dormName' => $profile->dorm_name,
-            'description' => $profile->description,
-            'address' => $profile->address,
-            'contactNumber' => $profile->contact_number,
-            'contactEmail' => $profile->contact_email,
-            'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
-            'isBirVerified' => $profile->isBirVerified(),
-            'birRegistrationImageUrl' => $this->isImageFile($profile->bir_registration_path)
-                ? Storage::disk('public')->url($profile->bir_registration_path)
-                : null,
-            'amenitiesList' => \App\Models\DormitoryAmenity::where('is_enabled', true)->orderBy('sort_order')->get(),
-            'houseRulesList' => \App\Models\DormitoryHouseRule::orderBy('sort_order')->orderBy('id')->get(),
-            'policiesFileUrl' => $profile->policies_file_path
-                ? route('public.dorminfo.file')
-                : null,
-            'paymentsAndFees' => $profile->payments_and_fees,
-            'houseRules' => $profile->house_rules,
-            'checkoutProcedures' => $profile->checkout_procedures,
-            'averageRating' => $reviewStats['average'],
-            'reviewCount' => $reviewStats['count'],
-            'reviewBreakdown' => \App\Models\Review::breakdown(),
-            'reviews' => \App\Models\Review::where('is_approved', true)
-                ->with('tenant')
-                ->latest()
-                ->take(20)
-                ->get(),
-        ]);
+        return view('publicapply');
     }
 
     /**

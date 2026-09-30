@@ -275,7 +275,14 @@ class EscalationService
         }
 
         $tenant = $bill->tenant;
+        $wasRestricted = $tenant->portal_restricted;
         $tenant->update(['portal_restricted' => true]);
+        if (! $wasRestricted) {
+            \App\Models\TenantNotification::send($tenant->id, 'account_restricted',
+                'Your portal access is restricted',
+                'Because of an unpaid balance, only Billing and Delinquency are available. Settle your balance to restore full access.',
+                '/billing', "account_restricted:{$bill->id}");
+        }
 
         $message = 'Your account access has been restricted due to unpaid balance. '
             . 'Please settle your balance to restore full access. - ' . TextbeeService::BRAND_NAME;
@@ -375,16 +382,27 @@ class EscalationService
 
         $bills = BillingStatement::where('tenant_id', $tenant->id)
             ->where('status', 'overdue')
+            ->withApprovedPaid()
             ->orderBy('billing_period_start')
             ->get();
 
-        $totalOwed = (float) $bills->sum('total_amount');
+        // What's actually still owed: partial payments are subtracted.
+        $totalOwed = round($bills->sum(fn ($b) => $b->remainingBalance()), 2);
         $totalPenalties = (float) $bills->sum('penalty_amount');
 
         $history = $tenant->escalationLogs()->orderBy('created_at')->get();
 
-        $deadline = now()->addDays(7);
-        $blacklistDate = $deadline->copy()->addDay();
+        // The dates the letter states come from the engine's own timing, so
+        // the letter can't promise a deadline the engine won't honour:
+        // blacklisting happens when the bill reaches the Stage 6 day, and
+        // the payment deadline is the day before. Never earlier than
+        // tomorrow, in case the letter is generated late.
+        $stage6Day = $this->stageDayThresholds()[3];
+        $blacklistDate = Carbon::parse($bill->due_date)->addDays($stage6Day)->startOfDay();
+        if ($blacklistDate->lte(now()->startOfDay())) {
+            $blacklistDate = now()->addDay()->startOfDay();
+        }
+        $deadline = $blacklistDate->copy()->subDay();
 
         $dormName = \App\Models\DormitoryProfile::current()->dorm_name ?? 'NEST PH';
 
@@ -410,6 +428,11 @@ class EscalationService
             'message_content' => $path,
             'status' => 'sent',
         ]);
+
+        \App\Models\TenantNotification::send($tenant->id, 'demand_letter',
+            'A formal demand letter has been issued',
+            'Pay ₱' . number_format($totalOwed, 2) . ' by ' . $deadline->format('F j, Y') . ' to avoid being blacklisted. You can download the letter on the Delinquency page.',
+            '/my/delinquency', "demand_letter:{$bill->id}");
 
         Log::info('[escalation] Stage 5: demand letter generated', [
             'tenant_id' => $tenant->id,
@@ -527,6 +550,9 @@ class EscalationService
 
             if ($bill->tenant && $bill->tenant->portal_restricted) {
                 $bill->tenant->update(['portal_restricted' => false]);
+                \App\Models\TenantNotification::send($bill->tenant->id, 'account_restored',
+                    'Your full portal access is restored',
+                    'Thank you for settling your balance.', '/dashboard', "account_restored:{$bill->id}");
             }
         }
     }

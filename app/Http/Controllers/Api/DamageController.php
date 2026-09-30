@@ -115,6 +115,10 @@ class DamageController extends Controller
             return ['damage' => $damage, 'penalty' => $penalty];
         });
 
+        \App\Models\TenantNotification::send($result['penalty']->tenant_id, 'penalty_added',
+            'A damage charge of ₱' . number_format((float) $result['penalty']->amount, 2) . ' was added',
+            $result['damage']->description . '. It will be included in your next bill.', '/billing');
+
         return response()->json([
             'message' => 'Damage recorded and penalty created.',
             'damage' => $this->withPhotoUrl($result['damage']->fresh()),

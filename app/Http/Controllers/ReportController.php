@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bed;
+use App\Models\DormitoryProfile;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\BillingStatement;
 use App\Models\Floor;
 use App\Models\Payment;
@@ -12,16 +14,21 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 /**
  * Use Case Report Table 36 — Generate Reports.
  *
  * Combines both report types (Occupancy, Financial/Billing) into one page,
  * following the same navigation -> date range -> Generate -> Export flow
- * the use case describes for both. Export is CSV only for now (Table 36
- * allows "PDF or CSV" — CSV covers the requirement; PDF export can be
- * added later the same way the Demand Letter/Eviction Notice PDFs were,
- * via dompdf, if the team decides it's worth the extra time).
+ * the use case describes for both. Export is available as Excel (.xlsx)
+ * or PDF (Table 36 allows "PDF or CSV"; a styled Excel file replaced the
+ * plain CSV because CSV cannot hold any formatting); the PDF uses dompdf and is styled
+ * like the Demand Letter PDF (see resources/views/pdfs/report.blade.php).
  *
  * Scope simplification (flagged for BAGUI): Table 36's Occupancy Report
  * flow mentions "reserved visitor" / "reserved applicant" / "approved /
@@ -66,16 +73,13 @@ class ReportController extends Controller
     }
 
     /**
-     * GET /reports/export?type=occupancy|financial&start=&end=
+     * GET /reports/export?type=occupancy|financial&start=&end=&format=xlsx|pdf
      * Table 36, step 4 — "Click Export -> generate and download the
-     * report as a PDF or CSV." CSV only, per the scope note above.
-     *
-     * A UTF-8 BOM is written first (see writeCsv() below) — without it,
-     * Excel assumes ANSI/Windows-1252 and mangles any non-ASCII character
-     * (the — em dash in the title, the ₱ peso sign) into garbage like
-     * "â€"". CSV has no built-in way to declare its own encoding, so the
-     * BOM is the standard, Excel-recognized way to say "this file is
-     * UTF-8" before any real content starts.
+     * report." Two formats:
+     *   - xlsx (default): a styled Excel workbook (PhpSpreadsheet). This
+     *     replaced the old CSV export, since a CSV is plain text and can't
+     *     hold column widths, bold headings, colours or number formats.
+     *   - pdf: laid out like the Demand Letter PDF (pdfs/report.blade.php).
      */
     public function export(Request $request)
     {
@@ -83,88 +87,204 @@ class ReportController extends Controller
             'type' => ['required', Rule::in(['occupancy', 'financial'])],
             'start' => ['nullable', 'date'],
             'end' => ['nullable', 'date'],
+            'format' => ['nullable', Rule::in(['xlsx', 'pdf'])],
         ]);
 
-        if ($data['type'] === 'occupancy') {
+        $type = $data['type'];
+        if ($type === 'occupancy') {
             $report = $this->computeOccupancy();
-            $filename = 'occupancy-report-' . now()->format('Y-m-d_His') . '.csv';
-
-            $rows = [];
-            $rows[] = [\App\Models\DormitoryProfile::current()->dorm_name.' - Occupancy Report (generated via NEST.PH)'];
-            $rows[] = ['Generated', $report['generated_at']];
-            $rows[] = [];
-            $rows[] = ['Summary'];
-            $rows[] = ['Total Rooms', $report['total_rooms']];
-            $rows[] = ['Total Bedspaces', $report['total_beds']];
-            $rows[] = ['Occupied', $report['occupied']];
-            $rows[] = ['Vacant / Available', $report['vacant']];
-            $rows[] = ['Reserved', $report['reserved']];
-            $rows[] = ['Under Maintenance', $report['maintenance']];
-            $rows[] = ['Occupancy Rate', $report['occupancy_rate'] . '%'];
-            $rows[] = [];
-            $rows[] = ['Breakdown by Floor'];
-            $rows[] = ['Floor', 'Total Beds', 'Occupied', 'Vacant', 'Reserved', 'Maintenance', 'Occupancy Rate'];
-            foreach ($report['by_floor'] as $floor) {
-                $rows[] = [
-                    $floor['label'],
-                    $floor['total_beds'],
-                    $floor['occupied'],
-                    $floor['vacant'],
-                    $floor['reserved'],
-                    $floor['maintenance'],
-                    $floor['occupancy_rate'] . '%',
-                ];
-            }
         } else {
             [$start, $end] = $this->resolveRange($request);
             $report = $this->computeFinancial($start, $end);
-            $filename = 'financial-report-' . now()->format('Y-m-d_His') . '.csv';
+        }
+        $dormName = DormitoryProfile::current()->dorm_name ?? 'NEST PH';
+        $filename = "{$type}-report-" . now()->format('Y-m-d_His');
 
-            $rows = [];
-            $rows[] = [\App\Models\DormitoryProfile::current()->dorm_name.' - Financial / Billing Report (generated via NEST.PH)'];
-            $rows[] = ['Period', $report['range']['start'] . ' to ' . $report['range']['end']];
-            $rows[] = [];
-            $rows[] = ['Metric', 'Amount (PHP)'];
-            $rows[] = ['Total Collected', $this->peso($report['total_collected'])];
-            $rows[] = ['Cash', $this->peso($report['cash_collected'])];
-            $rows[] = ['Online (GCash / Bank / Other)', $this->peso($report['online_collected'])];
-            $rows[] = ['Total Outstanding', $this->peso($report['total_outstanding'])];
-            $rows[] = ['Total Penalties Applied', $this->peso($report['total_penalties'])];
-            $rows[] = [];
-            $rows[] = ['Delinquent Accounts (count)', $report['delinquent_accounts']];
-            $rows[] = ['Payments Recorded (count)', $report['payment_count']];
+        if (($data['format'] ?? 'xlsx') === 'pdf') {
+            $pdf = Pdf::loadView('pdfs.report', [
+                'type' => $type,
+                'report' => $report,
+                'dormName' => $dormName,
+            ]);
+            // "Page X of Y" under the footer line on every page. dompdf can
+            // only know the total page count after rendering, so it's stamped
+            // onto the finished pages here rather than written in the template.
+            $dompdf = $pdf->getDomPDF();
+            $dompdf->render();
+            $canvas = $dompdf->getCanvas();
+            $font = $dompdf->getFontMetrics()->getFont('DejaVu Sans');
+            $canvas->page_text($canvas->get_width() / 2 - 22, $canvas->get_height() - 22,
+                'Page {PAGE_NUM} of {PAGE_COUNT}', $font, 7.5, [0.54, 0.54, 0.54]);
+
+            return response($dompdf->output(), 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => "attachment; filename=\"{$filename}.pdf\"",
+            ]);
         }
 
-        return $this->streamCsv($rows, $filename);
+        return $this->exportXlsx($type, $report, $dormName, "{$filename}.xlsx");
     }
 
+    // Colours shared with the PDF / Demand Letter so all exports match.
+    private const GREEN = '194E19';
+    private const GREEN_LIGHT = 'DCEBDC';
+    private const GREY = 'F2F2F2';
+    private const RED = 'BA2828';
+    private const PESO_FORMAT = '"₱"#,##0.00';
+
     /**
-     * Streams the given rows as a CSV download. Writes a UTF-8 BOM first
-     * (see export()'s docblock for why), then every row via fputcsv.
+     * Builds the Excel workbook. Layout, top to bottom: dorm name title,
+     * report name, generated/period info, then one or more tables, each
+     * with a green section heading and a green header row.
      */
-    private function streamCsv(array $rows, string $filename)
+    private function exportXlsx(string $type, array $report, string $dormName, string $filename)
     {
-        return response()->streamDownload(function () use ($rows) {
-            $handle = fopen('php://output', 'w');
-            fwrite($handle, "\xEF\xBB\xBF"); // UTF-8 BOM
-            foreach ($rows as $row) {
-                fputcsv($handle, $row);
-            }
-            fclose($handle);
+        $book = new Spreadsheet();
+        $book->getDefaultStyle()->getFont()->setName('Calibri')->setSize(11);
+        $reportName = $type === 'occupancy' ? 'Occupancy Report' : 'Financial / Billing Report';
+        $book->getProperties()->setCreator($dormName)->setTitle("{$dormName} - {$reportName}")
+            ->setCompany('Generated via NEST.PH');
+        $sheet = $book->getActiveSheet();
+        $sheet->setTitle($type === 'occupancy' ? 'Occupancy' : 'Financial');
+        $lastCol = $type === 'occupancy' ? 'G' : 'B';
+
+        // Title block
+        $sheet->setCellValue('A1', $dormName);
+        $sheet->mergeCells("A1:{$lastCol}1");
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(18)->getColor()->setRGB(self::GREEN);
+        $sheet->getRowDimension(1)->setRowHeight(28);
+        $sheet->setCellValue('A2', $reportName);
+        $sheet->mergeCells("A2:{$lastCol}2");
+        $sheet->getStyle('A2')->getFont()->setSize(12)->getColor()->setRGB('4B5F4C');
+
+        $sheet->setCellValue('A4', 'Date Generated:');
+        $sheet->setCellValue('B4', now()->format('F j, Y g:i A'));
+        $sheet->setCellValue('A5', $type === 'occupancy' ? 'Coverage:' : 'Period Covered:');
+        $sheet->setCellValue('B5', $type === 'occupancy'
+            ? 'Current room and bed status (live snapshot)'
+            : $report['range']['start'] . ' to ' . $report['range']['end']);
+        $sheet->getStyle('A4:A5')->getFont()->setBold(true);
+        // Let the info text spill across the columns instead of being cut off
+        $sheet->getStyle('B4:B5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+
+        $row = 7;
+        if ($type === 'occupancy') {
+            $row = $this->xlsxTable($sheet, $row, 'Summary', ['Metric', 'Count'], [
+                ['Total Rooms', $report['total_rooms']],
+                ['Total Bedspaces', $report['total_beds']],
+                ['Occupied', $report['occupied']],
+                ['Vacant / Available', $report['vacant']],
+                ['Reserved', $report['reserved']],
+                ['Under Maintenance', $report['maintenance']],
+            ], ['Occupancy Rate', $report['occupancy_rate'] / 100]);
+            $sheet->getStyle('B' . ($row - 2))->getNumberFormat()->setFormatCode('0.0%');
+
+            $floors = collect($report['by_floor'])->map(fn ($f) => [
+                $f['label'], $f['total_beds'], $f['occupied'], $f['vacant'],
+                $f['reserved'], $f['maintenance'], $f['occupancy_rate'] / 100,
+            ])->all();
+            $start = $row;
+            $row = $this->xlsxTable($sheet, $row, 'Breakdown by Floor',
+                ['Floor', 'Total Beds', 'Occupied', 'Vacant', 'Reserved', 'Maintenance', 'Occupancy Rate'],
+                $floors ?: [['No floors added yet.']]);
+            $sheet->getStyle('G' . ($start + 2) . ':G' . ($row - 2))->getNumberFormat()->setFormatCode('0.0%');
+            $sheet->getStyle('B' . ($start + 1) . ':G' . ($row - 2))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        } else {
+            $row = $this->xlsxTable($sheet, $row, 'Collections Breakdown', ['Description', 'Amount'], [
+                ['Cash', $report['cash_collected']],
+                ['Online (GCash / Bank / Other)', $report['online_collected']],
+            ], ['Total Collected', $report['total_collected']]);
+            $sheet->getStyle('B' . ($row - 4) . ':B' . ($row - 2))->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+
+            $start = $row;
+            $row = $this->xlsxTable($sheet, $row, 'Receivables and Delinquency', ['Metric', 'Value'], [
+                ['Total Outstanding', $report['total_outstanding']],
+                ['Total Penalties Applied', $report['total_penalties']],
+                ['Delinquent Accounts', $report['delinquent_accounts']],
+                ['Payments Recorded', $report['payment_count']],
+            ]);
+            // Peso format + red for the two money rows
+            $money = 'B' . ($start + 2) . ':B' . ($start + 3);
+            $sheet->getStyle($money)->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+            $sheet->getStyle($money)->getFont()->setBold(true)->getColor()->setRGB(self::RED);
+        }
+
+        // Footer note
+        $row += 1;
+        $sheet->setCellValue("A{$row}", "Issued by {$dormName} · Generated via NEST.PH Dormitory Management System");
+        $sheet->getStyle("A{$row}")->getFont()->setItalic(true)->setSize(9)->getColor()->setRGB('8A8A8A');
+
+        // Column widths: wide label column, even widths for the rest
+        $sheet->getColumnDimension('A')->setWidth(34);
+        foreach (range('B', $lastCol) as $col) {
+            $sheet->getColumnDimension($col)->setWidth(16);
+        }
+        if ($type === 'financial') {
+            $sheet->getColumnDimension('B')->setWidth(22);
+        }
+
+        // Clean look on screen, and fit to one page wide when printed
+        $sheet->setShowGridlines(false);
+        $sheet->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
+        $sheet->getHeaderFooter()->setOddFooter('&L&8' . str_replace('&', '&&', $dormName) . ' - ' . $reportName . '&R&8Page &P of &N');
+
+        return response()->streamDownload(function () use ($book) {
+            (new Xlsx($book))->save('php://output');
         }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
 
     /**
-     * Formats a peso amount for display in the CSV — e.g. 22500 becomes
-     * "22,500.00". Plain text with a comma thousands separator, not a raw
-     * number, since this export is meant to be read, not recalculated in
-     * a spreadsheet formula.
+     * Writes one titled table starting at $row: a green section heading,
+     * a green header row, zebra-striped data rows and (optionally) a
+     * bold, light-green total row. Returns the next free row, leaving one
+     * blank row as a gap before the next table (so the table's last row
+     * is the returned row - 2).
+     *
+     * fromArray()'s 4th argument (strict null check) is true so that a
+     * real 0 is written as 0 instead of being treated as empty.
      */
-    private function peso(float $amount): string
+    private function xlsxTable($sheet, int $row, string $title, array $headers, array $rows, ?array $total = null): int
     {
-        return number_format($amount, 2);
+        $lastCol = chr(ord('A') + count($headers) - 1);
+
+        $sheet->setCellValue("A{$row}", strtoupper($title));
+        $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(12)->getColor()->setRGB(self::GREEN);
+        $row++;
+
+        $headerRow = $row;
+        $sheet->fromArray($headers, null, "A{$row}");
+        $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::GREEN]],
+        ]);
+
+        foreach ($rows as $i => $data) {
+            $row++;
+            $sheet->fromArray($data, null, "A{$row}", true);
+            if ($i % 2 === 1) {
+                $sheet->getStyle("A{$row}:{$lastCol}{$row}")->getFill()
+                    ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB(self::GREY);
+            }
+        }
+
+        if ($total) {
+            $row++;
+            $sheet->fromArray($total, null, "A{$row}", true);
+            $sheet->getStyle("A{$row}:{$lastCol}{$row}")->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => self::GREEN]],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => self::GREEN_LIGHT]],
+            ]);
+        }
+
+        if (count($headers) === 2) {
+            $sheet->getStyle("B{$headerRow}:B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        }
+        $sheet->getStyle("A{$headerRow}:{$lastCol}{$row}")->getBorders()->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)->getColor()->setRGB('CCCCCC');
+
+        return $row + 2;
     }
 
     /**

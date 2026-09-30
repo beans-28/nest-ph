@@ -63,4 +63,5 @@
         @include('partials.powered-by')
     </div>
 </aside>
+@include('partials.admin-notifications')
 <script src="{{ asset('js/sidebar-drawer.js') }}"></script>

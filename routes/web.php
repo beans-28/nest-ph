@@ -56,8 +56,6 @@ Route::get('/inquire', function () {
 })->name('public.inquiry');
 
 Route::get('/apply', [PublicController::class, 'applyPage'])->name('public.apply');
-Route::get('/apply/contract-template', [PublicController::class, 'contractTemplateView'])->name('public.apply.contract');
-Route::get('/apply/contract-template/download', [PublicController::class, 'contractTemplateDownload'])->name('public.apply.contract.download');
 
 Route::prefix('public-api')->group(function () {
     Route::get('/rooms', [PublicController::class, 'rooms']);
@@ -136,11 +134,13 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     // --- Billing and Payments (admin review of pending payment proofs) ---
     Route::get('/payments', [PaymentController::class, 'page'])->name('payments.index');
+    Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receiptPdf']);
     Route::post('/payments/{payment}/approve', [PaymentController::class, 'approveProof']);
     Route::post('/payments/{payment}/reject', [PaymentController::class, 'rejectProof']);
     Route::get('/billing/tenants/{tenant}/statements', [PaymentController::class, 'outstandingStatementsForTenant']);
     Route::post('/billing/{billingStatement}/payments/cash', [PaymentController::class, 'recordCash']);
     Route::post('/billing/generate', [BillingController::class, 'generate']);
+    Route::post('/billing/{billingStatement}/attach-penalties', [BillingController::class, 'attachPenalties']);
     
     // --- Inquiry management (Week 4, Mon) ---
     Route::get('/inquiries', [InquiryController::class, 'page'])->name('inquiries.index');
@@ -177,6 +177,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/penalties', [PenaltyController::class, 'index']);
     Route::post('/penalties', [PenaltyController::class, 'store']);
     Route::patch('/penalties/{penalty}/waive', [PenaltyController::class, 'waive']);
+    Route::patch('/penalties/{penalty}/reinstate', [PenaltyController::class, 'reinstate']);
+    Route::patch('/penalties/{penalty}', [PenaltyController::class, 'update']);
+    Route::delete('/penalties/{penalty}', [PenaltyController::class, 'destroy']);
     Route::post('/damages', [DamageController::class, 'store']);
 
     // --- Delinquency Escalation (Week 6, Mon-Tue) ---
@@ -199,11 +202,14 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/delinquency/{tenant}/eviction-notice', [DelinquencyController::class, 'downloadEvictionNotice']);
 
     // --- Tenant Manager (Manage Tenant Records / Add New Tenant / Deactivate) ---
+    Route::get('/admin/notifications', [\App\Http\Controllers\AdminNotificationController::class, 'index'])->name('admin.notifications');
     Route::get('/tenant-manager', [TenantController::class, 'page'])->name('tenant-manager.index');
     Route::get('/tenant-manager/{tenant}', [TenantController::class, 'show']);
     Route::post('/tenant-manager', [TenantController::class, 'store']);
     Route::post('/tenant-manager/{tenant}', [TenantController::class, 'update']);
     Route::post('/tenant-manager/{tenant}/status', [TenantController::class, 'setStatus']);
+    Route::post('/tenant-manager/{tenant}/deposit-refund', [TenantController::class, 'recordDepositRefund']);
+    Route::get('/tenant-manager/{tenant}/statement-of-account', [TenantController::class, 'statementOfAccountPdf']);
 
     // --- Tickets (View and Manage Tickets / Priority / Escalation — Tables 33, 39, 40) ---
     Route::get('/tickets', [TicketController::class, 'page'])->name('tickets.index');
@@ -332,7 +338,14 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'moveout.check', 'delinquen
         Route::get('/bills/{billingStatement}', [TenantPortalController::class, 'showBill']);
         Route::post('/bills/{billingStatement}/payment-proof', [TenantPortalController::class, 'submitProof'])->name('tenant.billing.payment-proof');
         Route::get('/penalties', [TenantPortalController::class, 'myPenalties']);
+        Route::get('/payments/{payment}/receipt', [TenantPortalController::class, 'receiptPdf'])->name('tenant.billing.receipt');
+        Route::get('/statement-of-account', [TenantPortalController::class, 'statementOfAccountPdf'])->name('tenant.statement-of-account');
     });
+
+    // --- Notification panel (v39) ---
+    Route::get('/my/notifications', [\App\Http\Controllers\TenantNotificationController::class, 'index'])->name('tenant.notifications');
+    Route::patch('/my/notifications/{notification}/read', [\App\Http\Controllers\TenantNotificationController::class, 'markRead']);
+    Route::post('/my/notifications/read-all', [\App\Http\Controllers\TenantNotificationController::class, 'markAllRead']);
 
     // --- Delinquency Escalation (Week 6, Tenant Side) ---
     Route::get('/my/delinquency', [TenantDelinquencyController::class, 'page'])->name('tenant.delinquency');

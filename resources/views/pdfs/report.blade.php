@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+{{-- Same look as pdfs/demand-letter.blade.php (header, colours, tables, footer). --}}
+<style>
+  body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #292420; }
+
+  .letter-header { text-align: center; padding-bottom: 14px; border-bottom: 1px solid #c4c4c4; margin-bottom: 20px; }
+  .letter-header h1 { font-size: 22px; margin: 0; color: #194e19; letter-spacing: 0.5px; }
+  .letter-header p { font-size: 11px; margin: 4px 0 0 0; color: #4b5f4c; }
+
+  .meta td { padding: 2px 6px; font-size: 11px; }
+
+  h2.section { font-size: 15px; color: #194e19; margin: 20px 0 8px 0; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  p.body-text { font-size: 11.5px; line-height: 1.6; margin: 0 0 6px 0; }
+
+  table.summary { width: 100%; border-collapse: collapse; background: #e9e8e7; margin-top: 8px; }
+  table.summary th, table.summary td { padding: 8px 10px; font-size: 11px; text-align: left; }
+  table.summary th { text-transform: uppercase; font-size: 10px; color: #292420; border-bottom: 1px solid #c9c9c9; }
+  table.summary td { border-bottom: 1px solid #d5d5d5; color: #194e19; font-weight: bold; }
+  table.summary td.amount { text-align: right; }
+  table.summary tr.sub td { font-weight: normal; color: #292420; padding-left: 26px; }
+  table.summary tr.total td { border-bottom: none; color: #292420; font-size: 12px; padding-top: 10px; }
+  table.summary td.warn { color: #ba2828; }
+
+  .highlight-box { background: #dcebdc; border-radius: 14px; padding: 14px 20px; margin-top: 16px; }
+  .highlight-box table { width: 100%; }
+  .highlight-box td { text-align: center; color: #194e19; }
+  .highlight-box .label { font-size: 10.5px; font-weight: bold; text-transform: uppercase; }
+  .highlight-box .value { font-size: 16px; font-weight: bold; margin-top: 2px; }
+  .highlight-box .note { font-size: 8.5px; margin-top: 3px; }
+
+  table.detail-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  table.detail-table th, table.detail-table td { border: 1px solid #ccc; padding: 6px 8px; font-size: 10.5px; text-align: center; }
+  table.detail-table th { background: #f2f2f2; }
+  table.detail-table td.first, table.detail-table th.first { text-align: left; }
+  table.detail-table td.rate { color: #194e19; font-weight: bold; }
+
+  .signature { margin-top: 40px; font-size: 11.5px; }
+  .pdf-footer { position: fixed; bottom: -4px; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #8a8a8a; }
+  .brand-logo { height: 42px; width: auto; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+  {{-- Dual branding: the dorm (PIC) issues this document; NEST.PH (PIP) generated it. --}}
+  <div class="pdf-footer">Issued by {{ $brandDormName }} &middot; Generated via NEST.PH Dormitory Management System</div>
+  <div class="letter-header">
+    @if($brandLogoFile)<img src="{{ $brandLogoFile }}" class="brand-logo"><br>@endif
+    <h1>{{ $dormName }}</h1>
+    <p>{{ $type === 'occupancy' ? 'Occupancy Report' : 'Financial / Billing Report' }}</p>
+  </div>
+
+  <table class="meta">
+    <tr><td><strong>Date Generated:</strong></td><td>{{ now()->format('F j, Y g:i A') }}</td></tr>
+    @if($type === 'occupancy')
+      <tr><td><strong>Coverage:</strong></td><td>Current room and bed status (live snapshot)</td></tr>
+    @else
+      <tr><td><strong>Period Covered:</strong></td><td>{{ $report['range']['start'] }} to {{ $report['range']['end'] }}</td></tr>
+    @endif
+  </table>
+
+  @if($type === 'occupancy')
+    <h2 class="section">Overview</h2>
+    <p class="body-text">
+      This report summarizes the current occupancy of {{ $dormName }}, covering
+      {{ $report['total_rooms'] }} rooms and {{ $report['total_beds'] }} bedspaces
+      as of {{ now()->format('F j, Y') }}.
+    </p>
+
+    <div class="highlight-box">
+      <table>
+        <tr>
+          <td>
+            <div class="label">Occupancy Rate</div>
+            <div class="value">{{ $report['occupancy_rate'] }}%</div>
+            <div class="note">Occupied bedspaces out of total</div>
+          </td>
+          <td>
+            <div class="label">Available Bedspaces</div>
+            <div class="value">{{ $report['vacant'] }}</div>
+            <div class="note">Vacant and ready for new tenants</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <h2 class="section">Summary</h2>
+    <table class="summary">
+      <thead><tr><th>Metric</th><th style="text-align:right;">Count</th></tr></thead>
+      <tbody>
+        <tr><td>Total Rooms</td><td class="amount">{{ $report['total_rooms'] }}</td></tr>
+        <tr><td>Total Bedspaces</td><td class="amount">{{ $report['total_beds'] }}</td></tr>
+        <tr><td>Occupied</td><td class="amount">{{ $report['occupied'] }}</td></tr>
+        <tr><td>Vacant / Available</td><td class="amount">{{ $report['vacant'] }}</td></tr>
+        <tr><td>Reserved</td><td class="amount">{{ $report['reserved'] }}</td></tr>
+        <tr><td>Under Maintenance</td><td class="amount">{{ $report['maintenance'] }}</td></tr>
+        <tr class="total"><td>Occupancy Rate:</td><td class="amount">{{ $report['occupancy_rate'] }}%</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section" style="margin-top:26px;">Breakdown by Floor</h2>
+    <table class="detail-table">
+      <thead>
+        <tr><th class="first">Floor</th><th>Total Beds</th><th>Occupied</th><th>Vacant</th><th>Reserved</th><th>Maintenance</th><th>Occupancy</th></tr>
+      </thead>
+      <tbody>
+        @forelse($report['by_floor'] as $floor)
+          <tr>
+            <td class="first">{{ $floor['label'] }}</td>
+            <td>{{ $floor['total_beds'] }}</td>
+            <td>{{ $floor['occupied'] }}</td>
+            <td>{{ $floor['vacant'] }}</td>
+            <td>{{ $floor['reserved'] }}</td>
+            <td>{{ $floor['maintenance'] }}</td>
+            <td class="rate">{{ $floor['occupancy_rate'] }}%</td>
+          </tr>
+        @empty
+          <tr><td colspan="7">No floors added yet.</td></tr>
+        @endforelse
+      </tbody>
+    </table>
+  @else
+    <h2 class="section">Overview</h2>
+    <p class="body-text">
+      This report summarizes payments collected, outstanding balances, and
+      penalties for {{ $dormName }} from {{ $report['range']['start'] }} to
+      {{ $report['range']['end'] }}.
+    </p>
+
+    <div class="highlight-box">
+      <table>
+        <tr>
+          <td>
+            <div class="label">Total Collected</div>
+            <div class="value">PHP {{ number_format($report['total_collected'], 2) }}</div>
+            <div class="note">{{ $report['payment_count'] }} approved payment(s)</div>
+          </td>
+          <td style="color:#ba2828;">
+            <div class="label">Total Outstanding</div>
+            <div class="value">PHP {{ number_format($report['total_outstanding'], 2) }}</div>
+            <div class="note">Unpaid balances due within the period</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <h2 class="section">Collections Breakdown</h2>
+    <table class="summary">
+      <thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
+      <tbody>
+        <tr class="sub"><td>Cash</td><td class="amount">PHP {{ number_format($report['cash_collected'], 2) }}</td></tr>
+        <tr class="sub"><td>Online (GCash / Bank / Other)</td><td class="amount">PHP {{ number_format($report['online_collected'], 2) }}</td></tr>
+        <tr class="total"><td>Total Collected:</td><td class="amount">PHP {{ number_format($report['total_collected'], 2) }}</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section" style="margin-top:26px;">Receivables and Delinquency</h2>
+    <table class="summary">
+      <thead><tr><th>Metric</th><th style="text-align:right;">Value</th></tr></thead>
+      <tbody>
+        <tr><td>Total Outstanding</td><td class="amount warn">PHP {{ number_format($report['total_outstanding'], 2) }}</td></tr>
+        <tr><td>Total Penalties Applied</td><td class="amount warn">PHP {{ number_format($report['total_penalties'], 2) }}</td></tr>
+        <tr><td>Delinquent Accounts</td><td class="amount">{{ $report['delinquent_accounts'] }}</td></tr>
+        <tr><td>Payments Recorded</td><td class="amount">{{ $report['payment_count'] }}</td></tr>
+      </tbody>
+    </table>
+  @endif
+
+  <div class="signature">
+    <p>Prepared by,</p>
+    <p><strong>{{ $dormName }} Management</strong></p>
+  </div>
+</body>
+</html>

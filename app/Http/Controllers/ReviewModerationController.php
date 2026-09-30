@@ -58,6 +58,8 @@ class ReviewModerationController extends Controller
 
     private function decide(Request $request, Review $review, string $status, ?string $note, string $message): JsonResponse
     {
+        $changed = $review->status !== $status;
+
         $review->update([
             'status' => $status,
             'moderated_by' => $request->user()->id,
@@ -65,7 +67,20 @@ class ReviewModerationController extends Controller
             'moderation_note' => $note ?: null,
         ]);
 
-        $review->load('moderator');
+        $review->load('moderator', 'tenant');
+
+        // Let the tenant know, but only when the outcome actually changed.
+        // A failed email never blocks the admin's decision.
+        if ($changed && $review->tenant?->email) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($review->tenant->email)->send(new \App\Mail\ReviewModeratedMail($review));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Review moderation email failed to send.', [
+                    'review_id' => $review->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return response()->json([
             'message' => $message,

@@ -20,19 +20,8 @@ class DelinquencyController extends Controller
      * from the original prototype, which didn't correspond to any real
      * stage's actual behavior. Key = escalation_logs.stage.
      */
-    // Colors match the approved Figma frames exactly, same palette now
-    // used on the tenant side (TenantDelinquencyController::STAGES) --
-    // previously this used a different, unrelated scheme. 'text' is the
-    // stage-number/label color: dark green on the lighter early stages,
-    // white once the backgrounds get dark enough for white to read better.
-    private const STAGES = [
-        1 => ['name' => 'Account Flagged', 'accent' => '#ffec60', 'text' => '#004f0f'],
-        2 => ['name' => 'SMS Reminders', 'accent' => '#f87542', 'text' => '#004f0f'],
-        3 => ['name' => 'Portal Restricted', 'accent' => '#fe424b', 'text' => '#004f0f'],
-        4 => ['name' => 'Emergency Contact', 'accent' => '#a24346', 'text' => '#ffffff'],
-        5 => ['name' => 'Demand Letter', 'accent' => '#645d5d', 'text' => '#ffffff'],
-        6 => ['name' => 'Blacklisted', 'accent' => '#000000', 'text' => '#ffffff'],
-    ];
+    // Shared with the tenant side; see EscalationLog::STAGES.
+    private const STAGES = \App\Models\EscalationLog::STAGES;
 
     /**
      * The admin Delinquency page: summary stats, the per-stage overview
@@ -54,7 +43,7 @@ class DelinquencyController extends Controller
 
         $tenants = Tenant::whereIn('id', $tenantIds)
             ->with(['activeContract.bed.room', 'billingStatements' => function ($q) {
-                $q->where('status', 'overdue')->orderByDesc('total_amount');
+                $q->where('status', 'overdue')->withApprovedPaid()->orderByDesc('total_amount');
             }, 'escalationLogs'])
             ->get();
 
@@ -92,7 +81,8 @@ class DelinquencyController extends Controller
     private function transformTenant(Tenant $tenant): array
     {
         $overdueBills = $tenant->billingStatements; // already filtered to status=overdue above
-        $balance = (float) $overdueBills->sum('total_amount');
+        // Partial payments already made on an overdue bill are subtracted.
+        $balance = round($overdueBills->sum(fn ($b) => $b->remainingBalance()), 2);
         $oldestDueDate = $overdueBills->min('due_date');
         $daysOverdue = $oldestDueDate ? (int) Carbon::parse($oldestDueDate)->diffInDays(now()) : 0;
 

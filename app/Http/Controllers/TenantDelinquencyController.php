@@ -10,26 +10,20 @@ use Illuminate\Http\Request;
 /**
  * Tenant-facing view of Delinquency Escalation (Week 6, Tenant Side).
  * Shows the logged-in tenant their OWN escalation timeline and balance --
- * never another tenant's. Stage names/colors are kept in sync by hand
- * with DelinquencyController::STAGES (admin side); if you ever rename a
- * stage there, update it here too.
+ * never another tenant's. Stage names/colors come from the shared
+ * EscalationLog::STAGES (same list the admin side uses).
  */
 class TenantDelinquencyController extends Controller
 {
-    // Colors match the approved Figma frames exactly (not the admin
-    // side's own separate palette in DelinquencyController::STAGES --
-    // that's a deliberately different scheme for the admin dashboard).
-    // 'text' is the stage-number color: dark green on the lighter early
-    // stages, white once the backgrounds get dark enough that white text
-    // reads better (4+).
-    private const STAGES = [
-        1 => ['name' => 'Account Flagged', 'accent' => '#ffec60', 'text' => '#004f0f'],
-        2 => ['name' => 'SMS Reminders', 'accent' => '#f87542', 'text' => '#004f0f'],
-        3 => ['name' => 'Portal Restricted', 'accent' => '#fe424b', 'text' => '#004f0f'],
-        4 => ['name' => 'Emergency Contact Notified', 'accent' => '#a24346', 'text' => '#ffffff'],
-        5 => ['name' => 'Demand Letter Issued', 'accent' => '#645d5d', 'text' => '#ffffff'],
-        6 => ['name' => 'Blacklisted', 'accent' => '#000000', 'text' => '#ffffff'],
-    ];
+    // Shared with the admin side; see EscalationLog::STAGES.
+    private const STAGES = \App\Models\EscalationLog::STAGES;
+
+    private static function stageName(int $stage): ?string
+    {
+        $meta = self::STAGES[$stage] ?? null;
+
+        return $meta ? ($meta['tenant_name'] ?? $meta['name']) : null;
+    }
 
     public function page(Request $request)
     {
@@ -39,6 +33,7 @@ class TenantDelinquencyController extends Controller
 
         $overdueBills = BillingStatement::where('tenant_id', $tenant->id)
             ->where('status', 'overdue')
+            ->withApprovedPaid()
             ->orderBy('due_date')
             ->get();
 
@@ -54,7 +49,7 @@ class TenantDelinquencyController extends Controller
         $inEscalation = $rawLogs->isNotEmpty() || $tenant->is_blacklisted;
 
         $currentStage = $rawLogs->isNotEmpty() ? (int) $rawLogs->max('stage') : 0;
-        $currentStageName = self::STAGES[$currentStage]['name'] ?? null;
+        $currentStageName = self::stageName($currentStage);
 
         // One row per STAGE, not per individual log entry -- Stage 2 alone
         // can have up to 3 rows (Day 1/3/7 SMS reminders) that should read
@@ -66,7 +61,7 @@ class TenantDelinquencyController extends Controller
 
             return [
                 'stage' => $stage,
-                'stage_name' => self::STAGES[$stage]['name'] ?? "Stage {$stage}",
+                'stage_name' => self::stageName($stage) ?? "Stage {$stage}",
                 'stage_accent' => self::STAGES[$stage]['accent'] ?? '#9f9f9f',
                 'stage_text' => self::STAGES[$stage]['text'] ?? '#ffffff',
                 'earliest' => $stageLogs->min('created_at'),
@@ -74,10 +69,9 @@ class TenantDelinquencyController extends Controller
             ];
         })->sortBy('stage')->values();
 
-        // Known simplification, matching the admin side: sums total_amount
-        // on overdue bills directly, without subtracting partial payments
-        // already made against an overdue-status bill.
-        $balance = round((float) $overdueBills->sum('total_amount'), 2);
+        // Same as the admin side: partial payments already made on an
+        // overdue bill are subtracted (BillingStatement::remainingBalance()).
+        $balance = round($overdueBills->sum(fn ($b) => $b->remainingBalance()), 2);
         $totalPenalties = round((float) $overdueBills->sum('penalty_amount'), 2);
         $oldestDueDate = $overdueBills->min('due_date');
 

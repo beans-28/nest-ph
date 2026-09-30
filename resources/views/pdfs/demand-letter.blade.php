@@ -94,6 +94,14 @@
           <td class="amount">PHP {{ number_format($totalPenalties, 2) }}</td>
         </tr>
       @endif
+      @php($paidSoFar = round($bills->sum(fn ($b) => (float) $b->total_amount) - $totalOwed, 2))
+      @if($paidSoFar > 0)
+        <tr>
+          <td>Less: Payments Already Received</td>
+          <td></td>
+          <td class="amount">- PHP {{ number_format($paidSoFar, 2) }}</td>
+        </tr>
+      @endif
       <tr class="total">
         <td colspan="2">Total Amount Owed:</td>
         <td class="amount">PHP {{ number_format($totalOwed, 2) }}</td>

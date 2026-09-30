@@ -39,6 +39,11 @@
   .btn.secondary{ background:#eef1ee; color:var(--text-dark); border:1px solid var(--border); }
   .btn.secondary:hover{ background:#e2e6e2; }
   .btn:disabled{ opacity:0.6; cursor:not-allowed; }
+  .report-actions{ display:flex; gap:10px; }
+  @media (max-width:560px){ .report-actions{ display:grid; grid-template-columns:1fr 1fr; width:100%; } .report-actions #generateBtn{ grid-column:1 / -1; } .report-actions .btn{ min-height:44px; } }
+  .btn:focus-visible, .report-tab:focus-visible{ outline:2px solid var(--green-btn); outline-offset:2px; }
+  .export-error{ font-size:12px; color:#ba2828; margin:-6px 0 16px; display:none; }
+  .export-error.visible{ display:block; }
   .occupancy-note{ font-size:11.5px; color:var(--text-light); margin-top:-6px; margin-bottom:16px; }
 
   .stats-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:14px; margin-bottom:20px; }
@@ -89,9 +94,13 @@
           <label for="endDate">To</label>
           <input type="date" id="endDate">
         </div>
-        <button type="button" class="btn primary" id="generateBtn">Generate</button>
-        <button type="button" class="btn secondary" id="exportBtn" disabled>Export CSV</button>
+        <div class="report-actions">
+          <button type="button" class="btn primary" id="generateBtn">Generate</button>
+          <button type="button" class="btn secondary" id="exportBtn" disabled>Export Excel</button>
+          <button type="button" class="btn secondary" id="exportPdfBtn" disabled>Export PDF</button>
+        </div>
       </div>
+      <p class="export-error" id="exportError" role="alert"></p>
       <p class="occupancy-note" id="occupancyNote">Occupancy always reflects current room/bed status in real time. The date range only applies to the Financial report.</p>
       <div id="resultsArea">
         <div class="empty-note">Pick a report type and click Generate to see the numbers.</div>
@@ -107,6 +116,10 @@
 
   let currentType = 'occupancy';
   let hasResults = false;
+  // The type + dates the on-screen report was generated with. Export uses
+  // these (not the live date inputs), so the file always matches what
+  // the admin is looking at even if they edit the dates afterwards.
+  let generatedParams = null;
 
   document.querySelectorAll('[data-href]').forEach(el => {
     el.addEventListener('click', () => window.location.href = el.dataset.href);
@@ -156,6 +169,7 @@
       currentType = this.dataset.type;
       hasResults = false;
       $('exportBtn').disabled = true;
+      $('exportPdfBtn').disabled = true;
       $('resultsArea').innerHTML = '<div class="empty-note">Pick a report type and click Generate to see the numbers.</div>';
       toggleDateFields();
     });
@@ -228,22 +242,53 @@
       const data = await res.json();
       if(currentType === 'occupancy'){ renderOccupancy(data); } else { renderFinancial(data); }
       hasResults = true;
+      generatedParams = rangeParams();
+      generatedParams.set('type', currentType);
+      $('exportError').classList.remove('visible');
       $('exportBtn').disabled = false;
+      $('exportPdfBtn').disabled = false;
     } catch(e){
       $('resultsArea').innerHTML = `<div class="empty-note">${e.message}</div>`;
       hasResults = false;
       $('exportBtn').disabled = true;
+      $('exportPdfBtn').disabled = true;
     }
     this.disabled = false;
     this.textContent = 'Generate';
   });
 
-  $('exportBtn').addEventListener('click', function(){
-    if(!hasResults) return;
-    const params = rangeParams();
-    params.set('type', currentType);
-    window.location.href = '/reports/export?' + params.toString();
-  });
+  // Downloads via fetch (not a page redirect) so the button can show
+  // "Exporting..." while the file builds, and a failure shows a message
+  // here instead of sending the admin to an error page.
+  async function exportReport(btn, format){
+    if(!hasResults || !generatedParams) return;
+    const params = new URLSearchParams(generatedParams);
+    params.set('format', format);
+    const label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Exporting...';
+    $('exportError').classList.remove('visible');
+    try {
+      const res = await fetch('/reports/export?' + params.toString());
+      if(!res.ok) throw new Error();
+      const match = /filename="?([^";]+)"?/.exec(res.headers.get('Content-Disposition') || '');
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = match ? match[1] : `${params.get('type')}-report.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch(e){
+      $('exportError').textContent = 'The report could not be exported. Please try again, or refresh the page if it keeps failing.';
+      $('exportError').classList.add('visible');
+    }
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+  $('exportBtn').addEventListener('click', function(){ exportReport(this, 'xlsx'); });
+  $('exportPdfBtn').addEventListener('click', function(){ exportReport(this, 'pdf'); });
 })();
 </script>
 </body>

@@ -52,7 +52,9 @@ class RestrictDelinquentTenant
         $routeName = $request->route()?->getName();
 
         $isAllowedByName = in_array($routeName, $allowedRouteNames, true);
-        $isAllowedByPath = $request->is('my/billing*') || $request->is('my/delinquency*');
+        // my/notifications*: the bell panel, so restricted tenants still get
+        // their bill reminders (v39).
+        $isAllowedByPath = $request->is('my/billing*') || $request->is('my/delinquency*') || $request->is('my/notifications*');
 
         if (! $isAllowedByName && ! $isAllowedByPath) {
             // A blacklisted tenant's default landing spot should be their

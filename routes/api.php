@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\UserManagementController;
 use App\Http\Controllers\Api\PublicRoomController;
 use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\ApplicationController;
@@ -72,9 +71,6 @@ Route::middleware(['auth:sanctum', 'tenant'])->prefix('my')->group(function () {
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
-    // --- User / privilege management (Week 2) ---
-    Route::patch('/users/{user}/grant-admin', [UserManagementController::class, 'grantAdmin']);
-    Route::patch('/users/{user}/revoke-admin', [UserManagementController::class, 'revokeAdmin']);
 
     // NOTE: VR image upload/delete/info moved to routes/web.php under
     // /vacancy/rooms/{room}/vr-... to match the VR Management page's actual

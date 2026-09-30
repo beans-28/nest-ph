@@ -33,7 +33,7 @@ class PaymentController extends Controller
         BillingStatement::syncOverdueStatuses();
 
         $pending = Payment::with([
-            'tenant:id,first_name,last_name',
+            'tenant:id,first_name,last_name,id_document_path,signed_contract_path',
             'billingStatement:id,contract_id,type,billing_period_start,total_amount',
             'billingStatement.contract:id,bed_id',
             'billingStatement.contract.bed:id,room_id',
@@ -41,8 +41,13 @@ class PaymentController extends Controller
         ])
             ->where('status', 'pending')
             ->latest('created_at')
-            ->get()
-            ->map(fn ($p) => $this->transformPendingRow($p))
+            ->get();
+
+        // Duplicate reference check (v39): the same GCash/bank reference
+        // number on another payment usually means a reused screenshot.
+        $dupes = $this->duplicateReferences($pending);
+        $pending = $pending
+            ->map(fn ($p) => $this->transformPendingRow($p) + ['duplicates' => $dupes[$p->id] ?? []])
             ->values();
 
         // Use Case Report Table 21 (View Payment History): the Billing
@@ -51,6 +56,11 @@ class PaymentController extends Controller
         // its own withBalance() helper for the recurring monthly billing
         // system (Table 18) -- this reuses the same BillingStatement/Payment
         // tables rather than duplicating that generation logic here.
+        // Active penalties not yet on any bill, per tenant, for the
+        // statement drawer's "Add unbilled penalties" section.
+        $unbilledByTenant = \App\Models\Penalty::where('status', 'active')->whereNull('billing_id')
+            ->groupBy('tenant_id')->selectRaw('tenant_id, SUM(amount) as total')->pluck('total', 'tenant_id');
+
         $overview = BillingStatement::with([
             'tenant:id,first_name,last_name',
             'contract:id,bed_id',
@@ -60,7 +70,7 @@ class PaymentController extends Controller
         ])
             ->latest('due_date')
             ->get()
-            ->map(fn ($b) => $this->transformOverviewRow($b))
+            ->map(fn ($b) => $this->transformOverviewRow($b) + ['unbilled_penalties' => (float) ($unbilledByTenant[$b->tenant_id] ?? 0)])
             ->values();
 
         $now = now();
@@ -113,7 +123,7 @@ class PaymentController extends Controller
 
         return [
             'id' => $bill->id,
-            'tenant_name' => $bill->tenant?->full_name ?? 'â',
+            'tenant_name' => $bill->tenant?->full_name ?? '—',
             'room_no' => $room?->room_no,
             'room_type' => $room?->room_type,
             'billing_type' => $bill->type,
@@ -140,6 +150,47 @@ class PaymentController extends Controller
         ];
     }
 
+    /** Upper-case, spaces/dashes removed, so "abc 123" matches "ABC-123". */
+    public static function normalizeReference(?string $ref): string
+    {
+        return strtoupper(preg_replace('/[\s\-]+/', '', (string) $ref));
+    }
+
+    /**
+     * For each pending payment, other non-rejected payments with the same
+     * (normalized) reference number. Keyed by pending payment id.
+     */
+    private function duplicateReferences($pending): array
+    {
+        $refs = $pending->pluck('reference_number')->filter()->map(fn ($r) => self::normalizeReference($r))->filter()->unique();
+        if ($refs->isEmpty()) {
+            return [];
+        }
+
+        $candidates = Payment::whereNotNull('reference_number')
+            ->where('status', '!=', 'rejected')
+            ->with('tenant:id,first_name,last_name')
+            ->get(['id', 'tenant_id', 'reference_number', 'amount_paid', 'payment_date', 'status'])
+            ->filter(fn ($p) => $refs->contains(self::normalizeReference($p->reference_number)))
+            ->groupBy(fn ($p) => self::normalizeReference($p->reference_number));
+
+        $out = [];
+        foreach ($pending as $p) {
+            $matches = ($candidates[self::normalizeReference($p->reference_number)] ?? collect())
+                ->where('id', '!=', $p->id);
+            if ($p->reference_number && $matches->isNotEmpty()) {
+                $out[$p->id] = $matches->map(fn ($m) => [
+                    'tenant_name' => $m->tenant?->full_name ?? '—',
+                    'amount_paid' => (float) $m->amount_paid,
+                    'date' => $this->formatDate($m->payment_date, 'M j, Y'),
+                    'status' => $m->status,
+                ])->values()->all();
+            }
+        }
+
+        return $out;
+    }
+
     private function transformPendingRow(Payment $payment): array
     {
         $bill = $payment->billingStatement;
@@ -159,6 +210,12 @@ class PaymentController extends Controller
             'reference_number' => $payment->reference_number,
             'notes' => $payment->notes,
             'proof_url' => $payment->proof_path ? Storage::disk('public')->url($payment->proof_path) : null,
+            // For move-in fees the admin is also confirming who is moving in,
+            // so the drawer shows the tenant's ID and signed contract too.
+            'id_document_url' => $bill?->type === 'move_in' && $payment->tenant?->id_document_path
+                ? Storage::disk('public')->url($payment->tenant->id_document_path) : null,
+            'signed_contract_url' => $bill?->type === 'move_in' && $payment->tenant?->signed_contract_path
+                ? Storage::disk('public')->url($payment->tenant->signed_contract_path) : null,
             'created_at' => $this->formatDate($payment->created_at, 'M j, Y g:ia'),
         ];
     }
@@ -589,7 +646,8 @@ class PaymentController extends Controller
         $total = (float) $statement->total_amount;
 
         if ($paid <= 0) {
-            $status = $statement->due_date->isPast() ? 'overdue' : 'unpaid';
+            // Move-in bills never go overdue (see BillingStatement::syncOverdueStatuses()).
+            $status = $statement->due_date->isPast() && $statement->type !== 'move_in' ? 'overdue' : 'unpaid';
         } elseif ($paid < $total) {
             $status = 'partial';
         } else {
@@ -658,6 +716,16 @@ class PaymentController extends Controller
         ]);
     }
 
+    /**
+     * Admin: download the official PDF receipt for an approved payment.
+     */
+    public function receiptPdf(Payment $payment)
+    {
+        abort_unless($payment->status === 'approved', 404, 'A receipt is only available for approved payments.');
+
+        return \App\Services\ReceiptPdf::download($payment);
+    }
+
     private function buildReceipt(Payment $payment): array
     {
         return [
@@ -687,5 +755,27 @@ class PaymentController extends Controller
     private function notify(string $event, array $payload): void
     {
         Log::info("[notification stub] {$event}", $payload);
+
+        // Tenant notification panel (v39).
+        $payment = isset($payload['payment_id']) ? Payment::find($payload['payment_id']) : null;
+        if (! $payment) {
+            return;
+        }
+        $amount = '₱' . number_format((float) $payment->amount_paid, 2);
+        $settled = ! empty($payload['fully_settled']);
+
+        match ($event) {
+            'payment.proof_approved', 'payment.recorded' => \App\Models\TenantNotification::send(
+                $payment->tenant_id, 'payment_approved',
+                $event === 'payment.recorded' ? "Cash payment of {$amount} received" : "Your payment of {$amount} was approved",
+                ($settled ? 'This bill is now fully paid. ' : 'Thank you. ') . 'Your receipt is ready to download on the Billing page.',
+                '/billing'),
+            'payment.proof_rejected' => \App\Models\TenantNotification::send(
+                $payment->tenant_id, 'payment_rejected',
+                "Your payment proof of {$amount} was not accepted",
+                'Reason: ' . ($payload['reason'] ?? 'No reason given.') . ' Please submit a new proof of payment.',
+                '/billing'),
+            default => null,
+        };
     }
 }

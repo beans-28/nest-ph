@@ -74,6 +74,12 @@ class DemoDataSeeder extends Seeder
 
     public function run(): void
     {
+        // This seeder empties tables before filling them with demo data.
+        // On the live site that would wipe real tenants and payments.
+        if (app()->environment('production')) {
+            throw new \RuntimeException('DemoDataSeeder refuses to run in production: it deletes existing data.');
+        }
+
         $this->today = now()->startOfDay();
         $this->pickExistingFiles();
 

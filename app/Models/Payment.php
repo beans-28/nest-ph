@@ -12,6 +12,13 @@ class Payment extends Model
 
     public $timestamps = false; // table only has created_at, no updated_at
 
+    /**
+     * review_notes on a pending proof that the tenant replaced with a newer
+     * one ("Submit Again"). Tenant pages skip rejections with this note,
+     * since the admin never actually rejected it.
+     */
+    public const REPLACED_NOTE = 'Replaced by the tenant with a newer proof before review.';
+
     protected $fillable = [
         'billing_id',
         'tenant_id',

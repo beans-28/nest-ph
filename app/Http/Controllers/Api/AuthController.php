@@ -85,6 +85,12 @@ public function login(Request $request)
 
     $request->session()->regenerate();
 
+    // Tenant bill reminder pop-up (v39): shown once on the first portal
+    // page after every login (partials/tenant-notifications pulls this).
+    if ($tenant) {
+        $request->session()->put('show_bill_popup', true);
+    }
+
     // Login Tracker (Admin Privileges page) -- admins only.
     \App\Models\AdminLoginSession::recordLogin($user, $request);
 

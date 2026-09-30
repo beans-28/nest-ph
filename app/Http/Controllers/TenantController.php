@@ -70,6 +70,85 @@ class TenantController extends Controller
      * pre-fill the Edit modal, so there's one source of truth for what a
      * tenant's full record looks like.
      */
+    /**
+     * Security deposit block for the Tenant Manager drawer (v39): what's
+     * held, any refund already recorded, and suggested deductions
+     * (unpaid balance + active penalties not yet on a bill).
+     */
+    private function depositSummary(Tenant $tenant, float $outstanding): array
+    {
+        $refund = \App\Models\DepositRefund::where('tenant_id', $tenant->id)->with('recordedBy:id,name')->latest('id')->first();
+        $unbilled = (float) \App\Models\Penalty::where('tenant_id', $tenant->id)->where('status', 'active')->whereNull('billing_id')->sum('amount');
+
+        return [
+            'held' => \App\Models\DepositRefund::depositHeldFor($tenant),
+            'suggested_deductions' => round($outstanding + $unbilled, 2),
+            'refund' => $refund ? [
+                'deposit_amount' => (float) $refund->deposit_amount,
+                'deductions_amount' => (float) $refund->deductions_amount,
+                'deductions_note' => $refund->deductions_note,
+                'refund_amount' => (float) $refund->refund_amount,
+                'refund_method' => $refund->refund_method,
+                'reference_number' => $refund->reference_number,
+                'refunded_at' => $refund->refunded_at->format('M j, Y'),
+                'recorded_by' => $refund->recordedBy?->name,
+            ] : null,
+        ];
+    }
+
+    /**
+     * POST /tenant-manager/{tenant}/deposit-refund (v39) — record the
+     * security deposit given back at move-out. One per tenant.
+     */
+    public function recordDepositRefund(Request $request, Tenant $tenant): JsonResponse
+    {
+        $data = $request->validate([
+            'deposit_amount' => ['required', 'numeric', 'min:0.01'],
+            'deductions_amount' => ['required', 'numeric', 'min:0'],
+            'deductions_note' => ['nullable', 'string', 'max:500', 'required_unless:deductions_amount,0'],
+            'refund_method' => ['required', 'string', 'max:60'],
+            'reference_number' => ['nullable', 'string', 'max:100'],
+            'refunded_at' => ['required', 'date', 'before_or_equal:today'],
+        ], [
+            'deductions_note.required_unless' => 'Please say what the deductions are for.',
+            'refunded_at.before_or_equal' => 'The refund date cannot be in the future.',
+        ]);
+
+        if ((float) $data['deductions_amount'] > (float) $data['deposit_amount']) {
+            return response()->json(['message' => 'Deductions cannot be more than the deposit.'], 422);
+        }
+
+        if (\App\Models\DepositRefund::where('tenant_id', $tenant->id)->exists()) {
+            return response()->json(['message' => 'A deposit refund is already recorded for this tenant.'], 409);
+        }
+
+        $refund = \App\Models\DepositRefund::create($data + [
+            'tenant_id' => $tenant->id,
+            'refund_amount' => round((float) $data['deposit_amount'] - (float) $data['deductions_amount'], 2),
+            'recorded_by' => $request->user()?->id,
+        ]);
+
+        \App\Models\TenantNotification::send($tenant->id, 'deposit_refunded',
+            'Your security deposit refund of ₱' . number_format((float) $refund->refund_amount, 2) . ' was recorded',
+            'Sent via ' . $refund->refund_method . ' on ' . $refund->refunded_at->format('F j, Y') . '.'
+                . ((float) $refund->deductions_amount > 0 ? ' Deductions: ₱' . number_format((float) $refund->deductions_amount, 2) . ' (' . $refund->deductions_note . ').' : ''),
+            '/billing');
+
+        Log::info('[deposit] refund recorded', ['tenant_id' => $tenant->id, 'refund_id' => $refund->id, 'by' => $request->user()?->id]);
+
+        return response()->json([
+            'message' => 'Deposit refund recorded.',
+            'deposit' => $this->depositSummary($tenant, (float) BillingStatement::where('tenant_id', $tenant->id)
+                ->whereIn('status', ['unpaid', 'partial', 'overdue'])->withApprovedPaid()->get()->sum(fn ($b) => $b->remainingBalance())),
+        ], 201);
+    }
+
+    /** GET /tenant-manager/{tenant}/statement-of-account (v39) */
+    public function statementOfAccountPdf(Tenant $tenant)
+    {
+        return \App\Services\StatementOfAccountPdf::download($tenant);
+    }
+
     public function show(Tenant $tenant): JsonResponse
     {
         $tenant->load(['activeContract.bed.room']);
@@ -108,6 +187,7 @@ class TenantController extends Controller
             ] : null,
             'outstanding_balance' => (float) $outstanding,
             'payments_count' => $tenant->payments()->count(),
+            'deposit' => $this->depositSummary($tenant, (float) $outstanding),
         ]);
     }
 

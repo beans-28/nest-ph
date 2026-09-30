@@ -152,7 +152,39 @@
   .kv .v{ font-size:13px; font-weight:500; margin-top:3px; word-break:break-word; }
   .kv .v.empty-v{ color:#c2c9c5; font-style:italic; font-weight:400; }
 
+  .proof-open{ display:block; width:100%; padding:0; border:none; background:none; border-radius:10px; cursor:zoom-in; }
+  .proof-open:focus-visible{ outline:2px solid var(--green-accent); outline-offset:3px; }
   .proof-preview{ width:100%; border-radius:10px; border:1px solid var(--border); display:block; }
+
+  /* Full-screen proof of payment viewer */
+  .img-viewer{ display:none; position:fixed; inset:0; background:rgba(12,16,13,.92); z-index:100; overflow:hidden; touch-action:none; }
+  .img-viewer.open{ display:block; }
+  .img-viewer img{ position:absolute; top:50%; left:50%; max-width:92vw; max-height:calc(100vh - 150px); transform:translate(-50%,-50%); transform-origin:center center; user-select:none; -webkit-user-drag:none; border-radius:4px; box-shadow:0 12px 40px rgba(0,0,0,.45); }
+  .img-viewer.zoomed img{ cursor:grab; }
+  .img-viewer img.dragging{ cursor:grabbing; }
+  .img-viewer.loading img, .img-viewer.failed img{ visibility:hidden; }
+  .iv-status{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#e8efe9; font-size:13px; text-align:center; display:none; }
+  .img-viewer.loading .iv-status, .img-viewer.failed .iv-status{ display:block; }
+  .iv-toolbar{ position:absolute; bottom:max(20px, env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); display:flex; gap:4px; align-items:center; background:rgba(0,0,0,.7); padding:6px; border-radius:12px; z-index:2; }
+  .iv-btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; background:transparent; color:#fff; border:none; border-radius:8px; min-width:44px; height:44px; padding:0 12px; font-size:13px; font-weight:600; font-family:var(--font-body); cursor:pointer; }
+  .iv-btn svg{ width:18px; height:18px; flex:none; }
+  .iv-btn:hover:not(:disabled){ background:rgba(255,255,255,.14); }
+  .iv-btn:disabled{ opacity:.45; cursor:default; }
+  .iv-btn:focus-visible, .iv-close:focus-visible{ outline:2px solid #a2d9a4; outline-offset:2px; }
+  .iv-divider{ width:1px; height:24px; background:rgba(255,255,255,.2); margin:0 4px; }
+  .iv-zoom{ color:#fff; font-size:12px; min-width:46px; text-align:center; font-variant-numeric:tabular-nums; }
+  .iv-close{ position:absolute; top:max(16px, env(safe-area-inset-top)); right:16px; z-index:2; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.7); color:#fff; border:none; border-radius:50%; width:44px; height:44px; cursor:pointer; }
+  .iv-close:hover{ background:rgba(0,0,0,.9); }
+  .iv-close svg{ width:20px; height:20px; }
+  @media (max-width:520px){ .iv-btn .iv-label{ display:none; } }
+  .stmt-receipt{ font-size:11.5px; font-weight:700; color:var(--green-accent); text-decoration:underline; text-underline-offset:2px; white-space:nowrap; }
+  .btn-text-danger{ background:none; border:none; padding:6px 4px; font-size:12px; font-weight:600; color:#b3261e; text-decoration:underline; text-underline-offset:2px; cursor:pointer; font-family:var(--font-body); }
+  .btn-text-danger:hover{ color:#8c1d13; }
+  .btn-text-danger:focus-visible{ outline:2px solid #b3261e; outline-offset:2px; border-radius:4px; }
+  .dupe-warning{ background:#fdecea; border:1px solid #f3b7b1; color:#8c1d13; border-radius:10px; padding:12px 14px; margin-bottom:18px; font-size:12.5px; display:flex; flex-direction:column; gap:4px; }
+  .dupe-warning ul{ margin:2px 0; padding-left:18px; }
+  .dupe-flag{ display:inline-block; margin-left:6px; padding:1px 7px; border-radius:999px; background:#fdecea; color:#8c1d13; font-size:10.5px; font-weight:700; vertical-align:middle; }
+  .doc-links{ display:flex; flex-direction:column; gap:4px; align-items:flex-start; }
   .proof-preview-link{ display:inline-block; font-size:12px; color:var(--green-accent); font-weight:700; margin-top:8px; }
 
   .action-box{ display:none; border:1px solid var(--border); border-radius:10px; padding:16px; background:#fbfcfb; margin-top:12px; }
@@ -332,6 +364,20 @@
   <div class="drawer-body" id="drawerBody"></div>
 </div>
 
+<div class="img-viewer" id="imgViewer" role="dialog" aria-modal="true" aria-label="Proof of payment viewer" aria-hidden="true">
+  <button type="button" class="iv-close" id="ivClose" aria-label="Close viewer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  <img id="ivImg" src="" alt="Proof of payment, full size">
+  <div class="iv-status" id="ivStatus" role="status" aria-live="polite"></div>
+  <div class="iv-toolbar" role="toolbar" aria-label="Image controls">
+    <button type="button" class="iv-btn" id="ivZoomOut" aria-label="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6"/></svg></button>
+    <span class="iv-zoom" id="ivZoomLabel" aria-live="polite">100%</span>
+    <button type="button" class="iv-btn" id="ivZoomIn" aria-label="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8 11h6M11 8v6"/></svg></button>
+    <button type="button" class="iv-btn" id="ivReset" aria-label="Reset zoom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg><span class="iv-label">Reset</span></button>
+    <span class="iv-divider" aria-hidden="true"></span>
+    <button type="button" class="iv-btn" id="ivDownload" aria-label="Download image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span class="iv-label" id="ivDownloadLabel">Download</span></button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="recordPaymentModal">
   <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="recordPaymentModalTitle">
     <div class="modal-head"><h2 id="recordPaymentModalTitle">Record Cash Payment</h2></div>
@@ -472,7 +518,7 @@
   <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="waivePenaltyModalTitle">
     <div class="modal-head"><h2 id="waivePenaltyModalTitle">Waive Penalty</h2></div>
     <div class="modal-body">
-      <p style="font-size:12.5px;color:var(--text-mid);margin:0 0 14px 0;">This penalty will be marked as waived. It stays on record and can be reinstated later if needed.</p>
+      <p id="waiveModalNote" style="font-size:12.5px;color:var(--text-mid);margin:0 0 14px 0;">This penalty will be marked as waived. It stays on record and can be reinstated later if needed.</p>
       <div class="fld">
         <label for="waiveReasonInput">Reason</label>
         <textarea id="waiveReasonInput" placeholder="Explain why this penalty is being waived..."></textarea>
@@ -481,6 +527,27 @@
     <div class="modal-actions">
       <button class="btn warn" id="waiveSubmitBtn" style="flex:1;">Confirm Waive</button>
       <button class="btn" id="waiveCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editPenaltyModal">
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="editPenaltyModalTitle">
+    <div class="modal-head"><h2 id="editPenaltyModalTitle">Edit Penalty</h2></div>
+    <div class="modal-body">
+      <p id="editPenaltyNote" style="font-size:12.5px;color:var(--text-mid);margin:0 0 14px 0;"></p>
+      <div class="fld">
+        <label for="editPenaltyDescription">Description</label>
+        <input type="text" id="editPenaltyDescription" maxlength="255">
+      </div>
+      <div class="fld">
+        <label for="editPenaltyAmount">Amount (₱)</label>
+        <input type="number" id="editPenaltyAmount" min="0.01" step="0.01">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="editPenaltySubmitBtn" style="flex:1;">Save Changes</button>
+      <button class="btn" id="editPenaltyCancelBtn">Cancel</button>
     </div>
   </div>
 </div>
@@ -614,7 +681,7 @@
         <td>${esc(p.date_paid ?? '—')}</td>
         <td><span class="method-text ${p.payment_method}">${esc(p.payment_method_label || (METHOD_LABEL[p.payment_method] ?? p.payment_method))}</span></td>
         <td>${peso(p.amount_paid)}</td>
-        <td>${esc(p.reference_number ?? 'N/A')}</td>
+        <td>${esc(p.reference_number ?? 'N/A')}${p.duplicates && p.duplicates.length ? '<span class="dupe-flag" title="This reference number is used on another payment">Duplicate</span>' : ''}</td>
         <td>
           ${p.proof_url
             ? (isImage(p.proof_url)
@@ -660,7 +727,7 @@
 
     const proofHtml = p.proof_url
       ? (isImage(p.proof_url)
-          ? `<img class="proof-preview" src="${p.proof_url}" alt="">`
+          ? `<button type="button" class="proof-open" id="proofPreviewImg" aria-label="View proof of payment full size"><img class="proof-preview" src="${p.proof_url}" alt=""></button>`
           : `<a class="proof-preview-link" href="${p.proof_url}" target="_blank" rel="noopener">Open PDF proof of payment →</a>`)
       : '<span class="v empty-v">No proof attached</span>';
 
@@ -684,10 +751,27 @@
         <div class="kv"><div>${val(p.notes)}</div></div>
       </div>
 
+      ${p.duplicates && p.duplicates.length ? `
+      <div class="dupe-warning" role="alert">
+        <strong>Reference number already used</strong>
+        <span>This reference number also appears on:</span>
+        <ul>${p.duplicates.map(d => `<li>${esc(d.tenant_name)} · ${peso(d.amount_paid)} · ${esc(d.date ?? '—')} · ${esc(d.status)}</li>`).join('')}</ul>
+        <span>Check the proof carefully before approving. It may be a reused screenshot.</span>
+      </div>` : ''}
+
       <div class="sec">
         <h3>Proof of Payment</h3>
         ${proofHtml}
       </div>
+
+      ${p.billing_type === 'move_in' ? `
+      <div class="sec">
+        <h3>Tenant Documents</h3>
+        <div class="doc-links">
+          ${p.id_document_url ? `<a class="proof-preview-link" href="${p.id_document_url}" target="_blank" rel="noopener">View valid ID →</a>` : '<span class="v empty-v">No ID on file</span>'}
+          ${p.signed_contract_url ? `<a class="proof-preview-link" href="${p.signed_contract_url}" target="_blank" rel="noopener">View signed contract →</a>` : '<span class="v empty-v">No signed contract on file</span>'}
+        </div>
+      </div>` : ''}
 
       <div class="sec">
         <h3>Decision</h3>
@@ -706,6 +790,8 @@
       </div>
     `;
 
+    if($('proofPreviewImg')) $('proofPreviewImg').addEventListener('click', () => window.openImageViewer(p.proof_url,
+      'proof-of-payment-' + String(p.tenant_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')));
     $('drawerApproveBtn').addEventListener('click', () => approvePayment(p.id));
     $('drawerShowRejectBtn').addEventListener('click', () => $('rejectBox').classList.add('open'));
     $('cancelRejectBtn').addEventListener('click', () => $('rejectBox').classList.remove('open'));
@@ -884,6 +970,7 @@
             <span>${esc(p.payment_method_label || (PAYMENT_METHOD_LABEL[p.payment_method] ?? p.payment_method))}</span>
             <span class="status-pill ${p.status === 'approved' ? 'paid' : (p.status === 'rejected' ? 'overdue' : 'unpaid')}">${esc(p.status)}</span>
             <span class="amt">${peso(p.amount_paid)}</span>
+            ${p.status === 'approved' ? `<a class="stmt-receipt" href="/payments/${p.id}/receipt" aria-label="Download receipt PDF">Receipt</a>` : ''}
           </div>`).join('');
 
     $('drawerBody').innerHTML = `
@@ -908,6 +995,12 @@
           <div class="stmt-breakdown-row total"><span>Total</span><span>${peso(o.total_amount)}</span></div>
         </div>
       </div>
+      ${o.status !== 'paid' && o.unbilled_penalties > 0 ? `
+      <div class="sec">
+        <h3>Penalties Not Yet Billed</h3>
+        <p style="font-size:12.5px;color:var(--text-mid);margin:0 0 10px;">${esc(o.tenant_name)} has ${peso(o.unbilled_penalties)} in penalties that will be charged on the next bill. You can add them to this one instead.</p>
+        <button class="btn" id="attachPenaltiesBtn">Add ${peso(o.unbilled_penalties)} to this statement</button>
+      </div>` : ''}
 
       <div class="sec">
         <h3>Payment History</h3>
@@ -922,6 +1015,18 @@
         </div>
       </div>
     `;
+
+    if($('attachPenaltiesBtn')) $('attachPenaltiesBtn').addEventListener('click', async function(){
+      this.disabled = true;
+      try {
+        const result = await api(`/billing/${o.id}/attach-penalties`, { method:'POST' });
+        toast(result.message);
+        setTimeout(() => window.location.reload(), 900);
+      } catch(e){
+        toast(e.message, true);
+        this.disabled = false;
+      }
+    });
 
     $('overlay').classList.add('open');
     $('drawer').classList.add('open');
@@ -1115,14 +1220,26 @@
         <td>
           <div class="action-cell">
             ${p.damage_photo_url ? `<a class="btn sm" href="${p.damage_photo_url}" target="_blank" rel="noopener">Photo</a>` : ''}
+            ${p.status === 'active' ? `<button class="btn sm" data-edit-penalty="${p.id}">Edit</button>` : ''}
             ${p.status === 'active' ? `<button class="btn sm warn" data-waive="${p.id}">Waive</button>` : ''}
+            ${p.status === 'waived' ? `<button class="btn sm" data-reinstate="${p.id}">Reinstate</button>` : ''}
+            ${!p.billing_id ? `<button class="btn-text-danger" data-delete-penalty="${p.id}" title="Only for mistakes, e.g. added to the wrong tenant">Delete</button>` : ''}
           </div>
         </td>
       </tr>
     `).join('');
 
     $('penaltiesTableBody').querySelectorAll('[data-waive]').forEach(btn => {
-      btn.addEventListener('click', () => openWaiveModal(Number(btn.dataset.waive)));
+      btn.addEventListener('click', () => openWaiveModal(Number(btn.dataset.waive), 'waive'));
+    });
+    $('penaltiesTableBody').querySelectorAll('[data-reinstate]').forEach(btn => {
+      btn.addEventListener('click', () => openWaiveModal(Number(btn.dataset.reinstate), 'reinstate'));
+    });
+    $('penaltiesTableBody').querySelectorAll('[data-edit-penalty]').forEach(btn => {
+      btn.addEventListener('click', () => openEditPenaltyModal(Number(btn.dataset.editPenalty)));
+    });
+    $('penaltiesTableBody').querySelectorAll('[data-delete-penalty]').forEach(btn => {
+      btn.addEventListener('click', () => deletePenalty(Number(btn.dataset.deletePenalty)));
     });
   }
 
@@ -1139,11 +1256,31 @@
     renderPenaltiesTable();
   });
 
-  // ===== Waive modal =====
+  // ===== Waive / Reinstate modal (same form, both need a reason for the audit log) =====
   let waivingPenaltyId = null;
+  let waiveMode = 'waive';
+  const WAIVE_MODES = {
+    waive: {
+      title: 'Waive Penalty', button: 'Confirm Waive', btnClass: 'btn warn', done: 'Penalty waived.',
+      note: 'This penalty will be marked as waived. It stays on record and can be reinstated later if needed.',
+      placeholder: 'Explain why this penalty is being waived...',
+    },
+    reinstate: {
+      title: 'Reinstate Penalty', button: 'Confirm Reinstate', btnClass: 'btn primary', done: 'Penalty reinstated.',
+      note: 'This penalty will be charged again. If it is on a bill, that bill\'s total goes back up.',
+      placeholder: 'Explain why this penalty is being reinstated...',
+    },
+  };
 
-  function openWaiveModal(id){
+  function openWaiveModal(id, mode){
     waivingPenaltyId = id;
+    waiveMode = mode;
+    const m = WAIVE_MODES[mode];
+    $('waivePenaltyModalTitle').textContent = m.title;
+    $('waiveModalNote').textContent = m.note;
+    $('waiveReasonInput').placeholder = m.placeholder;
+    $('waiveSubmitBtn').textContent = m.button;
+    $('waiveSubmitBtn').className = m.btnClass;
     $('waiveReasonInput').value = '';
     $('waivePenaltyModal').classList.add('open');
   }
@@ -1151,21 +1288,70 @@
 
   $('waiveSubmitBtn').addEventListener('click', async function(){
     const reason = $('waiveReasonInput').value.trim();
-    if(!reason) return toast('A reason is required to waive a penalty.', true);
+    if(!reason) return toast(`A reason is required to ${waiveMode} a penalty.`, true);
 
     this.disabled = true;
     try {
-      await api(`/penalties/${waivingPenaltyId}/waive`, {
+      await api(`/penalties/${waivingPenaltyId}/${waiveMode}`, {
         method:'PATCH',
         headers:{ 'Content-Type':'application/json' },
         body: JSON.stringify({ reason }),
       });
       $('waivePenaltyModal').classList.remove('open');
-      toast('Penalty waived.');
+      toast(WAIVE_MODES[waiveMode].done);
       loadPenalties();
     } catch(e){ toast(e.message, true); }
     this.disabled = false;
   });
+
+  // ===== Edit penalty modal =====
+  let editingPenaltyId = null;
+
+  function openEditPenaltyModal(id){
+    const p = penalties.find(x => x.id === id);
+    if(!p) return;
+    editingPenaltyId = id;
+    $('editPenaltyDescription').value = p.description ?? '';
+    $('editPenaltyAmount').value = Number(p.amount).toFixed(2);
+    $('editPenaltyNote').textContent = p.billing_id
+      ? 'This penalty is already on a billing statement. Changing the amount updates that bill\'s total too.'
+      : 'This penalty is not on a bill yet.';
+    $('editPenaltyModal').classList.add('open');
+  }
+  $('editPenaltyCancelBtn').addEventListener('click', () => $('editPenaltyModal').classList.remove('open'));
+
+  $('editPenaltySubmitBtn').addEventListener('click', async function(){
+    const description = $('editPenaltyDescription').value.trim();
+    const amount = Number($('editPenaltyAmount').value);
+    if(!description) return toast('Please enter a description.', true);
+    if(!(amount > 0)) return toast('Please enter an amount greater than zero.', true);
+
+    this.disabled = true;
+    try {
+      await api(`/penalties/${editingPenaltyId}`, {
+        method:'PATCH',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ description, amount }),
+      });
+      $('editPenaltyModal').classList.remove('open');
+      toast('Penalty updated.');
+      loadPenalties();
+    } catch(e){ toast(e.message, true); }
+    this.disabled = false;
+  });
+
+  // Delete is for genuine mistakes only (e.g. wrong tenant). The server
+  // refuses once the penalty is on a bill; those must be waived instead.
+  async function deletePenalty(id){
+    const p = penalties.find(x => x.id === id);
+    if(!p) return;
+    if(!confirm(`Delete this ${peso(p.amount)} penalty for ${p.tenant?.full_name ?? 'this tenant'}?\n\nUse this only for mistakes. It removes the penalty and its history completely. To cancel a real penalty, use Waive instead.`)) return;
+    try {
+      await api(`/penalties/${id}`, { method:'DELETE' });
+      toast('Penalty deleted.');
+      loadPenalties();
+    } catch(e){ toast(e.message, true); }
+  }
 
   // ===== Record Damage modal =====
   let rdSelectedTenantId = null;
@@ -1381,7 +1567,154 @@
     });
   });
 
+  // ===== Proof of payment image viewer (zoom, drag, pinch, download) =====
+  const $ = id => document.getElementById(id);
+  const viewer = $('imgViewer'), viewerImg = $('ivImg');
+  let ivScale = 1, ivX = 0, ivY = 0, ivDrag = null, ivPinch = null;
+  let ivName = 'proof-of-payment', ivReturnFocus = null;
+  const ivPointers = new Map();
+  const IV_MIN = 0.5, IV_MAX = 5;
+
+  function ivApply(){
+    viewerImg.style.transform = `translate(calc(-50% + ${ivX}px), calc(-50% + ${ivY}px)) scale(${ivScale})`;
+    $('ivZoomLabel').textContent = Math.round(ivScale * 100) + '%';
+    viewer.classList.toggle('zoomed', ivScale > 1);
+    $('ivZoomOut').disabled = ivScale <= IV_MIN;
+    $('ivZoomIn').disabled = ivScale >= IV_MAX;
+  }
+  function ivSetScale(next){
+    ivScale = Math.min(IV_MAX, Math.max(IV_MIN, next));
+    // Not zoomed in = nothing to pan, so keep the image centred
+    if(ivScale <= 1){ ivX = 0; ivY = 0; }
+    ivApply();
+  }
+  function ivZoom(factor){ ivSetScale(ivScale * factor); }
+  function ivReset(){ ivScale = 1; ivX = 0; ivY = 0; ivApply(); }
+
+  // name: used for the downloaded file, e.g. "proof-of-payment-patricia-mae-gonzales"
+  function openImageViewer(src, name){
+    ivReturnFocus = document.activeElement;
+    ivName = name || 'proof-of-payment';
+    viewer.classList.remove('failed');
+    viewer.classList.add('loading');
+    $('ivStatus').textContent = 'Loading image…';
+    $('ivDownload').disabled = true;
+    viewerImg.src = src;
+    ivReset();
+    viewer.classList.add('open');
+    viewer.setAttribute('aria-hidden', 'false');
+    $('ivClose').focus();
+  }
+  // Exposed on window so the drawer script (a separate <script> block) can call it
+  window.openImageViewer = openImageViewer;
+  function closeImageViewer(){
+    viewer.classList.remove('open');
+    viewer.setAttribute('aria-hidden', 'true');
+    // Put keyboard focus back on the thumbnail the admin opened it from
+    if(ivReturnFocus && document.contains(ivReturnFocus)) ivReturnFocus.focus();
+  }
+
+  viewerImg.addEventListener('load', () => {
+    viewer.classList.remove('loading');
+    $('ivDownload').disabled = false;
+  });
+  viewerImg.addEventListener('error', () => {
+    if(!viewer.classList.contains('open')) return;
+    viewer.classList.remove('loading');
+    viewer.classList.add('failed');
+    $('ivStatus').textContent = 'This image could not be loaded. It may have been moved or deleted.';
+  });
+
+  $('ivZoomIn').addEventListener('click', () => ivZoom(1.25));
+  $('ivZoomOut').addEventListener('click', () => ivZoom(0.8));
+  $('ivReset').addEventListener('click', ivReset);
+  $('ivClose').addEventListener('click', closeImageViewer);
+
+  // Download: fetch the image as a file blob so the browser saves it
+  // instead of just opening it; fall back to a new tab if that fails.
+  $('ivDownload').addEventListener('click', async () => {
+    const btn = $('ivDownload'), label = $('ivDownloadLabel');
+    const src = viewerImg.src;
+    const ext = (src.split('?')[0].match(/\.(jpe?g|png|gif|webp)$/i) || ['.png'])[0].toLowerCase();
+    btn.disabled = true;
+    label.textContent = 'Downloading…';
+    try {
+      const res = await fetch(src, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error('Download failed');
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = ivName + ext;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      window.open(src, '_blank', 'noopener');
+    }
+    btn.disabled = false;
+    label.textContent = 'Download';
+  });
+
+  // Clicking the dark background (not the image or controls) closes the viewer
+  viewer.addEventListener('click', (e) => { if(e.target === viewer) closeImageViewer(); });
+  // Mouse wheel / trackpad zoom
+  viewer.addEventListener('wheel', (e) => { e.preventDefault(); ivZoom(e.deltaY < 0 ? 1.1 : 0.9); }, { passive:false });
+  // Double-click toggles between 100% and 200%
+  viewerImg.addEventListener('dblclick', () => { if(ivScale > 1) ivReset(); else ivSetScale(2); });
+
+  // Pointer handling: one finger / mouse drags (only when zoomed in),
+  // two fingers pinch to zoom.
+  const pinchDistance = () => {
+    const [a, b] = [...ivPointers.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  };
+  viewerImg.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    viewerImg.setPointerCapture(e.pointerId);
+    ivPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if(ivPointers.size === 2){
+      ivDrag = null;
+      ivPinch = { dist: pinchDistance(), scale: ivScale };
+    } else if(ivScale > 1){
+      ivDrag = { x: e.clientX - ivX, y: e.clientY - ivY };
+      viewerImg.classList.add('dragging');
+    }
+  });
+  viewerImg.addEventListener('pointermove', (e) => {
+    if(!ivPointers.has(e.pointerId)) return;
+    ivPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if(ivPinch && ivPointers.size === 2){
+      ivSetScale(ivPinch.scale * (pinchDistance() / ivPinch.dist));
+    } else if(ivDrag){
+      ivX = e.clientX - ivDrag.x;
+      ivY = e.clientY - ivDrag.y;
+      ivApply();
+    }
+  });
+  ['pointerup','pointercancel'].forEach(ev => viewerImg.addEventListener(ev, (e) => {
+    ivPointers.delete(e.pointerId);
+    if(ivPointers.size < 2) ivPinch = null;
+    ivDrag = null;
+    viewerImg.classList.remove('dragging');
+  }));
+
   document.addEventListener('keydown', (e) => {
+    if (viewer.classList.contains('open')) {
+      if (e.key === 'Escape') closeImageViewer();
+      else if (e.key === '+' || e.key === '=') ivZoom(1.25);
+      else if (e.key === '-') ivZoom(0.8);
+      else if (e.key === '0') ivReset();
+      else if (e.key === 'Tab') {
+        // Keep Tab inside the viewer while it is open
+        const items = [...viewer.querySelectorAll('button:not(:disabled)')];
+        const i = items.indexOf(document.activeElement);
+        const next = e.shiftKey ? (i <= 0 ? items.length - 1 : i - 1) : (i === items.length - 1 ? 0 : i + 1);
+        e.preventDefault();
+        items[next].focus();
+      }
+      return;
+    }
     if (e.key !== 'Escape') return;
     const drawer = document.getElementById('drawer');
     if (drawer && drawer.classList.contains('open')) { document.getElementById('drawerClose').click(); return; }

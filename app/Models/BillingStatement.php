@@ -53,6 +53,25 @@ class BillingStatement extends Model
         return $this->hasMany(Payment::class, 'billing_id');
     }
 
+    /**
+     * What's still owed on this bill: total minus APPROVED payments (pending
+     * proofs don't count yet). Never below zero. Uses a preloaded
+     * `approved_paid` sum when present (see withApprovedPaid()), otherwise
+     * queries it.
+     */
+    public function remainingBalance(): float
+    {
+        $paid = $this->approved_paid ?? $this->payments()->where('status', 'approved')->sum('amount_paid');
+
+        return max(0, round((float) $this->total_amount - (float) $paid, 2));
+    }
+
+    /** Query scope: preload the approved-payments sum used by remainingBalance(). */
+    public function scopeWithApprovedPaid($query)
+    {
+        return $query->withSum(['payments as approved_paid' => fn ($q) => $q->where('status', 'approved')], 'amount_paid');
+    }
+
     public function escalationLogs(): HasMany
     {
         return $this->hasMany(EscalationLog::class, 'billing_id');
@@ -78,7 +97,11 @@ class BillingStatement extends Model
      */
     public static function syncOverdueStatuses(): void
     {
+        // Move-in fee bills never go overdue: the tenant hasn't moved in
+        // yet, so the delinquency ladder (SMS, portal lock, blacklist) must
+        // not start for them. They stay unpaid/partial until settled.
         static::whereIn('status', ['unpaid', 'partial'])
+            ->where('type', '!=', 'move_in')
             ->whereNotNull('due_date')
             ->where('due_date', '<', now()->startOfDay())
             ->update(['status' => 'overdue']);

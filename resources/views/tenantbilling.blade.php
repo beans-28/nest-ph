@@ -27,6 +27,11 @@
   .page-head{ display:flex; align-items:flex-start; gap:12px; margin-bottom:20px; }
   .back-arrow{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; margin-top:2px; }
   .page-head-text h1{ font-size:19px; font-weight:700; margin:0; color:var(--green-accent); }
+  .soa-btn{ margin-left:auto; display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:0 14px; border:1px solid var(--border); border-radius:10px; background:#fff; color:var(--sage-700); font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; }
+  .soa-btn:hover{ background:var(--sage-50); }
+  .soa-btn:focus-visible{ outline:2px solid var(--sage-600); outline-offset:2px; }
+  .soa-btn svg{ width:16px; height:16px; }
+  @media (max-width:560px){ .page-head{ flex-wrap:wrap; } .soa-btn{ margin-left:0; } }
   .page-head-text p{ font-size:12.5px; color:var(--text-mid); margin:2px 0 0 0; }
 
   .view{ display:none; }
@@ -210,6 +215,7 @@
   .rejected-note{ display:block; margin-top:4px; font-size:11px; font-weight:600; color:#c0463d; }
   .rejection-notice{ background:#fdf0f0; border:1px solid #f3cccc; color:#b3261e; border-radius:8px; padding:12px 14px; font-size:13px; line-height:1.5; margin-bottom:18px; overflow-wrap:anywhere; }
   .rejection-notice strong, .rejection-notice span{ display:block; }
+  .modal-payment-row .receipt-link{ color:var(--sage-700, #2f6f3c); font-weight:600; text-decoration:underline; text-underline-offset:2px; }
   .modal-payment-row .reject-reason{ color:#b3261e; justify-content:flex-start; gap:6px; }
   .cash-modal{ text-align:center; }
   .cash-modal-icon{ width:36px; height:36px; color:var(--green-dark); margin-bottom:8px; }
@@ -312,6 +318,10 @@
             <h1>Billing and Payments</h1>
             <p id="tenantSubtitle">Loading…</p>
           </div>
+          <a class="soa-btn" href="{{ route('tenant.statement-of-account') }}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+            Statement of Account
+          </a>
         </div>
 
         <div class="top-grid">
@@ -1008,6 +1018,7 @@
           <div><span>Method</span><span>${esc(p.payment_method_label || p.payment_method.replace('_',' '))}</span></div>
           <div><span>Status</span><span>${p.status}</span></div>
           ${p.status === 'rejected' && p.review_notes ? `<div class="reject-reason"><span>Reason:</span><span>${esc(p.review_notes)}</span></div>` : ''}
+          ${p.status === 'approved' ? `<div><span>Receipt</span><a class="receipt-link" href="/my/billing/payments/${p.id}/receipt">Download PDF</a></div>` : ''}
         </div>
       `).join('');
     } catch(e){

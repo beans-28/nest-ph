@@ -16,6 +16,15 @@ class RolesAndTestUsersSeeder extends Seeder
         $tenantRole = Role::firstOrCreate(['role_name' => 'tenant']);
         $adminRole = Role::firstOrCreate(['role_name' => 'admin']);
 
+        // Never create the well-known test logins (password123) on the live
+        // site. Roles above are still needed there, so only this part stops.
+        // The real first admin comes from `php artisan nestph:create-owner`.
+        if (app()->environment('production')) {
+            $this->command?->warn('Production: roles created, test accounts skipped.');
+
+            return;
+        }
+
         // 2. Test accounts (password for all: "password123")
         $tenant = User::updateOrCreate(
             ['email' => 'tenant@nestph.test'],
