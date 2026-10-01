@@ -97,6 +97,9 @@ class PaymentController extends Controller
             'pending' => $pending,
             'overview' => $overview,
             'stats' => $stats,
+            // Other Charges from the Dormitory Profile, offered as presets
+            // in Add Penalty (the fee schedule: no unlisted charges).
+            'charges' => \App\Models\DormitoryCharge::ordered()->map->toClientArray()->values(),
         ]);
     }
 
@@ -639,6 +642,15 @@ class PaymentController extends Controller
      */
     private function resyncStatementStatus(BillingStatement $statement): void
     {
+        // A proof dated within the grace period means the rent was on time,
+        // even if it was reviewed after the late penalty went on (Payments
+        // and Fees Schedule, Section 2). Runs first so the totals below
+        // already exclude that penalty.
+        if ($statement->type === 'monthly') {
+            $statement->waiveLatePenaltyIfPaidOnTime(request()->user()?->id);
+            $statement->refresh();
+        }
+
         $paid = Payment::where('billing_id', $statement->id)
             ->where('status', 'approved')
             ->sum('amount_paid');
@@ -647,7 +659,7 @@ class PaymentController extends Controller
 
         if ($paid <= 0) {
             // Move-in bills never go overdue (see BillingStatement::syncOverdueStatuses()).
-            $status = $statement->due_date->isPast() && $statement->type !== 'move_in' ? 'overdue' : 'unpaid';
+            $status = $statement->isPastGrace() && $statement->type !== 'move_in' ? 'overdue' : 'unpaid';
         } elseif ($paid < $total) {
             $status = 'partial';
         } else {

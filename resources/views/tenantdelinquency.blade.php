@@ -335,7 +335,10 @@
                       <div class="emergency-contact-number">{{ $tenant->emergency_contact_number }}</div>
                     @endif
                   </div>
-                  @if($emergencyContactMessage)
+                  @if(! $tenant->emergency_billing_reminders)
+                    {{-- Tenant Agreement 9.3: no consent, so nothing was sent. --}}
+                    <div class="emergency-message-box">Your emergency contact did not agree to receive billing reminders, so no message about your balance was sent to them.</div>
+                  @elseif($emergencyContactMessage)
                     <div class="emergency-message-label">MESSAGE PREVIEW</div>
                     <div class="emergency-message-box">{{ $emergencyContactMessage }}</div>
                   @endif

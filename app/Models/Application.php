@@ -38,6 +38,8 @@ class Application extends Model
         'emergency_contact_email',
         'emergency_contact_landline',
         'emergency_contact_relation',
+        'emergency_contact_signed',
+        'emergency_billing_consent',
 
         // Room information
         'bed_id',
@@ -60,6 +62,8 @@ class Application extends Model
         'preferred_start_date' => 'date',
         'tenant_end_date' => 'date',
         'dpa_consent' => 'boolean',
+        'emergency_contact_signed' => 'boolean',
+        'emergency_billing_consent' => 'boolean',
     ];
 
     protected $appends = ['full_name'];

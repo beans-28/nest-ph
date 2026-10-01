@@ -11,6 +11,13 @@ class Penalty extends Model
 {
     use HasFactory;
 
+    /**
+     * damage: from a recorded damage. late_payment: the automatic one-time
+     * late fee (Payments and Fees Schedule 5.2). manual/other: added by an
+     * admin, usually picked from the dorm's Other Charges list.
+     */
+    public const TYPES = ['damage', 'manual', 'other', 'late_payment'];
+
     protected $fillable = [
         'tenant_id',
         'damage_id',

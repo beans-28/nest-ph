@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\TenancyDocuments;
 
 class ApplicationController extends Controller
 {
@@ -48,7 +48,8 @@ class ApplicationController extends Controller
 
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
-            'birthdate' => ['nullable', 'date', 'before:today'],
+            // Tenant Agreement 14.1: the tenant declares they are at least 18.
+            'birthdate' => ['required', 'date', 'before_or_equal:' . now()->subYears(18)->toDateString()],
             'gender' => ['nullable', 'string', 'max:20'],
             'nationality' => ['nullable', 'string', 'max:60'],
             'medical_condition' => ['nullable', 'string', 'max:255'],
@@ -89,7 +90,23 @@ class ApplicationController extends Controller
             'contract_acceptance.accepted' => 'You must confirm you have reviewed the dormitory contract before submitting.',
             'preferred_start_date.after_or_equal' => 'Preferred start date cannot be in the past.',
             'tenant_end_date.after' => 'Tenant end date must be after the preferred start date.',
+            'birthdate.required' => 'Please enter your birthdate.',
+            'birthdate.before_or_equal' => 'Tenants must be at least 18 years old.',
         ]);
+
+        // Payments and Fees Schedule 4.1: the minimum stay is 3 months (the
+        // dorm's setting). An End Date is optional; without one the stay
+        // ends on the last day of the third month.
+        $profile = \App\Models\DormitoryProfile::current();
+        if (! empty($data['preferred_start_date']) && ! empty($data['tenant_end_date'])) {
+            $minimumEnd = $profile->minimumEndDate(\Carbon\Carbon::parse($data['preferred_start_date']));
+            if (\Carbon\Carbon::parse($data['tenant_end_date'])->lt($minimumEnd)) {
+                return response()->json([
+                    'message' => "The minimum stay is {$profile->minimum_stay_months} months, so your end date can't be earlier than {$minimumEnd->format('F j, Y')}.",
+                    'errors' => ['tenant_end_date' => ["The earliest end date is {$minimumEnd->format('F j, Y')}."]],
+                ], 422);
+            }
+        }
 
         if (empty($data['contact_number']) && empty($data['email'])) {
             return response()->json([
@@ -122,13 +139,25 @@ class ApplicationController extends Controller
             ? $request->file('id_document')->store('application-documents', 'public')
             : null;
 
-        // Path B e-sign flow: the applicant already generated and stored a
-        // signed contract PDF via signContract() above. That path is
-        // trusted here since it only ever points at a file this same
-        // controller just wrote to storage. A raw file upload is kept as a
-        // fallback for anyone whose browser can't run the signature pad.
-        $signedContractPath = $request->filled('signed_contract_path')
-                && Storage::disk('public')->exists($request->input('signed_contract_path'))
+        // E-sign flow: the applicant (and their emergency contact) already
+        // signed the documents via signContract(). Only a path that
+        // signContract() itself wrote is accepted, and only if the details
+        // on the form still match what was signed. A raw file upload is
+        // kept as a fallback for anyone whose browser can't run the
+        // signature pad (no emergency-contact consent is recorded then).
+        $signingRecord = $this->readSigningRecord($request->input('signed_contract_path'));
+
+        if ($signingRecord) {
+            $bedForCheck = Bed::find($data['bed_id']);
+            if (($signingRecord['fingerprint'] ?? null) !== $this->signingFingerprint($data, $bedForCheck)) {
+                return response()->json([
+                    'message' => 'You changed some details after signing. Please review and sign the documents again so the signed copy matches your application.',
+                    'errors' => ['signed_contract_path' => ['Please sign the documents again.']],
+                ], 422);
+            }
+        }
+
+        $signedContractPath = $signingRecord
             ? $request->input('signed_contract_path')
             : ($request->hasFile('signed_contract')
                 ? $request->file('signed_contract')->store('application-documents', 'public')
@@ -141,7 +170,7 @@ class ApplicationController extends Controller
             ], 422);
         }
 
-        $application = DB::transaction(function () use ($data, $bed, $idDocumentPath, $signedContractPath) {
+        $application = DB::transaction(function () use ($data, $bed, $idDocumentPath, $signedContractPath, $signingRecord) {
             $application = Application::create([
                 'inquiry_id' => $data['inquiry_id'] ?? null,
                 'tenant_id' => null,
@@ -166,6 +195,10 @@ class ApplicationController extends Controller
                 'emergency_contact_email' => $data['emergency_contact_email'] ?? null,
                 'emergency_contact_landline' => $data['emergency_contact_landline'] ?? null,
                 'emergency_contact_relation' => $data['emergency_contact_relation'] ?? null,
+                // Taken from the signed copy, not from the form, so they
+                // always match what the emergency contact actually signed.
+                'emergency_contact_signed' => (bool) ($signingRecord['emergency_contact_signed'] ?? false),
+                'emergency_billing_consent' => (bool) ($signingRecord['emergency_billing_consent'] ?? false),
 
                 'bed_id' => $bed->id,
                 'preferred_start_date' => $data['preferred_start_date'] ?? null,
@@ -379,7 +412,18 @@ class ApplicationController extends Controller
 
             if (! $tenant) {
                 [$tenant, $temporaryPassword] = $this->createTenantWithLogin($application);
+            } else {
+                // A returning tenant signed a new Agreement with (possibly) a
+                // new emergency contact, whose billing-reminder consent
+                // (Agreement 9.3) replaces the old one.
+                $tenant->update([
+                    'emergency_contact_name' => $application->emergency_contact_name ?? $tenant->emergency_contact_name,
+                    'emergency_contact_number' => $application->emergency_contact_number ?? $tenant->emergency_contact_number,
+                    'emergency_billing_reminders' => (bool) $application->emergency_billing_consent,
+                ]);
             }
+
+            $startDate = \Carbon\Carbon::parse($data['start_date'] ?? $application->preferred_start_date ?? now()->toDateString());
 
             // The discount is applied directly to the stored rate rather than
             // kept as a separate adjustment applied ad-hoc wherever a bill is
@@ -403,10 +447,12 @@ class ApplicationController extends Controller
                 'tenant_id' => $tenant->id,
                 'bed_id' => $bed->id,
                 'inquiry_id' => $application->inquiry_id,
-                'start_date' => $data['start_date']
-                    ?? $application->preferred_start_date
-                    ?? now()->toDateString(),
-                'end_date' => $data['end_date'] ?? $application->tenant_end_date ?? null,
+                'start_date' => $startDate->toDateString(),
+                // Agreement 2.2: no End Date means the stay ends on the last
+                // day of the third month (the minimum stay).
+                'end_date' => $data['end_date']
+                    ?? $application->tenant_end_date
+                    ?? \App\Models\DormitoryProfile::current()->minimumEndDate($startDate)->toDateString(),
                 'monthly_rate' => $monthlyRate,
                 'discount_amount' => $data['discount_amount'] ?? null,
                 'esign_status' => $application->signed_contract_path ? 'signed' : 'pending',
@@ -660,6 +706,8 @@ class ApplicationController extends Controller
                 'emergency_contact_number' => $application->emergency_contact_number,
                 'emergency_contact_email' => $application->emergency_contact_email,
                 'emergency_contact_relation' => $application->emergency_contact_relation,
+                'emergency_contact_signed' => (bool) $application->emergency_contact_signed,
+                'emergency_billing_consent' => (bool) $application->emergency_billing_consent,
                 'room_no' => $application->bed?->room?->room_no,
                 'bed_label' => $application->bed?->bed_label,
                 'monthly_rate' => $application->bed?->room?->perBedRate(),
@@ -748,6 +796,7 @@ class ApplicationController extends Controller
             'email' => $application->email,
             'emergency_contact_name' => $application->emergency_contact_name,
             'emergency_contact_number' => $application->emergency_contact_number,
+            'emergency_billing_reminders' => (bool) $application->emergency_billing_consent,
             // Bug fix: these five were being silently dropped on approval --
             // they exist on the application (from the online form) but were
             // never carried over onto the tenant record itself.
@@ -797,60 +846,150 @@ class ApplicationController extends Controller
         Log::info("[notification stub] {$event}", $payload);
     }
 
-        /**
-     * Path B e-sign flow: streams a live preview of the contract filled
-     * with whatever the applicant has typed so far. No signature yet.
+    /**
+     * Apply page, "Review & Sign": the dorm's documents filled in with what
+     * the applicant has typed so far, as a PDF (unsigned). With ?document=
+     * agreement|rules|fees it returns just that one, for the page's tabs;
+     * without it, all three (the "Download as PDF" button). Nothing is saved.
      */
-    public function previewContract(Request $request)
+    public function previewContract(Request $request, TenancyDocuments $documents)
     {
-        $viewData = $this->contractViewData($this->validateContractData($request));
+        [$applicant, $bed] = $this->validateContractData($request);
+        $only = $request->validate([
+            'document' => ['nullable', Rule::in(array_keys(TenancyDocuments::DOCUMENTS))],
+        ])['document'] ?? null;
 
-        $pdf = Pdf::loadView('pdfs.lease-contract', $viewData);
-
-        return $pdf->stream('NEST-PH-Lease-Contract-Preview.pdf');
+        return $documents->pdf($documents->data($applicant, $bed), $only)
+            ->stream('Tenancy-Documents-Preview.pdf');
     }
 
     /**
-     * Path B e-sign flow: renders the final contract with the drawn
-     * signature embedded, saves it to storage, and hands back the path so
-     * the application submission can reference it instead of a file
-     * upload.
+     * Signs the documents: the applicant's signature goes on all three, the
+     * emergency contact's on the Agreement (Section 9.1 says they agreed to
+     * be listed), along with their separate yes/no on billing reminders
+     * (Section 9.3). Saves one PDF and hands back its path, which the
+     * application submission then references.
+     *
+     * A small record of what was signed is saved next to the PDF, so the
+     * submission can check the applicant didn't change their details after
+     * signing, and so the consent saved on the application is the consent
+     * actually printed on the signed copy.
      */
-    public function signContract(Request $request): JsonResponse
+    public function signContract(Request $request, TenancyDocuments $documents): JsonResponse
     {
-        $contractData = $this->validateContractData($request);
+        [$applicant, $bed] = $this->validateContractData($request);
 
-        $signature = $request->validate([
+        $signed = $request->validate([
             'signature_image' => ['required', 'string'],
-        ])['signature_image'];
+            'emergency_signature_image' => ['required', 'string'],
+            'emergency_billing_consent' => ['required', 'boolean'],
+            'acknowledged' => ['required', 'array'],
+            'acknowledged.*' => [Rule::in(array_keys(TenancyDocuments::DOCUMENTS))],
+        ], [
+            'emergency_signature_image.required' => 'Your emergency contact needs to sign on their signature pad.',
+        ]);
 
-        if (! preg_match('/^data:image\/png;base64,/', $signature)) {
+        if (count(array_unique($signed['acknowledged'])) !== count(TenancyDocuments::DOCUMENTS)) {
             return response()->json([
-                'message' => 'Something went wrong reading the signature. Please try signing again.',
+                'message' => 'Please confirm you have read all three documents before signing.',
             ], 422);
         }
 
-        $viewData = $this->contractViewData($contractData);
-        $viewData['signatureDataUrl'] = $signature;
+        foreach (['signature_image', 'emergency_signature_image'] as $field) {
+            if (! preg_match('/^data:image\/png;base64,[A-Za-z0-9+\/=]+$/', $signed[$field]) || strlen($signed[$field]) > 600_000) {
+                return response()->json([
+                    'message' => 'Something went wrong reading a signature. Please clear it and sign again.',
+                ], 422);
+            }
+        }
 
-        $pdf = Pdf::loadView('pdfs.lease-contract', $viewData);
+        if (empty($applicant['emergency_contact_name'])) {
+            return response()->json([
+                'message' => 'Please enter your emergency contact’s name before they sign.',
+            ], 422);
+        }
 
-        $path = 'application-documents/signed-contracts/' . Str::uuid() . '.pdf';
-        Storage::disk('public')->put($path, $pdf->output());
+        $signedAt = now();
+        $applicant['emergency_billing_consent'] = (bool) $signed['emergency_billing_consent'];
+
+        $data = $documents->data($applicant, $bed, [
+            'tenant' => $signed['signature_image'],
+            'emergency_contact' => $signed['emergency_signature_image'],
+            'signed_at' => $signedAt,
+        ]);
+
+        $path = self::SIGNED_DOCUMENTS_DIR . Str::uuid() . '.pdf';
+        Storage::disk('public')->put($path, $documents->pdf($data)->output());
+
+        Storage::disk('public')->put($this->signingRecordPath($path), json_encode([
+            'signed_at' => $signedAt->toIso8601String(),
+            'fingerprint' => $this->signingFingerprint($applicant, $bed),
+            'emergency_contact_signed' => true,
+            'emergency_billing_consent' => $applicant['emergency_billing_consent'],
+        ]));
 
         return response()->json([
-            'message' => 'Contract signed.',
+            'message' => 'Documents signed.',
             'signed_contract_path' => $path,
             'preview_url' => Storage::disk('public')->url($path),
-            'signed_at' => now()->format('F j, Y'),
+            'signed_at' => $signedAt->format('F j, Y'),
         ]);
     }
 
+    /** Where signed tenancy documents are saved (public disk). */
+    private const SIGNED_DOCUMENTS_DIR = 'application-documents/signed-contracts/';
+
+    private function signingRecordPath(string $pdfPath): string
+    {
+        return preg_replace('/\.pdf$/', '.json', $pdfPath);
+    }
+
+    /**
+     * The details printed on the signed documents. If any of these change
+     * between signing and submitting, the signed copy no longer matches
+     * the application, so it has to be signed again.
+     */
+    private function signingFingerprint(array $applicant, ?Bed $bed): string
+    {
+        $fields = ['first_name', 'last_name', 'home_address', 'contact_number', 'email',
+            'emergency_contact_name', 'emergency_contact_number', 'emergency_contact_relation', 'preferred_start_date', 'tenant_end_date'];
+
+        $values = array_map(fn ($f) => trim((string) ($applicant[$f] ?? '')), $fields);
+        $values[] = (string) $bed?->id;
+
+        return hash('sha256', implode('|', $values));
+    }
+
+    /**
+     * Reads back what was signed (see signContract()). Returns null when the
+     * path isn't one of our signed documents, or the record is missing.
+     */
+    private function readSigningRecord(?string $path): ?array
+    {
+        if (! $path || ! str_starts_with($path, self::SIGNED_DOCUMENTS_DIR) || str_contains($path, '..')) {
+            return null;
+        }
+
+        $disk = Storage::disk('public');
+        $record = $this->signingRecordPath($path);
+
+        if (! $disk->exists($path) || ! $disk->exists($record)) {
+            return null;
+        }
+
+        return json_decode($disk->get($record), true) ?: null;
+    }
+
+    /**
+     * Validates the applicant details the documents print, and checks the
+     * chosen bed. Returns [applicant fields, Bed|null].
+     */
     private function validateContractData(Request $request): array
     {
         $data = $request->validate([
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['required', 'string', 'max:100'],
+            'home_address' => ['nullable', 'string', 'max:255'],
             'contact_number' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'email', 'max:150'],
             'emergency_contact_name' => ['nullable', 'string', 'max:150'],
@@ -862,35 +1001,9 @@ class ApplicationController extends Controller
         ]);
 
         $bed = ! empty($data['bed_id'])
-            ? Bed::with('room.floor')->find($data['bed_id'])
+            ? Bed::with('room.roomType', 'room.floor')->find($data['bed_id'])
             : null;
 
-        $data['bed'] = $bed;
-
-        return $data;
-    }
-
-    private function contractViewData(array $data): array
-    {
-        return [
-            'fullName' => trim($data['first_name'] . ' ' . $data['last_name']),
-            'contactNumber' => $data['contact_number'] ?? null,
-            'email' => $data['email'] ?? null,
-            'emergencyContactName' => $data['emergency_contact_name'] ?? null,
-            'emergencyContactNumber' => $data['emergency_contact_number'] ?? null,
-            'emergencyContactRelation' => $data['emergency_contact_relation'] ?? null,
-            'floorLabel' => $data['bed']?->room?->floor?->floor_number,
-            'roomNo' => $data['bed']?->room?->room_no,
-            'bedLabel' => $data['bed']?->bed_label,
-            'monthlyRate' => $data['bed']?->room?->perBedRate(),
-            'moveInDate' => ! empty($data['preferred_start_date'])
-                ? \Carbon\Carbon::parse($data['preferred_start_date'])->format('F j, Y')
-                : null,
-            'moveOutDate' => ! empty($data['tenant_end_date'])
-                ? \Carbon\Carbon::parse($data['tenant_end_date'])->format('F j, Y')
-                : null,
-            'todayDate' => now()->format('F j, Y'),
-            'signatureDataUrl' => null,
-        ];
+        return [$data, $bed];
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\EscalationLog;
+use Illuminate\Support\Facades\DB;
 
 class BillingStatement extends Model
 {
@@ -97,13 +98,201 @@ class BillingStatement extends Model
      */
     public static function syncOverdueStatuses(): void
     {
+        $profile = DormitoryProfile::current();
+
+        // Payments and Fees Schedule 5.1: a bill only becomes overdue once
+        // the grace period after its due date has passed (due on the 1st,
+        // grace until the 4th, overdue from the 5th).
+        //
         // Move-in fee bills never go overdue: the tenant hasn't moved in
         // yet, so the delinquency ladder (SMS, portal lock, blacklist) must
         // not start for them. They stay unpaid/partial until settled.
         static::whereIn('status', ['unpaid', 'partial'])
             ->where('type', '!=', 'move_in')
             ->whereNotNull('due_date')
-            ->where('due_date', '<', now()->startOfDay())
+            ->where('due_date', '<', now()->startOfDay()->subDays($profile->grace_period_days))
             ->update(['status' => 'overdue']);
+
+        static::applyLatePenalties($profile);
+    }
+
+    /**
+     * Last day the tenant can pay without a late penalty: the due date plus
+     * the grace period (e.g. due Oct 1 + 3 days = Oct 4).
+     */
+    public function graceDeadline(?DormitoryProfile $profile = null): ?\Carbon\Carbon
+    {
+        $profile ??= DormitoryProfile::current();
+
+        return $this->due_date?->copy()->addDays($profile->grace_period_days);
+    }
+
+    /** True once today is after the grace deadline. */
+    public function isPastGrace(?DormitoryProfile $profile = null): bool
+    {
+        $deadline = $this->graceDeadline($profile);
+
+        return $deadline !== null && now()->startOfDay()->gt($deadline);
+    }
+
+    /**
+     * Adds the bill up again from its parts. Use after any penalty on it is
+     * added, waived or changed.
+     */
+    public function recalculateTotals(): void
+    {
+        $penaltyTotal = (float) Penalty::where('billing_id', $this->id)
+            ->where('status', 'active')
+            ->sum('amount');
+
+        $this->update([
+            'penalty_amount' => $penaltyTotal,
+            'total_amount' => (float) $this->base_rent + (float) $this->utilities_amount + (float) $this->wifi_amount + $penaltyTotal,
+        ]);
+    }
+
+    /**
+     * How much the tenant paid ON TIME toward this bill. Payments and Fees
+     * Schedule, Section 2: "the date you actually paid, as shown on your
+     * proof, is used to decide whether the payment was on time" -- so this
+     * goes by payment_date, not by when the admin approved it.
+     */
+    public function paidOnTime(array $statuses = ['approved'], ?DormitoryProfile $profile = null): float
+    {
+        $deadline = $this->graceDeadline($profile);
+        if (! $deadline) {
+            return 0.0;
+        }
+
+        return (float) $this->payments()
+            ->whereIn('status', $statuses)
+            ->whereDate('payment_date', '<=', $deadline)
+            ->sum('amount_paid');
+    }
+
+    /**
+     * The part of this month's RENT still unpaid at the grace deadline.
+     * Utilities, WiFi and other penalties are not "monthly rent", so the 10%
+     * is never charged on them. On-time payments count against the bill's
+     * charges first, then whatever is left unpaid is capped at the rent.
+     */
+    public function overdueRent(?DormitoryProfile $profile = null): float
+    {
+        $charges = (float) $this->base_rent + (float) $this->utilities_amount + (float) $this->wifi_amount;
+        $unpaid = max(0, $charges - $this->paidOnTime(['approved'], $profile));
+
+        return round(min((float) $this->base_rent, $unpaid), 2);
+    }
+
+    /**
+     * Payments and Fees Schedule 5.2 / Agreement 3.3: if rent is still
+     * unpaid after the grace period, add a ONE-TIME penalty of 10% of the
+     * overdue monthly rent. Never compounded and never charged twice on the
+     * same bill (a waived one is not re-added either).
+     *
+     * Waits while the tenant has a proof under review that is dated on
+     * time -- if the admin approves it, no penalty is due. If it's rejected,
+     * the next run adds the penalty.
+     */
+    public static function applyLatePenalties(?DormitoryProfile $profile = null): void
+    {
+        $profile ??= DormitoryProfile::current();
+        $percent = (float) $profile->late_penalty_percent;
+
+        if ($percent <= 0) {
+            return;
+        }
+
+        $bills = static::where('status', 'overdue')
+            ->where('type', 'monthly')
+            ->whereDoesntHave('penalties', fn ($q) => $q->where('type', 'late_payment'))
+            ->get();
+
+        foreach ($bills as $bill) {
+            if (! $bill->isPastGrace($profile)) {
+                continue;
+            }
+
+            if ($bill->paidOnTime(['pending'], $profile) > 0) {
+                continue;
+            }
+
+            $overdueRent = $bill->overdueRent($profile);
+            if ($overdueRent <= 0) {
+                continue;
+            }
+
+            $amount = round($overdueRent * $percent / 100, 2);
+            $percentLabel = rtrim(rtrim(number_format($percent, 2), '0'), '.');
+
+            DB::transaction(function () use ($bill, $amount, $overdueRent, $percentLabel, $profile) {
+                $penalty = Penalty::create([
+                    'tenant_id' => $bill->tenant_id,
+                    'billing_id' => $bill->id,
+                    'type' => 'late_payment',
+                    'description' => "Late payment penalty: {$percentLabel}% of ₱" . number_format($overdueRent, 2)
+                        . ' unpaid rent for ' . $bill->billing_period_start->format('F Y'),
+                    'amount' => $amount,
+                    'date_incurred' => $bill->graceDeadline($profile)->copy()->addDay()->toDateString(),
+                    'status' => 'active',
+                    'created_by' => null,
+                ]);
+
+                PenaltyAuditLog::create([
+                    'penalty_id' => $penalty->id,
+                    'action' => 'created',
+                    'performed_by' => null,
+                    'reason' => 'Added automatically after the grace period ended.',
+                    'created_at' => now(),
+                ]);
+
+                $bill->recalculateTotals();
+            });
+
+            TenantNotification::send($bill->tenant_id, 'late_penalty',
+                'A late payment penalty was added',
+                'Your ' . $bill->billing_period_start->format('F Y') . ' rent was not paid within the grace period, so a one-time penalty of ₱'
+                    . number_format($amount, 2) . ' was added to the bill.',
+                '/billing', "late_penalty:{$bill->id}");
+        }
+    }
+
+    /**
+     * Called after a payment is approved or recorded. If the tenant's
+     * on-time payments (by payment date) already covered the rent, the late
+     * penalty was charged only because the proof was reviewed late, so it
+     * is waived automatically, with an audit-log entry saying why.
+     */
+    public function waiveLatePenaltyIfPaidOnTime(?int $performedBy = null): bool
+    {
+        $penalty = Penalty::where('billing_id', $this->id)
+            ->where('type', 'late_payment')
+            ->where('status', 'active')
+            ->first();
+
+        if (! $penalty || $this->overdueRent() > 0) {
+            return false;
+        }
+
+        DB::transaction(function () use ($penalty, $performedBy) {
+            $penalty->update(['status' => 'waived']);
+
+            PenaltyAuditLog::create([
+                'penalty_id' => $penalty->id,
+                'action' => 'waived',
+                'performed_by' => $performedBy,
+                'reason' => 'Waived automatically: the payment proof shows the rent was paid within the grace period.',
+                'created_at' => now(),
+            ]);
+
+            $this->recalculateTotals();
+        });
+
+        return true;
+    }
+
+    public function penalties(): HasMany
+    {
+        return $this->hasMany(Penalty::class, 'billing_id');
     }
 }

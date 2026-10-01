@@ -31,6 +31,7 @@ class TenantNotificationService
     {
         $today = now()->startOfDay();
         $cutoff = $today->copy()->addDays(self::REMINDER_DAYS);
+        $profile = \App\Models\DormitoryProfile::current();
 
         return BillingStatement::where('tenant_id', $tenant->id)
             ->whereIn('status', ['unpaid', 'partial', 'overdue'])
@@ -39,8 +40,11 @@ class TenantNotificationService
             ->withApprovedPaid()
             ->orderBy('due_date')
             ->get()
-            ->map(function (BillingStatement $bill) use ($today) {
+            ->map(function (BillingStatement $bill) use ($today, $profile) {
                 $days = (int) $today->diffInDays($bill->due_date->copy()->startOfDay(), false);
+                // Payments and Fees Schedule 5.1: past the due date but still
+                // within the grace period is not "overdue" yet.
+                $inGrace = $days < 0 && $bill->type === 'monthly' && ! $bill->isPastGrace($profile) && $bill->status !== 'overdue';
 
                 return [
                     'id' => $bill->id,
@@ -49,7 +53,9 @@ class TenantNotificationService
                         : 'Rent for ' . $bill->billing_period_start->format('F Y'),
                     'due_date' => $bill->due_date->format('F j, Y'),
                     'days_left' => $days, // negative = days overdue
-                    'is_overdue' => $bill->status === 'overdue' || $days < 0,
+                    'is_overdue' => $bill->status === 'overdue' || ($days < 0 && ! $inGrace),
+                    'in_grace' => $inGrace,
+                    'grace_until' => $bill->graceDeadline($profile)?->format('F j, Y'),
                     'balance' => $bill->remainingBalance(),
                 ];
             })
@@ -63,7 +69,12 @@ class TenantNotificationService
         foreach ($this->billsNeedingAttention($tenant) as $bill) {
             $amount = '₱' . number_format($bill['balance'], 2);
 
-            if ($bill['is_overdue']) {
+            if ($bill['in_grace']) {
+                TenantNotification::send($tenant->id, 'bill_grace',
+                    "{$bill['label']} was due on {$bill['due_date']}",
+                    "Pay {$amount} by {$bill['grace_until']} to avoid the one-time late penalty.",
+                    '/billing', "bill_grace:{$bill['id']}");
+            } elseif ($bill['is_overdue']) {
                 TenantNotification::send($tenant->id, 'bill_overdue',
                     "{$bill['label']} is overdue",
                     "{$amount} was due on {$bill['due_date']}. Please pay as soon as possible to avoid penalties and account restrictions.",

@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BillingStatement;
+use App\Models\DormitoryProfile;
 use App\Models\LeaseContract;
+use Carbon\Carbon;
 use App\Models\Penalty;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,11 +16,9 @@ use Illuminate\Validation\Rule;
 
 class BillingController extends Controller
 {
-    /**
-     * Grace period between a billing period starting and its due date.
-     * Adjust here if the team decides on a different policy.
-     */
-    private const DUE_DATE_GRACE_DAYS = 5;
+    // The due day, grace period and late penalty used to be a constant here
+    // (5 days). They now come from the dorm's rental policy in the
+    // Dormitory Profile, matching the signed Payments and Fees Schedule.
 
     /**
      * Admin: list billing statements, newest first. Optional filters.
@@ -159,27 +159,46 @@ class BillingController extends Controller
     /**
      * Core billing-generation logic.
      *
-     * Matches Use Case Report Table 18 ("Generate Billing Statement"):
-     *   1. Compute base rent for the tenant's assigned room.
-     *   2. Add the room's utility and wifi charges, split by the
-     *      room's bed count, same as rent (see splitUtilityCost()).
-     *   3. Check for existing unpaid balance and apply late payment penalty
-     *      if applicable (handled by foldPenaltiesInto(), Week 5 Tue's work).
+     * Matches Use Case Report Table 18 ("Generate Billing Statement") and
+     * the dorm's Payments and Fees Schedule:
+     *   - Bills follow CALENDAR months, and rent is due on the dorm's rent
+     *     due day (the 1st). The grace period and late penalty are handled
+     *     later by BillingStatement::syncOverdueStatuses().
+     *   - The advance rent paid with the move-in fee covers the month the
+     *     tenant moves in (Agreement 4.3), so the first monthly bill is for
+     *     the NEXT month. If the dorm prorates a mid-month move-in, the
+     *     unused days of that advance are credited on the first bill.
+     *   - Utilities/WiFi shares are added unless the dorm marked them as
+     *     included in the rent.
+     *   - Any unbilled penalties are folded in.
      *
-     * One statement per monthly period. Due date is a grace period after the
-     * period opens. Period rolls forward from the last statement's end + 1
-     * day, or the contract's start_date if none exists -- and only once that
-     * period has actually begun, so future months aren't billed early.
+     * Only bills a period once it has actually begun, so future months
+     * aren't billed early, and never past the contract's end date.
      */
     private function generateForContract(LeaseContract $contract): ?BillingStatement
     {
+        $profile = DormitoryProfile::current();
+
         $lastBill = BillingStatement::where('contract_id', $contract->id)
+            ->where('type', 'monthly')
             ->orderByDesc('billing_period_end')
             ->first();
 
-        $periodStart = $lastBill
-            ? $lastBill->billing_period_end->copy()->addDay()
-            : $contract->start_date->copy();
+        $hasMoveInBill = BillingStatement::where('contract_id', $contract->id)
+            ->where('type', 'move_in')
+            ->exists();
+
+        $start = $contract->start_date->copy()->startOfDay();
+
+        if ($lastBill) {
+            $periodStart = $lastBill->billing_period_end->copy()->addDay();
+        } elseif ($hasMoveInBill) {
+            // The advance rent already paid for the move-in month.
+            $periodStart = $start->copy()->addMonthNoOverflow()->startOfMonth();
+        } else {
+            // Walk-in contracts with no move-in fee: bill from the start date.
+            $periodStart = $start->copy();
+        }
 
         if ($periodStart->isAfter(now())) {
             return null;
@@ -189,23 +208,53 @@ class BillingController extends Controller
             return null;
         }
 
-        $periodEnd = $periodStart->copy()->addMonthNoOverflow()->subDay();
-        $dueDate = $periodStart->copy()->addDays(self::DUE_DATE_GRACE_DAYS);
+        // Calendar month, cut short by the contract's end date if it falls
+        // mid-month. A period that doesn't cover the whole month (an old
+        // anniversary-style period, a walk-in starting mid-month, or a
+        // mid-month end date) is charged for the days it covers.
+        $periodEnd = $periodStart->copy()->endOfMonth()->startOfDay();
+        if ($contract->end_date && $contract->end_date->lt($periodEnd)) {
+            $periodEnd = $contract->end_date->copy()->startOfDay();
+        }
+
+        $rate = (float) $contract->monthly_rate;
+        $baseRent = $this->rentForPeriod($rate, $periodStart, $periodEnd, $profile, ! $lastBill && ! $hasMoveInBill);
+
+        // Prorated mid-month move-in: the advance covered a whole month but
+        // the tenant only used part of the move-in month, so the unused days
+        // come off the first monthly bill.
+        if (! $lastBill && $hasMoveInBill && $profile->mid_month_move_in === 'prorated' && $start->day > 1) {
+            $daysInMonth = $start->daysInMonth;
+            $unusedDays = $start->day - 1;
+            $baseRent = max(0, round($baseRent - $rate * $unusedDays / $daysInMonth, 2));
+        }
+
+        $dueDate = $periodStart->copy()->day(min($profile->rent_due_day, $periodStart->daysInMonth));
+        if ($dueDate->lt($periodStart)) {
+            $dueDate = $periodStart->copy();
+        }
 
         [$utilitiesShare, $wifiShare] = $this->splitUtilityCost($contract);
+        if ($profile->water_included && $profile->electricity_included) {
+            $utilitiesShare = 0;
+        }
+        if ($profile->wifi_included) {
+            $wifiShare = 0;
+        }
 
-        $bill = DB::transaction(function () use ($contract, $periodStart, $periodEnd, $dueDate, $utilitiesShare, $wifiShare) {
+        $bill = DB::transaction(function () use ($contract, $periodStart, $periodEnd, $dueDate, $baseRent, $utilitiesShare, $wifiShare) {
             $bill = BillingStatement::create([
                 'contract_id' => $contract->id,
                 'tenant_id' => $contract->tenant_id,
+                'type' => 'monthly',
                 'billing_period_start' => $periodStart,
                 'billing_period_end' => $periodEnd,
                 'due_date' => $dueDate,
-                'base_rent' => $contract->monthly_rate,
+                'base_rent' => $baseRent,
                 'utilities_amount' => $utilitiesShare,
                 'wifi_amount' => $wifiShare,
                 'penalty_amount' => 0,
-                'total_amount' => $contract->monthly_rate + $utilitiesShare + $wifiShare,
+                'total_amount' => $baseRent + $utilitiesShare + $wifiShare,
                 'status' => 'unpaid',
             ]);
 
@@ -235,6 +284,30 @@ class BillingController extends Controller
             '/billing');
 
         return $bill;
+    }
+
+    /**
+     * Rent for one billing period. A full calendar month is the monthly
+     * rate. A shorter period (contract ending mid-month, an old
+     * anniversary-style period being moved onto calendar months) is charged
+     * by the day. The very first bill of a walk-in contract that starts
+     * mid-month is charged in full unless the dorm prorates move-ins.
+     */
+    private function rentForPeriod(float $rate, Carbon $from, Carbon $to, DormitoryProfile $profile, bool $isWalkInFirstBill): float
+    {
+        $daysInMonth = $from->daysInMonth;
+        $days = $from->diffInDays($to) + 1;
+
+        if ($days >= $daysInMonth) {
+            return $rate;
+        }
+
+        $endsOnMonthEnd = $to->isSameDay($from->copy()->endOfMonth());
+        if ($isWalkInFirstBill && $endsOnMonthEnd && $profile->mid_month_move_in !== 'prorated') {
+            return $rate;
+        }
+
+        return round($rate * $days / $daysInMonth, 2);
     }
 
     /**

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\DormitoryAmenity;
+use App\Models\DormitoryCharge;
 use App\Models\DormitoryHouseRule;
 use App\Models\DormitoryProfile;
+use App\Models\RoomType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use App\Models\Review;
 
 /**
@@ -34,7 +37,6 @@ class DormitoryProfileController extends Controller
         return view('admindormitoryprofile', [
             'profile' => $profile,
             'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
-            'policiesFileName' => $profile->policies_file_path ? basename($profile->policies_file_path) : null,
             'businessPermitName' => $profile->business_permit_path ? basename($profile->business_permit_path) : null,
             'businessPermitExt' => $profile->business_permit_path ? strtoupper(pathinfo($profile->business_permit_path, PATHINFO_EXTENSION)) : null,
             'businessPermitImageUrl' => $this->isImageFile($profile->business_permit_path)
@@ -48,6 +50,8 @@ class DormitoryProfileController extends Controller
             'amenities' => $amenities,
             'houseRules' => $houseRules,
             'paymentMethods' => \App\Models\PaymentMethod::ordered()->map->toClientArray()->values(),
+            'roomTypes' => RoomType::withCount('rooms')->orderBy('sort_order')->orderBy('id')->get()->map->toClientArray()->values(),
+            'charges' => DormitoryCharge::ordered()->map->toClientArray()->values(),
             'reviews' => $reviews,
             'reviewCounts' => [
                 'all' => $reviews->count(),
@@ -150,31 +154,14 @@ class DormitoryProfileController extends Controller
     }
 
     /**
-     * Step 3 — upload or replace the combined legal policies & house rules
-     * PDF that the public Dorm Info page displays.
+     * Blank copy of one of the dorm's documents (agreement / rules / fees),
+     * for the admin to check. The old "policies file" upload was replaced:
+     * the public Dorm Info page now always shows the Rules and Regulations.
      */
-    public function uploadPoliciesFile(Request $request): JsonResponse
+    public function previewDocument(string $document, \App\Services\TenancyDocuments $documents)
     {
-        $request->validate([
-            'policies_file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
-        ]);
-
-        $profile = DormitoryProfile::current();
-        if (! $profile->exists) {
-            $profile->save();
-        }
-
-        if ($profile->policies_file_path && Storage::disk('public')->exists($profile->policies_file_path)) {
-            Storage::disk('public')->delete($profile->policies_file_path);
-        }
-
-        $path = $request->file('policies_file')->store('dormitory-profile', 'public');
-        $profile->update(['policies_file_path' => $path]);
-
-        return response()->json([
-            'message' => 'Policies & house rules file uploaded.',
-            'file_name' => basename($path),
-        ]);
+        return $documents->pdf($documents->data(), $document)
+            ->stream(\Illuminate\Support\Str::slug(\App\Services\TenancyDocuments::DOCUMENTS[$document]) . '.pdf');
     }
 
     /**
@@ -287,17 +274,159 @@ class DormitoryProfileController extends Controller
     }
 
     /**
-     * House Rules list — add a new rule. Appended to the end of the list.
+     * Rental Policy card: the numbers the signed Payments and Fees Schedule
+     * and Tenant Agreement promise. Billing, late penalties, minimum stay
+     * and the documents applicants sign all read from here, so changing a
+     * value here changes both what the system does and what new tenants sign.
+     * (Existing tenants keep the terms they signed: rate changes never touch
+     * an existing contract's monthly rate.)
+     */
+    public function updatePolicy(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'representative_name' => ['nullable', 'string', 'max:150'],
+            'representative_position' => ['nullable', 'string', 'max:100'],
+            'facebook_page_name' => ['nullable', 'string', 'max:150'],
+            'facebook_url' => ['nullable', 'url', 'max:255'],
+            'website_url' => ['nullable', 'url', 'max:255'],
+
+            'rent_due_day' => ['required', 'integer', 'min:1', 'max:28'],
+            'grace_period_days' => ['required', 'integer', 'min:0', 'max:31'],
+            'late_penalty_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+            'minimum_stay_months' => ['required', 'integer', 'min:1', 'max:24'],
+            'move_out_notice_days' => ['required', 'integer', 'min:0', 'max:180'],
+            'extension_notice_days' => ['required', 'integer', 'min:0', 'max:180'],
+            'deposit_refund_days' => ['required', 'integer', 'min:0', 'max:180'],
+            'reservation_validity_days' => ['required', 'integer', 'min:1', 'max:180'],
+            'mid_month_move_in' => ['required', Rule::in(['full', 'prorated'])],
+            'water_included' => ['required', 'boolean'],
+            'electricity_included' => ['required', 'boolean'],
+            'wifi_included' => ['required', 'boolean'],
+            'short_term_rate' => ['nullable', 'numeric', 'min:0'],
+            'transient_rate' => ['nullable', 'numeric', 'min:0'],
+
+            'rules_version' => ['nullable', 'string', 'max:20'],
+            'fees_version' => ['nullable', 'string', 'max:20'],
+            'documents_effective_date' => ['nullable', 'date'],
+        ]);
+
+        $profile = DormitoryProfile::current();
+        $profile->fill($data)->save();
+
+        return response()->json([
+            'message' => 'Rental policy saved. New applicants will sign documents with these terms.',
+        ]);
+    }
+
+    /**
+     * Room Types & Rates card: add a room type. Each dorm lists its own
+     * (not every dorm has the same kinds of rooms).
+     */
+    public function storeRoomType(Request $request): JsonResponse
+    {
+        $data = $this->validateRoomType($request);
+        $data['sort_order'] = (int) (RoomType::max('sort_order') ?? 0) + 1;
+
+        $type = RoomType::create($data);
+
+        return response()->json(['message' => 'Room type added.', 'room_type' => $type->toClientArray()], 201);
+    }
+
+    /**
+     * Edit a room type. Rooms of this type are re-priced right away, so new
+     * applicants see the new rate. Existing contracts keep the rate their
+     * tenant signed for (Payments and Fees Schedule: a change does not apply
+     * to a term already paid for).
+     */
+    public function updateRoomType(Request $request, RoomType $roomType): JsonResponse
+    {
+        $roomType->update($this->validateRoomType($request));
+
+        $roomType->rooms()->get()->each->syncFromRoomType();
+
+        return response()->json(['message' => 'Room type updated.', 'room_type' => $roomType->fresh()->toClientArray()]);
+    }
+
+    /** Delete a room type that no room uses. */
+    public function destroyRoomType(RoomType $roomType): JsonResponse
+    {
+        if ($roomType->rooms()->exists()) {
+            return response()->json([
+                'message' => 'Some rooms still use this room type. Change those rooms to another type on the Vacancy Monitoring page first.',
+            ], 409);
+        }
+
+        $roomType->delete();
+
+        return response()->json(['message' => 'Room type deleted.']);
+    }
+
+    private function validateRoomType(Request $request): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:80'],
+            'location' => ['nullable', 'string', 'max:80'],
+            'description' => ['nullable', 'string', 'max:255'],
+            'pricing_mode' => ['required', Rule::in(RoomType::PRICING_MODES)],
+            'monthly_rate' => ['required', 'numeric', 'min:0'],
+            'min_capacity' => ['nullable', 'integer', 'min:1', 'max:50'],
+            'max_capacity' => ['nullable', 'integer', 'min:1', 'max:50', 'gte:min_capacity'],
+            'has_aircon' => ['nullable', 'boolean'],
+        ], [
+            'max_capacity.gte' => 'The maximum capacity cannot be less than the minimum.',
+        ]);
+    }
+
+    /** Other Charges card: add a charge listed in the fee schedule. */
+    public function storeCharge(Request $request): JsonResponse
+    {
+        $data = $this->validateCharge($request);
+        $data['sort_order'] = (int) (DormitoryCharge::max('sort_order') ?? 0) + 1;
+
+        $charge = DormitoryCharge::create($data);
+
+        return response()->json(['message' => 'Charge added.', 'charge' => $charge->toClientArray()], 201);
+    }
+
+    public function updateCharge(Request $request, DormitoryCharge $charge): JsonResponse
+    {
+        $charge->update($this->validateCharge($request));
+
+        return response()->json(['message' => 'Charge updated.', 'charge' => $charge->fresh()->toClientArray()]);
+    }
+
+    public function destroyCharge(DormitoryCharge $charge): JsonResponse
+    {
+        $charge->delete();
+
+        return response()->json(['message' => 'Charge deleted.']);
+    }
+
+    private function validateCharge(Request $request): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'amount' => ['nullable', 'numeric', 'min:0'],
+            'amount_note' => ['nullable', 'string', 'max:100'],
+            'when_applies' => ['nullable', 'string', 'max:100'],
+        ]);
+    }
+
+    /**
+     * House rules can now carry a section heading (e.g. "A. Conduct and
+     * Respect") so the signed Rules and Regulations keep their structure.
      */
     public function storeHouseRule(Request $request): JsonResponse
     {
         $data = $request->validate([
             'rule_text' => ['required', 'string', 'max:500'],
+            'section' => ['nullable', 'string', 'max:80'],
         ]);
 
         $nextOrder = (int) (DormitoryHouseRule::max('sort_order') ?? 0) + 1;
 
         $rule = DormitoryHouseRule::create([
+            'section' => $data['section'] ?? null,
             'rule_text' => $data['rule_text'],
             'sort_order' => $nextOrder,
         ]);
@@ -312,13 +441,13 @@ class DormitoryProfileController extends Controller
     {
         $data = $request->validate([
             'rule_text' => ['required', 'string', 'max:500'],
+            'section' => ['sometimes', 'nullable', 'string', 'max:80'],
         ]);
 
         $houseRule->update($data);
 
         return response()->json(['message' => 'Rule updated.', 'rule' => $houseRule]);
     }
-
     /**
      * House Rules list — delete a rule.
      */

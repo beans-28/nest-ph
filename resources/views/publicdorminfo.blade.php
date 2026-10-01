@@ -292,7 +292,7 @@
         <div class="info-header">
             <div class="info-header-text">
                 <h1>{{ $dormName ?? 'NEST.PH' }} - Dorm Info</h1>
-                <p>Rental rates, payment schedule, house rules, and check-out procedures.</p>
+                <p>The Dormitory Rules and Regulations every tenant agrees to follow.</p>
             </div>
             @if($policiesFileUrl)
                 <a href="{{ $policiesFileUrl }}" download class="btn-download">
@@ -303,8 +303,8 @@
         </div>
 
         @if($policiesFileUrl)
-            {{-- Real uploaded document — the browser's native PDF viewer gives
-                 zoom, scroll, search, and print for free. --}}
+            {{-- The dorm's Rules and Regulations (PublicController::policiesFileView) —
+                 the browser's native PDF viewer gives zoom, scroll, search, and print for free. --}}
             <div class="doc-card">
                 <iframe src="{{ $policiesFileUrl }}" class="doc-frame" title="Dormitory policies document"></iframe>
             </div>

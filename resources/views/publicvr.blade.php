@@ -379,7 +379,7 @@
         const meta = [];
         if (room.room_type) meta.push(escapeHtml(room.room_type));
         if (room.capacity) meta.push('Good for ' + room.capacity + ' pax');
-        if (room.monthly_rate) meta.push('<strong>' + peso(room.monthly_rate) + '</strong> / month');
+        if (room.price_per_bed) meta.push('<strong>' + peso(room.price_per_bed) + '</strong> / bed / month');
         $('infoMeta').innerHTML = meta.join(' · ');
 
         $('infoCaption').textContent = room.vr_caption || '';
@@ -495,7 +495,7 @@
         roomsScroll.innerHTML = tours.map((room, i) => `
             <button type="button" class="room-thumb" data-room="${room.id}" style="animation-delay:${i * 55}ms" aria-label="View Room ${escapeHtml(room.room_no)} tour">
                 ${room.thumbnail_url ? `<img src="${room.thumbnail_url}" alt="" loading="lazy" decoding="async">` : ''}
-                <span class="label">Room ${escapeHtml(room.room_no)}<small>${[room.capacity ? room.capacity + ' pax' : '', room.monthly_rate ? peso(room.monthly_rate) + '/mo' : ''].filter(Boolean).join(' · ')}</small></span>
+                <span class="label">Room ${escapeHtml(room.room_no)}<small>${[room.capacity ? room.capacity + ' pax' : '', room.price_per_bed ? peso(room.price_per_bed) + '/bed/mo' : ''].filter(Boolean).join(' · ')}</small></span>
             </button>
         `).join('');
 

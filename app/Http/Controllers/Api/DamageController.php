@@ -23,7 +23,9 @@ class DamageController extends Controller
         ]);
 
         $query = Damage::with([
-            'tenant:id,full_name',
+            // full_name isn't a column anymore (names were split into
+            // first/last); the Tenant model builds it from these two.
+            'tenant:id,first_name,last_name',
             'room:id,room_no',
             'bed:id,bed_label',
             'penalty:id,damage_id,amount,status,billing_id',

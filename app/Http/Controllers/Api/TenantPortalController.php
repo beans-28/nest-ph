@@ -145,9 +145,8 @@ class TenantPortalController extends Controller
      * Creates a pending record — it does not reduce the balance until an
      * admin approves it.
      *
-     * NOTE: reference_number was changed from nullable to required here —
-     * the "Proof of Payment" design shows it with a red asterisk (mandatory),
-     * which the original implementation didn't actually enforce.
+     * reference_number is optional: the dorm's Payments and Fees Schedule
+     * asks for it only "if you have one" (e.g. some bank deposit slips).
      */
     public function submitProof(Request $request, BillingStatement $billingStatement): JsonResponse
     {
@@ -157,13 +156,12 @@ class TenantPortalController extends Controller
             'amount_paid' => ['required', 'numeric', 'min:0.01'],
             'payment_method_id' => ['nullable', 'integer', 'exists:payment_methods,id'],
             'payment_method' => ['required_without:payment_method_id', Rule::in(['gcash', 'bank_transfer', 'other'])],
-            'reference_number' => ['required', 'string', 'max:100'],
+            'reference_number' => ['nullable', 'string', 'max:100'],
             'payment_date' => ['required', 'date', 'before_or_equal:today'],
             'notes' => ['nullable', 'string', 'max:500'],
             'proof' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
         ], [
             'proof.required' => 'Please attach a screenshot or file showing proof of payment.',
-            'reference_number.required' => 'Please enter the reference or transaction ID from your payment.',
             'payment_date.before_or_equal' => 'Payment date cannot be in the future.',
         ]);
 

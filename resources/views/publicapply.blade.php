@@ -171,6 +171,8 @@
             font-family: inherit; width: 100%; box-shadow: 0 0 2px rgba(23,25,28,0.05);
         }
         .field textarea { resize: vertical; min-height: 70px; }
+        .field-hint { font-size: 11.5px; color: #5b6b60; line-height: 1.4; }
+        .contract-resign-note { margin-top: 10px; font-size: 12.5px; color: #8a4b0f; background: #fdf3e6; border: 1px solid #f1d6b3; border-radius: 8px; padding: 10px 12px; }
         .field input:focus, .field select:focus, .field textarea:focus {
             outline: none; border-color: #567357;
         }
@@ -315,7 +317,7 @@
 
         .contract-modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(20, 26, 22, 0.55);
-            z-index: 100; align-items: center; justify-content: center; padding: 20px;
+            z-index: 2000; align-items: center; justify-content: center; padding: 20px; /* above the sticky site nav (z-index 1000) */
         }
         .contract-modal-overlay.open { display: flex; }
         .contract-modal {
@@ -342,7 +344,62 @@
         .signature-pad-wrap {
             border: 1px solid #d8dde3; border-radius: 8px; background: #fff; position: relative;
         }
-        #signatureCanvas { width: 100%; height: 150px; display: block; touch-action: none; cursor: crosshair; }
+        #signatureCanvas, #emergencySignatureCanvas { width: 100%; height: 150px; display: block; touch-action: none; cursor: crosshair; }
+
+        /* ===== Documents viewer (Tenant Agreement / Rules / Fees) ===== */
+        .contract-modal { width: min(900px, 100%); }
+        .docs-intro { font-size: 12.5px; color: #4b5f4c; line-height: 1.55; margin-bottom: 12px; }
+        .doc-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .doc-tab {
+            border: 1px solid #c9d4c8; background: #fff; color: #345234; border-radius: 999px;
+            padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; min-height: 36px;
+        }
+        .doc-tab.active { background: #194e19; border-color: #194e19; color: #fff; }
+        .doc-viewer {
+            border: 1px solid #e0e5df; border-radius: 10px; background: #fcfcfa;
+            height: min(62vh, 600px); overflow-y: auto; padding: 18px 20px;
+        }
+        .doc-viewer { background: #e9ece8; padding: 12px; }
+        .doc-page { display: block; margin: 0 auto 12px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.18); }
+        .doc-viewer { cursor: zoom-in; }
+        .doc-viewer-actions { display: flex; justify-content: flex-end; gap: 18px; margin: 6px 0 4px; }
+        .doc-link-btn { background: none; border: none; color: #194e19; font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; padding: 8px 0; display: inline-flex; align-items: center; gap: 6px; }
+        .doc-link-btn svg { width: 15px; height: 15px; }
+
+        /* Full screen: the same pages, as large as the screen allows. */
+        .doc-max-bar { display: none; }
+        .doc-viewer-wrap.maximized {
+            position: fixed; inset: 0; z-index: 2100; background: #3a403b;
+            display: flex; flex-direction: column;
+        }
+        .doc-viewer-wrap.maximized .doc-max-bar {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 10px 16px; background: #194e19; color: #fff;
+        }
+        .doc-max-title { font-size: 14px; font-weight: 700; }
+        .doc-max-exit {
+            background: #fff; color: #194e19; border: none; border-radius: 6px;
+            padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer; min-height: 40px;
+        }
+        .doc-viewer-wrap.maximized .doc-viewer {
+            flex: 1; height: auto; border: none; border-radius: 0; background: #3a403b; cursor: default; padding: 16px;
+        }
+        .doc-acks { border: none; padding: 0; margin: 8px 0 4px; }
+        .doc-acks legend { font-size: 12.5px; font-weight: 700; color: #194e19; margin-bottom: 2px; padding: 0; }
+        .doc-acks .contract-agree-row { margin-top: 8px; }
+        .sig-section { border-top: 1px solid #e5e9e4; margin-top: 16px; padding-top: 2px; }
+        .sig-section.emergency { background: #f6f8f4; border: 1px solid #e3e9e1; border-radius: 10px; padding: 4px 14px 14px; }
+        .sig-help { font-size: 11.5px; color: #5b6b60; margin: -4px 0 8px; line-height: 1.45; }
+        .sign-status { flex: 1; font-size: 11.5px; color: #5b6b60; align-self: center; }
+
+        @media (max-width: 640px) {
+            .contract-modal-overlay { padding: 0; }
+            .contract-modal { max-height: 100vh; height: 100%; border-radius: 0; }
+            .contract-modal-body { padding: 14px 16px; }
+            .doc-viewer { height: 52vh; padding: 14px; }
+            .doc-tab { flex: 1 1 auto; }
+            .sign-status { flex-basis: 100%; }
+        }
         .signature-pad-hint {
             position: absolute; bottom: 8px; left: 12px; right: 12px; border-top: 1px solid #eceff0;
             font-size: 10.5px; color: #b6bcb9; pointer-events: none;
@@ -430,7 +487,8 @@
                     <div class="field-row">
                         <div class="field">
                             <label for="birthdate">Birthdate <span class="req">*</span></label>
-                            <input type="date" id="birthdate" required>
+                            <input type="date" id="birthdate" required max="{{ now()->subYears(18)->toDateString() }}">
+                            <span class="field-hint">Tenants must be at least 18 years old.</span>
                         </div>
                         <div class="field">
                             <label for="gender">Gender</label>
@@ -563,8 +621,9 @@
                     </div>
                     <div class="field-row">
                         <div class="field">
-                            <label for="tenant_end_date">Tenant End Date <span class="req">*</span></label>
-                            <input type="date" id="tenant_end_date" required>
+                            <label for="tenant_end_date">Tenant End Date (optional)</label>
+                            <input type="date" id="tenant_end_date">
+                            <span class="field-hint" id="endDateHint">Minimum stay is {{ $minimumStayMonths }} months. Leave blank to end on the last day of month {{ $minimumStayMonths }}.</span>
                         </div>
                         <div class="field">
                             <label for="bed_select">Bed No <span class="req">*</span></label>
@@ -592,22 +651,23 @@
                                 <div class="contract-review-head">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
                                     <div>
-                                        <div class="crc-title">Review and Sign the Dormitory Contract</div>
-                                        <div class="crc-sub">Read the terms, then sign right here. No printing or scanning needed.</div>
+                                        <div class="crc-title">Read and Sign the Dormitory Documents</div>
+                                        <div class="crc-sub">The Tenant Agreement, the Rules and Regulations, and the Payments and Fees Schedule, filled in with your details. You sign, and your emergency contact signs too. No printing or scanning needed.</div>
                                     </div>
                                 </div>
 
                                 <div class="contract-review-actions">
-                                    <button type="button" class="crc-btn" id="openContractModalBtn">Review &amp; Sign Contract</button>
+                                    <button type="button" class="crc-btn" id="openContractModalBtn">Read &amp; Sign Documents</button>
                                 </div>
 
                                 <div class="contract-signed-status" id="contractSignedStatus" style="display:none;">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
-                                    <span>Contract signed on <span id="contractSignedDate"></span>.</span>
+                                    <span>Documents signed on <span id="contractSignedDate"></span>.</span>
                                     <a href="#" id="viewSignedContractLink" target="_blank" rel="noopener">View signed copy</a>
                                 </div>
                             </div>
 
+                            <p class="contract-resign-note" id="contractResignNote" role="status" style="display:none;"></p>
                             <input type="hidden" id="contract_acceptance" value="0">
                             <input type="hidden" id="signed_contract_path" value="">
                         </div>
@@ -678,7 +738,7 @@
                                 <div class="summary-item"><span class="label">Bed</span><span class="value" id="sum_bed"></span></div>
                                 <div class="summary-item"><span class="label">Type of Tenant</span><span class="value" id="sum_tenant_type"></span></div>
                                 <div class="summary-item"><span class="label">ID File</span><span class="value" id="sum_id_file"></span></div>
-                                <div class="summary-item"><span class="label">Signed Contract</span><span class="value" id="sum_contract_file"></span></div>
+                                <div class="summary-item"><span class="label">Signed Documents</span><span class="value" id="sum_contract_file"></span></div>
                             </div>
                         </div>
                     </div>
@@ -717,30 +777,73 @@
     <div class="contract-modal-overlay" id="contractModalOverlay">
         <div class="contract-modal" role="dialog" aria-modal="true" aria-labelledby="contractModalTitle">
             <div class="contract-modal-head">
-                <h3 id="contractModalTitle">Review &amp; Sign Contract</h3>
+                <h3 id="contractModalTitle">Review &amp; Sign Documents</h3>
                 <button type="button" class="contract-modal-close" id="closeContractModalBtn" aria-label="Close">&times;</button>
             </div>
             <div class="contract-modal-body">
-                <div class="contract-preview-loading" id="contractPreviewLoading">Preparing your contract...</div>
-                <iframe class="contract-preview-frame" id="contractPreviewFrame" style="display:none;"></iframe>
+                <p class="docs-intro">These are the dormitory's documents, filled in with your details. Read all three, then you and your emergency contact sign below.</p>
 
-                <div class="signature-pad-label">Draw your signature below</div>
-                <div class="signature-pad-wrap">
-                    <canvas id="signatureCanvas"></canvas>
-                    <div class="signature-pad-hint">Sign above this line</div>
+                <div class="doc-tabs" role="tablist" aria-label="Documents to sign">
+                    <button type="button" role="tab" class="doc-tab active" data-doc="agreement" aria-selected="true">1. Tenant Agreement</button>
+                    <button type="button" role="tab" class="doc-tab" data-doc="rules" aria-selected="false">2. Rules &amp; Regulations</button>
+                    <button type="button" role="tab" class="doc-tab" data-doc="fees" aria-selected="false">3. Payments &amp; Fees</button>
                 </div>
-                <div class="signature-pad-actions">
-                    <button type="button" class="signature-clear-btn" id="clearSignatureBtn">Clear</button>
+                <div class="doc-viewer-wrap" id="docViewerWrap">
+                    <div class="doc-max-bar">
+                        <span class="doc-max-title" id="docMaxTitle">Tenant Agreement</span>
+                        <button type="button" class="doc-max-exit" id="exitMaximizeBtn">Exit full screen</button>
+                    </div>
+                    <div class="doc-viewer" id="docViewer" tabindex="0" aria-live="polite" title="Click to view full screen">
+                        <div class="contract-preview-loading" id="contractPreviewLoading">Preparing your documents...</div>
+                    </div>
+                </div>
+                <div class="doc-viewer-actions">
+                    <button type="button" class="doc-link-btn" id="maximizeDocBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+                        View full screen
+                    </button>
+                    <button type="button" class="doc-link-btn" id="downloadDocsBtn">Download as PDF</button>
                 </div>
 
-                <label class="contract-agree-row">
-                    <input type="checkbox" id="contractAgreeCheckbox">
-                    <span>I have read and agree to all terms of this Lease Contract.</span>
-                </label>
+                <fieldset class="doc-acks">
+                    <legend>Confirm you have read each document</legend>
+                    <label class="contract-agree-row"><input type="checkbox" data-ack="agreement"> <span>I have read and agree to the <strong>Dormitory Tenant Agreement</strong>.</span></label>
+                    <label class="contract-agree-row"><input type="checkbox" data-ack="rules"> <span>I have read and agree to follow the <strong>Dormitory Rules and Regulations</strong>.</span></label>
+                    <label class="contract-agree-row"><input type="checkbox" data-ack="fees"> <span>I have read and agree to the <strong>Payments and Fees Schedule</strong>.</span></label>
+                </fieldset>
+
+                <div class="sig-section">
+                    <div class="signature-pad-label">Your signature (tenant)</div>
+                    <p class="sig-help">Goes on all three documents.</p>
+                    <div class="signature-pad-wrap">
+                        <canvas id="signatureCanvas" aria-label="Tenant signature pad"></canvas>
+                        <div class="signature-pad-hint">Sign above this line</div>
+                    </div>
+                    <div class="signature-pad-actions">
+                        <button type="button" class="signature-clear-btn" id="clearSignatureBtn">Clear</button>
+                    </div>
+                </div>
+
+                <div class="sig-section emergency">
+                    <div class="signature-pad-label">Emergency contact's signature</div>
+                    <p class="sig-help"><span id="emergencySignerName">Your emergency contact</span> must sign this themselves. If they are not with you, hand them your phone or finish the application when they are.</p>
+                    <div class="signature-pad-wrap">
+                        <canvas id="emergencySignatureCanvas" aria-label="Emergency contact signature pad"></canvas>
+                        <div class="signature-pad-hint">Emergency contact signs above this line</div>
+                    </div>
+                    <div class="signature-pad-actions">
+                        <button type="button" class="signature-clear-btn" id="clearEmergencySignatureBtn">Clear</button>
+                    </div>
+                    <label class="contract-agree-row">
+                        <input type="checkbox" id="emergencyConsentCheckbox">
+                        <span><strong>Optional, for the emergency contact:</strong> I agree to receive billing reminders and overdue notices for the tenant's account. These only state the amount due, the due date and any penalty (Agreement Section 9.3). I can stop them anytime by emailing the dormitory.</span>
+                    </label>
+                </div>
             </div>
             <div class="contract-modal-foot">
+                <span class="sign-status" id="signStatus" aria-live="polite"></span>
                 <button type="button" class="contract-modal-cancel" id="cancelContractModalBtn">Cancel</button>
-                <button type="button" class="contract-modal-sign" id="confirmSignBtn" disabled>Sign Contract</button>
+                <button type="button" class="contract-modal-sign" id="confirmSignBtn" disabled>Sign Documents</button>
             </div>
         </div>
     </div>
@@ -828,6 +931,37 @@
         return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     }
 
+    // Payments and Fees Schedule 4.1: minimum stay; with no end date the
+    // stay ends on the last day of the last minimum month.
+    const MIN_STAY_MONTHS = {{ (int) $minimumStayMonths }};
+
+    function toIsoDate(d) {
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    function defaultEndDate() {
+        const start = val('preferred_start_date');
+        if (!start) return '';
+        const d = new Date(start + 'T00:00:00');
+        const day = d.getDate();
+        d.setDate(1);
+        d.setMonth(d.getMonth() + MIN_STAY_MONTHS);
+        // start + N months - 1 day, then the end of that month
+        const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+        d.setDate(Math.min(day, lastDay));
+        d.setDate(d.getDate() - 1);
+        return toIsoDate(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+    }
+
+    document.getElementById('preferred_start_date').addEventListener('change', function () {
+        const end = document.getElementById('tenant_end_date');
+        const min = defaultEndDate();
+        end.min = min;
+        document.getElementById('endDateHint').textContent = min
+            ? `Minimum stay is ${MIN_STAY_MONTHS} months. Leave blank to end on ${formatDate(min)}, or pick a later date.`
+            : `Minimum stay is ${MIN_STAY_MONTHS} months.`;
+    });
+
     function capitalize(value) {
         if (!value) return '';
         return value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, ' ');
@@ -846,7 +980,7 @@
     }
 
     function buildVerifySummary() {
-        const roomText = document.getElementById('room_select').selectedOptions[0]?.textContent.replace(/\s*\(.*\)/, '') || '';
+        const roomText = document.getElementById('room_select').selectedOptions[0]?.textContent.replace(/\s*\(\d+ vacant\)$/, '') || '';
         const bedText = document.getElementById('bed_select').selectedOptions[0]?.textContent || '';
         const tenantTypeLabel = {
             student: 'Student',
@@ -876,12 +1010,12 @@
         setSummary('sum_emergency_contact_relation', capitalize(val('emergency_contact_relation')));
 
         setSummary('sum_start_date', formatDate(val('preferred_start_date')));
-        setSummary('sum_end_date', formatDate(val('tenant_end_date')));
+        setSummary('sum_end_date', val('tenant_end_date') ? formatDate(val('tenant_end_date')) : (defaultEndDate() ? formatDate(defaultEndDate()) + ' (minimum stay)' : ''));
         setSummary('sum_room', roomText);
         setSummary('sum_bed', bedText);
         setSummary('sum_tenant_type', tenantTypeLabel);
         setSummary('sum_id_file', document.getElementById('id_document').files[0]?.name);
-        setSummary('sum_contract_file', document.getElementById('signed_contract_path').value ? 'Signed electronically' : 'Not signed yet');
+        setSummary('sum_contract_file', document.getElementById('signed_contract_path').value ? 'Signed by you and your emergency contact' : 'Not signed yet');
     }
 
     // ===== File drop labels =====
@@ -901,7 +1035,8 @@
             vacant.forEach(room => {
                 const opt = document.createElement('option');
                 opt.value = room.id;
-                opt.textContent = `${room.room_no} (${room.available_beds} vacant)`;
+                const price = room.price_per_bed ? ` · ₱${Number(room.price_per_bed).toLocaleString('en-PH')}/bed` : '';
+                opt.textContent = `${room.room_no}${room.room_type ? ' · ' + room.room_type : ''}${price} (${room.available_beds} vacant)`;
                 roomSelect.appendChild(opt);
             });
             if (vacant.length === 0) {
@@ -1026,170 +1161,307 @@
     });
 </script>
 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 <script>
 (function(){
     function val(id){ return document.getElementById(id)?.value || ''; }
+    const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     function goNextFromStep3(){
         if (!document.getElementById('signed_contract_path').value) {
-            alert('Please review and sign the contract before continuing.');
+            showFormError('Please read and sign the dormitory documents before continuing.');
             return;
         }
         goNext(3);
     }
     window.goNextFromStep3 = goNextFromStep3;
 
+    // The details printed on the documents. Changing any of them after
+    // signing means the signed copy no longer matches, so it's cleared.
+    const SIGNED_FIELDS = ['first_name', 'last_name', 'home_address', 'contact_number', 'email',
+        'emergency_contact_name', 'emergency_contact_number', 'emergency_contact_relation',
+        'preferred_start_date', 'tenant_end_date', 'bed_select'];
+
     function collectContractFields(){
         return {
             first_name: val('first_name'),
             last_name: val('last_name'),
+            home_address: val('home_address'),
             contact_number: val('contact_number'),
             email: val('email'),
             emergency_contact_name: val('emergency_contact_name'),
             emergency_contact_number: val('emergency_contact_number'),
             emergency_contact_relation: val('emergency_contact_relation'),
-            bed_id: document.getElementById('bed_select')?.value || '',
+            bed_id: val('bed_select'),
             preferred_start_date: val('preferred_start_date'),
             tenant_end_date: val('tenant_end_date'),
         };
     }
 
-    const overlay = document.getElementById('contractModalOverlay');
-    const loading = document.getElementById('contractPreviewLoading');
-    const frame = document.getElementById('contractPreviewFrame');
-    const canvas = document.getElementById('signatureCanvas');
-    const ctx = canvas.getContext('2d');
-    const agreeCheckbox = document.getElementById('contractAgreeCheckbox');
-    const signBtn = document.getElementById('confirmSignBtn');
-    let hasSignature = false;
-    let drawing = false;
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-
-    function updateBounds(p){
-        minX = Math.min(minX, p.x);
-        minY = Math.min(minY, p.y);
-        maxX = Math.max(maxX, p.x);
-        maxY = Math.max(maxY, p.y);
+    function clearSignedState(reason){
+        if (!document.getElementById('signed_contract_path').value) return;
+        document.getElementById('signed_contract_path').value = '';
+        document.getElementById('contract_acceptance').value = '0';
+        document.getElementById('contractSignedStatus').style.display = 'none';
+        const note = document.getElementById('contractResignNote');
+        note.textContent = reason;
+        note.style.display = 'block';
     }
-
-    function resetSignature(){
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        hasSignature = false;
-        minX = Infinity; minY = Infinity; maxX = -Infinity; maxY = -Infinity;
-    }
-
-    function getTrimmedSignatureDataUrl(){
-        if (!hasSignature || minX === Infinity) return canvas.toDataURL('image/png');
-
-        const ratio = window.devicePixelRatio || 1;
-        const padding = 10;
-        const sx = Math.max(0, (minX - padding) * ratio);
-        const sy = Math.max(0, (minY - padding) * ratio);
-        const sw = Math.min(canvas.width - sx, (maxX - minX + padding * 2) * ratio);
-        const sh = Math.min(canvas.height - sy, (maxY - minY + padding * 2) * ratio);
-
-        const trimmed = document.createElement('canvas');
-        trimmed.width = sw;
-        trimmed.height = sh;
-        trimmed.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
-
-        return trimmed.toDataURL('image/png');
-    }
-
-    function resizeCanvas(){
-        const ratio = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * ratio;
-        canvas.height = rect.height * ratio;
-        ctx.scale(ratio, ratio);
-        ctx.strokeStyle = '#1f2a22';
-        ctx.lineWidth = 2;
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-    }
-
-    function getPos(e){
-        const rect = canvas.getBoundingClientRect();
-        const point = e.touches ? e.touches[0] : e;
-        return { x: point.clientX - rect.left, y: point.clientY - rect.top };
-    }
-
-    function startDraw(e){
-        drawing = true;
-        hasSignature = true;
-        const p = getPos(e);
-        updateBounds(p);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
-        updateSignButtonState();
-        e.preventDefault();
-    }
-    function moveDraw(e){
-        if (!drawing) return;
-        const p = getPos(e);
-        updateBounds(p);
-        ctx.lineTo(p.x, p.y);
-        ctx.stroke();
-        e.preventDefault();
-    }
-    function endDraw(){ drawing = false; }
-
-    canvas.addEventListener('mousedown', startDraw);
-    canvas.addEventListener('mousemove', moveDraw);
-    canvas.addEventListener('mouseup', endDraw);
-    canvas.addEventListener('mouseleave', endDraw);
-    canvas.addEventListener('touchstart', startDraw);
-    canvas.addEventListener('touchmove', moveDraw);
-    canvas.addEventListener('touchend', endDraw);
-
-    document.getElementById('clearSignatureBtn').addEventListener('click', () => {
-        resetSignature();
-        updateSignButtonState();
+    SIGNED_FIELDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('change', () => clearSignedState('You changed details that appear on the documents, so please review and sign them again.'));
     });
 
-    function updateSignButtonState(){
-        signBtn.disabled = !(hasSignature && agreeCheckbox.checked);
+    // ===== Signature pads (one per signer) =====
+    function createSignaturePad(canvas, onChange){
+        const ctx = canvas.getContext('2d');
+        let drawing = false, hasInk = false;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        function resize(){
+            const ratio = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+            ctx.strokeStyle = '#1f2a22';
+            ctx.lineWidth = 2;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+        }
+        function reset(){
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hasInk = false;
+            minX = minY = Infinity; maxX = maxY = -Infinity;
+            onChange();
+        }
+        function pos(e){
+            const rect = canvas.getBoundingClientRect();
+            const p = e.touches ? e.touches[0] : e;
+            return { x: p.clientX - rect.left, y: p.clientY - rect.top };
+        }
+        function bound(p){
+            minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y);
+        }
+        function start(e){
+            drawing = true;
+            const p = pos(e);
+            bound(p);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            e.preventDefault();
+        }
+        function move(e){
+            if (!drawing) return;
+            const p = pos(e);
+            bound(p);
+            ctx.lineTo(p.x, p.y);
+            ctx.stroke();
+            if (!hasInk) { hasInk = true; onChange(); }
+            e.preventDefault();
+        }
+        function end(){ drawing = false; }
+
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('mousemove', move);
+        canvas.addEventListener('mouseup', end);
+        canvas.addEventListener('mouseleave', end);
+        canvas.addEventListener('touchstart', start, { passive: false });
+        canvas.addEventListener('touchmove', move, { passive: false });
+        canvas.addEventListener('touchend', end);
+
+        // Crops to the ink, so the signature sits neatly on the PDF line.
+        function toDataUrl(){
+            const ratio = window.devicePixelRatio || 1;
+            const pad = 10;
+            const sx = Math.max(0, (minX - pad) * ratio);
+            const sy = Math.max(0, (minY - pad) * ratio);
+            const sw = Math.min(canvas.width - sx, (maxX - minX + pad * 2) * ratio);
+            const sh = Math.min(canvas.height - sy, (maxY - minY + pad * 2) * ratio);
+            const out = document.createElement('canvas');
+            out.width = sw; out.height = sh;
+            out.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+            return out.toDataURL('image/png');
+        }
+
+        return { resize, reset, hasInk: () => hasInk, toDataUrl };
     }
-    agreeCheckbox.addEventListener('change', updateSignButtonState);
+
+    const overlay = document.getElementById('contractModalOverlay');
+    const viewer = document.getElementById('docViewer');
+    const wrap = document.getElementById('docViewerWrap');
+    const DOC_TITLES = { agreement: 'Dormitory Tenant Agreement', rules: 'Dormitory Rules and Regulations', fees: 'Payments and Fees Schedule' };
+
+    // "View full screen": the viewer fills the screen; pages are redrawn at
+    // the bigger size (the PDF is already loaded, so it's quick).
+    function setMaximized(on){
+        if (wrap.classList.contains('maximized') === on) return;
+        wrap.classList.toggle('maximized', on);
+        document.getElementById('docMaxTitle').textContent = DOC_TITLES[currentDoc] || '';
+        showDoc(currentDoc);
+        (on ? document.getElementById('exitMaximizeBtn') : document.getElementById('maximizeDocBtn')).focus();
+    }
+    const signBtn = document.getElementById('confirmSignBtn');
+    const signStatus = document.getElementById('signStatus');
+    const ackBoxes = Array.from(document.querySelectorAll('[data-ack]'));
+    const tabs = Array.from(document.querySelectorAll('.doc-tab'));
+    // PDF.js (from cdnjs) draws the real filled-in PDF pages, so applicants
+    // see exactly the dorm's documents (letterhead and all) that they sign.
+    const PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    let pdfCache = {};      // document key -> loaded PDF, for the current form details
+    let currentDoc = 'agreement';
+    let renderToken = 0;    // ignores a slow render if the user switched tabs
+
+    const tenantPad = createSignaturePad(document.getElementById('signatureCanvas'), updateSignButtonState);
+    const emergencyPad = createSignaturePad(document.getElementById('emergencySignatureCanvas'), updateSignButtonState);
+
+    document.getElementById('clearSignatureBtn').addEventListener('click', () => tenantPad.reset());
+    document.getElementById('clearEmergencySignatureBtn').addEventListener('click', () => emergencyPad.reset());
+    ackBoxes.forEach(b => b.addEventListener('change', updateSignButtonState));
+
+    function updateSignButtonState(){
+        const missing = [];
+        if (!ackBoxes.every(b => b.checked)) missing.push('confirm all three documents');
+        if (!tenantPad.hasInk()) missing.push('your signature');
+        if (!emergencyPad.hasInk()) missing.push("your emergency contact's signature");
+        signBtn.disabled = missing.length > 0;
+        signStatus.textContent = missing.length ? 'Still needed: ' + missing.join(', ') + '.' : 'Ready to sign.';
+    }
+
+    function loadingMessage(text){
+        viewer.innerHTML = '';
+        const div = document.createElement('div');
+        div.className = 'contract-preview-loading';
+        div.textContent = text;
+        viewer.appendChild(div);
+    }
+
+    async function loadPdf(key){
+        if (pdfCache[key]) return pdfCache[key];
+        const res = await fetch('/api/applications/contract-preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
+            body: JSON.stringify(Object.assign(collectContractFields(), { document: key })),
+        });
+        if (!res.ok) throw new Error('Could not load the document.');
+        const data = new Uint8Array(await res.arrayBuffer());
+        pdfCache[key] = await window.pdfjsLib.getDocument({ data }).promise;
+        return pdfCache[key];
+    }
+
+    async function showDoc(key){
+        currentDoc = key;
+        document.getElementById('docMaxTitle').textContent = DOC_TITLES[key] || '';
+        const token = ++renderToken;
+        tabs.forEach(t => {
+            const on = t.dataset.doc === key;
+            t.classList.toggle('active', on);
+            t.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        loadingMessage('Preparing the document...');
+
+        try {
+            if (!window.pdfjsLib) throw new Error('viewer');
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+            const pdf = await loadPdf(key);
+            if (token !== renderToken) return;
+
+            const pages = document.createDocumentFragment();
+            // Full screen caps the page width so text stays a comfortable size.
+            const width = Math.min(viewer.clientWidth - 32, wrap.classList.contains('maximized') ? 1000 : 2000);
+            const ratio = window.devicePixelRatio || 1;
+            for (let n = 1; n <= pdf.numPages; n++) {
+                const page = await pdf.getPage(n);
+                const base = page.getViewport({ scale: 1 });
+                const viewport = page.getViewport({ scale: (width / base.width) * ratio });
+                const canvas = document.createElement('canvas');
+                canvas.className = 'doc-page';
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                canvas.style.width = width + 'px';
+                canvas.setAttribute('role', 'img');
+                canvas.setAttribute('aria-label', `Page ${n} of ${pdf.numPages}`);
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                if (token !== renderToken) return;
+                pages.appendChild(canvas);
+            }
+            viewer.innerHTML = '';
+            viewer.appendChild(pages);
+            viewer.scrollTop = 0;
+        } catch (err) {
+            if (token !== renderToken) return;
+            loadingMessage(err.message === 'viewer'
+                ? 'The document viewer could not load. Use "Download as PDF" below to read it.'
+                : 'Could not load the document. Please close this and try again.');
+        }
+    }
+
+    tabs.forEach(t => t.addEventListener('click', () => showDoc(t.dataset.doc)));
 
     document.getElementById('openContractModalBtn').addEventListener('click', async () => {
-        if (!val('first_name') || !val('last_name') || !document.getElementById('bed_select')?.value) {
-            alert('Please fill in your name and select a room/bed before reviewing the contract.');
+        clearFormError();
+        if (!val('first_name') || !val('last_name') || !val('bed_select')) {
+            showFormError('Please fill in your name and choose a room and bed before reviewing the documents.');
+            return;
+        }
+        if (!val('emergency_contact_name')) {
+            showFormError("Please enter your emergency contact's details (step 2) before signing. They sign the agreement too.");
             return;
         }
 
+        document.getElementById('emergencySignerName').textContent = val('emergency_contact_name');
         overlay.classList.add('open');
-        loading.style.display = 'flex';
-        frame.style.display = 'none';
-        resizeCanvas();
-        resetSignature();
+        document.body.style.overflow = 'hidden';
+        pdfCache = {};
+        ackBoxes.forEach(b => b.checked = false);
+        document.getElementById('emergencyConsentCheckbox').checked = false;
+        tenantPad.resize(); tenantPad.reset();
+        emergencyPad.resize(); emergencyPad.reset();
         updateSignButtonState();
 
+        showDoc('agreement');
+    });
+
+    document.getElementById('downloadDocsBtn').addEventListener('click', async function(){
+        this.disabled = true;
         try {
             const res = await fetch('/api/applications/contract-preview', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
                 body: JSON.stringify(collectContractFields()),
             });
-            if (!res.ok) throw new Error('Could not load the contract preview.');
-            const blob = await res.blob();
-            frame.src = URL.createObjectURL(blob);
-            loading.style.display = 'none';
-            frame.style.display = 'block';
-        } catch (err) {
-            loading.textContent = 'Could not load the contract preview. Please close this and try again.';
+            if (!res.ok) throw new Error();
+            const url = URL.createObjectURL(await res.blob());
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Tenancy-Documents.pdf';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (e) {
+            alert('Could not prepare the PDF. Please try again.');
         }
+        this.disabled = false;
     });
 
-    function closeModal(){ overlay.classList.remove('open'); }
+    function closeModal(){
+        wrap.classList.remove('maximized');
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+    }
     document.getElementById('closeContractModalBtn').addEventListener('click', closeModal);
     document.getElementById('cancelContractModalBtn').addEventListener('click', closeModal);
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+        if (e.key !== 'Escape' || !overlay.classList.contains('open')) return;
+        // Esc leaves full screen first, then closes the window.
+        if (wrap.classList.contains('maximized')) setMaximized(false);
+        else closeModal();
     });
+    document.getElementById('maximizeDocBtn').addEventListener('click', () => setMaximized(true));
+    document.getElementById('exitMaximizeBtn').addEventListener('click', () => setMaximized(false));
+    viewer.addEventListener('click', () => { if (!wrap.classList.contains('maximized')) setMaximized(true); });
 
     signBtn.addEventListener('click', async () => {
         signBtn.disabled = true;
@@ -1197,33 +1469,35 @@
 
         try {
             const payload = collectContractFields();
-            payload.signature_image = getTrimmedSignatureDataUrl();
+            payload.signature_image = tenantPad.toDataUrl();
+            payload.emergency_signature_image = emergencyPad.toDataUrl();
+            payload.emergency_billing_consent = document.getElementById('emergencyConsentCheckbox').checked;
+            payload.acknowledged = ackBoxes.filter(b => b.checked).map(b => b.dataset.ack);
 
             const res = await fetch('/api/applications/contract-sign', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF },
                 body: JSON.stringify(payload),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Something went wrong while signing.');
+            if (!res.ok) {
+                const first = data.errors ? Object.values(data.errors)[0][0] : null;
+                throw new Error(first || data.message || 'Something went wrong while signing.');
+            }
 
             document.getElementById('signed_contract_path').value = data.signed_contract_path;
             document.getElementById('contract_acceptance').value = '1';
             document.getElementById('contractSignedDate').textContent = data.signed_at;
             document.getElementById('viewSignedContractLink').href = data.preview_url;
             document.getElementById('contractSignedStatus').style.display = 'flex';
+            document.getElementById('contractResignNote').style.display = 'none';
 
             closeModal();
         } catch (err) {
-            alert(err.message);
+            signStatus.textContent = err.message;
         }
 
-        signBtn.disabled = false;
-        signBtn.textContent = 'Sign Contract';
+        signBtn.textContent = 'Sign Documents';
         updateSignButtonState();
     });
 })();

@@ -14,6 +14,7 @@ class Room extends Model
     protected $fillable = [
         'room_no',
         'floor_id',
+        'room_type_id',
         'room_type',
         'amenities',
         'monthly_rate',
@@ -38,19 +39,44 @@ class Room extends Model
     }
 
     /**
-     * A room's monthly_rate is the rent for the WHOLE room, not any one
-     * tenant's share — a 4-bed room split 4 ways means each tenant pays a
-     * quarter, not the full room rate. This is computed live from bed count
-     * rather than stored separately, so it can never drift out of sync if a
-     * bed is later added or removed from the room.
+     * What ONE tenant pays per month for a bed in this room.
+     *
+     * When the room has a room type (set up in the Dormitory Profile), the
+     * price comes straight from it: a "per bed" type charges every tenant
+     * the listed rate, a "per room" type (e.g. a solo room) splits the room
+     * price across its beds. Rooms without a type fall back to the old rule:
+     * monthly_rate is the WHOLE room's rent, split evenly by bed count.
      */
     public function perBedRate(): float
     {
         $bedCount = $this->relationLoaded('beds') ? $this->beds->count() : $this->beds()->count();
 
+        if ($this->room_type_id && $this->roomType) {
+            return $this->roomType->perBedRate($bedCount);
+        }
+
         return $bedCount > 0
             ? round((float) $this->monthly_rate / $bedCount, 2)
             : (float) $this->monthly_rate;
+    }
+
+    /**
+     * Copies the room type's name and price onto this room, so the many
+     * pages that read rooms.room_type / rooms.monthly_rate (filters,
+     * sorting, reports) stay correct. monthly_rate stays the whole-room
+     * total. Call after the type or the number of beds changes.
+     */
+    public function syncFromRoomType(): void
+    {
+        $type = $this->roomType()->first();
+        if (! $type) {
+            return;
+        }
+
+        $this->update([
+            'room_type' => $type->name,
+            'monthly_rate' => $type->wholeRoomRate($this->beds()->count()),
+        ]);
     }
 
     /**
@@ -67,6 +93,11 @@ class Room extends Model
             round((float) $this->monthly_utility_cost / $divisor, 2),
             round((float) $this->monthly_wifi_cost / $divisor, 2),
         ];
+    }
+
+    public function roomType(): BelongsTo
+    {
+        return $this->belongsTo(RoomType::class);
     }
 
     public function floor(): BelongsTo

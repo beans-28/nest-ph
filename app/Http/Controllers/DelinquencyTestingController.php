@@ -87,7 +87,10 @@ class DelinquencyTestingController extends Controller
         }
 
         $bill = $this->findOrCreateTestBill($tenant);
-        $bill->update(['due_date' => now()->subDays(self::STAGE_DAYS[$data['stage']])]);
+        // Overdue days are counted from the end of the grace period, so the
+        // due date is pushed back by the grace days too.
+        $grace = \App\Models\DormitoryProfile::current()->grace_period_days;
+        $bill->update(['due_date' => now()->subDays(self::STAGE_DAYS[$data['stage']] + $grace)]);
 
         $escalation->processBillingStatement($bill->fresh());
 

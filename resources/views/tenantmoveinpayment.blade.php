@@ -190,8 +190,8 @@
                                 <h3>Payment details</h3>
 
                                 <div class="fld">
-                                    <label for="referenceNumber">Reference / Transaction ID <span class="req" aria-hidden="true">*</span></label>
-                                    <input type="text" id="referenceNumber" placeholder="1234 5678 9012 3456" autocomplete="off" required>
+                                    <label for="referenceNumber">Reference / Transaction ID (if you have one)</label>
+                                    <input type="text" id="referenceNumber" placeholder="1234 5678 9012 3456" autocomplete="off">
                                 </div>
                                 <div class="fld-row">
                                     <div class="fld">
@@ -311,7 +311,7 @@
             showError('Please attach a screenshot or file showing proof of payment.');
             return;
         }
-        const missing = ['referenceNumber', 'paymentDate', 'paymentTime', 'amountPaid']
+        const missing = ['paymentDate', 'paymentTime', 'amountPaid']
             .map(id => document.getElementById(id))
             .find(input => !input.value.trim());
         if (missing) {

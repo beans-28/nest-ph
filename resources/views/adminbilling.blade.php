@@ -323,6 +323,7 @@
             <option value="">All Types</option>
             <option value="damage">Damage</option>
             <option value="manual">Manual</option>
+            <option value="late_payment">Late payment</option>
           </select>
           <select id="penaltyStatusFilter">
             <option value="">All Status</option>
@@ -484,6 +485,12 @@
       </div>
 
       <div class="fld">
+        <label for="apChargeSelect">Charge from your fee schedule</label>
+        <select id="apChargeSelect"></select>
+        <p style="font-size:11.5px;color:var(--text-light);margin:4px 0 0;">Your Payments and Fees Schedule says no charge applies unless it is listed. Manage the list in Dormitory Profile &gt; Other Charges.</p>
+      </div>
+
+      <div class="fld">
         <label for="apTypeSelect">Type</label>
         <select id="apTypeSelect">
           <option value="manual">Manual</option>
@@ -556,6 +563,7 @@
 
 <script type="application/json" id="pending-data">{!! json_encode($pending) !!}</script>
 <script type="application/json" id="overview-data">{!! json_encode($overview) !!}</script>
+<script type="application/json" id="charges-data">{!! json_encode($charges) !!}</script>
 
 <script>
 (function(){
@@ -1173,7 +1181,7 @@
   let penaltySearch = '';
   let penaltyTypeFilter = '';
   let penaltyStatusFilter = '';
-  const TYPE_LABEL = { damage:'Damage', manual:'Manual', other:'Other' };
+  const TYPE_LABEL = { damage:'Damage', manual:'Manual', other:'Other', late_payment:'Late payment' };
 
   async function loadPenalties(){
     $('penaltiesTableBody').innerHTML = '<tr class="empty-row"><td colspan="8">Loading…</td></tr>';
@@ -1469,7 +1477,21 @@
   });
   $('apCancelBtn').addEventListener('click', () => $('addPenaltyModal').classList.remove('open'));
 
+  // Presets from Dormitory Profile > Other Charges. Picking one fills in
+  // the reason and (when it has a fixed amount) the amount.
+  const CHARGES = JSON.parse(document.getElementById('charges-data').textContent || '[]');
+  $('apChargeSelect').innerHTML = '<option value="">Other (type a reason)</option>' +
+    CHARGES.map(c => `<option value="${c.id}">${esc(c.name)} — ${esc(c.amount_label)}</option>`).join('');
+  $('apChargeSelect').addEventListener('change', function(){
+    const c = CHARGES.find(x => String(x.id) === this.value);
+    if(!c) return;
+    $('apDescriptionInput').value = c.name;
+    $('apAmountInput').value = c.amount !== null ? c.amount : '';
+    if(c.amount === null) $('apAmountInput').focus();
+  });
+
   function resetAddPenaltyModal(){
+    $('apChargeSelect').value = '';
     apSelectedTenantId = null;
     $('apTenantSearchInput').value = '';
     $('apTenantResults').classList.remove('open');

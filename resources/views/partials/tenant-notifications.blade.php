@@ -93,6 +93,8 @@
               {{ $b['label'] }}
               @if($b['is_overdue'])
                 <span class="when overdue">Overdue since {{ $b['due_date'] }}</span>
+              @elseif(!empty($b['in_grace']))
+                <span class="when overdue">Was due {{ $b['due_date'] }}. Pay by {{ $b['grace_until'] }} to avoid a late penalty</span>
               @elseif($b['days_left'] === 0)
                 <span class="when">Due today</span>
               @else

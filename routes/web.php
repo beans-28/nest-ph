@@ -51,6 +51,7 @@ Route::get('/dorm-info', [PublicController::class, 'dormInfoPage'])->name('publi
 Route::get('/dorm-info/policies-file', [PublicController::class, 'policiesFileView'])->name('public.dorminfo.file');
 Route::get('/dorm-info/policies-file/download', [PublicController::class, 'policiesFileDownload'])->name('public.dorminfo.download');
 
+
 Route::get('/inquire', function () {
     return view('publicinquiry');
 })->name('public.inquiry');
@@ -231,7 +232,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/dormitory-profile', [DormitoryProfileController::class, 'updateProfile'])->name('dormitory-profile.update');
     Route::post('/dormitory-profile/cover-photo', [DormitoryProfileController::class, 'uploadCoverPhoto'])->name('dormitory-profile.cover-photo');
     Route::post('/dormitory-profile/brand-logo', [DormitoryProfileController::class, 'uploadBrandLogo'])->name('dormitory-profile.brand-logo');
-    Route::post('/dormitory-profile/policies-file', [DormitoryProfileController::class, 'uploadPoliciesFile'])->name('dormitory-profile.policies-file');
     Route::post('/dormitory-profile/business-permit', [DormitoryProfileController::class, 'uploadBusinessPermit'])->name('dormitory-profile.business-permit');
     Route::delete('/dormitory-profile/business-permit', [DormitoryProfileController::class, 'deleteBusinessPermit']);
     Route::post('/dormitory-profile/bir-registration', [DormitoryProfileController::class, 'uploadBirRegistration'])->name('dormitory-profile.bir-registration');
@@ -240,6 +240,21 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/dormitory-profile/house-rules', [DormitoryProfileController::class, 'storeHouseRule'])->name('dormitory-profile.house-rules.store');
     Route::patch('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'updateHouseRule']);
     Route::delete('/dormitory-profile/house-rules/{houseRule}', [DormitoryProfileController::class, 'destroyHouseRule']);
+    // Rental policy, room types and other charges: the terms printed on the
+    // documents applicants sign, and what billing follows.
+    Route::post('/dormitory-profile/policy', [DormitoryProfileController::class, 'updatePolicy']);
+    // Admin-only preview of the blank documents. Not public: the Payments and
+    // Fees Schedule lists the owner's bank/GCash accounts, and the Agreement is
+    // a personal contract. Only the Rules are public (Dorm Info page).
+    Route::get('/dormitory-profile/documents/{document}', [DormitoryProfileController::class, 'previewDocument'])
+        ->whereIn('document', array_keys(\App\Services\TenancyDocuments::DOCUMENTS))
+        ->name('dormitory-profile.documents');
+    Route::post('/dormitory-profile/room-types', [DormitoryProfileController::class, 'storeRoomType']);
+    Route::patch('/dormitory-profile/room-types/{roomType}', [DormitoryProfileController::class, 'updateRoomType']);
+    Route::delete('/dormitory-profile/room-types/{roomType}', [DormitoryProfileController::class, 'destroyRoomType']);
+    Route::post('/dormitory-profile/charges', [DormitoryProfileController::class, 'storeCharge']);
+    Route::patch('/dormitory-profile/charges/{charge}', [DormitoryProfileController::class, 'updateCharge']);
+    Route::delete('/dormitory-profile/charges/{charge}', [DormitoryProfileController::class, 'destroyCharge']);
     Route::post('/dormitory-profile/payment-methods', [\App\Http\Controllers\PaymentMethodController::class, 'store']);
     Route::post('/dormitory-profile/payment-methods/{paymentMethod}', [\App\Http\Controllers\PaymentMethodController::class, 'update']);
     Route::delete('/dormitory-profile/payment-methods/{paymentMethod}', [\App\Http\Controllers\PaymentMethodController::class, 'destroy']);

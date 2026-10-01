@@ -506,7 +506,7 @@
 
           <div class="proof-card">
             <div class="proof-card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11H4M20 7H4"/><path d="M7 21V4a1 1 0 011-1h4a1 1 0 010 12H7"/></svg>Payment Details</div>
-            <div class="proof-field"><label for="pfReference">Reference / Transaction ID <span class="req">*</span></label><input type="text" id="pfReference" placeholder="1234 5678 9012 3456" required></div>
+            <div class="proof-field"><label for="pfReference">Reference / Transaction ID (if you have one)</label><input type="text" id="pfReference" placeholder="1234 5678 9012 3456"></div>
             <div class="proof-field"><label for="pfDate">Date of Payment <span class="req">*</span></label><input type="date" id="pfDate" required></div>
             <div class="proof-field"><label for="pfTime">Time of Payment <span class="req">*</span></label><input type="time" id="pfTime" required></div>
             <div class="proof-field"><label for="pfAmount">Amount Paid <span class="req">*</span></label><input type="number" id="pfAmount" step="0.01" min="0.01" required></div>

@@ -75,7 +75,7 @@ class EscalationService
                 continue; // Table 28: admin has paused this tenant's escalation.
             }
 
-            $daysOverdue = (int) Carbon::parse($bill->due_date)->diffInDays(now(), false);
+            $daysOverdue = $this->daysOverdue($bill);
 
             if ($daysOverdue < 0) {
                 continue; // Not actually overdue yet -- shouldn't happen given the query above, but safe.
@@ -113,7 +113,7 @@ class EscalationService
             return;
         }
 
-        $daysOverdue = (int) Carbon::parse($bill->due_date)->diffInDays(now(), false);
+        $daysOverdue = $this->daysOverdue($bill);
 
         if ($daysOverdue < 0) {
             return;
@@ -175,6 +175,18 @@ class EscalationService
         $stage6Day = $stage5Day + self::DAYS_PER_STAGE;
 
         return [$stage3Day, $stage4Day, $stage5Day, $stage6Day];
+    }
+
+    /**
+     * Days since the grace period ended (Payments and Fees Schedule 5.1).
+     * A bill due Oct 1 with a 3-day grace is "1 day overdue" on Oct 5, so
+     * the ladder never starts while the tenant is still within the grace.
+     */
+    private function daysOverdue(BillingStatement $bill): int
+    {
+        $deadline = $bill->graceDeadline();
+
+        return $deadline ? (int) $deadline->copy()->startOfDay()->diffInDays(now()->startOfDay(), false) : 0;
     }
 
     /** The existing log row for this billing statement + action, if any. */
@@ -317,6 +329,23 @@ class EscalationService
 
         $tenant = $bill->tenant;
 
+        // Tenant Agreement 9.3: an emergency contact gets billing reminders
+        // ONLY if they separately agreed (the consent box they tick when
+        // signing). Without consent this stage is recorded as done-but-
+        // skipped, so the ladder can still move on, and nothing is sent.
+        if (! $tenant->emergency_billing_reminders) {
+            $this->saveLog($log, [
+                'tenant_id' => $tenant->id,
+                'billing_id' => $bill->id,
+                'stage' => 4,
+                'action_type' => 'emergency_contact_notified',
+                'message_content' => 'Skipped: the emergency contact has not agreed to receive billing reminders (Tenant Agreement Section 9.3).',
+                'status' => 'resolved',
+            ]);
+
+            return;
+        }
+
         if (empty($tenant->emergency_contact_number)) {
             // Table 25 exception: missing emergency contact -- notify admin
             // (stub, same pattern as elsewhere), log as pending so it's
@@ -337,11 +366,15 @@ class EscalationService
             return;
         }
 
-        $daysOverdue = (int) Carbon::parse($bill->due_date)->diffInDays(now(), false);
-        $balance = number_format((float) $bill->total_amount, 2);
-        $message = "This is to inform you that {$tenant->full_name}'s account at "
-            . TextbeeService::BRAND_NAME . " is {$daysOverdue} days overdue, balance PHP {$balance}. "
-            . 'Please encourage them to settle it as soon as possible.';
+        // Agreement 9.3: the message states ONLY the amount due, the due
+        // date and any penalty -- no tenant name or other personal details.
+        // 9.4: it also tells them how to opt out.
+        $profile = \App\Models\DormitoryProfile::current();
+        $message = TextbeeService::BRAND_NAME . ' billing reminder: amount due PHP ' . number_format($bill->remainingBalance(), 2)
+            . ', due ' . $bill->due_date->format('M j, Y')
+            . ((float) $bill->penalty_amount > 0 ? ', includes penalty PHP ' . number_format((float) $bill->penalty_amount, 2) : '')
+            . '. You receive this because you agreed to billing reminders as an emergency contact.'
+            . ($profile->contact_email ? " To stop, email {$profile->contact_email}." : '');
 
         $sent = $this->sms->send($tenant->emergency_contact_number, $message);
 
@@ -398,7 +431,7 @@ class EscalationService
         // the payment deadline is the day before. Never earlier than
         // tomorrow, in case the letter is generated late.
         $stage6Day = $this->stageDayThresholds()[3];
-        $blacklistDate = Carbon::parse($bill->due_date)->addDays($stage6Day)->startOfDay();
+        $blacklistDate = $bill->graceDeadline()->copy()->addDays($stage6Day)->startOfDay();
         if ($blacklistDate->lte(now()->startOfDay())) {
             $blacklistDate = now()->addDay()->startOfDay();
         }

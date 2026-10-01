@@ -24,8 +24,8 @@ Route::get('/public/rooms', [PublicRoomController::class, 'index']);
 // Week 4 — prospective tenants submit these from the public site
 Route::post('/inquiries', [InquiryController::class, 'store']);
 Route::post('/applications', [ApplicationController::class, 'store']);
-Route::post('/applications/contract-preview', [ApplicationController::class, 'previewContract']);
-Route::post('/applications/contract-sign', [ApplicationController::class, 'signContract']);
+// The dorm's tenancy documents, filled in with the applicant's details:
+// shown on the page as PDF pages, then signed (applicant + emergency contact).
 Route::post('/applications/contract-preview', [ApplicationController::class, 'previewContract']);
 Route::post('/applications/contract-sign', [ApplicationController::class, 'signContract']);
 

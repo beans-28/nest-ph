@@ -17,9 +17,12 @@ class VacancyController extends Controller
     private const ROOM_STATUSES = ['available', 'full', 'maintenance'];
     private const VR_VISIBILITIES = ['public', 'locked', 'draft'];
 
+    /** Large dorm rooms hold 10-16 people, so allow a little headroom. */
+    private const MAX_BEDS = 20;
+
     public function index()
     {
-        $floors = Floor::with('rooms.beds')->orderBy('floor_number')->get();
+        $floors = Floor::with(['rooms.beds', 'rooms.roomType'])->orderBy('floor_number')->get();
 
         $floorGroups = $floors->map(fn ($floor) => [
             'label' => (string) $floor->floor_number,
@@ -36,7 +39,11 @@ class VacancyController extends Controller
             'maintenance' => $allBeds->where('status', 'maintenance')->count(),
         ];
 
-        return view('adminaddfloor', compact('floorGroups', 'stats'));
+        // Room types come from the Dormitory Profile; picking one sets the
+        // room's name and price, so admins don't retype rates per room.
+        $roomTypes = \App\Models\RoomType::ordered()->map->toClientArray()->values();
+
+        return view('adminaddfloor', compact('floorGroups', 'stats', 'roomTypes'));
     }
 
     /**
@@ -50,13 +57,14 @@ class VacancyController extends Controller
         $data = $request->validate([
             'room_no' => ['required', 'string', 'max:20', 'unique:rooms,room_no'],
             'floor' => ['required', 'string', 'max:10'],
+            'room_type_id' => ['nullable', 'integer', 'exists:room_types,id'],
             'room_type' => ['nullable', 'string', 'max:50'],
             'amenities' => ['nullable', 'array'],
             'amenities.*' => ['string', 'max:40'],
             'monthly_rate' => ['nullable', 'numeric', 'min:0'],
             'monthly_utility_cost' => ['nullable', 'numeric', 'min:0'],
             'monthly_wifi_cost' => ['nullable', 'numeric', 'min:0'],
-            'bed_count' => ['required', 'integer', 'min:1', 'max:8'],
+            'bed_count' => ['required', 'integer', 'min:1', 'max:' . self::MAX_BEDS],
             'bed_statuses' => ['nullable', 'array'],
             'bed_statuses.*' => [Rule::in(self::BED_STATUSES)],
             'photos' => ['nullable', 'array', 'max:8'],
@@ -69,6 +77,7 @@ class VacancyController extends Controller
         );
 
         $room = $floor->rooms()->create([
+            'room_type_id' => $data['room_type_id'] ?? null,
             'room_no' => $data['room_no'],
             'room_type' => $data['room_type'] ?? null,
             'amenities' => $data['amenities'] ?? [],
@@ -95,6 +104,7 @@ class VacancyController extends Controller
         }
 
         $room->syncStatusFromBeds();
+        $room->syncFromRoomType();
 
         return response()->json($this->transformRoom($room->fresh(['beds', 'photos']), $floor), 201);
     }
@@ -139,6 +149,7 @@ class VacancyController extends Controller
         $data = $request->validate([
             'room_no' => ['required', 'string', 'max:20', Rule::unique('rooms', 'room_no')->ignore($room->id)],
             'floor' => ['required', 'string', 'max:10'],
+            'room_type_id' => ['nullable', 'integer', 'exists:room_types,id'],
             'room_type' => ['nullable', 'string', 'max:50'],
             'amenities' => ['nullable', 'array'],
             'amenities.*' => ['string', 'max:40'],
@@ -146,7 +157,7 @@ class VacancyController extends Controller
             'monthly_utility_cost' => ['nullable', 'numeric', 'min:0'],
             'monthly_wifi_cost' => ['nullable', 'numeric', 'min:0'],
             'status' => ['nullable', Rule::in(self::ROOM_STATUSES)],
-            'bed_count' => ['required', 'integer', 'min:1', 'max:8'],
+            'bed_count' => ['required', 'integer', 'min:1', 'max:' . self::MAX_BEDS],
             'bed_statuses' => ['nullable', 'array'],
             'bed_statuses.*' => [Rule::in(self::BED_STATUSES)],
             'photos' => ['nullable', 'array', 'max:8'],
@@ -160,6 +171,7 @@ class VacancyController extends Controller
 
         $room->update([
             'floor_id' => $floor->id,
+            'room_type_id' => $data['room_type_id'] ?? null,
             'room_no' => $data['room_no'],
             'room_type' => $data['room_type'] ?? null,
             'amenities' => $data['amenities'] ?? $room->amenities,
@@ -200,6 +212,9 @@ class VacancyController extends Controller
         }
 
         $room->syncStatusFromBeds();
+        // Re-price from the room type: a per-bed room's total depends on its
+        // bed count, which may have just changed.
+        $room->syncFromRoomType();
 
         return response()->json($this->transformRoom($room->fresh(['beds', 'photos']), $floor));
     }
@@ -322,6 +337,7 @@ class VacancyController extends Controller
             'id' => $room->id,
             'room_no' => $room->room_no,
             'floor' => (string) $floor->floor_number,
+            'room_type_id' => $room->room_type_id,
             'room_type' => $room->room_type,
             'amenities' => $room->amenities ?? [],
             'monthly_rate' => $room->monthly_rate,

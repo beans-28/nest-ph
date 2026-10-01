@@ -149,7 +149,9 @@
   .icon-btn.danger:hover{ background:#fbeceb; border-color:#f2cfcc; color:var(--status-occupied); }
   .icon-btn svg{ width:13px; height:13px; }
   .rules-empty{ font-size:12.5px; color:var(--text-light); font-style:italic; padding:14px 4px; }
-  .add-rule-row{ display:flex; gap:10px; margin-top:14px; }
+  .add-rule-row{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .add-rule-row .rule-section-input{ flex:0 1 200px; }
+  .rule-section{ display:block; font-style:normal; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--text-light); margin-bottom:2px; }
   .add-rule-row input{ flex:1; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13px; font-family:var(--font-body); }
 
   /* Amenities */
@@ -265,6 +267,18 @@
   .rv-row[data-status="removed"] .act-hide,
   .rv-row[data-status="removed"] .act-remove{ display:none; }
   .rv-empty{ font-size:12.5px; color:var(--text-mid); font-style:italic; padding:14px 4px; display:none; margin:0; }
+  /* Rental policy / room types / charges cards */
+  .policy-sub{ font-size:12px; font-weight:700; color:var(--text-dark); text-transform:uppercase; letter-spacing:.4px; margin:18px 0 10px; padding-top:14px; border-top:1px solid #f0f2f0; }
+  .policy-sub:first-of-type{ margin-top:4px; padding-top:0; border-top:none; }
+  .field-row.three{ grid-template-columns:1fr 1fr 1fr; }
+  @media (max-width:760px){ .field-row.three{ grid-template-columns:1fr; } }
+  .field select{ border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13.5px; font-family:var(--font-body); color:var(--text-dark); background:#fff; }
+  .policy-hint{ font-size:12px; color:var(--text-mid); margin:-6px 0 14px; line-height:1.5; }
+  .policy-checks{ border:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .policy-checks legend{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); margin-bottom:8px; padding:0; }
+  .policy-checks label, .inline-check{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-dark); text-transform:none; letter-spacing:0; font-weight:500; }
+  .policy-checks input, .inline-check input{ accent-color:var(--green-accent); width:16px; height:16px; }
+  .form-actions a.btn{ text-decoration:none; }
 </style>
 </head>
 <body>
@@ -382,13 +396,14 @@
           {{-- House Rules --}}
           <div class="card">
             <h2>House Rules</h2>
-            <p class="card-sub">List of rules that all tenants must follow.</p>
+            <p class="card-sub">List of rules that all tenants must follow. These are printed on the Rules and Regulations every applicant signs, grouped by section (for example "A. Conduct and Respect").</p>
 
             <ul class="rules-list" id="rulesList">
               @forelse($houseRules as $i => $rule)
                 <li class="rule-row" data-id="{{ $rule->id }}">
                   <span class="rule-num">{{ $i + 1 }}</span>
                   <div class="rule-text">
+                    @if($rule->section)<em class="rule-section">{{ $rule->section }}</em>@endif
                     <span>{{ $rule->rule_text }}</span>
                     <input type="text" value="{{ $rule->rule_text }}" maxlength="500" aria-label="Edit house rule text">
                   </div>
@@ -403,9 +418,166 @@
             </ul>
 
             <div class="add-rule-row">
+              <input type="text" id="newRuleSection" class="rule-section-input" placeholder="Section (optional)" maxlength="80" list="ruleSectionList" aria-label="Section heading for the new rule">
+              <datalist id="ruleSectionList">
+                @foreach($houseRules->pluck('section')->filter()->unique() as $section)
+                  <option value="{{ $section }}"></option>
+                @endforeach
+              </datalist>
               <input type="text" id="newRuleInput" placeholder="Add a new rule…" maxlength="500" aria-label="New house rule text">
               <button type="button" class="btn primary sm" id="addRuleBtn">+ Add Rule</button>
             </div>
+          </div>
+
+          {{-- Room Types & Rates --}}
+          <div class="card" id="roomTypesCard">
+            <div class="pm-card-head">
+              <div>
+                <h2>Room Types &amp; Rates</h2>
+                <p class="card-sub">The kinds of rooms your dorm offers and their monthly rent. Assign a type to each room on the Vacancy Monitoring page. These rates are printed on the Payments and Fees Schedule that applicants sign.</p>
+              </div>
+              <button type="button" class="btn primary sm" id="addRoomTypeBtn">+ Add Room Type</button>
+            </div>
+            <ul class="pm-list" id="roomTypeList"></ul>
+          </div>
+
+          {{-- Rental Policy & Contract Details --}}
+          <div class="card" id="policyCard">
+            <h2>Rental Policy &amp; Contract Details</h2>
+            <p class="card-sub">The terms in your Tenant Agreement and Payments and Fees Schedule. Billing follows these numbers, and new applicants sign documents showing them. Tenants who already signed keep their agreed monthly rate.</p>
+
+            <h3 class="policy-sub">Lessor details</h3>
+            <div class="field-row">
+              <div class="field">
+                <label for="polRepName">Authorized representative</label>
+                <input type="text" id="polRepName" maxlength="150" value="{{ $profile->representative_name }}" placeholder="Full name">
+              </div>
+              <div class="field">
+                <label for="polRepPosition">Position</label>
+                <input type="text" id="polRepPosition" maxlength="100" value="{{ $profile->representative_position }}" placeholder="e.g. Owner, Dorm Manager">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="polFbName">Official Facebook Page name</label>
+                <input type="text" id="polFbName" maxlength="150" value="{{ $profile->facebook_page_name }}">
+              </div>
+              <div class="field">
+                <label for="polFbUrl">Facebook Page link</label>
+                <input type="url" id="polFbUrl" maxlength="255" value="{{ $profile->facebook_url }}" placeholder="https://www.facebook.com/...">
+              </div>
+            </div>
+            <div class="field-row full">
+              <div class="field">
+                <label for="polWebsite">Website</label>
+                <input type="url" id="polWebsite" maxlength="255" value="{{ $profile->website_url }}" placeholder="https://...">
+              </div>
+            </div>
+
+            <h3 class="policy-sub">Rent and late payment</h3>
+            <div class="field-row three">
+              <div class="field">
+                <label for="polDueDay">Rent due day of the month</label>
+                <input type="number" id="polDueDay" min="1" max="28" value="{{ $profile->rent_due_day }}">
+              </div>
+              <div class="field">
+                <label for="polGrace">Grace period (days)</label>
+                <input type="number" id="polGrace" min="0" max="31" value="{{ $profile->grace_period_days }}">
+              </div>
+              <div class="field">
+                <label for="polPenalty">One-time late penalty (% of rent)</label>
+                <input type="number" id="polPenalty" min="0" max="100" step="0.01" value="{{ $profile->late_penalty_percent }}">
+              </div>
+            </div>
+            <p class="policy-hint" id="polRentHint"></p>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="polMidMonth">Mid-month move-in: first month is</label>
+                <select id="polMidMonth">
+                  <option value="full" @selected($profile->mid_month_move_in === 'full')>Charged in full</option>
+                  <option value="prorated" @selected($profile->mid_month_move_in === 'prorated')>Prorated (unused days credited on the first bill)</option>
+                </select>
+              </div>
+              <fieldset class="field policy-checks">
+                <legend>Included in the rent</legend>
+                <label><input type="checkbox" id="polWater" @checked($profile->water_included)> Water</label>
+                <label><input type="checkbox" id="polElectricity" @checked($profile->electricity_included)> Electricity</label>
+                <label><input type="checkbox" id="polWifi" @checked($profile->wifi_included)> Wi-Fi</label>
+              </fieldset>
+            </div>
+            <p class="policy-hint">When water and electricity are both included, the room's utilities charge is not billed. When Wi-Fi is included, the room's Wi-Fi charge is not billed.</p>
+
+            <h3 class="policy-sub">Stay, notice and deposit</h3>
+            <div class="field-row three">
+              <div class="field">
+                <label for="polMinStay">Minimum stay (months)</label>
+                <input type="number" id="polMinStay" min="1" max="24" value="{{ $profile->minimum_stay_months }}">
+              </div>
+              <div class="field">
+                <label for="polMoveOut">Move-out notice (days)</label>
+                <input type="number" id="polMoveOut" min="0" max="180" value="{{ $profile->move_out_notice_days }}">
+              </div>
+              <div class="field">
+                <label for="polExtend">Extension notice (days)</label>
+                <input type="number" id="polExtend" min="0" max="180" value="{{ $profile->extension_notice_days }}">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="polRefund">Deposit refunded within (days)</label>
+                <input type="number" id="polRefund" min="0" max="180" value="{{ $profile->deposit_refund_days }}">
+              </div>
+              <div class="field">
+                <label for="polReservation">Reservation valid for (days)</label>
+                <input type="number" id="polReservation" min="1" max="180" value="{{ $profile->reservation_validity_days }}">
+              </div>
+            </div>
+
+            <h3 class="policy-sub">Other stays (shown on the fee schedule)</h3>
+            <div class="field-row">
+              <div class="field">
+                <label for="polShortTerm">Short-term stay, per month (₱)</label>
+                <input type="number" id="polShortTerm" min="0" step="0.01" value="{{ $profile->short_term_rate }}" placeholder="Leave blank if not offered">
+              </div>
+              <div class="field">
+                <label for="polTransient">Transient stay, per night (₱)</label>
+                <input type="number" id="polTransient" min="0" step="0.01" value="{{ $profile->transient_rate }}" placeholder="Leave blank if not offered">
+              </div>
+            </div>
+
+            <h3 class="policy-sub">Document versions</h3>
+            <div class="field-row three">
+              <div class="field">
+                <label for="polRulesVersion">Rules and Regulations version</label>
+                <input type="text" id="polRulesVersion" maxlength="20" value="{{ $profile->rules_version }}" placeholder="e.g. 2">
+              </div>
+              <div class="field">
+                <label for="polFeesVersion">Payments and Fees version</label>
+                <input type="text" id="polFeesVersion" maxlength="20" value="{{ $profile->fees_version }}" placeholder="e.g. 1">
+              </div>
+              <div class="field">
+                <label for="polEffective">Effective date</label>
+                <input type="date" id="polEffective" value="{{ $profile->documents_effective_date?->toDateString() }}">
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <a class="btn" href="{{ route('dormitory-profile.documents', 'agreement') }}" target="_blank" rel="noopener">Preview documents</a>
+              <button type="button" class="btn primary" id="savePolicyBtn">Save Policy</button>
+            </div>
+          </div>
+
+          {{-- Other Charges --}}
+          <div class="card" id="chargesCard">
+            <div class="pm-card-head">
+              <div>
+                <h2>Other Charges</h2>
+                <p class="card-sub">Fees besides rent, such as a lost key or a rule violation. Your fee schedule says no charge applies unless it is listed here, so these appear as choices when you add a penalty.</p>
+              </div>
+              <button type="button" class="btn primary sm" id="addChargeBtn">+ Add Charge</button>
+            </div>
+            <ul class="pm-list" id="chargeList"></ul>
           </div>
 
           {{-- Payment Methods --}}
@@ -514,15 +686,14 @@
               <div class="doc-info">
                 <div class="doc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></div>
                 <div>
-                  <div class="doc-title">Policies & House Rules File (PDF)</div>
-                  <div class="doc-status {{ $policiesFileName ? 'uploaded' : '' }}" id="policiesFileStatus">{{ $policiesFileName ?? 'No file uploaded' }}</div>
+                  <div class="doc-title">Dormitory Rules and Regulations</div>
+                  <div class="doc-status uploaded">Shown on your public Dorm Info page. Same document tenants sign.</div>
                 </div>
               </div>
               <div class="doc-actions">
-                <button type="button" class="btn sm" id="policiesFileBtn">{{ $policiesFileName ? 'Replace' : 'Upload' }}</button>
+                <a class="btn sm" href="{{ route('dormitory-profile.documents', 'rules') }}" target="_blank" rel="noopener">View</a>
               </div>
             </div>
-            <input type="file" id="policiesFileInput" accept=".pdf" style="display:none;">
 
             <div class="legit-docs-grid">
 
@@ -764,23 +935,6 @@
     this.value = '';
   });
 
-  // ===== Policies file =====
-  $('policiesFileBtn').addEventListener('click', () => $('policiesFileInput').click());
-  $('policiesFileInput').addEventListener('change', async function(){
-    const file = this.files[0];
-    if(!file) return;
-    const fd = new FormData();
-    fd.append('policies_file', file);
-    try {
-      const body = await api('{{ route('dormitory-profile.policies-file') }}', { method: 'POST', body: fd });
-      $('policiesFileStatus').textContent = body.file_name;
-      $('policiesFileStatus').classList.add('uploaded');
-      $('policiesFileBtn').textContent = 'Replace';
-      toast('Policies file uploaded.');
-    } catch(e){ toast(e.message, true); }
-    this.value = '';
-  });
-
   // ===== Business Permit =====
   function renderBusinessPermitPreview(fileName, imageUrl){
     const box = $('businessPermitPreview');
@@ -943,7 +1097,7 @@
       const body = await api('{{ route('dormitory-profile.house-rules.store') }}', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rule_text: text }),
+        body: JSON.stringify({ rule_text: text, section: $('newRuleSection').value.trim() || null }),
       });
 
       document.getElementById('rulesEmptyMsg')?.remove();
@@ -963,6 +1117,12 @@
         </div>`;
       li.querySelector('.rule-text span').textContent = text;
       li.querySelector('.rule-text input').value = text;
+      if(body.rule.section){
+        const tag = document.createElement('em');
+        tag.className = 'rule-section';
+        tag.textContent = body.rule.section;
+        li.querySelector('.rule-text').prepend(tag);
+      }
       $('rulesList').appendChild(li);
       wireRuleRow(li);
       renumberRules();
@@ -1399,6 +1559,343 @@
   });
 
   render();
+})();
+</script>
+
+{{-- Room type add/edit --}}
+<div class="pm-modal" id="rtModal" role="dialog" aria-modal="true" aria-labelledby="rtModalTitle">
+  <div class="pm-modal-box">
+    <h3 id="rtModalTitle">Add Room Type</h3>
+    <div class="pm-error" id="rtError" role="alert"></div>
+    <div class="field">
+      <label for="rtName">Room type <span class="req">*</span></label>
+      <input type="text" id="rtName" maxlength="80" placeholder="e.g. Room with AC, 4 persons">
+    </div>
+    <div class="field">
+      <label for="rtLocation">Location</label>
+      <input type="text" id="rtLocation" maxlength="80" placeholder="e.g. Ground floor, 2nd to 5th floor">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="rtRate">Monthly rent (₱) <span class="req">*</span></label>
+        <input type="number" id="rtRate" min="0" step="0.01">
+      </div>
+      <div class="field">
+        <label for="rtMode">Charged</label>
+        <select id="rtMode">
+          <option value="per_bed">Per bed (each tenant pays this)</option>
+          <option value="per_room">Per room (split across the beds)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="rtMin">Persons (from)</label>
+        <input type="number" id="rtMin" min="1" max="50" placeholder="e.g. 10">
+      </div>
+      <div class="field">
+        <label for="rtMax">Persons (up to)</label>
+        <input type="number" id="rtMax" min="1" max="50" placeholder="e.g. 16">
+      </div>
+    </div>
+    <div class="field">
+      <label class="inline-check"><input type="checkbox" id="rtAircon"> Air-conditioned</label>
+    </div>
+    <div class="field">
+      <label for="rtDescription">Notes</label>
+      <input type="text" id="rtDescription" maxlength="255" placeholder="Optional">
+    </div>
+    <div class="pm-actions">
+      <button type="button" class="btn" id="rtCancel">Cancel</button>
+      <button type="button" class="btn primary" id="rtSave">Save</button>
+    </div>
+  </div>
+</div>
+
+{{-- Other charge add/edit --}}
+<div class="pm-modal" id="chModal" role="dialog" aria-modal="true" aria-labelledby="chModalTitle">
+  <div class="pm-modal-box">
+    <h3 id="chModalTitle">Add Charge</h3>
+    <div class="pm-error" id="chError" role="alert"></div>
+    <div class="field">
+      <label for="chName">Charge <span class="req">*</span></label>
+      <input type="text" id="chName" maxlength="150" placeholder="e.g. Lost or unreturned key (key duplication)">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="chAmount">Amount (₱)</label>
+        <input type="number" id="chAmount" min="0" step="0.01" placeholder="Blank if it varies">
+      </div>
+      <div class="field">
+        <label for="chNote">Amount note</label>
+        <input type="text" id="chNote" maxlength="100" placeholder="e.g. per month, Reasonable repair cost">
+      </div>
+    </div>
+    <div class="field">
+      <label for="chWhen">When it applies</label>
+      <input type="text" id="chWhen" maxlength="100" placeholder="e.g. Per violation, Upon loss or check-out">
+    </div>
+    <div class="pm-actions">
+      <button type="button" class="btn" id="chCancel">Cancel</button>
+      <button type="button" class="btn primary" id="chSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="rtData">{!! json_encode($roomTypes) !!}</script>
+<script type="application/json" id="chData">{!! json_encode($charges) !!}</script>
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+  const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+  const EDIT_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
+  const DELETE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6"/></svg>';
+
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const peso = (n) => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const numOrNull = (v) => v === '' || v === null ? null : Number(v);
+
+  function toast(msg, isError){
+    const t = $('toast');
+    if(!t) return alert(msg);
+    t.textContent = msg;
+    t.classList.toggle('error', !!isError);
+    t.classList.add('visible');
+    clearTimeout(window._nestToastTimer);
+    window._nestToastTimer = setTimeout(() => t.classList.remove('visible'), 3200);
+  }
+
+  async function send(url, method, payload){
+    const res = await fetch(url, {
+      method,
+      headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: payload ? JSON.stringify(payload) : null,
+    });
+    let body = {};
+    try { body = await res.json(); } catch(e) {}
+    if(!res.ok){
+      const first = body.errors ? Object.values(body.errors)[0][0] : null;
+      throw new Error(first || body.message || 'Something went wrong.');
+    }
+    return body;
+  }
+
+  function openModal(m){ m.classList.add('open'); m.querySelector('input')?.focus(); }
+  function closeModal(m){ m.classList.remove('open'); }
+  [$('rtModal'), $('chModal')].forEach(m => {
+    m.addEventListener('click', (e) => { if(e.target === m) closeModal(m); });
+    m.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeModal(m); });
+  });
+
+  // ===== Room Types & Rates =====
+  let roomTypes = JSON.parse($('rtData').textContent || '[]');
+  let editingRoomType = null;
+
+  function renderRoomTypes(){
+    const list = $('roomTypeList');
+    if(!roomTypes.length){
+      list.innerHTML = '<li class="pm-empty">No room types yet. Add your dorm\'s room types and rates, then assign them to rooms on the Vacancy Monitoring page.</li>';
+      return;
+    }
+    list.innerHTML = roomTypes.map(t => `
+      <li class="pm-row">
+        <span class="pm-logo cash" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a2 2 0 012-2h14a2 2 0 012 2v6M3 18h18M3 18v2M21 18v2M7 10V7a2 2 0 012-2h6a2 2 0 012 2v3"/></svg></span>
+        <div class="pm-info">
+          <div class="pm-name">${esc(t.name)} ${t.location ? `<span class="pm-type">${esc(t.location)}</span>` : ''}</div>
+          <div class="pm-detail">${esc(t.price_label)}${t.capacity_label ? ' · ' + esc(t.capacity_label) : ''}${t.has_aircon ? ' · Air-conditioned' : ''} · ${t.rooms_count} room${t.rooms_count === 1 ? '' : 's'}</div>
+        </div>
+        <div class="rule-actions">
+          <button type="button" class="icon-btn" data-edit-rt="${t.id}" title="Edit" aria-label="Edit ${esc(t.name)}">${EDIT_ICON}</button>
+          <button type="button" class="icon-btn danger" data-delete-rt="${t.id}" title="Delete" aria-label="Delete ${esc(t.name)}">${DELETE_ICON}</button>
+        </div>
+      </li>`).join('');
+  }
+
+  function openRoomType(t){
+    editingRoomType = t || null;
+    $('rtModalTitle').textContent = t ? 'Edit Room Type' : 'Add Room Type';
+    $('rtError').style.display = 'none';
+    $('rtName').value = t?.name ?? '';
+    $('rtLocation').value = t?.location ?? '';
+    $('rtRate').value = t?.monthly_rate ?? '';
+    $('rtMode').value = t?.pricing_mode ?? 'per_bed';
+    $('rtMin').value = t?.min_capacity ?? '';
+    $('rtMax').value = t?.max_capacity ?? '';
+    $('rtAircon').checked = !!t?.has_aircon;
+    $('rtDescription').value = t?.description ?? '';
+    openModal($('rtModal'));
+  }
+
+  $('addRoomTypeBtn').addEventListener('click', () => openRoomType(null));
+  $('rtCancel').addEventListener('click', () => closeModal($('rtModal')));
+
+  $('rtSave').addEventListener('click', async function(){
+    const payload = {
+      name: $('rtName').value.trim(),
+      location: $('rtLocation').value.trim() || null,
+      monthly_rate: $('rtRate').value,
+      pricing_mode: $('rtMode').value,
+      min_capacity: numOrNull($('rtMin').value),
+      max_capacity: numOrNull($('rtMax').value),
+      has_aircon: $('rtAircon').checked,
+      description: $('rtDescription').value.trim() || null,
+    };
+    this.disabled = true;
+    try {
+      const url = '/dormitory-profile/room-types' + (editingRoomType ? '/' + editingRoomType.id : '');
+      const body = await send(url, editingRoomType ? 'PATCH' : 'POST', payload);
+      roomTypes = editingRoomType
+        ? roomTypes.map(t => t.id === editingRoomType.id ? body.room_type : t)
+        : roomTypes.concat(body.room_type);
+      renderRoomTypes();
+      closeModal($('rtModal'));
+      toast(editingRoomType && editingRoomType.rooms_count ? body.message + ' Rooms of this type were re-priced; existing contracts keep their rate.' : body.message);
+    } catch(e){
+      $('rtError').textContent = e.message;
+      $('rtError').style.display = 'block';
+    }
+    this.disabled = false;
+  });
+
+  $('roomTypeList').addEventListener('click', async (e) => {
+    const edit = e.target.closest('[data-edit-rt]');
+    const del = e.target.closest('[data-delete-rt]');
+    if(edit) return openRoomType(roomTypes.find(t => t.id === Number(edit.dataset.editRt)));
+    if(!del) return;
+    const t = roomTypes.find(x => x.id === Number(del.dataset.deleteRt));
+    if(!confirm(`Delete the room type "${t.name}"?`)) return;
+    try {
+      const body = await send('/dormitory-profile/room-types/' + t.id, 'DELETE');
+      roomTypes = roomTypes.filter(x => x.id !== t.id);
+      renderRoomTypes();
+      toast(body.message);
+    } catch(err){ toast(err.message, true); }
+  });
+
+  // ===== Rental Policy =====
+  function updateRentHint(){
+    const day = Number($('polDueDay').value) || 1;
+    const grace = Number($('polGrace').value) || 0;
+    const pct = Number($('polPenalty').value) || 0;
+    const ord = (n) => n + (['th','st','nd','rd'][(n % 100 - 20) % 10] || ['th','st','nd','rd'][n % 100] || 'th');
+    const last = day + grace;
+    $('polRentHint').textContent = pct > 0
+      ? `Rent is due on the ${ord(day)}. A tenant can pay until the ${ord(last)} without penalty; from the ${ord(last + 1)}, a one-time ${pct}% of the unpaid rent is added.`
+      : `Rent is due on the ${ord(day)}. No late penalty is charged.`;
+  }
+  ['polDueDay', 'polGrace', 'polPenalty'].forEach(id => $(id).addEventListener('input', updateRentHint));
+  updateRentHint();
+
+  $('savePolicyBtn').addEventListener('click', async function(){
+    const payload = {
+      representative_name: $('polRepName').value.trim() || null,
+      representative_position: $('polRepPosition').value.trim() || null,
+      facebook_page_name: $('polFbName').value.trim() || null,
+      facebook_url: $('polFbUrl').value.trim() || null,
+      website_url: $('polWebsite').value.trim() || null,
+      rent_due_day: $('polDueDay').value,
+      grace_period_days: $('polGrace').value,
+      late_penalty_percent: $('polPenalty').value,
+      minimum_stay_months: $('polMinStay').value,
+      move_out_notice_days: $('polMoveOut').value,
+      extension_notice_days: $('polExtend').value,
+      deposit_refund_days: $('polRefund').value,
+      reservation_validity_days: $('polReservation').value,
+      mid_month_move_in: $('polMidMonth').value,
+      water_included: $('polWater').checked,
+      electricity_included: $('polElectricity').checked,
+      wifi_included: $('polWifi').checked,
+      short_term_rate: numOrNull($('polShortTerm').value),
+      transient_rate: numOrNull($('polTransient').value),
+      rules_version: $('polRulesVersion').value.trim() || null,
+      fees_version: $('polFeesVersion').value.trim() || null,
+      documents_effective_date: $('polEffective').value || null,
+    };
+    this.disabled = true;
+    try {
+      const body = await send('/dormitory-profile/policy', 'POST', payload);
+      toast(body.message);
+    } catch(e){ toast(e.message, true); }
+    this.disabled = false;
+  });
+
+  // ===== Other Charges =====
+  let charges = JSON.parse($('chData').textContent || '[]');
+  let editingCharge = null;
+
+  function renderCharges(){
+    const list = $('chargeList');
+    if(!charges.length){
+      list.innerHTML = '<li class="pm-empty">No other charges listed. Add the fees from your Payments and Fees Schedule.</li>';
+      return;
+    }
+    list.innerHTML = charges.map(c => `
+      <li class="pm-row">
+        <span class="pm-logo cash" aria-hidden="true">₱</span>
+        <div class="pm-info">
+          <div class="pm-name">${esc(c.name)}</div>
+          <div class="pm-detail">${esc(c.amount_label)}${c.when_applies ? ' · ' + esc(c.when_applies) : ''}</div>
+        </div>
+        <div class="rule-actions">
+          <button type="button" class="icon-btn" data-edit-ch="${c.id}" title="Edit" aria-label="Edit ${esc(c.name)}">${EDIT_ICON}</button>
+          <button type="button" class="icon-btn danger" data-delete-ch="${c.id}" title="Delete" aria-label="Delete ${esc(c.name)}">${DELETE_ICON}</button>
+        </div>
+      </li>`).join('');
+  }
+
+  function openCharge(c){
+    editingCharge = c || null;
+    $('chModalTitle').textContent = c ? 'Edit Charge' : 'Add Charge';
+    $('chError').style.display = 'none';
+    $('chName').value = c?.name ?? '';
+    $('chAmount').value = c?.amount ?? '';
+    $('chNote').value = c?.amount_note ?? '';
+    $('chWhen').value = c?.when_applies ?? '';
+    openModal($('chModal'));
+  }
+
+  $('addChargeBtn').addEventListener('click', () => openCharge(null));
+  $('chCancel').addEventListener('click', () => closeModal($('chModal')));
+
+  $('chSave').addEventListener('click', async function(){
+    const payload = {
+      name: $('chName').value.trim(),
+      amount: numOrNull($('chAmount').value),
+      amount_note: $('chNote').value.trim() || null,
+      when_applies: $('chWhen').value.trim() || null,
+    };
+    this.disabled = true;
+    try {
+      const url = '/dormitory-profile/charges' + (editingCharge ? '/' + editingCharge.id : '');
+      const body = await send(url, editingCharge ? 'PATCH' : 'POST', payload);
+      charges = editingCharge ? charges.map(c => c.id === editingCharge.id ? body.charge : c) : charges.concat(body.charge);
+      renderCharges();
+      closeModal($('chModal'));
+      toast(body.message);
+    } catch(e){
+      $('chError').textContent = e.message;
+      $('chError').style.display = 'block';
+    }
+    this.disabled = false;
+  });
+
+  $('chargeList').addEventListener('click', async (e) => {
+    const edit = e.target.closest('[data-edit-ch]');
+    const del = e.target.closest('[data-delete-ch]');
+    if(edit) return openCharge(charges.find(c => c.id === Number(edit.dataset.editCh)));
+    if(!del) return;
+    const c = charges.find(x => x.id === Number(del.dataset.deleteCh));
+    if(!confirm(`Delete the charge "${c.name}"?`)) return;
+    try {
+      const body = await send('/dormitory-profile/charges/' + c.id, 'DELETE');
+      charges = charges.filter(x => x.id !== c.id);
+      renderCharges();
+      toast(body.message);
+    } catch(err){ toast(err.message, true); }
+  });
+
+  renderRoomTypes();
+  renderCharges();
 })();
 </script>
 </body>

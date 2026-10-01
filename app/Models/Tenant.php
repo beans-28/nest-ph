@@ -20,6 +20,7 @@ class Tenant extends Model
         'email',
         'emergency_contact_name',
         'emergency_contact_number',
+        'emergency_billing_reminders',
         'is_blacklisted',
         'status',
         'portal_restricted',
@@ -36,6 +37,7 @@ class Tenant extends Model
 
     protected $casts = [
         'is_blacklisted' => 'boolean',
+        'emergency_billing_reminders' => 'boolean',
         'portal_restricted' => 'boolean',
         'escalation_paused' => 'boolean',
         'date_of_birth' => 'date',

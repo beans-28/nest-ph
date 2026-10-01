@@ -171,6 +171,7 @@ class TenantController extends Controller
             'tenant_type' => $tenant->tenant_type,
             'emergency_contact_name' => $tenant->emergency_contact_name,
             'emergency_contact_number' => $tenant->emergency_contact_number,
+            'emergency_billing_reminders' => (bool) $tenant->emergency_billing_reminders,
             'status' => $tenant->status,
             'is_blacklisted' => (bool) $tenant->is_blacklisted,
             'deactivation_reason' => $tenant->deactivation_reason,
@@ -325,6 +326,9 @@ class TenantController extends Controller
             'email' => ['required', 'email', 'max:150', Rule::unique('tenants', 'email')->ignore($tenant->id)],
             'emergency_contact_name' => ['nullable', 'string', 'max:150'],
             'emergency_contact_number' => ['nullable', 'string', 'max:20'],
+            // Tenant Agreement 9.3/9.4: on only with the emergency contact's
+            // written consent; turned off when they ask to opt out.
+            'emergency_billing_reminders' => ['sometimes', 'boolean'],
             'tenant_type' => ['nullable', Rule::in(self::TENANT_TYPES)],
             'id_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
             'signed_contract' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],

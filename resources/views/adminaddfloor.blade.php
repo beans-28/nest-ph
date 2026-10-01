@@ -224,15 +224,20 @@
       <div class="modal-field"><label for="newRoomFloor">Floor</label><input type="text" id="newRoomFloor" placeholder="e.g. 1"></div>
     </div>
     <div class="modal-row">
-      <div class="modal-field"><label for="newRoomType">Room Type</label><input type="text" id="newRoomType" placeholder="e.g. Standard"></div>
-      <div class="modal-field"><label for="newRoomRate">Monthly Rate</label><input type="number" id="newRoomRate" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="modal-field">
+        <label for="newRoomTypeSelect">Room Type</label>
+        <select id="newRoomTypeSelect"></select>
+      </div>
+      <div class="modal-field" id="newRoomRateField"><label for="newRoomRate">Monthly Rate (whole room)</label><input type="number" id="newRoomRate" min="0" step="0.01" placeholder="0.00"></div>
     </div>
+    <p class="modal-hint" id="roomTypePriceHint"></p>
+    <div class="modal-field" id="customRoomTypeField" style="display:none;"><label for="newRoomType">Custom type name</label><input type="text" id="newRoomType" placeholder="e.g. Standard"></div>
     <div class="modal-row">
       <div class="modal-field"><label for="newRoomUtility">Monthly Utilities</label><input type="number" id="newRoomUtility" min="0" step="0.01" placeholder="0.00"></div>
       <div class="modal-field"><label for="newRoomWifi">Monthly WiFi</label><input type="number" id="newRoomWifi" min="0" step="0.01" placeholder="0.00"></div>
     </div>
     <p class="modal-hint">Whole-room amounts, split evenly by the number of beds, same as rent. Changes apply from each tenant's next generated bill.</p>
-    <div class="modal-field"><label for="newRoomBedCount">Number of Beds</label><input type="number" id="newRoomBedCount" min="1" max="8" value="2"></div>
+    <div class="modal-field"><label for="newRoomBedCount">Number of Beds</label><input type="number" id="newRoomBedCount" min="1" max="20" value="2"></div>
     <div class="modal-field"><label id="bedStatusLabel">Bed Status</label><div class="bed-status-rows" id="bedStatusRows" role="group" aria-labelledby="bedStatusLabel"></div></div>
 
     <p class="modal-error" id="roomModalError" role="alert"></p>
@@ -244,6 +249,7 @@
 </div>
 
 <script id="floor-groups-data" type="application/json">{!! json_encode($floorGroups) !!}</script>
+<script id="room-types-data" type="application/json">{!! json_encode($roomTypes) !!}</script>
 <script>
   const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
 
@@ -398,7 +404,7 @@
             <div class="room-card-head">
               <div>
                 <div class="room-title">Room ${room.room_no}</div>
-                <div class="room-meta">${room.room_type ? room.room_type + ' · ' : ''}₱${Number(room.monthly_rate).toLocaleString(undefined, {minimumFractionDigits:2})}</div>
+                <div class="room-meta">${room.room_type ? room.room_type + ' · ' : ''}₱${Number(room.price_per_bed ?? room.monthly_rate).toLocaleString(undefined, {minimumFractionDigits:2})} per bed</div>
                 <div class="room-meta">Utilities ₱${Number(room.monthly_utility_cost || 0).toLocaleString(undefined, {minimumFractionDigits:2})} · WiFi ₱${Number(room.monthly_wifi_cost || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</div>
               </div>
               <div class="room-actions">
@@ -554,6 +560,47 @@
   const newRoomNoInput = document.getElementById('newRoomNo');
   const newRoomFloorInput = document.getElementById('newRoomFloor');
   const newRoomTypeInput = document.getElementById('newRoomType');
+  const newRoomTypeSelect = document.getElementById('newRoomTypeSelect');
+  const newRoomRateField = document.getElementById('newRoomRateField');
+  const customRoomTypeField = document.getElementById('customRoomTypeField');
+  const roomTypePriceHint = document.getElementById('roomTypePriceHint');
+  const ROOM_TYPES = JSON.parse(document.getElementById('room-types-data').textContent || '[]');
+
+  // Room types are set up in Dormitory Profile > Room Types & Rates. Picking
+  // one fills in the name and price; "Custom" keeps the old free-text name
+  // and whole-room price for rooms that don't fit any type.
+  function buildRoomTypeOptions(selectedId){
+    const options = ROOM_TYPES.map(t => {
+      const where = t.location ? ` (${t.location})` : '';
+      return `<option value="${t.id}">${escapeHtml(t.name + where)} · ${escapeHtml(t.price_label)}</option>`;
+    });
+    options.unshift(ROOM_TYPES.length
+      ? '<option value="">Custom (no room type)</option>'
+      : '<option value="">Custom (add room types in Dormitory Profile)</option>');
+    newRoomTypeSelect.innerHTML = options.join('');
+    // null = a new room (default to the first type); '' = an existing room with no type.
+    newRoomTypeSelect.value = selectedId === null ? (ROOM_TYPES[0] ? String(ROOM_TYPES[0].id) : '') : String(selectedId);
+    syncRoomTypeFields();
+  }
+
+  function escapeHtml(v){
+    return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function syncRoomTypeFields(){
+    const type = ROOM_TYPES.find(t => String(t.id) === newRoomTypeSelect.value);
+    newRoomRateField.style.display = type ? 'none' : '';
+    customRoomTypeField.style.display = type ? 'none' : '';
+    if(type){
+      const beds = Math.max(1, parseInt(newRoomBedCountInput.value) || 1);
+      const perBed = type.pricing_mode === 'per_room' ? type.monthly_rate / beds : type.monthly_rate;
+      const cap = type.capacity_label ? ` Usually ${type.capacity_label}.` : '';
+      roomTypePriceHint.textContent = `Each tenant pays ₱${perBed.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} per month.${cap}`;
+    } else {
+      roomTypePriceHint.textContent = 'Custom rooms use the whole-room rate below, split evenly by the number of beds.';
+    }
+  }
+  newRoomTypeSelect.addEventListener('change', syncRoomTypeFields);
   const newRoomRateInput = document.getElementById('newRoomRate');
   const newRoomUtilityInput = document.getElementById('newRoomUtility');
   const newRoomWifiInput = document.getElementById('newRoomWifi');
@@ -562,7 +609,7 @@
   const confirmAddRoomBtn = document.getElementById('confirmAddRoom');
 
   function buildBedStatusRows(existingBeds){
-    const count = Math.max(1, Math.min(8, parseInt(newRoomBedCountInput.value) || 1));
+    const count = Math.max(1, Math.min(20, parseInt(newRoomBedCountInput.value) || 1));
     bedStatusRows.innerHTML = '';
     for(let i = 1; i <= count; i++){
       const preset = (existingBeds && existingBeds[i-1]) ? existingBeds[i-1].status : 'vacant';
@@ -581,7 +628,7 @@
     }
   }
 
-  newRoomBedCountInput.addEventListener('input', () => buildBedStatusRows());
+  newRoomBedCountInput.addEventListener('input', () => { buildBedStatusRows(); syncRoomTypeFields(); });
 
   function openAddRoomModal(floorLabel){
     const normalizedFloorLabel = String(floorLabel).trim();
@@ -596,9 +643,10 @@
     newRoomFloorInput.value = normalizedFloorLabel;
     newRoomTypeInput.value = '';
     newRoomRateInput.value = '';
+    newRoomBedCountInput.value = 2;
+    buildRoomTypeOptions(null);
     newRoomUtilityInput.value = '';
     newRoomWifiInput.value = '';
-    newRoomBedCountInput.value = 2;
     buildBedStatusRows();
     addRoomModal.classList.add('open');
     newRoomNoInput.focus();
@@ -617,9 +665,10 @@
     newRoomFloorInput.value = room.floor;
     newRoomTypeInput.value = room.room_type || '';
     newRoomRateInput.value = room.monthly_rate;
+    newRoomBedCountInput.value = room.beds.length;
+    buildRoomTypeOptions(room.room_type_id ?? '');
     newRoomUtilityInput.value = Number(room.monthly_utility_cost) || '';
     newRoomWifiInput.value = Number(room.monthly_wifi_cost) || '';
-    newRoomBedCountInput.value = room.beds.length;
     buildBedStatusRows(room.beds);
     addRoomModal.classList.add('open');
     newRoomNoInput.focus();
@@ -630,6 +679,7 @@
   confirmAddRoomBtn.addEventListener('click', async () => {
     const room_no = newRoomNoInput.value.trim();
     const floor = String(newRoomFloorInput.value).trim();
+    const room_type_id = newRoomTypeSelect.value ? Number(newRoomTypeSelect.value) : null;
     const room_type = newRoomTypeInput.value.trim();
     const monthly_rate = parseFloat(newRoomRateInput.value) || 0;
     const monthly_utility_cost = parseFloat(newRoomUtilityInput.value) || 0;
@@ -642,7 +692,7 @@
       return;
     }
 
-    const payload = { room_no, floor, room_type, monthly_rate, monthly_utility_cost, monthly_wifi_cost, bed_count: bed_statuses.length, bed_statuses };
+    const payload = { room_no, floor, room_type_id, room_type, monthly_rate, monthly_utility_cost, monthly_wifi_cost, bed_count: bed_statuses.length, bed_statuses };
 
     try {
       if(roomModalMode === 'create'){
@@ -655,7 +705,7 @@
         }
         group.rooms.push({
           id: created.id, room_no: created.room_no, floor: created.floor,
-          room_type: created.room_type, monthly_rate: created.monthly_rate,
+          room_type_id: created.room_type_id, room_type: created.room_type, monthly_rate: created.monthly_rate, price_per_bed: created.price_per_bed,
           monthly_utility_cost: created.monthly_utility_cost, monthly_wifi_cost: created.monthly_wifi_cost, status: created.status,
           beds: created.beds.map(b => ({ id: b.id, bed_label: b.bed_label, status: b.status })),
         });
@@ -675,7 +725,7 @@
         }
         newGroup.rooms.push({
           id: updated.id, room_no: updated.room_no, floor: updated.floor,
-          room_type: updated.room_type, monthly_rate: updated.monthly_rate,
+          room_type_id: updated.room_type_id, room_type: updated.room_type, monthly_rate: updated.monthly_rate, price_per_bed: updated.price_per_bed,
           monthly_utility_cost: updated.monthly_utility_cost, monthly_wifi_cost: updated.monthly_wifi_cost, status: updated.status,
           beds: updated.beds.map(b => ({ id: b.id, bed_label: b.bed_label, status: b.status })),
         });

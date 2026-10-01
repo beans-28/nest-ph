@@ -180,6 +180,7 @@ class PublicController extends Controller
             'floor' => $room->floor?->floor_number,
             'room_type' => $room->room_type,
             'monthly_rate' => $room->monthly_rate,
+            'price_per_bed' => $room->perBedRate(),
             'vr_caption' => $room->vr_caption,
             'tour' => $this->buildTourConfig($room),
         ]);
@@ -211,6 +212,7 @@ class PublicController extends Controller
                 'floor' => $room->floor?->floor_number,
                 'room_type' => $room->room_type,
                 'monthly_rate' => $room->monthly_rate,
+                'price_per_bed' => $room->perBedRate(),
                 'vr_caption' => $room->vr_caption,
                 'vacant_beds' => $room->vacant_beds_count,
                 'capacity' => $room->beds_count,
@@ -339,7 +341,7 @@ class PublicController extends Controller
     {
         $profile = DormitoryProfile::current();
 
-        $rooms = Room::withCount([
+        $rooms = Room::with('roomType')->withCount([
             'beds',
             'beds as vacant_beds_count' => fn ($q) => $q->where('status', 'vacant'),
         ])->get();
@@ -357,7 +359,7 @@ class PublicController extends Controller
             'is_bir_verified' => $profile->isBirVerified(),
             'amenities' => \App\Models\DormitoryAmenity::where('is_enabled', true)->orderBy('sort_order')->pluck('label'),
             'house_rules_list' => \App\Models\DormitoryHouseRule::orderBy('sort_order')->orderBy('id')->pluck('rule_text'),
-            'policies_file_url' => $profile->policies_file_path ? route('public.dorminfo.file') : null,
+            'policies_file_url' => route('public.dorminfo.file'),
             'payments_and_fees' => $profile->payments_and_fees,
             'house_rules' => $profile->house_rules,
             'checkout_procedures' => $profile->checkout_procedures,
@@ -366,7 +368,8 @@ class PublicController extends Controller
                 'total_beds' => $rooms->sum('beds_count'),
                 'available_beds' => $rooms->sum('vacant_beds_count'),
                 'floors' => Floor::count(),
-                'starting_rate' => $rooms->where('monthly_rate', '>', 0)->min('monthly_rate'),
+                // Cheapest bed, not cheapest whole room: what one tenant pays.
+                'starting_rate' => $rooms->map(fn ($room) => $room->perBedRate())->filter(fn ($rate) => $rate > 0)->min(),
             ],
         ]);
     }
@@ -469,41 +472,75 @@ class PublicController extends Controller
      * generated live (contract-preview / contract-sign); the old
      * uploaded-template routes were removed in v38.
      */
+    /**
+     * The public "Dorm Info" page. Restored: this method was removed by
+     * accident in commit bd1dec5 while /dorm-info still routes here, so the
+     * page returned a server error.
+     */
+    public function dormInfoPage(): \Illuminate\View\View
+    {
+        $profile = DormitoryProfile::current();
+
+        // Reviews & Ratings (Table 41) — the full breakdown bar + individual
+        // review list live here, on the "listing" page, rather than the
+        // homepage, which only carries the lightweight average+count teaser.
+        $reviewStats = \App\Models\Review::aggregate();
+
+        return view('publicdorminfo', [
+            'dormName' => $profile->dorm_name,
+            'description' => $profile->description,
+            'address' => $profile->address,
+            'contactNumber' => $profile->contact_number,
+            'contactEmail' => $profile->contact_email,
+            'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
+            'isBirVerified' => $profile->isBirVerified(),
+            'birRegistrationImageUrl' => $this->isImageFile($profile->bir_registration_path)
+                ? Storage::disk('public')->url($profile->bir_registration_path)
+                : null,
+            'amenitiesList' => \App\Models\DormitoryAmenity::where('is_enabled', true)->orderBy('sort_order')->get(),
+            'houseRulesList' => \App\Models\DormitoryHouseRule::orderBy('sort_order')->orderBy('id')->get(),
+            // Always the dorm's Rules and Regulations (see policiesFileView()).
+            'policiesFileUrl' => route('public.dorminfo.file'),
+            'paymentsAndFees' => $profile->payments_and_fees,
+            'houseRules' => $profile->house_rules,
+            'checkoutProcedures' => $profile->checkout_procedures,
+            'averageRating' => $reviewStats['average'],
+            'reviewCount' => $reviewStats['count'],
+            'reviewBreakdown' => \App\Models\Review::breakdown(),
+            'reviews' => \App\Models\Review::where('is_approved', true)
+                ->with('tenant')
+                ->latest()
+                ->take(20)
+                ->get(),
+        ]);
+    }
+
     public function applyPage(): \Illuminate\View\View
     {
-        return view('publicapply');
+        return view('publicapply', [
+            'minimumStayMonths' => DormitoryProfile::current()->minimum_stay_months,
+        ]);
     }
 
     /**
-     * Streams the policies PDF for inline viewing (used as the iframe src on
-     * the Dorm Info page). Reads the file directly through Storage instead of
-     * the public/storage symlink — sidesteps a known bug where PHP's built-in
-     * dev server (php artisan serve) returns 403 for symlinked paths on
-     * Windows, even when the file exists and is readable.
+     * The Dorm Info page's policies document: the dorm's Dormitory Rules and
+     * Regulations, the same document every tenant signs (unsigned copy). It
+     * replaced the old uploaded "policies file" so the public page always
+     * shows the current rules. The Tenant Agreement and Payments and Fees
+     * Schedule are NOT public: the schedule lists the owner's bank and
+     * GCash accounts, so applicants only see those on the Apply page.
      */
-    public function policiesFileView()
+    public function policiesFileView(\App\Services\TenancyDocuments $documents)
     {
-        $profile = DormitoryProfile::current();
-
-        abort_unless($profile->policies_file_path, 404);
-
-        return Storage::disk('public')->response($profile->policies_file_path);
+        return $documents->pdf($documents->data(), 'rules')
+            ->stream('Dormitory-Rules-and-Regulations.pdf');
     }
 
-    /**
-     * Same file, but forces a real download (Content-Disposition: attachment)
-     * with a friendly filename, for the "Download PDF" button.
-     */
-    public function policiesFileDownload()
+    /** Same document as a download, for the "Download PDF" button. */
+    public function policiesFileDownload(\App\Services\TenancyDocuments $documents)
     {
-        $profile = DormitoryProfile::current();
-
-        abort_unless($profile->policies_file_path, 404);
-
-        return Storage::disk('public')->download(
-            $profile->policies_file_path,
-            'Dormitory-Policies-and-Rules.pdf'
-        );
+        return $documents->pdf($documents->data(), 'rules')
+            ->download('Dormitory-Rules-and-Regulations.pdf');
     }
 
     private function isImageFile(?string $path): bool

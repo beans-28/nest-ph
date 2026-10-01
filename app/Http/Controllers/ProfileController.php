@@ -12,13 +12,16 @@ use Illuminate\View\View;
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * The starter-kit profile page's form pieces were removed long ago
+     * (profile/partials), so showing it crashed. Tenants manage their
+     * details on the Account page and admins in their own screens, so
+     * /profile now sends each to the right place.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): RedirectResponse
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        return $request->user()?->tenant
+            ? Redirect::route('tenant.account')
+            : Redirect::route('dashboard');
     }
 
     /**

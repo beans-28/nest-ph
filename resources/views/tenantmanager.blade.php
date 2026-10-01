@@ -306,6 +306,12 @@
         <div class="fld"><label for="editEmergencyName">Emergency Contact Name</label><input type="text" id="editEmergencyName"></div>
         <div class="fld"><label for="editEmergencyNumber">Emergency Contact Number</label><input type="text" id="editEmergencyNumber"></div>
       </div>
+      <div class="fld">
+        <label style="display:flex;gap:8px;align-items:flex-start;font-weight:500;text-transform:none;letter-spacing:0;">
+          <input type="checkbox" id="editEmergencyReminders" style="width:16px;height:16px;margin-top:2px;">
+          <span>Send billing reminders to the emergency contact. Turn on only if they agreed in writing (the consent line in the Tenant Agreement). Turn off if they ask to stop.</span>
+        </label>
+      </div>
       <div class="modal-section-title">Documents (leave blank to keep existing)</div>
       <div class="fld"><label for="editIdDocument">Replace Valid ID</label><input type="file" id="editIdDocument" accept=".pdf,.jpg,.jpeg,.png"></div>
       <div class="fld"><label for="editSignedContract">Replace Signed Contract</label><input type="file" id="editSignedContract" accept=".pdf,.jpg,.jpeg,.png"></div>
@@ -638,6 +644,7 @@
           <div class="kv">
             <div><div class="k">Name</div>${val(t.emergency_contact_name)}</div>
             <div><div class="k">Number</div>${val(t.emergency_contact_number)}</div>
+            <div><div class="k">Billing reminders</div>${t.emergency_billing_reminders ? 'On (consented)' : 'Off'}</div>
           </div>
         </div>
         <div class="sec">
@@ -796,6 +803,7 @@
       $('editEmail').value = t.email ?? '';
       $('editEmergencyName').value = t.emergency_contact_name ?? '';
       $('editEmergencyNumber').value = t.emergency_contact_number ?? '';
+      $('editEmergencyReminders').checked = !!t.emergency_billing_reminders;
       $('editIdDocument').value = '';
       $('editSignedContract').value = '';
       $('editModal').classList.add('open');
@@ -820,6 +828,7 @@
     form.append('email', $('editEmail').value.trim());
     form.append('emergency_contact_name', $('editEmergencyName').value.trim());
     form.append('emergency_contact_number', $('editEmergencyNumber').value.trim());
+    form.append('emergency_billing_reminders', $('editEmergencyReminders').checked ? '1' : '0');
     if($('editIdDocument').files[0]) form.append('id_document', $('editIdDocument').files[0]);
     if($('editSignedContract').files[0]) form.append('signed_contract', $('editSignedContract').files[0]);
 
