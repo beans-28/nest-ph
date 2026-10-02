@@ -102,7 +102,8 @@ class VrTourController extends Controller
             'v_offset' => ['nullable', 'numeric', 'between:-90,90'],
         ]);
 
-        $size = @getimagesize(Storage::disk('public')->path($scene->panorama_path));
+        $bytes = Storage::disk('public')->get($scene->panorama_path);
+        $size = $bytes ? @getimagesizefromstring($bytes) : false;
         $ratio = ($size && $size[1] != 0) ? $size[0] / $size[1] : 2;
 
         $haov = (float) $data['haov'];

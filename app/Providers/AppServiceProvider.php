@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\DormitoryProfile;
 use App\Rules\HasUppercase;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -41,13 +42,9 @@ class AppServiceProvider extends ServiceProvider
                     $brand = [
                         'brandDormName' => $profile->dorm_name ?: 'NEST.PH',
                         'brandLogoUrl' => $profile->brandLogoUrl(),
-                        // PDFs can't load web links, so they get the file on disk.
-                        'brandLogoFile' => $profile->brand_logo_path && is_file(storage_path('app/public/'.$profile->brand_logo_path))
-                            ? storage_path('app/public/'.$profile->brand_logo_path)
-                            : null,
                     ];
                 } catch (\Throwable $e) {
-                    $brand = ['brandDormName' => 'NEST.PH', 'brandLogoUrl' => null, 'brandLogoFile' => null];
+                    $brand = ['brandDormName' => 'NEST.PH', 'brandLogoUrl' => null];
                 }
                 // nestph.png is white (for green bars); light surfaces such as
                 // cards and the browser tab need the green version instead.
@@ -55,6 +52,25 @@ class AppServiceProvider extends ServiceProvider
                 $brand['brandFaviconUrl'] = $brand['brandLogoOnLightUrl'];
             }
             $view->with($brand);
+        });
+
+        // PDFs can't load web links, so they get the logo embedded as a data
+        // URI. Only PDF views pay for reading the file from storage.
+        View::composer('pdfs.*', function ($view) {
+            static $logo = false;
+            if ($logo === false) {
+                $logo = null;
+                try {
+                    $path = DormitoryProfile::current()->brand_logo_path;
+                    $disk = Storage::disk('public');
+                    if ($path && $disk->exists($path)) {
+                        $logo = 'data:'.($disk->mimeType($path) ?: 'image/png').';base64,'.base64_encode($disk->get($path));
+                    }
+                } catch (\Throwable $e) {
+                    $logo = null;
+                }
+            }
+            $view->with('brandLogoFile', $logo);
         });
     }
 }

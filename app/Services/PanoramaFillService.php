@@ -68,31 +68,29 @@ class PanoramaFillService
      */
     private function shrinkIfTooBig(VrScene $scene): ?string
     {
-        $source = Storage::disk('public')->path($scene->panorama_path);
-        $size = @getimagesize($source);
+        // Read through the disk (not a file path) so this works when uploads
+        // live in cloud storage instead of on the server.
+        $bytes = Storage::disk('public')->get($scene->panorama_path);
+        $size = $bytes ? @getimagesizefromstring($bytes) : false;
 
         if (! $size || $size[0] <= self::MAX_SIDE) {
             return null;
         }
 
-        $photo = @imagecreatefromstring(file_get_contents($source));
+        $photo = @imagecreatefromstring($bytes);
         if (! $photo) {
             throw new \RuntimeException('Could not read the panorama image.');
         }
 
         $small = imagescale($photo, self::MAX_SIDE, (int) round(self::MAX_SIDE * $size[1] / $size[0]), IMG_BICUBIC_FIXED);
 
-        $path = 'vr-scenes/filled/' . Str::uuid() . '.jpg';
-        Storage::disk('public')->makeDirectory('vr-scenes/filled');
-        imagejpeg($small, Storage::disk('public')->path($path), 88);
-
-        return $path;
+        return $this->saveJpeg($small, 88);
     }
 
     private function render(VrScene $scene): string
     {
-        $source = Storage::disk('public')->path($scene->panorama_path);
-        $photo = @imagecreatefromstring(file_get_contents($source));
+        $bytes = Storage::disk('public')->get($scene->panorama_path);
+        $photo = $bytes ? @imagecreatefromstring($bytes) : false;
 
         if (! $photo) {
             throw new \RuntimeException('Could not read the panorama image.');
@@ -128,9 +126,21 @@ class PanoramaFillService
         // Floor: sample a strip just inside the photo's bottom edge.
         $this->paintCap($out, $bandBottom, $outH - $bandBottom, $feather, false);
 
+        return $this->saveJpeg($out, 85);
+    }
+
+    /**
+     * Saves an image as a JPEG on the public disk and returns its path. The
+     * JPEG is built in memory first so it works with cloud storage too.
+     */
+    private function saveJpeg(\GdImage $image, int $quality): string
+    {
+        ob_start();
+        imagejpeg($image, null, $quality);
+        $jpeg = ob_get_clean();
+
         $path = 'vr-scenes/filled/' . Str::uuid() . '.jpg';
-        Storage::disk('public')->makeDirectory('vr-scenes/filled');
-        imagejpeg($out, Storage::disk('public')->path($path), 85);
+        Storage::disk('public')->put($path, $jpeg);
 
         return $path;
     }
