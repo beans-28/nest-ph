@@ -170,7 +170,8 @@
         .listing-amenities{ display:flex; flex-wrap:wrap; gap:10px; }
         .listing-amenity{ display:flex; align-items:center; gap:6px; background:#f4f7f4; border-radius:8px; padding:7px 12px; font-size:12px; color:#33393c; }
         .listing-amenity svg{ width:15px; height:15px; color:#194e19; }
-        .listing-rules{ list-style:disc; padding-left:20px; margin:0; }
+        .listing-rules{ list-style:decimal; padding-left:24px; margin:0; }
+        .listing-rules-section{ font-size:13px; font-weight:700; color:#1f5130; margin:14px 0 4px 0; }
         .listing-rules li{ font-size:13px; color:#33393c; line-height:1.8; }
         .listing-badge img{ width:24px; height:24px; border-radius:4px; object-fit:cover; flex-shrink:0; }
                 .reviews-card{ background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,0.25); margin-bottom:24px; padding:24px 28px; }
@@ -234,11 +235,20 @@
                 @endif
                 @if($houseRulesList->count())
                     <div class="listing-section-label">House Rules</div>
-                    <ul class="listing-rules">
-                        @foreach($houseRulesList as $rule)
-                            <li>{{ $rule->rule_text }}</li>
-                        @endforeach
-                    </ul>
+                    {{-- Grouped and numbered like Pureza's Rules and Regulations
+                         document, so references such as "Section 7" read the same. --}}
+                    @php $ruleNo = 1; @endphp
+                    @foreach($houseRulesList->groupBy(fn ($rule) => $rule->section ?? '') as $section => $rules)
+                        @if($section !== '')
+                            <div class="listing-rules-section">{{ $section }}</div>
+                        @endif
+                        <ol class="listing-rules" start="{{ $ruleNo }}">
+                            @foreach($rules as $rule)
+                                <li>{{ $rule->rule_text }}</li>
+                            @endforeach
+                        </ol>
+                        @php $ruleNo += $rules->count(); @endphp
+                    @endforeach
                 @endif
             </div>
         </div>
