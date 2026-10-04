@@ -215,6 +215,8 @@
   .rejected-note{ display:block; margin-top:4px; font-size:11px; font-weight:600; color:#c0463d; }
   .rejection-notice{ background:#fdf0f0; border:1px solid #f3cccc; color:#b3261e; border-radius:8px; padding:12px 14px; font-size:13px; line-height:1.5; margin-bottom:18px; overflow-wrap:anywhere; }
   .rejection-notice strong, .rejection-notice span{ display:block; }
+  .modal-payment-row .proof-img-link{ display:block; margin:8px 0 4px; }
+  .modal-payment-row .proof-img{ display:block; width:100%; max-height:320px; object-fit:contain; border-radius:10px; border:1px solid #e6e1d3; background:#faf8f2; }
   .modal-payment-row .receipt-link{ color:var(--sage-700, #2f6f3c); font-weight:600; text-decoration:underline; text-underline-offset:2px; }
   .modal-payment-row .reject-reason{ color:#b3261e; justify-content:flex-start; gap:6px; }
   .cash-modal{ text-align:center; }
@@ -1018,6 +1020,11 @@
           <div><span>Method</span><span>${esc(p.payment_method_label || p.payment_method.replace('_',' '))}</span></div>
           <div><span>Status</span><span>${p.status}</span></div>
           ${p.status === 'rejected' && p.review_notes ? `<div class="reject-reason"><span>Reason:</span><span>${esc(p.review_notes)}</span></div>` : ''}
+          ${p.proof_url
+            ? (/\.(jpe?g|png|gif|webp)$/i.test(p.proof_url)
+                ? `<a class="proof-img-link" href="${p.proof_url}" target="_blank" rel="noopener"><img class="proof-img" src="${p.proof_url}" alt="Proof of payment"></a>`
+                : `<div><span>Proof</span><a class="receipt-link" href="${p.proof_url}" target="_blank" rel="noopener">Open PDF</a></div>`)
+            : ''}
           ${p.status === 'approved' ? `<div><span>Receipt</span><a class="receipt-link" href="/my/billing/payments/${p.id}/receipt">Download PDF</a></div>` : ''}
         </div>
       `).join('');

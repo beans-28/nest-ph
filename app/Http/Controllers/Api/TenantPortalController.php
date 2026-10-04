@@ -94,6 +94,7 @@ class TenantPortalController extends Controller
         $bill = $this->ownedStatement($request, $billingStatement);
 
         $bill->load('payments.reviewedBy:id,name');
+        $bill->payments->each(fn ($p) => $this->withProofUrl($p));
         $bill->penalties = Penalty::where('billing_id', $bill->id)
             ->with('damage:id,description,date_incurred')
             ->get();
