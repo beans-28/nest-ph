@@ -46,11 +46,11 @@
   .tc-cat{ font-size:11px; color:var(--text-mid); background:var(--sage-50); border-radius:6px; padding:3px 8px; display:inline-block; margin-top:6px; }
 
   .badge{ font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
-  .badge.open{ background:var(--blue-bg); color:var(--blue); }
-  .badge.seen{ background:var(--purple-bg); color:var(--purple); }
+  .badge.open{ background:var(--tk-pending-bg); color:var(--tk-pending); }
   .badge.in_progress{ background:var(--orange-bg); color:var(--orange); }
   .badge.resolved{ background:var(--sage-100); color:var(--sage-700); }
-  .badge.rejected{ background:var(--red-bg); color:var(--red); }
+  .badge.closed{ background:var(--tk-closed-bg); color:var(--tk-closed); }
+  .tc-delay{ font-size:12.5px; color:var(--tk-soon); background:var(--tk-soon-bg); border-radius:8px; padding:8px 12px; margin-top:10px; }
 
   .tc-gallery{ display:flex; gap:8px; flex-wrap:wrap; margin:14px 0; }
   .tc-gallery img{ width:76px; height:76px; object-fit:cover; border-radius:8px; border:1px solid var(--border); cursor:pointer; }
@@ -77,6 +77,9 @@
   .modal-box{ background:#fff; border-radius:16px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; padding:26px 28px; }
   .modal-box h2{ font-size:19px; font-weight:700; color:var(--green-accent); margin:0 0 20px 0; }
   .fld{ margin-bottom:16px; }
+  .report-privacy{ margin:-6px 0 16px; font-size:12.5px; color:var(--text-mid); }
+  .tc-urgent{ font-size:11.5px; font-weight:700; color:var(--green-accent); background:var(--sage-50); border:1px solid currentColor; border-radius:6px; padding:2px 8px; display:inline-block; margin-top:6px; }
+  .tc-report{ font-size:12px; color:var(--text-mid); margin-top:6px; }
   .fld label{ display:block; font-size:13px; font-weight:600; color:var(--text-dark); margin-bottom:7px; }
   .fld input, .fld select, .fld textarea{ width:100%; border:1px solid var(--border); border-radius:9px; padding:11px 14px; font-size:13.5px; font-family:var(--font-body); color:var(--text-dark); }
   .fld input[readonly]{ background:var(--sage-50); color:var(--text-mid); }
@@ -129,6 +132,7 @@
   }
 </style>
 @include('partials.role-tag-style')
+@include('partials.ticket-style')
 </head>
 <body>
 <div class="app">
@@ -179,8 +183,30 @@
         </select>
       </div>
 
+      <div id="reportFields" hidden>
+        <div class="fld">
+          <label for="reportedTenantSelect">Tenant you are reporting</label>
+          <select id="reportedTenantSelect">
+            <option value="">Select tenant...</option>
+            @foreach($reportableTenants as $t)
+              <option value="{{ $t['id'] }}">{{ $t['name'] }}</option>
+            @endforeach
+          </select>
+        </div>
+        <div class="fld">
+          <label for="reportReasonSelect">Reason</label>
+          <select id="reportReasonSelect">
+            <option value="">Select reason...</option>
+            @foreach($reportReasons as $key => $label)
+              <option value="{{ $key }}">{{ $label }}</option>
+            @endforeach
+          </select>
+        </div>
+        <p class="report-privacy">Only staff will see this report. The tenant won't be told who filed it.</p>
+      </div>
+
       <div class="fld">
-        <label for="roomDisplay">Room</label>
+        <label for="roomDisplay" id="roomLabel">Room</label>
         <input type="text" id="roomDisplay" value="{{ $roomNo ?? '—' }}" readonly>
       </div>
 
@@ -303,7 +329,9 @@
           <div>
             <h3 class="tc-title">#${String(t.id).padStart(3,'0')}: ${esc(t.title)}</h3>
             <div class="tc-sub">Submitted: ${esc(t.submitted_at)}</div>
-            <span class="tc-cat">${esc(t.category_label)}</span>
+            <span class="tc-cat">${esc(t.category_label)}</span>${['critical', 'high'].includes(t.priority) ? ` <span class="tc-urgent">Prioritized by our team</span>` : ''}
+            ${t.revised_due_at ? `<div class="tc-delay"><strong>Delayed.</strong> Expected resolution: ${esc(t.revised_due_at)}${t.delay_reason ? '<br>Reason: ' + esc(t.delay_reason) : ''}</div>` : ''}
+            ${t.reported_tenant_name ? `<div class="tc-report">Reported: <strong>${esc(t.reported_tenant_name)}</strong>${t.report_reason_label ? ' · ' + esc(t.report_reason_label) : ''}</div>` : ''}
           </div>
           <span class="badge ${t.status}">${esc(t.status_label)}</span>
         </div>
@@ -424,10 +452,22 @@
     $('photoInput').value = '';
     selectedFiles = [];
     renderPhotoGrid();
+    $('reportedTenantSelect').value = '';
+    $('reportReasonSelect').value = '';
+    updateReportFields();
     $('formError').classList.remove('visible');
     $('formState').style.display = 'block';
     $('successState').classList.remove('active');
   }
+
+  // Show the "who / why" fields only for Report a Tenant.
+  function updateReportFields(){
+    const category = $('concernType').value;
+    const isReport = category === 'tenant_report';
+    $('reportFields').hidden = !isReport;
+    $('roomLabel').textContent = isReport ? 'Your room' : 'Room';
+  }
+  $('concernType').addEventListener('change', updateReportFields);
 
   $('openNewTicketBtn').addEventListener('click', () => {
     if(portalRestricted){
@@ -453,6 +493,10 @@
     }
 
     if(!category){ return showFormError('Please select a concern type.'); }
+    if(category === 'tenant_report'){
+      if(!$('reportedTenantSelect').value){ return showFormError('Please select the tenant you are reporting.'); }
+      if(!$('reportReasonSelect').value){ return showFormError('Please select a reason for the report.'); }
+    }
     if(!title){ return showFormError('Please enter a subject.'); }
     if(!description){ return showFormError('Please enter details about your concern.'); }
 
@@ -463,6 +507,10 @@
     fd.append('category', category);
     fd.append('title', title);
     fd.append('description', description);
+    if(category === 'tenant_report'){
+      fd.append('reported_tenant_id', $('reportedTenantSelect').value);
+      fd.append('report_reason', $('reportReasonSelect').value);
+    }
     selectedFiles.forEach(entry => fd.append('attachment[]', entry.file));
 
     try {

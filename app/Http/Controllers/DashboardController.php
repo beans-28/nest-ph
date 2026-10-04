@@ -117,7 +117,7 @@ class DashboardController extends Controller
         // the newest-first ordering from latest() is preserved within each
         // group), then capped to the 3 the card actually has room for.
         $recentTickets = $openTickets
-            ->sortByDesc(fn (MaintenanceTicket $t) => $t->isOverdue() ? 1 : 0)
+            ->sortBy(fn (MaintenanceTicket $t) => [$t->isOverdue() ? 0 : 1, $t->priorityRank()])
             ->take(3)
             ->map(function (MaintenanceTicket $t) {
                 $room = $t->bed?->room ?? $t->tenant?->activeContract?->bed?->room;
@@ -129,6 +129,7 @@ class DashboardController extends Controller
                     'room_no' => $room?->room_no,
                     'category_label' => $t->category_label,
                     'status_label' => $t->status_label,
+                    'priority' => $t->priority,
                     'priority_label' => $t->priority_label,
                     'is_overdue' => $t->isOverdue(),
                     'submitted_at' => $t->created_at->diffForHumans(),

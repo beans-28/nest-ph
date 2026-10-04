@@ -20,7 +20,12 @@
     --blue:#33629e; --blue-bg:#e3ecf7;
   }
 
-  .stats-row{ display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; margin-bottom:20px; }
+  .stats-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:20px; }
+  @media (max-width: 900px){ .stats-row{ grid-template-columns:repeat(2, 1fr); } }
+  button.stat-card{ font:inherit; text-align:left; cursor:pointer; width:100%; }
+  button.stat-card:hover{ border-color:#cfd8d0; }
+  button.stat-card[aria-pressed="true"]{ border-color:var(--green-btn); box-shadow:0 0 0 1px var(--green-btn); }
+  .stat-icon.soon{ background:var(--tk-soon-bg); color:var(--tk-soon); }
   .stat-card{ background:var(--card-bg); border-radius:12px; border:1px solid var(--border); padding:18px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 1px 2px rgba(20,30,20,0.03); }
   .stat-icon{ width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .stat-icon svg{ width:20px; height:20px; }
@@ -47,21 +52,30 @@
   .ac-status{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; font-size:12.5px; }
   .status-dot{ display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--text-dark); }
   .status-dot::before{ content:''; width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0; }
-  .status-dot.open::before{ background:#2f55b0; }
-  .status-dot.seen::before{ background:#5646b8; }
+  .status-dot.open::before{ background:var(--tk-pending); }
   .status-dot.in_progress::before{ background:var(--status-maintenance); }
   .status-dot.resolved::before{ background:var(--green-accent); }
-  .status-dot.rejected::before{ background:#b3261e; }
-  .overdue-text{ font-weight:700; color:#b3261e; }
+  .status-dot.closed::before{ background:var(--tk-closed); }
 
 
-  .auto-escalated-flag{ font-size:12px; color:#8f2a22; }
   .mb-attachment-grid{ display:flex; gap:8px; flex-wrap:wrap; }
   .unresolved-note{ font-size:12px; color:var(--text-mid); }
 
   .ac-bottom{ display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:auto; padding-top:10px; border-top:1px solid #f0f2f0; }
-  .priority-select{ font-size:12.5px; min-height:36px; border:1px solid var(--border); border-radius:6px; padding:5px 8px; font-family:var(--font-body); background:#fff; color:var(--text-mid); }
-  .priority-select.urgent{ color:#b3261e; border-color:#f2cfcc; background:#fdf3f2; font-weight:600; }
+  .ac-prio{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .prio-why{ font-size:12px; color:var(--text-mid); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+  .mb-prio{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:12.5px; color:var(--text-mid); margin-bottom:14px; }
+  .delay-box{ border:1px solid var(--border); border-radius:9px; padding:12px 14px; margin-bottom:16px; }
+  .delay-box .delay-toggle{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; text-transform:none; letter-spacing:0; color:var(--text-dark); cursor:pointer; }
+  .delay-box .delay-toggle input{ width:16px; height:16px; accent-color:var(--green-btn); }
+  .delay-box .delay-hint{ font-size:12px; color:var(--text-mid); margin:6px 0 0 24px; }
+  .delay-fields{ margin-top:12px; }
+  .delay-fields .fld:last-child{ margin-bottom:0; }
+  .modal-body input[type="datetime-local"]{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); width:100%; }
+  .mb-report{ display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin:0 0 14px; padding:12px 14px; border:1px solid var(--border); background:#f7f9f7; border-radius:9px; font-size:13px; }
+  .mb-report dt{ color:var(--text-mid); }
+  .mb-report dd{ margin:0; font-weight:600; color:var(--text-dark); }
+  .mb-report a{ color:inherit; text-underline-offset:2px; }
   .ac-assigned{ font-size:12px; color:var(--text-mid); }
 
   .lightbox{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:90; align-items:center; justify-content:center; padding:30px; }
@@ -95,6 +109,7 @@
   .toast.visible{ display:block; }
 </style>
 @include('partials.role-tag-style')
+@include('partials.ticket-style')
 </head>
 <body>
 <div class="app">
@@ -118,16 +133,20 @@
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-icon open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></div>
-          <div><div class="stat-label">Open</div><div class="stat-value" id="statOpen">{{ $openCount }}</div></div>
+          <div><div class="stat-label">Pending</div><div class="stat-value" id="statOpen">{{ $openCount }}</div></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
           <div><div class="stat-label">In Progress</div><div class="stat-value" id="statProgress">{{ $inProgressCount }}</div></div>
         </div>
-        <div class="stat-card">
+        <button type="button" class="stat-card" data-deadline="overdue" aria-pressed="false">
           <div class="stat-icon overdue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></div>
           <div><div class="stat-label">Overdue</div><div class="stat-value" id="statOverdue">{{ $overdueCount }}</div></div>
-        </div>
+        </button>
+        <button type="button" class="stat-card" data-deadline="soon" aria-pressed="false">
+          <div class="stat-icon soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12M6 22h12M7 2c0 5 10 5 10 10S7 17 7 22M17 2c0 5-10 5-10 10s10 5 10 10"/></svg></div>
+          <div><div class="stat-label">Due soon</div><div class="stat-value">{{ $dueSoonCount }}</div></div>
+        </button>
       </div>
 
       <div class="filters-row">
@@ -150,6 +169,11 @@
             <option value="{{ $key }}">{{ $label }}</option>
           @endforeach
         </select>
+        <select id="deadlineFilter" aria-label="Deadline">
+          <option value="">All Deadlines</option>
+          <option value="overdue">Overdue</option>
+          <option value="soon">Due soon</option>
+        </select>
       </div>
 
       <div class="app-grid" id="ticketGrid"></div>
@@ -167,6 +191,8 @@
       <div class="mh-num" id="mNum"></div>
     </div>
     <div class="modal-body">
+      <div class="mb-prio" id="mPrio"></div>
+      <dl class="mb-report" id="mReport" hidden></dl>
       <div class="mb-desc" id="mDesc"></div>
       <div class="mb-attachment" id="mAttachment" style="display:none;">
         <div class="mb-attachment-grid" id="mAttachmentGrid"></div>
@@ -184,6 +210,21 @@
             <option value="{{ $key }}">{{ $label }}</option>
           @endforeach
         </select>
+      </div>
+
+      <div class="delay-box">
+        <label class="delay-toggle"><input type="checkbox" id="mDelayedToggle"> Delayed by external factors</label>
+        <div class="delay-hint" id="mDelayHint"></div>
+        <div class="delay-fields" id="mDelayFields" hidden>
+          <div class="fld">
+            <label for="mDelayReason">Reason for delay</label>
+            <textarea id="mDelayReason" placeholder="e.g. Waiting for a replacement part from the supplier"></textarea>
+          </div>
+          <div class="fld">
+            <label for="mRevisedDue">Revised expected resolution</label>
+            <input type="datetime-local" id="mRevisedDue">
+          </div>
+        </div>
       </div>
 
       <div class="fld">
@@ -214,6 +255,7 @@
   let categoryFilter = '';
   let statusFilter = '';
   let priorityFilter = '';
+  let deadlineFilter = '';
   let openTicketId = null;
 
   const $ = id => document.getElementById(id);
@@ -260,32 +302,23 @@
     return tickets.filter(t => {
       if(categoryFilter && t.category !== categoryFilter) return false;
       if(statusFilter && t.status !== statusFilter) return false;
-      // Urgent filter also shows auto-escalated tickets (effective priority).
-      if(priorityFilter && (priorityFilter === 'urgent' ? t.effective_priority !== 'urgent' : t.priority !== priorityFilter)) return false;
+      if(priorityFilter && t.priority !== priorityFilter) return false;
+      if(deadlineFilter === 'overdue' && !t.is_overdue) return false;
+      if(deadlineFilter === 'soon' && !t.is_due_soon) return false;
       if(!search) return true;
       const hay = `${t.tenant_name ?? ''} ${t.title ?? ''}`.toLowerCase();
       return hay.includes(search);
     }).sort(compareTickets);
   }
 
-  // Overdue first (effective-urgent before non-urgent, oldest first),
-  // then other open tickets (oldest first), then resolved/rejected
-  // (newest first, as before).
+  // Overdue first, then other open tickets, then resolved/rejected.
+  // Inside the first two groups: Critical > High > Medium > Low, then
+  // oldest first. Closed tickets: newest first.
   function compareTickets(a, b){
-    const group = t => t.is_overdue ? 0 : (['resolved', 'rejected'].includes(t.status) ? 2 : 1);
+    const group = t => t.is_overdue ? 0 : (['resolved', 'closed'].includes(t.status) ? 2 : 1);
     if(group(a) !== group(b)) return group(a) - group(b);
-    if(group(a) === 0){
-      const urg = t => t.effective_priority === 'urgent' ? 0 : 1;
-      if(urg(a) !== urg(b)) return urg(a) - urg(b);
-    }
+    if(group(a) !== 2 && a.priority_rank !== b.priority_rank) return a.priority_rank - b.priority_rank;
     return group(a) === 2 ? b.created_ts - a.created_ts : a.created_ts - b.created_ts;
-  }
-
-  function priorityOptionsHtml(current){
-    const opts = [['', 'Unclassified'], ['urgent', 'Urgent'], ['non_urgent', 'Non-Urgent']];
-    return opts.map(([val, label]) =>
-      `<option value="${val}" ${current === val || (!current && val==='') ? 'selected' : ''}>${label}</option>`
-    ).join('');
   }
 
   function renderGrid(){
@@ -300,48 +333,26 @@
       <div class="app-card" data-open="${t.id}" tabindex="0" role="button" aria-label="Open ticket ${esc(t.title)}">
         <div>
           <div class="ac-title">${esc(t.title)}</div>
-          <div class="ac-meta">${esc(t.tenant_name ?? 'Unknown tenant')}${t.room_no ? ', Room ' + esc(t.room_no) : ''} · ${esc(t.category_label)} · #${t.id}</div>
+          <div class="ac-meta">${esc(t.tenant_name ?? 'Unknown tenant')}${t.room_no ? ', Room ' + esc(t.room_no) : ''} · ${esc(t.category_label)}${t.reported_tenant_name ? ': ' + esc(t.reported_tenant_name) : ''} · #${t.id}</div>
         </div>
         <div class="ac-status">
           <span class="status-dot ${t.status}">${esc(t.status_label)}</span>
-          ${t.is_overdue ? '<span class="overdue-text">Overdue</span>' : (t.unresolved_for ? `<span class="unresolved-note">${esc(t.unresolved_for)}</span>` : '')}
+          ${t.deadline_label ? `<span class="due ${t.is_overdue ? 'late' : (t.is_due_soon ? 'soon' : '')}">${esc(t.deadline_label)}</span>` : ''}
         </div>
-        ${t.is_auto_escalated ? `<span class="auto-escalated-flag">Auto-escalated to Urgent · open {{ \App\Models\MaintenanceTicket::NON_URGENT_ESCALATE_DAYS }}+ days</span>` : ''}
         <div class="ac-bottom">
-          <select class="priority-select ${t.priority ?? ''}" data-priority-for="${t.id}">${priorityOptionsHtml(t.priority)}</select>
+          <span class="ac-prio"><span class="prio ${t.priority}">${esc(t.priority_label)}</span><span class="prio-why">${esc(t.priority_reason ?? '')}</span></span>
           <span class="ac-assigned">${t.assigned_to_name ? 'Assigned: ' + esc(t.assigned_to_name) : 'Unassigned'}</span>
         </div>
       </div>
     `).join('');
 
     document.querySelectorAll('[data-open]').forEach(el => {
-      el.addEventListener('click', (e) => {
-        if(e.target.closest('[data-priority-for]')) return;
-        openModal(Number(el.dataset.open));
-      });
+      el.addEventListener('click', () => openModal(Number(el.dataset.open)));
       el.addEventListener('keydown', (e) => {
-        if(e.target.closest('[data-priority-for]')) return;
         if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openModal(Number(el.dataset.open)); }
       });
     });
 
-    document.querySelectorAll('[data-priority-for]').forEach(el => {
-      el.addEventListener('click', e => e.stopPropagation());
-      el.addEventListener('change', async () => {
-        const id = Number(el.dataset.priorityFor);
-        const ticket = tickets.find(t => t.id === id);
-        try {
-          const res = await api(`/tickets/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: ticket.status, priority: el.value || null }),
-          });
-          Object.assign(ticket, res.ticket);
-          toast('Priority updated.');
-          renderGrid();
-        } catch(e){ toast(e.message, true); renderGrid(); }
-      });
-    });
   }
 
   async function openModal(id){
@@ -353,6 +364,18 @@
       $('mNum').textContent = `Ticket#${detail.id}`;
       $('mTitle').textContent = detail.title;
       $('mDesc').textContent = detail.description;
+      $('mPrio').innerHTML = `<span class="prio ${detail.priority}">${esc(detail.priority_label)}</span>`
+        + `<span>Set automatically: ${esc(detail.priority_reason ?? '')}</span>`
+        + (detail.deadline_label ? `<span class="due ${detail.is_overdue ? 'late' : (detail.is_due_soon ? 'soon' : '')}">· ${esc(detail.deadline_label)}</span>` : '');
+      if(detail.reported_tenant_name){
+        $('mReport').innerHTML = `
+          <dt>Reported tenant</dt>
+          <dd><a href="/tenant-manager?view=${detail.reported_tenant_id}">${esc(detail.reported_tenant_name)}</a>${detail.reported_tenant_room ? ' · Room ' + esc(detail.reported_tenant_room) : ''}</dd>
+          ${detail.report_reason_label ? `<dt>Reason</dt><dd>${esc(detail.report_reason_label)}</dd>` : ''}`;
+        $('mReport').hidden = false;
+      } else {
+        $('mReport').hidden = true;
+      }
 
       if(detail.attachment_urls && detail.attachment_urls.length){
         $('mAttachment').style.display = 'block';
@@ -371,6 +394,16 @@
 
       $('mStatusSelect').value = detail.status;
 
+      const delayed = !!detail.revised_due_at;
+      $('mDelayedToggle').checked = delayed;
+      $('mDelayFields').hidden = !delayed;
+      $('mDelayReason').value = detail.delay_reason ?? '';
+      $('mRevisedDue').value = detail.revised_due_at ?? '';
+      const pad = n => String(n).padStart(2, '0');
+      const d = new Date();
+      $('mRevisedDue').min = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      $('mDelayHint').textContent = `Original target: ${detail.original_resolve_due}. The tenant is notified of the new date.`;
+
       $('mReplyThread').innerHTML = detail.replies.length
         ? detail.replies.map(r => `<div class="reply-item">${esc(r.message)}<div class="r-meta">${esc(r.author)}${roleTag(r.author_tag)} · ${esc(r.created_at)}</div></div>`).join('')
         : '<div class="reply-item" style="color:var(--text-light);font-style:italic;">No replies yet.</div>';
@@ -384,7 +417,14 @@
   $('mCancelBtn').addEventListener('click', () => $('ticketModal').classList.remove('open'));
   $('ticketModal').addEventListener('click', (e) => { if(e.target.id === 'ticketModal') $('ticketModal').classList.remove('open'); });
 
+  $('mDelayedToggle').addEventListener('change', e => { $('mDelayFields').hidden = !e.target.checked; });
+
   $('mSaveBtn').addEventListener('click', async function(){
+    const delayed = $('mDelayedToggle').checked;
+    if(delayed && (!$('mDelayReason').value.trim() || !$('mRevisedDue').value)){
+      toast('Add the delay reason and the revised resolution date.', true);
+      return;
+    }
     this.disabled = true;
     try {
       const res = await api(`/tickets/${openTicketId}`, {
@@ -394,6 +434,9 @@
           status: $('mStatusSelect').value,
           assigned_to: $('mAssignSelect').value || null,
           reply_message: $('mReplyInput').value.trim() || null,
+          delayed,
+          delay_reason: delayed ? $('mDelayReason').value.trim() : null,
+          revised_due_at: delayed ? $('mRevisedDue').value : null,
         }),
       });
 
@@ -411,6 +454,17 @@
   $('categoryFilter').addEventListener('change', e => { categoryFilter = e.target.value; renderGrid(); });
   $('statusFilter').addEventListener('change', e => { statusFilter = e.target.value; renderGrid(); });
   $('priorityFilter').addEventListener('change', e => { priorityFilter = e.target.value; renderGrid(); });
+
+  // Overdue / Due soon stat cards double as quick filters.
+  function setDeadlineFilter(value){
+    deadlineFilter = value;
+    $('deadlineFilter').value = value;
+    document.querySelectorAll('[data-deadline]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.deadline === value)));
+    renderGrid();
+  }
+  $('deadlineFilter').addEventListener('change', e => setDeadlineFilter(e.target.value));
+  document.querySelectorAll('[data-deadline]').forEach(b => b.addEventListener('click', () =>
+    setDeadlineFilter(deadlineFilter === b.dataset.deadline ? '' : b.dataset.deadline)));
 
   renderGrid();
 })();

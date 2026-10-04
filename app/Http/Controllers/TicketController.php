@@ -30,7 +30,7 @@ class TicketController extends Controller
      */
     public function page(Request $request)
     {
-        $tickets = MaintenanceTicket::with(['tenant', 'assignedTo', 'bed.room'])
+        $tickets = MaintenanceTicket::with(['tenant', 'reportedTenant', 'assignedTo', 'bed.room'])
             ->latest('created_at')
             ->get();
 
@@ -44,6 +44,7 @@ class TicketController extends Controller
             'openCount' => $tickets->where('status', 'open')->count(),
             'inProgressCount' => $tickets->where('status', 'in_progress')->count(),
             'overdueCount' => MaintenanceTicket::overdueSummary()['total'],
+            'dueSoonCount' => MaintenanceTicket::overdueSummary()['due_soon'],
         ]);
     }
 
@@ -66,6 +67,10 @@ class TicketController extends Controller
             $this->transformRow($ticket),
             [
                 'description' => $ticket->description,
+                'delay_reason' => $ticket->delay_reason,
+                // datetime-local input format
+                'revised_due_at' => $ticket->revised_due_at?->format('Y-m-d\TH:i'),
+                'original_resolve_due' => $ticket->originalResolveDueAt()->format('M j, Y g:ia'),
                 'attachment_urls' => $ticket->attachment_urls,
                 'replies' => $ticket->replies->map(fn ($r) => [
                     'id' => $r->id,
@@ -84,16 +89,23 @@ class TicketController extends Controller
 
     /**
      * "Save" on the ticket view modal -- Table 33 steps 4/5 (status
-     * update, reply). Also handles the card's standalone priority
-     * selector (Table 39) -- same endpoint, just status resent unchanged.
+     * update, reply). Priority is NOT editable here -- the system sets it
+     * when the ticket is filed (TicketPriorityClassifier).
      */
     public function update(Request $request, MaintenanceTicket $ticket): JsonResponse
     {
         $data = $request->validate([
             'status' => ['required', Rule::in(array_keys(MaintenanceTicket::STATUSES))],
-            'priority' => ['nullable', Rule::in(array_keys(MaintenanceTicket::PRIORITIES))],
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
             'reply_message' => ['nullable', 'string', 'max:2000'],
+            // External delay: both or neither. Sending delayed=false clears it.
+            'delayed' => ['sometimes', 'boolean'],
+            'delay_reason' => ['exclude_unless:delayed,true', 'required', 'string', 'max:1000'],
+            'revised_due_at' => ['exclude_unless:delayed,true', 'required', 'date', 'after:now'],
+        ], [
+            'delay_reason.required' => 'Please explain what is delaying this ticket.',
+            'revised_due_at.required' => 'Please set the revised expected resolution date.',
+            'revised_due_at.after' => 'The revised resolution date must be in the future.',
         ]);
 
         if (! empty($data['assigned_to'])) {
@@ -109,14 +121,24 @@ class TicketController extends Controller
         }
 
         $oldStatus = $ticket->status;
+        $oldRevisedDue = $ticket->revised_due_at;
 
         DB::transaction(function () use ($ticket, $data, $request) {
-            $wasResolved = in_array($ticket->status, ['resolved', 'rejected'], true);
-            $isNowResolved = in_array($data['status'], ['resolved', 'rejected'], true);
+            $wasResolved = $ticket->isClosed();
+            $isNowResolved = in_array($data['status'], MaintenanceTicket::CLOSED_STATUSES, true);
 
-            $ticket->update([
+            $delayFields = [];
+            if (array_key_exists('delayed', $data)) {
+                $delayFields = $data['delayed']
+                    ? ['delay_reason' => $data['delay_reason'], 'revised_due_at' => $data['revised_due_at']]
+                    : ['delay_reason' => null, 'revised_due_at' => null];
+            }
+
+            $ticket->update($delayFields + [
                 'status' => $data['status'],
-                'priority' => $data['priority'] ?? $ticket->priority,
+                // First staff action counts as the "initial response".
+                'responded_at' => $ticket->responded_at
+                    ?? (($data['status'] !== 'open' || ! empty($data['reply_message'])) ? now() : null),
                 'assigned_to' => $request->has('assigned_to') ? $data['assigned_to'] : $ticket->assigned_to,
                 'resolved_at' => $isNowResolved
                     ? ($ticket->resolved_at ?? now())
@@ -140,7 +162,19 @@ class TicketController extends Controller
                 "Your ticket \"{$ticket->title}\" is now {$label}",
                 ! empty($data['reply_message']) ? 'Staff replied: ' . \Illuminate\Support\Str::limit($data['reply_message'], 140) : null,
                 '/my/tickets');
-        } elseif (! empty($data['reply_message'])) {
+        }
+
+        // Tell the tenant when a new or changed revised date is recorded.
+        $ticket->refresh();
+        if ($ticket->revised_due_at && ($oldRevisedDue === null || ! $ticket->revised_due_at->equalTo($oldRevisedDue))) {
+            \App\Models\TenantNotification::send($ticket->tenant_id, 'ticket_update',
+                "Your ticket \"{$ticket->title}\" is delayed",
+                'Expected resolution: ' . $ticket->revised_due_at->format('M j, Y g:ia') . '. Reason: '
+                    . \Illuminate\Support\Str::limit($ticket->delay_reason, 120),
+                '/my/tickets');
+        }
+
+        if ($oldStatus === $data['status'] && ! empty($data['reply_message'])) {
             \App\Models\TenantNotification::send($ticket->tenant_id, 'ticket_reply',
                 "New reply on your ticket \"{$ticket->title}\"",
                 \Illuminate\Support\Str::limit($data['reply_message'], 140),
@@ -164,15 +198,23 @@ class TicketController extends Controller
             'title' => $ticket->title,
             'category' => $ticket->category,
             'category_label' => $ticket->category_label,
+            'reported_tenant_id' => $ticket->reported_tenant_id,
+            'reported_tenant_name' => $ticket->reportedTenant?->full_name,
+            'reported_tenant_room' => $ticket->reportedTenant?->activeContract?->bed?->room?->room_no,
+            'report_reason_label' => $ticket->report_reason_label,
             'status' => $ticket->status,
             'status_label' => $ticket->status_label,
             'priority' => $ticket->priority,
             'priority_label' => $ticket->priority_label,
             'assigned_to' => $ticket->assigned_to,
             'assigned_to_name' => $ticket->assignedTo?->name,
+            'priority_reason' => $ticket->priority_reason,
+            'priority_rank' => $ticket->priorityRank(),
             'is_overdue' => $ticket->isOverdue(),
-            'effective_priority' => $ticket->effectivePriority(),
-            'is_auto_escalated' => $ticket->isAutoEscalated(),
+            'is_response_overdue' => $ticket->isResponseOverdue(),
+            'deadline_label' => $ticket->nextDeadlineLabel(),
+            'is_due_soon' => $ticket->isDueSoon(),
+            'is_delayed' => $ticket->isDelayed(),
             'created_ts' => $ticket->created_at->timestamp,
             'unresolved_for' => $ticket->unresolvedForHumans(),
             'submitted_at' => $ticket->created_at->format('M j, Y g:ia'),

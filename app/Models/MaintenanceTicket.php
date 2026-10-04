@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Services\TicketPriorityClassifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class MaintenanceTicket extends Model
@@ -28,39 +30,64 @@ class MaintenanceTicket extends Model
         'account_access_issue' => 'Account & Access Issue',
         'noise_roommate_concern' => 'Noise / Roommate Concern',
         'suggestion_feedback' => 'Suggestion / Feedback',
+        'tenant_report' => 'Report a Tenant',
     ];
 
-    /** Figma "drop down status" (node 882-3246). Adds Seen/Rejected beyond
-     * Table 33's literal Open/In Progress/Resolved -- flagged for BAGUI. */
+    /** Reasons a tenant can pick when filing a "Report a Tenant" ticket. */
+    public const REPORT_REASONS = [
+        'noise_disturbance' => 'Noise / Disturbance',
+        'harassment_threats' => 'Harassment or Threats',
+        'theft_missing_items' => 'Theft / Missing Items',
+        'property_damage' => 'Damaging Property',
+        'house_rules_violation' => 'House Rules Violation',
+        'cleanliness_hygiene' => 'Cleanliness / Hygiene',
+        'unauthorized_visitors' => 'Unauthorized Visitors',
+        'other' => 'Other',
+    ];
+
+    /**
+     * Pending is stored as "open" (label only) so existing open-ticket
+     * counts keep working. Resolved = fixed; Closed = ended without a fix
+     * (duplicate, not valid, withdrawn).
+     */
     public const STATUSES = [
-        'open' => 'Open',
-        'seen' => 'Seen',
+        'open' => 'Pending',
         'in_progress' => 'In Progress',
         'resolved' => 'Resolved',
-        'rejected' => 'Rejected',
+        'closed' => 'Closed',
     ];
 
-    /** Table 39. */
+    public const CLOSED_STATUSES = ['resolved', 'closed'];
+
+    /**
+     * A deadline is "due soon" once this share of its time window is left
+     * (e.g. Medium resolve = 3 days -> warning in the last 18 hours;
+     * Critical response = 5 min -> last 75 seconds).
+     */
+    public const DUE_SOON_SHARE = 0.25;
+
+    /**
+     * Set by the system (TicketPriorityClassifier), never by hand. Order
+     * matters: most serious first.
+     */
     public const PRIORITIES = [
-        'urgent' => 'Urgent',
-        'non_urgent' => 'Non-Urgent',
+        'critical' => 'Critical',
+        'high' => 'High',
+        'medium' => 'Medium',
+        'low' => 'Low',
     ];
 
     /**
-     * Table 40 gives a RANGE, not a single number (Urgent: 24-48h,
-     * Non-Urgent: 3-5 days). These use the lower bound as a placeholder --
-     * same pattern as EscalationService::DAYS_PER_STAGE. Confirm the real
-     * policy value with the team before the defense.
+     * Service targets per priority, in minutes.
+     *   response: staff must first act (mark Seen / reply / change status)
+     *   resolve:  ticket must be Resolved or Rejected
      */
-    public const URGENT_OVERDUE_HOURS = 24;
-    public const NON_URGENT_OVERDUE_DAYS = 3;
-
-    /**
-     * Unresolved Non-Urgent (or unclassified) tickets older than this are
-     * shown as Urgent on the admin side (never saved). Upper bound of
-     * Table 40's 3-5 day range -- PLACEHOLDER, team must confirm.
-     */
-    public const NON_URGENT_ESCALATE_DAYS = 5;
+    public const SLA = [
+        'critical' => ['response' => 5, 'resolve' => 60],
+        'high' => ['response' => 30, 'resolve' => 4 * 60],
+        'medium' => ['response' => 8 * 60, 'resolve' => 3 * 24 * 60],
+        'low' => ['response' => 2 * 24 * 60, 'resolve' => 7 * 24 * 60],
+    ];
 
     /** Submit Ticket form allows up to 5 photos per ticket. */
     public const MAX_ATTACHMENTS = 5;
@@ -68,18 +95,26 @@ class MaintenanceTicket extends Model
     protected $fillable = [
         'tenant_id',
         'bed_id',
+        'reported_tenant_id',
+        'report_reason',
         'title',
         'category',
         'description',
         'attachment_paths',
         'priority',
+        'priority_reason',
         'status',
         'assigned_to',
+        'responded_at',
+        'delay_reason',
+        'revised_due_at',
         'resolved_at',
     ];
 
     protected $casts = [
         'attachment_paths' => 'array',
+        'responded_at' => 'datetime',
+        'revised_due_at' => 'datetime',
         'resolved_at' => 'datetime',
     ];
 
@@ -91,6 +126,24 @@ class MaintenanceTicket extends Model
     public function bed(): BelongsTo
     {
         return $this->belongsTo(Bed::class);
+    }
+
+    public function reportedTenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'reported_tenant_id');
+    }
+
+    /** Runs the classifier and returns the columns to save. */
+    public static function autoPriorityFor(string $category, ?string $title, ?string $description, ?string $reportReason = null): array
+    {
+        $result = TicketPriorityClassifier::classify($category, $title, $description, $reportReason);
+
+        return ['priority' => $result['priority'], 'priority_reason' => $result['reason']];
+    }
+
+    public function getReportReasonLabelAttribute(): ?string
+    {
+        return $this->report_reason ? (self::REPORT_REASONS[$this->report_reason] ?? $this->report_reason) : null;
     }
 
     public function assignedTo(): BelongsTo
@@ -124,76 +177,148 @@ class MaintenanceTicket extends Model
 
     public function getPriorityLabelAttribute(): ?string
     {
-        return $this->priority ? (self::PRIORITIES[$this->priority] ?? $this->priority) : null;
+        return self::PRIORITIES[$this->priority] ?? null;
     }
 
     public function isClosed(): bool
     {
-        return in_array($this->status, ['resolved', 'rejected'], true);
+        return in_array($this->status, self::CLOSED_STATUSES, true);
+    }
+
+    /** Lower = more serious. Used for sorting. */
+    public function priorityRank(): int
+    {
+        $rank = array_search($this->priority, array_keys(self::PRIORITIES), true);
+
+        return $rank === false ? 2 : $rank;
+    }
+
+    public function responseDueAt(): Carbon
+    {
+        return $this->created_at->copy()->addMinutes(self::SLA[$this->priority ?? 'medium']['response']);
+    }
+
+    /** Normal target from the SLA, ignoring any revised date. */
+    public function originalResolveDueAt(): Carbon
+    {
+        return $this->created_at->copy()->addMinutes(self::SLA[$this->priority ?? 'medium']['resolve']);
+    }
+
+    /** A revised date recorded by an admin (external delay) replaces the normal target. */
+    public function resolveDueAt(): Carbon
+    {
+        return $this->revised_due_at ?? $this->originalResolveDueAt();
+    }
+
+    public function isDelayed(): bool
+    {
+        return $this->revised_due_at !== null;
     }
 
     /**
-     * Priority used for overdue checks and sorting. Computed live and
-     * NEVER saved -- the stored `priority` column is untouched. A ticket
-     * with no priority counts as non_urgent; an unresolved ticket older
-     * than NON_URGENT_ESCALATE_DAYS is treated as urgent (Table 40).
-     */
-    public function effectivePriority(): string
-    {
-        if ($this->priority === 'urgent') {
-            return 'urgent';
-        }
-
-        if (! $this->isClosed()
-            && $this->created_at->diffInHours(now()) >= self::NON_URGENT_ESCALATE_DAYS * 24) {
-            return 'urgent';
-        }
-
-        return $this->priority ?: 'non_urgent';
-    }
-
-    /** Urgent only because of age, not because an admin set it. */
-    public function isAutoEscalated(): bool
-    {
-        return $this->effectivePriority() === 'urgent' && $this->priority !== 'urgent';
-    }
-
-    /**
-     * The ONE place overdue tickets are counted. The dashboard banner,
-     * the dashboard Tickets card, and the Tickets page stat strip all
-     * call this, so they can never disagree.
+     * The deadline the ticket is racing right now: the response target
+     * until staff first act, then the resolution target.
      *
-     * @return array{total: int, urgent: int}
+     * @return array{type: 'response'|'resolve', due: Carbon, window_minutes: float}|null
      */
-    public static function overdueSummary(): array
+    public function currentDeadline(): ?array
     {
-        $overdue = self::whereNotIn('status', ['resolved', 'rejected'])
-            ->get()
-            ->filter(fn (self $t) => $t->isOverdue());
+        if ($this->isClosed()) {
+            return null;
+        }
 
-        return [
-            'total' => $overdue->count(),
-            'urgent' => $overdue->filter(fn (self $t) => $t->effectivePriority() === 'urgent')->count(),
-        ];
+        if (! $this->responded_at) {
+            $due = $this->responseDueAt();
+
+            return ['type' => 'response', 'due' => $due, 'window_minutes' => $this->created_at->diffInMinutes($due)];
+        }
+
+        $due = $this->resolveDueAt();
+
+        return ['type' => 'resolve', 'due' => $due, 'window_minutes' => $this->created_at->diffInMinutes($due)];
+    }
+
+    /** Not overdue yet, but inside the last DUE_SOON_SHARE of its window. */
+    public function isDueSoon(): bool
+    {
+        $d = $this->currentDeadline();
+        if (! $d || now()->greaterThan($d['due'])) {
+            return false;
+        }
+
+        return now()->diffInMinutes($d['due']) <= $d['window_minutes'] * self::DUE_SOON_SHARE;
+    }
+
+    /** Staff haven't responded yet and the response target has passed. */
+    public function isResponseOverdue(): bool
+    {
+        return ! $this->isClosed() && ! $this->responded_at && now()->greaterThan($this->responseDueAt());
+    }
+
+    /** Still not closed after the resolution target. */
+    public function isResolutionOverdue(): bool
+    {
+        return ! $this->isClosed() && now()->greaterThan($this->resolveDueAt());
     }
 
     public function isOverdue(): bool
     {
-        if ($this->isClosed()) {
-            return false;
+        return $this->isResponseOverdue() || $this->isResolutionOverdue();
+    }
+
+    /** "Respond by ..." / "Resolve by ..." for the admin card, or null when closed. */
+    /**
+     * One line that says where the ticket stands against its clock:
+     *   "Response overdue · was due 3:05pm"
+     *   "Due soon · resolve by Oct 7, 5:00pm"
+     *   "Respond by 3:05pm"
+     * "(revised date)" is added when an admin recorded a delay.
+     */
+    public function nextDeadlineLabel(): ?string
+    {
+        $d = $this->currentDeadline();
+        if (! $d) {
+            return null;
         }
 
-        $hoursElapsed = $this->created_at->diffInHours(now());
-        $thresholdHours = $this->effectivePriority() === 'urgent'
-            ? self::URGENT_OVERDUE_HOURS
-            : self::NON_URGENT_OVERDUE_DAYS * 24;
+        $due = $d['due'];
+        $when = $due->isToday() ? $due->format('g:ia') : $due->format('M j, g:ia');
+        $revised = $d['type'] === 'resolve' && $this->isDelayed() ? ' (revised date)' : '';
 
-        return $hoursElapsed >= $thresholdHours;
+        if (now()->greaterThan($due)) {
+            $what = $d['type'] === 'response' ? 'Response overdue' : 'Resolution overdue';
+
+            return "{$what} · was due {$when}{$revised}";
+        }
+
+        $verb = $d['type'] === 'response' ? 'respond' : 'resolve';
+        $line = "{$verb} by {$when}{$revised}";
+
+        return $this->isDueSoon() ? "Due soon · {$line}" : ucfirst($line);
+    }
+
+    /**
+     * The ONE place overdue tickets are counted. The dashboard banner,
+     * the dashboard Tickets card, the notification bell and the Tickets
+     * page stat strip all call this, so they can never disagree.
+     *
+     * @return array{total: int, critical: int, due_soon: int}
+     */
+    public static function overdueSummary(): array
+    {
+        $active = self::whereNotIn('status', self::CLOSED_STATUSES)->get();
+        $overdue = $active->filter(fn (self $t) => $t->isOverdue());
+
+        return [
+            'total' => $overdue->count(),
+            'critical' => $overdue->whereIn('priority', ['critical', 'high'])->count(),
+            'due_soon' => $active->filter(fn (self $t) => $t->isDueSoon())->count(),
+        ];
     }
 
     public function unresolvedForHumans(): ?string
     {
-        if (in_array($this->status, ['resolved', 'rejected'], true)) {
+        if ($this->isClosed()) {
             return null;
         }
 

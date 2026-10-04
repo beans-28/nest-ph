@@ -1432,15 +1432,15 @@ class DemoDataSeeder extends Seeder
 
     private function seedTicketsFor(int $n, int $tenantId, int $bedId): void
     {
-        // tenant # => [title, category, description, priority, status, daysAgo, assignee, replies[]]
+        // tenant # => [title, category, description, (unused: priority is auto-scored), status, daysAgo, assignee, replies[]]
         $tickets = [
             1 => ['Aircon not cooling', 'maintenance_repairs', 'The aircon in Room 101 blows air but it is not cold anymore since last night.', 'non_urgent', 'resolved', 20, 'jerome',
                 [['admin', 'jerome', 'Noted po. Papupuntahin namin ang technician bukas ng umaga.'], ['tenant', null, 'Salamat po!'], ['admin', 'jerome', 'Nalinis na po ang filter at na-recharge ang freon. Paki-check po kung okay na.']]],
             2 => ['Sparking outlet near Bed 2', 'electrical_issue', 'The outlet beside my bed sparked when I plugged in my charger. I stopped using it.', 'urgent', 'open', 0, null, []],
             5 => ['Low water pressure in CR', 'plumbing_water_emergency', 'Mahina po ang tulo ng tubig sa shower tuwing 6-7 AM.', 'non_urgent', 'in_progress', 4, 'jerome',
                 [['admin', 'jerome', 'Chine-check na po ng plumber ang main line. Update po kami mamaya.']]],
-            8 => ['Noisy neighbors after quiet hours', 'noise_roommate_concern', 'May maingay po sa kabilang room past 12 midnight, 3 nights na. Quiet hours po ay 10 PM.', 'non_urgent', 'seen', 2, null, []],
-            11 => ['Request for a bigger study table in the lobby', 'suggestion_feedback', 'Suggestion lang po: sana may mas malaking study table sa lobby for group study.', 'non_urgent', 'rejected', 15, 'kristine',
+            8 => ['Noisy neighbors after quiet hours', 'noise_roommate_concern', 'May maingay po sa kabilang room past 12 midnight, 3 nights na. Quiet hours po ay 10 PM.', 'non_urgent', 'in_progress', 2, null, []],
+            11 => ['Request for a bigger study table in the lobby', 'suggestion_feedback', 'Suggestion lang po: sana may mas malaking study table sa lobby for group study.', 'non_urgent', 'closed', 15, 'kristine',
                 [['admin', 'kristine', 'Thank you for the suggestion! Hindi po kasya sa space ng lobby sa ngayon, pero isasama namin sa renovation plan next year.']]],
             12 => ['Question about my rejected GCash payment', 'billing_payment_concern', 'Bakit po na-reject yung payment ko? Nagbayad naman po ako.', 'non_urgent', 'in_progress', 0, 'mark',
                 [['admin', 'mark', 'Hi Jasmine, naka-crop po kasi yung screenshot kaya hindi makita ang reference number. Paki-upload po ulit yung buong receipt.']]],
@@ -1468,7 +1468,12 @@ class DemoDataSeeder extends Seeder
             'category' => $cat,
             'description' => $desc,
             'attachment_paths' => null,
-            'priority' => $prio,
+            // Scored the same way a real submission is.
+            ...\App\Models\MaintenanceTicket::autoPriorityFor($cat, $title, $desc),
+            'responded_at' => ($status !== 'open' || $replies) ? $created->copy()->addMinutes(20) : null,
+            // Demo of an external delay with a revised date.
+            'delay_reason' => $n === 20 ? 'Roof gutter repair needs 2 dry days; the roofer is booked until the rain stops.' : null,
+            'revised_due_at' => $n === 20 ? now()->addDays(3)->setTime(17, 0) : null,
             'status' => $status,
             'assigned_to' => $assignee ? $this->admins[$assignee] : null,
             'resolved_at' => $status === 'resolved' ? $created->copy()->addDays(2) : null,

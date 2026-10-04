@@ -896,6 +896,10 @@
   });
 
   renderTable();
+
+  // /tenant-manager?view=ID opens that tenant's drawer (linked from Tickets).
+  const viewId = Number(new URLSearchParams(location.search).get('view'));
+  if(viewId) openDrawer(viewId);
 })();
 </script>
 

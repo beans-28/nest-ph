@@ -33,6 +33,19 @@ class TenantTicketController extends Controller
             'roomNo' => $tenant->activeContract?->bed?->room?->room_no,
             'portalRestricted' => (bool) $tenant->portal_restricted,
             'maxAttachments' => MaintenanceTicket::MAX_ATTACHMENTS,
+            'reportReasons' => MaintenanceTicket::REPORT_REASONS,
+            // Other tenants with an active lease -- the people who can be
+            // reported. Names only: room numbers would tell any tenant
+            // where everyone sleeps.
+            'reportableTenants' => Tenant::where('id', '!=', $tenant->id)
+                ->whereHas('activeContract')
+                ->get()
+                ->map(fn (Tenant $t) => [
+                    'id' => $t->id,
+                    'name' => $t->full_name,
+                ])
+                ->sortBy('name')
+                ->values(),
         ]);
     }
 
@@ -51,6 +64,19 @@ class TenantTicketController extends Controller
             'description' => ['required', 'string', 'max:2000'],
             'attachment' => ['nullable', 'array', 'max:' . MaintenanceTicket::MAX_ATTACHMENTS],
             'attachment.*' => ['file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'reported_tenant_id' => [
+                'exclude_unless:category,tenant_report', 'required', 'integer',
+                Rule::notIn([$tenant->id]),
+                Rule::exists('tenants', 'id'),
+            ],
+            'report_reason' => [
+                'exclude_unless:category,tenant_report', 'required',
+                Rule::in(array_keys(MaintenanceTicket::REPORT_REASONS)),
+            ],
+        ], [
+            'reported_tenant_id.required' => 'Please select the tenant you are reporting.',
+            'reported_tenant_id.not_in' => 'You cannot report yourself.',
+            'report_reason.required' => 'Please select a reason for the report.',
         ]);
 
         $paths = [];
@@ -65,7 +91,10 @@ class TenantTicketController extends Controller
             'category' => $data['category'],
             'description' => $data['description'],
             'attachment_paths' => $paths ?: null,
+            'reported_tenant_id' => $data['reported_tenant_id'] ?? null,
+            'report_reason' => $data['report_reason'] ?? null,
             'status' => 'open',
+            ...MaintenanceTicket::autoPriorityFor($data['category'], $data['title'], $data['description'], $data['report_reason'] ?? null),
         ]);
 
         return response()->json([
@@ -98,7 +127,7 @@ class TenantTicketController extends Controller
 
     private function transform(MaintenanceTicket $ticket, Tenant $tenant): array
     {
-        $ticket->loadMissing(['replies' => fn ($q) => $q->with(['user.role', 'user.privileges', 'tenant'])->oldest('created_at')]);
+        $ticket->loadMissing(['reportedTenant', 'replies' => fn ($q) => $q->with(['user.role', 'user.privileges', 'tenant'])->oldest('created_at')]);
 
         $messages = collect([[
             'id' => 'original',
@@ -119,6 +148,12 @@ class TenantTicketController extends Controller
             'id' => $ticket->id,
             'title' => $ticket->title,
             'category_label' => $ticket->category_label,
+            'reported_tenant_name' => $ticket->reportedTenant?->full_name,
+            'report_reason_label' => $ticket->report_reason_label,
+            'priority' => $ticket->priority,
+            'priority_label' => $ticket->priority_label,
+            'revised_due_at' => $ticket->isClosed() ? null : $ticket->revised_due_at?->format('M j, Y g:ia'),
+            'delay_reason' => $ticket->isClosed() ? null : $ticket->delay_reason,
             'status' => $ticket->status,
             'status_label' => $ticket->status_label,
             'attachment_urls' => $ticket->attachment_urls,

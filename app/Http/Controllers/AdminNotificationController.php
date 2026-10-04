@@ -53,12 +53,17 @@ class AdminNotificationController extends Controller
             [
                 'key' => 'tickets_new', 'urgent' => false, 'link' => '/tickets',
                 'count' => MaintenanceTicket::where('status', 'open')->count(),
-                'one' => 'new maintenance ticket', 'many' => 'new maintenance tickets',
+                'one' => 'pending maintenance ticket', 'many' => 'pending maintenance tickets',
             ],
             [
                 'key' => 'tickets_overdue', 'urgent' => true, 'link' => '/tickets',
                 'count' => $overdueTickets['total'] ?? 0,
                 'one' => 'overdue ticket', 'many' => 'overdue tickets',
+            ],
+            [
+                'key' => 'tickets_due_soon', 'urgent' => true, 'link' => '/tickets',
+                'count' => $overdueTickets['due_soon'] ?? 0,
+                'one' => 'ticket nearing its deadline', 'many' => 'tickets nearing their deadline',
             ],
             [
                 'key' => 'delinquent', 'urgent' => true, 'link' => '/delinquency',

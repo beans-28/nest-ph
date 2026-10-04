@@ -109,12 +109,10 @@
   .ticket-desc{ font-size:12px; color:var(--text-mid); margin-top:4px; }
   .ticket-meta{ display:flex; flex-wrap:wrap; gap:6px; font-size:12px; color:var(--text-mid); margin-top:8px; }
   .ticket-status-pill{ font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; }
-  .ticket-status-pill.status-open{ background:#dbe6f7; color:#2f55b0; }
-  .ticket-status-pill.status-seen{ background:#e9defa; color:#5646b8; }
+  .ticket-status-pill.status-pending{ background:var(--tk-pending-bg); color:var(--tk-pending); }
+  .ticket-status-pill.status-closed{ background:var(--tk-closed-bg); color:var(--tk-closed); }
   .ticket-status-pill.status-in-progress{ background:#f6ecd6; color:#8a6414; }
-  .ticket-priority-pill{ font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; }
-  .ticket-priority-pill.priority-urgent{ background:#f7d9d7; color:#9a2f27; }
-  .ticket-priority-pill.priority-non-urgent{ background:#d9f2dd; color:var(--green-accent); }
+
   .ticket-overdue-pill{ font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:20px; background:#f7d9d7; color:#9a2f27; }
   .ticket-summary-row{ font-size:12px; color:var(--text-mid); margin-top:12px; text-align:right; }
 
@@ -124,6 +122,7 @@
   table.activity-table td{ font-size:12px; color:var(--text-dark); padding:8px 8px; border-bottom:1px solid #f0f2f0; }
   table.activity-table td.type{ text-align:right; color:var(--text-mid); }
 </style>
+@include('partials.ticket-style')
 </head>
 <body>
 <div class="app">
@@ -245,7 +244,7 @@
       @if($ticketOverdueSummary['total'] > 0)
         <div class="alert-banner">
           <div class="alert-banner-text">
-            <strong>{{ $ticketOverdueSummary['total'] }} {{ $ticketOverdueSummary['total'] === 1 ? 'ticket is' : 'tickets are' }} overdue{{ $ticketOverdueSummary['urgent'] > 0 ? ' (' . $ticketOverdueSummary['urgent'] . ' urgent)' : '' }}.</strong>
+            <strong>{{ $ticketOverdueSummary['total'] }} {{ $ticketOverdueSummary['total'] === 1 ? 'ticket is' : 'tickets are' }} overdue{{ $ticketOverdueSummary['critical'] > 0 ? ' (' . $ticketOverdueSummary['critical'] . ' critical or high)' : '' }}.</strong>
             <span>Overdue tickets are listed first on the Tickets page.</span>
           </div>
           <a href="{{ route('tickets.index') }}" class="alert-review-btn" style="text-decoration:none;">View Tickets</a>
@@ -280,7 +279,7 @@
                   <div class="ticket-meta">
                     <span class="ticket-status-pill status-{{ str_replace(' ', '-', strtolower($ticket['status_label'])) }}">{{ $ticket['status_label'] }}</span>
                     @if($ticket['priority_label'])
-                      <span class="ticket-priority-pill priority-{{ str_replace(' ', '-', strtolower($ticket['priority_label'])) }}">{{ $ticket['priority_label'] }}</span>
+                      <span class="prio {{ $ticket['priority'] }}">{{ $ticket['priority_label'] }}</span>
                     @endif
                     @if($ticket['is_overdue'])
                       <span class="ticket-overdue-pill">Overdue</span>
