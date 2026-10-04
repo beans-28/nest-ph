@@ -160,11 +160,9 @@
         }
 
         .listing-card{ background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,0.25); margin-bottom:24px; }
-        .listing-cover{ width:100%; height:220px; background:#e2e6e2; }
+        .listing-cover{ width:100%; height:clamp(260px, 36vw, 480px); background:#e2e6e2; }
         .listing-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
         .listing-body{ padding:24px 28px; }
-        .listing-badge{ display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid #e2e6e2; border-radius:8px; padding:10px 14px; color:#292420; font-size:11.5px; font-weight:600; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
-        .listing-badge svg{ width:16px; height:16px; color:#194e19; flex-shrink:0; }
         .listing-section-label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:#5b6b60; margin:16px 0 10px 0; }
         .listing-section-label:first-of-type{ margin-top:0; }
         .listing-amenities{ display:flex; flex-wrap:wrap; gap:10px; }
@@ -173,8 +171,6 @@
         .listing-rules{ list-style:decimal; padding-left:24px; margin:0; }
         .listing-rules-section{ font-size:13px; font-weight:700; color:#1f5130; margin:14px 0 4px 0; }
         .listing-rules li{ font-size:13px; color:#33393c; line-height:1.8; }
-        .listing-badge-image{ display:block; max-width:340px; margin-bottom:16px; }
-        .listing-badge-image img{ display:block; max-width:100%; max-height:220px; width:auto; height:auto; object-fit:contain; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
                 .reviews-card{ background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,0.25); margin-bottom:24px; padding:24px 28px; }
         .reviews-summary{ display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start; margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid #e2e6e2; }
         .reviews-score{ text-align:center; flex-shrink:0; }
@@ -213,16 +209,6 @@
                 <div class="listing-cover"><img src="{{ $coverPhotoUrl }}" alt="{{ $dormName }}"></div>
             @endif
             <div class="listing-body">
-                @if($isBirVerified)
-                    @if($birRegistrationImageUrl)
-                        <div class="listing-badge-image"><img src="{{ $birRegistrationImageUrl }}" alt="Registered with the Bureau of Internal Revenue" loading="lazy"></div>
-                    @else
-                        <div class="listing-badge">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                            <span>Registered with the Bureau of Internal Revenue</span>
-                        </div>
-                    @endif
-                @endif
                 @if($amenitiesList->count())
                     <div class="listing-section-label">Amenities</div>
                     <div class="listing-amenities">
