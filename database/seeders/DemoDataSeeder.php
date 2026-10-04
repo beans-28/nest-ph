@@ -39,8 +39,9 @@ use Illuminate\Support\Str;
  *
  * Run with:  php artisan db:seed --class=DemoDataSeeder
  *
- * All dates are relative to the day it's run, so re-run it the day before
- * the defense. Because rent is due on the 1st, the run date matters:
+ * All dates are built around the defense day, DEFENSE_DATE (October 6,
+ * 2026), whatever day it's actually run (set DEMO_DATE in .env to use
+ * another day). Because rent is due on the 1st, that date matters:
  *   - run on the 1st-4th (within the grace period): this month's bills of
  *     the "unpaid / partial / proof" demo tenants are this month's,
  *     not yet overdue;
@@ -56,6 +57,9 @@ use Illuminate\Support\Str;
 class DemoDataSeeder extends Seeder
 {
     private const PASSWORD = 'Password123!';
+
+    /** Capstone defense day: the date all demo data is built around. */
+    private const DEFENSE_DATE = '2026-10-06';
 
     private const OWNER_EMAIL = 'owner@nestph.test';
 
@@ -122,8 +126,24 @@ class DemoDataSeeder extends Seeder
             throw new \RuntimeException('DemoDataSeeder refuses to run in production: it deletes existing data.');
         }
 
+        // Every date is built around the defense day (not the day the seeder
+        // runs), so the data looks right on October 6 even if it's seeded
+        // earlier. "now()" is frozen at 8:00 AM that day while seeding, then
+        // released. Override with DEMO_DATE=YYYY-MM-DD in .env if the date moves.
+        Carbon::setTestNow(Carbon::parse(env('DEMO_DATE', self::DEFENSE_DATE))->setTime(8, 0));
         $this->today = now()->startOfDay();
 
+        try {
+            $this->seedEverything();
+        } finally {
+            Carbon::setTestNow();
+        }
+
+        $this->command?->info('Demo data seeded for Pureza Station Dormitory as of ' . $this->today->format('F j, Y') . '. Every password is ' . self::PASSWORD);
+    }
+
+    private function seedEverything(): void
+    {
         // No wrapping transaction: MySQL's TRUNCATE can't be rolled back anyway.
         $this->wipe();
         $this->setUpDormitory();
@@ -133,14 +153,14 @@ class DemoDataSeeder extends Seeder
         $this->seedTenants();
         $this->seedCurrentTenants();
         $this->seedFormerTenants();
+        $this->seedTenantReports();
         $this->seedPendingApplications();
         $this->seedMonthlyExpenses();
         $this->seedInquiries();
         $this->seedAnnouncements();
+        $this->seedTenantNotifications();
         $this->prepareVrDemo();
         $this->syncRoomStatuses();
-
-        $this->command?->info('Demo data seeded for Pureza Station Dormitory. Every password is ' . self::PASSWORD);
     }
 
     /* ------------------------------------------------------------------ */
@@ -557,6 +577,18 @@ class DemoDataSeeder extends Seeder
                 'Brgy. Balibago, Sta. Rosa City, Laguna', 'Victor Sy', 'Father', '303-5', 'unpaid', 'L' => 2, 'k' => 0],
             ['Emmanuel Jose', 'Villareal', 'male', '2002-07-21', 'part_time_employee', '7-Eleven (Legarda branch)', 'Legarda St., Sampaloc, Manila',
                 'Brgy. San Vicente, Tacloban City, Leyte', 'Nelia Villareal', 'Mother', '303-6', 'paid', 'L' => 24, 'k' => 4],
+
+            // ---- Escalation ladder: one tenant at each stage not covered above ----
+            // (Ben = Stage 2, Camille = Stage 2 paused, John Paul = Stage 4 with
+            // the emergency-contact SMS skipped, Joseph = Stage 6 blacklisted.)
+            // Stage 3: portal restricted, waiting for the emergency-contact step.
+            ['Rowell Dominic', 'Lacsamana', 'male', '2003-08-29', 'student', 'Technological University of the Philippines', 'Ayala Blvd., Ermita, Manila',
+                'Brgy. Poblacion, Pagsanjan, Laguna', 'Corazon Lacsamana', 'Mother', '401-1', 'overdue', 'L' => 6, 'k' => 2, 'days' => 8,
+                'consent' => true],
+            // Stage 5: emergency contact texted and a demand letter issued -- one step from blacklisting.
+            ['Trisha Mae', 'Galvez', 'female', '2004-04-04', 'working_student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
+                'Brgy. Sta. Lucia, San Fernando, Pampanga', 'Edgardo Galvez', 'Father', '401-2', 'overdue', 'L' => 10, 'k' => 3, 'days' => 10,
+                'consent' => true],
         ];
     }
 
@@ -589,7 +621,7 @@ class DemoDataSeeder extends Seeder
             // first monthly bill is the month after. k+1 bills in total.
             $start = $scenario === 'pending_movein'
                 ? $this->today->copy()->addDays(3 + $n % 3)
-                : $lastMonth->copy()->subMonthsNoOverflow($k + 1)->addDays(($spec['L'] ?? 0) % 27);
+                : $lastMonth->copy()->subMonthsNoOverflow($k + 1)->addDays(($spec['L'] ?? 0) % 27)->min($this->today->copy()->subDays(2));
 
             $minEnd = DormitoryProfile::current()->minimumEndDate($start);
             $end = match ($lease) {
@@ -1467,7 +1499,8 @@ class DemoDataSeeder extends Seeder
             'title' => $title,
             'category' => $cat,
             'description' => $desc,
-            'attachment_paths' => null,
+            // Tenants can attach up to 3 photos; two demo tickets have one.
+            'attachment_paths' => in_array($n, [2, 20], true) ? json_encode([$this->files['ticket_photo']]) : null,
             // Scored the same way a real submission is.
             ...\App\Models\MaintenanceTicket::autoPriorityFor($cat, $title, $desc),
             'responded_at' => ($status !== 'open' || $replies) ? $created->copy()->addMinutes(20) : null,
@@ -1494,16 +1527,186 @@ class DemoDataSeeder extends Seeder
 
     private function review(int $tenantId, int $rating, string $comment): void
     {
+        // The first review shows the "photos on a review" feature, using the
+        // dorm's own room photos (reviews allow up to 3).
+        static $photosUsed = false;
+        $photos = null;
+        if (! $photosUsed) {
+            $paths = DB::table('room_photos')->orderBy('id')->limit(2)->pluck('path')->all();
+            $photos = $paths ? json_encode($paths) : null;
+            $photosUsed = true;
+        }
+
         $at = $this->today->copy()->subDays(5 + $tenantId % 20);
         DB::table('reviews')->insert([
             'tenant_id' => $tenantId,
             'rating' => $rating,
             'comment' => $comment,
+            'photos' => $photos,
             'is_approved' => true,
             'status' => 'published',
             'created_at' => $at,
             'updated_at' => $at,
         ]);
+    }
+
+    /**
+     * "Report a Tenant" tickets: one tenant reporting another, at each
+     * stage (new, being handled, resolved).
+     */
+    private function seedTenantReports(): void
+    {
+        $t = fn (string $first, string $last) => DB::table('tenants')->where('email', $this->emailFor($first, $last))->first();
+
+        $reports = [
+            // reporter, reported, reason, title, description, status, days ago, assignee, replies
+            [['Hannah Grace', 'Soriano'], ['Nicole Joy', 'Ramos'], 'noise_disturbance', 'Roommate playing music past quiet hours',
+                'Nagpapatugtog po siya ng malakas na music hanggang 1 AM, kahit quiet hours na po ng 10 PM. Hindi po ako makatulog bago ang exam.', 'open', 0, null, []],
+            [['Emmanuel Jose', 'Villareal'], ['Kenneth Bryan', 'Sy'], 'unauthorized_visitors', 'Visitor stayed overnight in Room 303',
+                'May bisita po siyang lalaki na nag-overnight sa room kagabi. Bawal po ang overnight visitors (Rules and Regulations).', 'in_progress', 2, 'jerome',
+                [['admin', 'jerome', 'Salamat po sa report. Kakausapin namin siya at titingnan ang visitor logbook ng guard.']]],
+            [['Angela Marie', 'Villanueva'], ['Bea Katrina', 'Pascual'], 'cleanliness_hygiene', 'Leftover food left in the room',
+                'Ilang araw na pong may naiwang pagkain sa table, nagkakaroon na po ng ipis.', 'resolved', 8, 'kristine',
+                [['admin', 'kristine', 'Na-remind na po namin si Bea at nalinis na ang area. Paki-report lang po ulit kung maulit.'], ['tenant', null, 'Okay na po, salamat!']]],
+        ];
+
+        foreach ($reports as $i => [$reporter, $reported, $reason, $title, $desc, $status, $daysAgo, $assignee, $replies]) {
+            $from = $t(...$reporter);
+            $about = $t(...$reported);
+            if (! $from || ! $about) {
+                continue;
+            }
+            $created = $daysAgo === 0 ? now()->subHours(1) : $this->today->copy()->subDays($daysAgo)->setTime(21, 15 + $i * 10);
+            $bedId = DB::table('lease_contracts')->where('tenant_id', $from->id)->latest('id')->value('bed_id');
+
+            $ticketId = DB::table('maintenance_tickets')->insertGetId([
+                'tenant_id' => $from->id,
+                'bed_id' => $bedId,
+                'reported_tenant_id' => $about->id,
+                'report_reason' => $reason,
+                'title' => $title,
+                'category' => 'tenant_report',
+                'description' => $desc,
+                'attachment_paths' => null,
+                ...\App\Models\MaintenanceTicket::autoPriorityFor('tenant_report', $title, $desc, $reason),
+                'responded_at' => $replies ? $created->copy()->addMinutes(45) : null,
+                'status' => $status,
+                'assigned_to' => $assignee ? $this->admins[$assignee] : null,
+                'resolved_at' => $status === 'resolved' ? $created->copy()->addDays(1) : null,
+                'created_at' => $created,
+                'updated_at' => $created->copy()->addHours(count($replies) + 1),
+            ]);
+
+            foreach ($replies as $r => [$who, $admin, $message]) {
+                DB::table('ticket_replies')->insert([
+                    'ticket_id' => $ticketId,
+                    'user_id' => $who === 'admin' ? $this->admins[$admin] : null,
+                    'tenant_id' => $who === 'tenant' ? $from->id : null,
+                    'message' => $message,
+                    'created_at' => min($created->copy()->addHours(($r + 1) * 3), now()),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * The tenant bell (notification panel), filled with what the app itself
+     * would have sent each scenario tenant: new bills, payment results,
+     * penalties, escalation steps, ticket replies and deposit refunds.
+     * Anything older than 3 days is marked as read. Reminders that the app
+     * makes on its own (bill due / overdue, lease ending) are left to it.
+     */
+    private function seedTenantNotifications(): void
+    {
+        $peso = fn ($n) => '₱' . number_format((float) $n, 2);
+        $rows = [];
+        $add = function (int $tenantId, string $type, string $title, ?string $body, string $link, $at, ?string $key = null) use (&$rows) {
+            $at = Carbon::parse($at);
+            $rows[] = [
+                'tenant_id' => $tenantId, 'type' => $type, 'title' => $title, 'body' => $body, 'link' => $link, 'dedupe_key' => $key,
+                'read_at' => $at->lt($this->today->copy()->subDays(3)) ? $at->copy()->addHours(5) : null,
+                'created_at' => $at, 'updated_at' => $at,
+            ];
+        };
+
+        // Only the hand-made scenario tenants (and the moved-out Gabriel), so the panel stays readable.
+        $emails = collect($this->tenantSpecs())->map(fn ($s) => $this->emailFor($s[0], $s[1]));
+        $tenants = DB::table('tenants')->whereIn('email', $emails)->get()->keyBy('id');
+        $ids = $tenants->keys();
+
+        // New bills: the latest monthly bill of each tenant.
+        foreach (DB::table('billing_statements')->whereIn('tenant_id', $ids)->where('type', 'monthly')
+            ->whereIn('id', DB::table('billing_statements')->selectRaw('MAX(id)')->where('type', 'monthly')->groupBy('tenant_id'))->get() as $bill) {
+            $add($bill->tenant_id, 'bill_new', 'Your bill for ' . Carbon::parse($bill->billing_period_start)->format('F Y') . ' is ready',
+                'Total: ' . $peso($bill->base_rent) . ', due on ' . Carbon::parse($bill->due_date)->format('F j, Y') . '.', '/billing', $bill->created_at);
+        }
+
+        // Payment results from the last 45 days.
+        foreach (DB::table('payments')->whereIn('tenant_id', $ids)->whereIn('status', ['approved', 'rejected'])
+            ->where('created_at', '>=', $this->today->copy()->subDays(45))->get() as $p) {
+            $at = $p->reviewed_at ?? $p->created_at;
+            $p->status === 'approved'
+                ? $add($p->tenant_id, 'payment_approved',
+                    $p->payment_method === 'cash' ? 'Cash payment of ' . $peso($p->amount_paid) . ' received' : 'Your payment of ' . $peso($p->amount_paid) . ' was approved',
+                    'Thank you. Your receipt is ready to download on the Billing page.', '/billing', $at)
+                : $add($p->tenant_id, 'payment_rejected', 'Your payment proof of ' . $peso($p->amount_paid) . ' was not accepted',
+                    'Reason: ' . $p->review_notes . ' Please submit a new proof of payment.', '/billing', $at);
+        }
+
+        // Penalties: automatic late fees on unpaid bills, manual and damage charges, waivers.
+        foreach (DB::table('penalties')->whereIn('tenant_id', $ids)->where('created_at', '>=', $this->today->copy()->subDays(45))->get() as $pen) {
+            $billPaid = $pen->billing_id && DB::table('billing_statements')->where('id', $pen->billing_id)->value('status') === 'paid';
+            if ($pen->type === 'late_payment' && ! $billPaid) {
+                $add($pen->tenant_id, 'late_penalty', 'A late payment penalty was added',
+                    'Your rent was not paid within the grace period, so a one-time penalty of ' . $peso($pen->amount) . ' was added to the bill.',
+                    '/billing', $pen->created_at, "late_penalty:{$pen->billing_id}");
+            } elseif ($pen->status === 'waived') {
+                $add($pen->tenant_id, 'penalty_waived', 'A penalty of ' . $peso($pen->amount) . ' was waived',
+                    $pen->description . '. You no longer need to pay it.', '/billing', Carbon::parse($pen->created_at)->addDay());
+            } elseif ($pen->type !== 'late_payment') {
+                $add($pen->tenant_id, 'penalty_added',
+                    ($pen->type === 'damage' ? 'A damage charge of ' : 'A penalty of ') . $peso($pen->amount) . ' was added',
+                    $pen->description . '. It will be included in your next bill.', '/billing', $pen->created_at);
+            }
+        }
+
+        // Escalation steps the tenant is told about.
+        foreach (DB::table('escalation_logs')->whereIn('tenant_id', $ids)->whereIn('action_type', ['portal_restricted', 'demand_letter_generated'])->get() as $log) {
+            $log->action_type === 'portal_restricted'
+                ? $add($log->tenant_id, 'account_restricted', 'Your portal access is restricted',
+                    'Because of an unpaid balance, only Billing and Delinquency are available. Settle your balance to restore full access.',
+                    '/billing', $log->created_at, "account_restricted:{$log->billing_id}")
+                : $add($log->tenant_id, 'demand_letter', 'A formal demand letter has been issued',
+                    'Pay ' . $peso(DB::table('billing_statements')->where('tenant_id', $log->tenant_id)->where('status', 'overdue')->sum('total_amount'))
+                        . ' by ' . Carbon::parse($log->created_at)->addDays(7)->format('F j, Y') . ' to avoid being blacklisted. You can download the letter on the Delinquency page.',
+                    '/my/delinquency', $log->created_at, "demand_letter:{$log->billing_id}");
+        }
+
+        // Staff replies and resolved tickets.
+        foreach (DB::table('ticket_replies')->join('maintenance_tickets', 'maintenance_tickets.id', '=', 'ticket_replies.ticket_id')
+            ->whereIn('maintenance_tickets.tenant_id', $ids)->whereNotNull('ticket_replies.user_id')
+            ->select('maintenance_tickets.tenant_id', 'maintenance_tickets.title', 'ticket_replies.message', 'ticket_replies.created_at')->get() as $r) {
+            $add($r->tenant_id, 'ticket_reply', "New reply on your ticket \"{$r->title}\"", Str::limit($r->message, 140), '/my/tickets', $r->created_at);
+        }
+        foreach (DB::table('maintenance_tickets')->whereIn('tenant_id', $ids)->where('status', 'resolved')->get() as $tk) {
+            $add($tk->tenant_id, 'ticket_resolved', "Your ticket \"{$tk->title}\" is now Resolved", null, '/my/tickets', $tk->resolved_at);
+        }
+        foreach (DB::table('maintenance_tickets')->whereIn('tenant_id', $ids)->whereNotNull('revised_due_at')->get() as $tk) {
+            $add($tk->tenant_id, 'ticket_update', "Your ticket \"{$tk->title}\" is delayed",
+                'Expected resolution: ' . Carbon::parse($tk->revised_due_at)->format('M j, Y g:ia') . '. Reason: ' . Str::limit($tk->delay_reason, 120),
+                '/my/tickets', $this->today->copy()->subDay()->setTime(16, 0));
+        }
+
+        // Deposit refunds after moving out.
+        foreach (DB::table('deposit_refunds')->whereIn('tenant_id', $ids)->get() as $d) {
+            $add($d->tenant_id, 'deposit_refunded', 'Your security deposit refund of ' . $peso($d->refund_amount) . ' was recorded',
+                'Sent via ' . $d->refund_method . ' on ' . Carbon::parse($d->refunded_at)->format('F j, Y') . '.', '/billing', $d->created_at);
+        }
+
+        foreach (array_chunk($rows, 200) as $chunk) {
+            DB::table('tenant_notifications')->insert($chunk);
+        }
+        $this->command?->info('Seeded ' . count($rows) . ' tenant notifications.');
     }
 
     /* ------------------------------------------------------------------ */
@@ -1518,7 +1721,8 @@ class DemoDataSeeder extends Seeder
             ['Ana Beatriz', 'Salonga', 'female', '2006-03-08', 'student', 'Polytechnic University of the Philippines', '202-2', 'pending', null, 2, true],
             ['Ryan Christopher', 'Santiago', 'male', '2005-09-18', 'student', 'University of Santo Tomas', '203-3', 'pending', null, 1, true],
             ['Alyssa Mae', 'Mercado', 'female', '2006-04-03', 'student', 'Far Eastern University', '301-3', 'pending', null, 0, false],
-            ['Kevin James', 'Dizon', 'male', '2000-10-10', 'full_time_employee', 'Concentrix Philippines', '302-2', 'pending', null, 2, true],
+            // Waiting 5 days: past the 3-day limit, so it shows as overdue on the admin bell (admins already emailed).
+            ['Kevin James', 'Dizon', 'male', '2000-10-10', 'full_time_employee', 'Concentrix Philippines', '302-2', 'pending', null, 5, true],
             ['Sophia Isabel', 'Lopez', 'female', '2004-05-25', 'student', 'San Beda University', '303-2', 'rejected',
                 'Requested stay is only 1 month; the dormitory requires a minimum 3-month stay (Payments and Fees Schedule 4.1). A short-term stay needs a separate agreement -- please contact the office.', 6, false],
             ['Daniel Lorenzo', 'Cruz', 'male', '2005-01-15', 'student', 'Mapúa University', '303-3', 're_application_requested',
@@ -1565,6 +1769,8 @@ class DemoDataSeeder extends Seeder
                 'emergency_billing_consent' => $consent,
                 'dpa_consent' => true,
                 'status' => $status,
+                // applications:notify-overdue already emailed the admins about it.
+                'overdue_notified_at' => $status === 'pending' && $daysAgo >= 3 ? $created->copy()->addDays(3)->setTime(7, 0) : null,
                 'rejection_reason' => $status === 'rejected' ? $note : null,
                 're_application_note' => $status === 're_application_requested' ? $note : null,
                 'created_at' => $created,
@@ -1885,6 +2091,8 @@ class DemoDataSeeder extends Seeder
         $disk->put('demo/sample-valid-id.png', $this->demoImage('SAMPLE VALID ID', ['Name: (demo tenant)', 'ID No.: 0000-0000-0000', 'For defense demo only']));
         $disk->put('demo/sample-payment-proof.png', $this->demoImage('SAMPLE PAYMENT PROOF', ['Paid to: Pureza Station Dormitory', 'GCash 0917 893 2970 (Patricia Joy N.)', 'Reference No.: see payment record', 'For defense demo only']));
 
+        $disk->put('demo/sample-ticket-photo.png', $this->demoImage('SAMPLE TICKET PHOTO', ['Photo attached by the tenant', '(e.g. the damaged outlet or ceiling leak)', 'For defense demo only']));
+
         // The file Ana uploads live in Part 2 of the walkthrough.
         $anaAmount = number_format($this->anaMoveInFee(), 2);
         File::ensureDirectoryExists(base_path('docs/demo'));
@@ -1896,6 +2104,7 @@ class DemoDataSeeder extends Seeder
             'id' => ['demo/sample-valid-id.png'],
             'contract' => $disk->exists('contracts/dormitory-contract.pdf') ? 'contracts/dormitory-contract.pdf' : null,
             'proof' => 'demo/sample-payment-proof.png',
+            'ticket_photo' => 'demo/sample-ticket-photo.png',
         ];
     }
 
