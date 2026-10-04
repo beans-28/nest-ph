@@ -96,6 +96,38 @@
   .pw-submit-btn.loading .spinner{ display:inline-block; }
   @keyframes pwspin{ to{ transform:rotate(360deg); } }
 
+  /* ===== Submitted ID (side panel) ===== */
+  .profile-layout{ display:flex; align-items:flex-start; gap:24px; }
+  .profile-layout > .settings-card{ flex:1 1 640px; }
+  .id-card{
+    flex:0 0 320px; background:var(--card-bg); border:1px solid var(--border); border-radius:14px;
+    padding:22px 22px 18px; position:sticky; top:20px;
+  }
+  .id-card .profile-section-title{ margin-bottom:16px; }
+  .id-frame{
+    display:block; position:relative; border-radius:10px; overflow:hidden; background:var(--sage-50);
+    border:1px solid var(--sage-200); aspect-ratio:1.586 / 1; box-shadow:0 6px 18px rgba(30,60,40,0.08);
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .id-frame:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(30,60,40,0.14); }
+  .id-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .id-frame .id-zoom{
+    position:absolute; right:10px; bottom:10px; background:rgba(255,255,255,0.92); color:var(--green-dark);
+    font-size:11px; font-weight:700; padding:5px 10px; border-radius:20px; opacity:0; transition:opacity 0.2s ease;
+  }
+  .id-frame:hover .id-zoom{ opacity:1; }
+  .id-placeholder{
+    height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+    color:var(--green-accent); font-size:12.5px; font-weight:600; text-align:center; padding:16px;
+  }
+  .id-placeholder svg{ width:34px; height:34px; }
+  .id-caption{ font-size:11.5px; color:var(--text-light); margin:12px 0 0 0; line-height:1.5; }
+  @media (max-width: 1024px){
+    .profile-layout{ flex-direction:column; }
+    .profile-layout > .settings-card{ flex:none; width:100%; }
+    .id-card{ position:static; flex:none; width:100%; max-width:640px; box-sizing:border-box; }
+  }
+
   @media (max-width: 640px){
     .info-grid{ grid-template-columns:1fr; }
     .request-edit-banner{ flex-direction:column; align-items:flex-start; }
@@ -138,6 +170,13 @@
           <a href="{{ route('tenant.tickets') }}" class="request-edit-btn">Submit a Ticket</a>
         </div>
 
+        @php
+          $idDocPath = $tenant->id_document_path ?? null;
+          $idDocUrl = $idDocPath ? \Illuminate\Support\Facades\Storage::disk('public')->url($idDocPath) : null;
+          $idDocIsPdf = $idDocPath && str_ends_with(strtolower($idDocPath), '.pdf');
+        @endphp
+
+        <div class="profile-layout">
         <div class="settings-card">
 
           <div class="profile-section">
@@ -221,6 +260,33 @@
             </div>
           </div>
 
+        </div>
+
+        <aside class="id-card" aria-label="Submitted ID">
+          <h3 class="profile-section-title">Submitted ID</h3>
+          @if($idDocUrl)
+            <a href="{{ $idDocUrl }}" target="_blank" rel="noopener" class="id-frame" title="Open full size">
+              @if($idDocIsPdf)
+                <div class="id-placeholder">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Your ID was uploaded as a PDF<br>Tap to view
+                </div>
+              @else
+                <img src="{{ $idDocUrl }}" alt="Your submitted valid ID">
+                <span class="id-zoom">View full size</span>
+              @endif
+            </a>
+            <p class="id-caption">This is the ID you submitted when you moved in. Only you and the admin can see it.</p>
+          @else
+            <div class="id-frame" style="pointer-events:none;">
+              <div class="id-placeholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2.5"/><path d="M13 10h5M13 14h4"/></svg>
+                No ID on file yet
+              </div>
+            </div>
+            <p class="id-caption">If you already submitted one, send a ticket and the admin will attach it to your account.</p>
+          @endif
+        </aside>
         </div>
       </div>
 
