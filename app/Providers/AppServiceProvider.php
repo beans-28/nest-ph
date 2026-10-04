@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Models\DormitoryProfile;
 use App\Rules\HasUppercase;
 use Illuminate\Validation\Rules\Password;
+use App\Mail\Transport\SplitTransport;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +26,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // "split" mailer: real inbox (Gmail) for listed addresses, Mailtrap for
+        // everyone else. Configured in config/mail.php.
+        Mail::extend('split', fn (array $config) => new SplitTransport(
+            Mail::mailer($config['real'])->getSymfonyTransport(),
+            Mail::mailer($config['sandbox'])->getSymfonyTransport(),
+            array_values(array_filter(array_map(
+                fn ($email) => strtolower(trim($email)),
+                explode(',', (string) $config['real_recipients'])
+            ))),
+        ));
+
         // Password policy for every password a person chooses (reset, change,
         // register, owner setup): 8+ characters with at least one number, one
         // symbol and one uppercase letter. Anything that calls

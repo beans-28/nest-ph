@@ -170,6 +170,14 @@
             padding: 12px 14px; font-size: 13.5px; color: #4c5c6b;
             font-family: inherit; width: 100%; box-shadow: 0 0 2px rgba(23,25,28,0.05);
         }
+        /* iPhone Safari draws date inputs its own way: wider than the box, centered text,
+           and squashed height when empty. Reset that so it matches the other fields. */
+        .field input[type="date"] {
+            -webkit-appearance: none; appearance: none;
+            box-sizing: border-box; min-width: 0; max-width: 100%;
+            min-height: 44px; text-align: left; line-height: 1.3;
+        }
+        .field input[type="date"]::-webkit-date-and-time-value { text-align: left; }
         .field textarea { resize: vertical; min-height: 70px; }
         .field-hint { font-size: 11.5px; color: #5b6b60; line-height: 1.4; }
         .contract-resign-note { margin-top: 10px; font-size: 12.5px; color: #8a4b0f; background: #fdf3e6; border: 1px solid #f1d6b3; border-radius: 8px; padding: 10px 12px; }

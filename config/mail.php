@@ -49,6 +49,38 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        // Mailtrap sandbox: catches emails so they never reach a real inbox.
+        'mailtrap' => [
+            'transport' => 'smtp',
+            'host' => env('MAILTRAP_HOST', 'sandbox.smtp.mailtrap.io'),
+            'port' => env('MAILTRAP_PORT', 2525),
+            'username' => env('MAILTRAP_USERNAME'),
+            'password' => env('MAILTRAP_PASSWORD'),
+            'timeout' => null,
+        ],
+
+        // Gmail SMTP: delivers to real inboxes. The password is a Gmail App
+        // Password (Google Account > Security > App passwords), not the
+        // normal Gmail password.
+        'gmail' => [
+            'transport' => 'smtp',
+            'scheme' => 'smtp',
+            'host' => 'smtp.gmail.com',
+            'port' => 587,
+            'username' => env('GMAIL_USERNAME'),
+            'password' => env('GMAIL_APP_PASSWORD'),
+            'timeout' => null,
+        ],
+
+        // Uses both: emails to addresses in MAIL_REAL_RECIPIENTS go through
+        // Gmail, everything else goes to Mailtrap. See App\Mail\Transport\SplitTransport.
+        'split' => [
+            'transport' => 'split',
+            'real' => 'gmail',
+            'sandbox' => 'mailtrap',
+            'real_recipients' => env('MAIL_REAL_RECIPIENTS', ''),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],

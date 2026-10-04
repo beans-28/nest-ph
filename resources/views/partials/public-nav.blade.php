@@ -81,7 +81,7 @@
         <a href="{{ route('home') }}" @if(request()->routeIs('home')) aria-current="page" @endif>HOME</a>
         <a href="{{ route('public.rooms') }}" @if(request()->routeIs('public.rooms')) aria-current="page" @endif>ROOMS</a>
         <a href="{{ route('public.vr') }}" @if(request()->routeIs('public.vr')) aria-current="page" @endif>VR TOUR</a>
-        <a href="{{ route('public.dorminfo') }}" class="pill" @if(request()->routeIs('public.dorminfo')) aria-current="page" @endif>About the Dorm</a>
+        <a href="{{ route('public.dorminfo') }}" class="pill" @if(request()->routeIs('public.dorminfo')) aria-current="page" @endif>ABOUT THE DORM</a>
     </div>
     <a href="{{ route('home') }}" class="logo" title="{{ $brandDormName }}"><img src="{{ $brandLogoUrl ?? asset('images/nestph.png') }}" alt="" class="logo-img{{ $brandLogoUrl ? ' logo-img-dorm' : '' }}"> <span class="logo-name">{{ $brandDormName }}</span></a>
     @if(!empty($tenantSession))
