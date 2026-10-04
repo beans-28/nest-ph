@@ -372,8 +372,8 @@ class DemoDataSeeder extends Seeder
             ['502', 5, ['Room with AC, 4 persons', $up], 4, $fourAc, null],
         ];
 
-        // Rooms that already have VR tours become 101 and 102 (what the
-        // walkthrough script expects); then the rest of the old rooms are reused.
+        // Old rooms are reused (rooms with VR tours first); prepareVrDemo()
+        // then moves the tour photos onto Room 105 for the walkthrough script.
         $existingRooms = DB::table('rooms')
             ->leftJoin('vr_scenes', 'vr_scenes.room_id', '=', 'rooms.id')
             ->groupBy('rooms.id')
@@ -1662,18 +1662,42 @@ class DemoDataSeeder extends Seeder
     }
 
     /**
-     * Walkthrough step 1.5: Room 102 keeps its 2 VR photos but loses the
-     * arrows between them, so Vince can add one live. Room 101 keeps its
-     * arrows for Ana to click in step 1.3.
+     * Walkthrough Part 1: Room 105 is the only room with a VR tour. Rooms 101
+     * and 102 are full, and the public VR page only lists rooms with a vacant
+     * bed, so the tour photos are moved onto Room 105 (its one bed is left
+     * vacant). The arrows between them are removed so Vince can add one live
+     * in step 1.4.
      */
     private function prepareVrDemo(): void
     {
-        $roomId = $this->rooms['102']->id ?? null;
-        if (! $roomId) {
+        $target = $this->rooms['105']->id ?? null;
+        if (! $target) {
             return;
         }
-        $scenes = DB::table('vr_scenes')->where('room_id', $roomId)->pluck('id');
+
+        // Take the photos from whichever room has them (102 first: Living Room + Computer Room).
+        $sourceId = null;
+        foreach (['102', '101', '105'] as $no) {
+            $id = $this->rooms[$no]->id ?? null;
+            if ($id && DB::table('vr_scenes')->where('room_id', $id)->exists()) {
+                $sourceId = $id;
+                break;
+            }
+        }
+        if (! $sourceId) {
+            return;
+        }
+
+        DB::table('vr_scenes')->where('room_id', $sourceId)->update(['room_id' => $target]);
+        $scenes = DB::table('vr_scenes')->where('room_id', $target)->pluck('id');
         DB::table('vr_hotspots')->whereIn('vr_scene_id', $scenes)->delete();
+
+        // Any other room keeps its photos but is hidden from visitors.
+        DB::table('rooms')->where('id', '!=', $target)->update(['vr_visibility' => 'draft']);
+        DB::table('rooms')->where('id', $target)->update([
+            'vr_visibility' => 'public',
+            'vr_caption' => 'Solo fan room on the ground floor, near the living room',
+        ]);
     }
 
     /* ------------------------------------------------------------------ */

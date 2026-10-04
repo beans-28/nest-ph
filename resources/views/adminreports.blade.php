@@ -31,6 +31,7 @@
 
   .controls-row{ display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:20px; }
   .field{ display:flex; flex-direction:column; gap:5px; }
+  .field[hidden]{ display:none; }
   .field label{ font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); }
   .field input{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:13px; font-family:var(--font-body); }
   .btn{ border:none; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer; }
@@ -150,6 +151,7 @@
       <div class="report-tabs">
         <button type="button" class="report-tab active" data-type="occupancy">Occupancy Report</button>
         <button type="button" class="report-tab" data-type="financial">Financial / Billing Report</button>
+        <button type="button" class="report-tab" data-type="forecast">Forecast</button>
         <button type="button" class="report-tab" data-type="expenses">Expenses &amp; Profit</button>
       </div>
 
@@ -271,6 +273,8 @@
     $('expensesArea').hidden = !isExpenses;
     $('exportError').classList.remove('visible');
     $('occupancyNote').style.display = currentType === 'occupancy' ? 'block' : 'none';
+    // Forecast always looks at the last 6 months and the next 3, so the dates don't apply.
+    $('startField').hidden = $('endField').hidden = currentType === 'forecast';
     if (isExpenses) loadExpenses();
   }
 
@@ -428,6 +432,70 @@
     });
   }
 
+  // Forecast: last 6 real months, then 3 estimated ones. Estimates are drawn
+  // dashed / faded so nobody mistakes them for recorded numbers.
+  function renderForecast(data){
+    const a = data.assumptions, t = data.totals;
+    const rows = data.history.map(r => ({ ...r, est:false })).concat(data.forecast.map(r => ({ ...r, est:true })));
+    const netClass = t.net < 0 ? 'loss' : 'profit';
+    const cell = v => v === null ? '<span style="color:var(--text-light)">Not recorded</span>' : money(v);
+    let html = `
+      <div class="results-head"><h2>Forecast: ${data.range}</h2></div>
+      <div class="generated-note">Generated ${data.generated_at}. These are estimates, not records.</div>
+      ${a.expense_months === 0 ? `<div class="missing-note">No expenses recorded in the last 6 months, so expected expenses show as ₱0. <button type="button" class="link-btn" id="goExpenses">Record expenses</button></div>` : ''}
+      <div class="stats-row money">
+        <div class="stat-card"><div class="stat-label">Expected Income (3 mo.)</div><div class="stat-value">${money(t.income)}</div></div>
+        <div class="stat-card"><div class="stat-label">Expected Expenses (3 mo.)</div><div class="stat-value">${money(t.expenses)}</div></div>
+        <div class="stat-card ${netClass}"><div class="stat-label">Expected Net</div><div class="stat-value">${money(t.net)}</div></div>
+        <div class="stat-card"><div class="stat-label">Leases Ending</div><div class="stat-value">${t.ending_leases}</div></div>
+      </div>
+      <p class="occupancy-note" style="margin-top:0;">How it's estimated: about <strong>${a.avg_move_ins}</strong> new move-ins a month and <strong>${money(a.income_per_bed)}</strong> collected per occupied bed (averages of the last 6 months), expenses of <strong>${money(a.avg_expenses)}</strong> a month (average of ${a.expense_months} recorded month${a.expense_months === 1 ? '' : 's'}). Tenants whose lease ends are counted as moving out, so if some renew, the real numbers will be higher.</p>
+      <div class="chart-card">
+        <h3>Occupancy rate</h3>
+        <p class="chart-sub">Solid line is actual. Dashed line is the estimate.</p>
+        <div class="chart-box"><canvas id="fcOccChart" role="img" aria-label="Line chart of actual and estimated occupancy rate"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Income vs. expenses</h3>
+        <p class="chart-sub">Faded bars are estimates.</p>
+        <div class="chart-legend"><span style="--swatch:${C.olive}">Income</span><span style="--swatch:${C.red}">Expenses</span></div>
+        <div class="chart-box"><canvas id="fcMoneyChart" role="img" aria-label="Bar chart of actual and estimated income and expenses per month"></canvas></div>
+      </div>
+      <div class="table-scroll"><table class="report-table">
+        <thead><tr><th>Month</th><th>Kind</th><th class="num">Leases Ending</th><th class="num">Occupied</th><th class="num">Occupancy</th><th class="num">Income</th><th class="num">Expenses</th><th class="num">Net</th></tr></thead>
+        <tbody>${rows.map(r => `<tr${r.est ? ' style="font-style:italic"' : ''}><td>${r.label}</td><td>${r.est ? 'Estimate' : 'Actual'}</td><td class="num">${r.est ? r.ending_leases : ''}</td><td class="num">${r.occupied}</td><td class="num">${r.occupancy_rate}%</td><td class="num">${money(r.income)}</td><td class="num">${cell(r.expenses)}</td><td class="num ${r.net < 0 ? 'neg' : ''}">${r.net === null ? '&mdash;' : money(r.net)}</td></tr>`).join('')}</tbody>
+      </table></div>`;
+    $('resultsArea').innerHTML = html;
+    const go = $('goExpenses');
+    if (go) go.addEventListener('click', () => document.querySelector('.report-tab[data-type="expenses"]').click());
+
+    const labels = rows.map(r => shortMonth(r.label));
+    const firstEst = data.history.length; // index of the first estimated month
+    chartOrFallback('fcOccChart', {
+      type:'line',
+      data:{ labels, datasets:[{ label:'Occupancy rate', data:rows.map(r => r.occupancy_rate), borderColor:C.green, backgroundColor:C.greenSoft,
+        fill:true, tension:0, pointRadius:3, pointBackgroundColor:C.green,
+        // Dash the line from the last actual month onwards
+        segment:{ borderDash: ctx => ctx.p1DataIndex >= firstEst ? [6, 4] : undefined } }] },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{ label: c => ` ${rows[c.dataIndex].est ? 'Estimated' : 'Actual'}: ${c.parsed.y}% (${rows[c.dataIndex].occupied}/${data.total_beds} beds)` } } },
+        scales:{ x:xAxis, y:{ min:0, max:100, border:{ display:false }, grid:{ color:C.grid }, ticks:{ stepSize:25, callback:v => v + '%' } } } }
+    });
+    const fade = (color, soft) => rows.map(r => r.est ? soft : color);
+    chartOrFallback('fcMoneyChart', {
+      type:'bar',
+      data:{ labels, datasets:[
+        { label:'Income', data:rows.map(r => r.income), backgroundColor:fade(C.olive, 'rgba(143,180,143,0.4)'), borderRadius:4, maxBarThickness:30 },
+        { label:'Expenses', data:rows.map(r => r.expenses), backgroundColor:fade(C.red, 'rgba(192,80,77,0.35)'), borderRadius:4, maxBarThickness:30 },
+      ] },
+      options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
+        plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{
+          title: items => items[0].label + (rows[items[0].dataIndex].est ? ' (estimate)' : ''),
+          label: c => ` ${c.dataset.label}: ${c.parsed.y === null ? 'not recorded' : money(c.parsed.y)}` } } },
+        scales:{ x:xAxis, y:{ beginAtZero:true, border:{ display:false }, grid:{ color:C.grid }, ticks:{ maxTicksLimit:5, callback:shortPeso } } } }
+    });
+  }
+
   $('generateBtn').addEventListener('click', async function(){
     destroyCharts();
     this.disabled = true;
@@ -437,7 +505,9 @@
       const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
       if(!res.ok) throw new Error('Could not generate the report.');
       const data = await res.json();
-      if(currentType === 'occupancy'){ renderOccupancy(data); } else { renderFinancial(data); }
+      if(currentType === 'occupancy'){ renderOccupancy(data); }
+      else if(currentType === 'forecast'){ renderForecast(data); }
+      else { renderFinancial(data); }
       hasResults = true;
       generatedParams = rangeParams();
       generatedParams.set('type', currentType);

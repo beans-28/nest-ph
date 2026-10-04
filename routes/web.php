@@ -223,6 +223,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/reports', [ReportController::class, 'page'])->name('reports.index');
     Route::get('/reports/occupancy', [ReportController::class, 'occupancy']);
     Route::get('/reports/financial', [ReportController::class, 'financial']);
+    Route::get('/reports/forecast', [ReportController::class, 'forecast']);
     Route::get('/reports/export', [ReportController::class, 'export']);
     Route::get('/reports/expenses', [ReportController::class, 'showExpenses']);
     Route::post('/reports/expenses', [ReportController::class, 'saveExpenses']);

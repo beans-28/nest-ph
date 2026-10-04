@@ -81,7 +81,16 @@ class ReportController extends Controller
     }
 
     /**
-     * GET /reports/export?type=occupancy|financial&start=&end=&format=xlsx|pdf
+     * GET /reports/forecast (JSON) — estimates the next 3 months from the
+     * last 6 months of real data. See computeForecast for the method.
+     */
+    public function forecast(Request $request): JsonResponse
+    {
+        return response()->json($this->computeForecast());
+    }
+
+    /**
+     * GET /reports/export?type=occupancy|financial|forecast&start=&end=&format=xlsx|pdf
      * Table 36, step 4 — "Click Export -> generate and download the
      * report." Two formats:
      *   - xlsx (default): a styled Excel workbook (PhpSpreadsheet). This
@@ -92,7 +101,7 @@ class ReportController extends Controller
     public function export(Request $request)
     {
         $data = $request->validate([
-            'type' => ['required', Rule::in(['occupancy', 'financial'])],
+            'type' => ['required', Rule::in(['occupancy', 'financial', 'forecast'])],
             'start' => ['nullable', 'date'],
             'end' => ['nullable', 'date'],
             'format' => ['nullable', Rule::in(['xlsx', 'pdf'])],
@@ -101,6 +110,8 @@ class ReportController extends Controller
         $type = $data['type'];
         if ($type === 'occupancy') {
             $report = $this->computeOccupancy();
+        } elseif ($type === 'forecast') {
+            $report = $this->computeForecast();
         } else {
             [$start, $end] = $this->resolveRange($request);
             $report = $this->computeFinancial($start, $end);
@@ -140,6 +151,11 @@ class ReportController extends Controller
     private const GREY = 'F2F2F2';
     private const RED = 'BA2828';
     private const PESO_FORMAT = '"₱"#,##0.00';
+    private const REPORT_NAMES = [
+        'occupancy' => 'Occupancy Report',
+        'financial' => 'Financial / Billing Report',
+        'forecast' => 'Forecast Report',
+    ];
 
     /**
      * Builds the Excel workbook. Layout, top to bottom: dorm name title,
@@ -150,12 +166,12 @@ class ReportController extends Controller
     {
         $book = new Spreadsheet();
         $book->getDefaultStyle()->getFont()->setName('Calibri')->setSize(11);
-        $reportName = $type === 'occupancy' ? 'Occupancy Report' : 'Financial / Billing Report';
+        $reportName = self::REPORT_NAMES[$type];
         $book->getProperties()->setCreator($dormName)->setTitle("{$dormName} - {$reportName}")
             ->setCompany('Generated via NEST.PH');
         $sheet = $book->getActiveSheet();
-        $sheet->setTitle($type === 'occupancy' ? 'Occupancy' : 'Financial');
-        $lastCol = $type === 'occupancy' ? 'G' : 'B';
+        $sheet->setTitle(ucfirst($type));
+        $lastCol = ['occupancy' => 'G', 'financial' => 'B', 'forecast' => 'H'][$type];
 
         // Title block
         $sheet->setCellValue('A1', $dormName);
@@ -168,10 +184,12 @@ class ReportController extends Controller
 
         $sheet->setCellValue('A4', 'Date Generated:');
         $sheet->setCellValue('B4', now()->format('F j, Y g:i A'));
-        $sheet->setCellValue('A5', $type === 'occupancy' ? 'Coverage:' : 'Period Covered:');
-        $sheet->setCellValue('B5', $type === 'occupancy'
-            ? 'Current room and bed status (live snapshot)'
-            : $report['range']['start'] . ' to ' . $report['range']['end']);
+        $sheet->setCellValue('A5', $type === 'financial' ? 'Period Covered:' : 'Coverage:');
+        $sheet->setCellValue('B5', match ($type) {
+            'occupancy' => 'Current room and bed status (live snapshot)',
+            'forecast' => 'Estimates for ' . $report['range'] . ', based on the last 6 months',
+            default => $report['range']['start'] . ' to ' . $report['range']['end'],
+        });
         $sheet->getStyle('A4:A5')->getFont()->setBold(true);
         // Let the info text spill across the columns instead of being cut off
         $sheet->getStyle('B4:B5')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
@@ -218,6 +236,8 @@ class ReportController extends Controller
                 [DataSeries::TYPE_BARCHART, 'Moved In', "D{$first}:D{$last}", '8FB48F'],
                 [DataSeries::TYPE_BARCHART, 'Moved Out', "E{$first}:E{$last}", 'C0504D'],
             ], '0', 'G');
+        } elseif ($type === 'forecast') {
+            $row = $this->xlsxForecast($sheet, $row, $report);
         } else {
             $row = $this->xlsxTable($sheet, $row, 'Revenue and Profit', ['Description', 'Amount'], [
                 ['Total Collected', $report['total_collected']],
@@ -457,6 +477,22 @@ class ReportController extends Controller
                     ['Moved in', '8FB48F', $t->pluck('moved_in')->all()],
                     ['Moved out', 'C0504D', $t->pluck('moved_out')->all()],
                 ], null, fn ($v) => (string) round($v, 1)),
+            ];
+        }
+
+        if ($type === 'forecast') {
+            // Estimated months get a * after the label (explained in the PDF).
+            $rows = collect($report['history'])->concat($report['forecast']);
+            $labels = $rows->map(fn ($r) => substr($r['label'], 0, 3) . " '" . substr($r['label'], -2) . (isset($r['ending_leases']) ? '*' : ''))->all();
+            $peso = fn ($v) => 'PHP ' . (abs($v) >= 1000 ? rtrim(rtrim(number_format($v / 1000, 1), '0'), '.') . 'k' : round($v));
+
+            return [
+                'occupancy' => $this->svgChart($labels, [], ['Occupancy rate', '194E19', $rows->pluck('occupancy_rate')->all()],
+                    fn ($v) => round($v) . '%', 100),
+                'money' => $this->svgChart($labels, [
+                    ['Income', '8FB48F', $rows->pluck('income')->all()],
+                    ['Expenses', 'C0504D', $rows->map(fn ($r) => $r['expenses'] ?? 0)->all()],
+                ], null, $peso),
             ];
         }
 
@@ -801,6 +837,141 @@ class ReportController extends Controller
             'total_penalties' => round($totalPenalties, 2),
             'delinquent_accounts' => $delinquentAccounts,
             'payment_count' => $payments->count(),
+        ];
+    }
+
+    /**
+     * Writes the forecast tables (actual months, then estimated months) and
+     * a chart into the Excel sheet. Returns the next free row.
+     */
+    private function xlsxForecast($sheet, int $row, array $report): int
+    {
+        $a = $report['assumptions'];
+        $row = $this->xlsxTable($sheet, $row, 'How the Estimates Are Made', ['Assumption', 'Value'], [
+            ['Average new move-ins per month', $a['avg_move_ins']],
+            ['Average income per occupied bed', $a['income_per_bed']],
+            ['Average monthly expenses', $a['avg_expenses']],
+            ['Months of expenses recorded (of last 6)', $a['expense_months']],
+        ]);
+        $sheet->getStyle('B' . ($row - 4) . ':B' . ($row - 3))->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+
+        $headers = ['Month', 'Kind', 'Leases Ending', 'Occupied Beds', 'Occupancy Rate', 'Income', 'Expenses', 'Net'];
+        $toRow = fn ($r, $kind) => [
+            $r['label'], $kind, $r['ending_leases'] ?? '', $r['occupied'], $r['occupancy_rate'] / 100,
+            $r['income'], $r['expenses'], $r['net'],
+        ];
+        $start = $row;
+        $rows = collect($report['history'])->map(fn ($r) => $toRow($r, 'Actual'))
+            ->concat(collect($report['forecast'])->map(fn ($r) => $toRow($r, 'Estimate')))->all();
+        $row = $this->xlsxTable($sheet, $row, 'Actual and Estimated Months', $headers, $rows);
+        $first = $start + 2;
+        $last = $row - 2;
+        $sheet->getStyle("E{$first}:E{$last}")->getNumberFormat()->setFormatCode('0.0%');
+        $sheet->getStyle("F{$first}:H{$last}")->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+        $sheet->getStyle("B{$first}:E{$last}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        // Estimated rows in italics so they read as guesses, not records.
+        $sheet->getStyle('A' . ($last - count($report['forecast']) + 1) . ":H{$last}")->getFont()->setItalic(true);
+
+        $sheet->setBreak('A' . ($row - 1), \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_ROW);
+
+        return $this->xlsxChart($sheet, $row, 'Income vs. Expenses (actual, then estimated)', "A{$first}:A{$last}", [
+            [DataSeries::TYPE_BARCHART, 'Income', "F{$first}:F{$last}", '8FB48F'],
+            [DataSeries::TYPE_BARCHART, 'Expenses', "G{$first}:G{$last}", 'C0504D'],
+            [DataSeries::TYPE_LINECHART, 'Net', "H{$first}:H{$last}", self::GREEN],
+        ], '"₱"#,##0', 'H');
+    }
+
+    /**
+     * Forecast for the next 3 months, using simple averages of the last 6
+     * months (a dorm has too little history for anything fancier, and
+     * averages are easy to check by hand). For each future month:
+     *
+     *   occupied  = last month's occupied
+     *               - leases whose end_date falls in that month (assumed to
+     *                 move out; some may renew, so this leans cautious)
+     *               + average move-ins per month over the last 6 months
+     *               (kept between 0 and the total number of beds)
+     *   income    = occupied x average income per occupied bed, where that
+     *               average is (money actually collected in the past full
+     *               months) / (occupied beds summed over those months). This
+     *               already includes utilities and late payers, so no
+     *               separate collection rate is needed.
+     *   expenses  = average of the months that have expenses recorded.
+     *   net       = income - expenses.
+     */
+    private function computeForecast(int $ahead = 3, int $lookBack = 6): array
+    {
+        $trend = collect($this->occupancyTrend($lookBack))->values();
+        $totalBeds = Bed::count();
+
+        $history = $trend->map(function ($t, $i) use ($lookBack) {
+            $month = now()->startOfMonth()->subMonthsNoOverflow($lookBack - 1 - $i);
+            $expense = MonthlyExpense::whereDate('month', $month->toDateString())->first();
+            $income = $this->collectedIn($month);
+
+            return [
+                'label' => $t['label'],
+                'occupied' => $t['occupied'],
+                'occupancy_rate' => $t['occupancy_rate'],
+                'moved_in' => $t['moved_in'],
+                'income' => $income,
+                'expenses' => $expense ? $expense->total() : null,
+                'net' => $expense ? round($income - $expense->total(), 2) : null,
+            ];
+        });
+
+        // The current month is only partly over, so it's left out of the
+        // averages (its income so far would drag them down).
+        $complete = $history->slice(0, -1);
+        $bedMonths = $complete->sum('occupied');
+        $incomePerBed = $bedMonths > 0 && $complete->sum('income') > 0
+            ? $complete->sum('income') / $bedMonths
+            // No history yet: fall back to the average rent on active leases.
+            : (float) LeaseContract::whereIn('status', ['active', 'expiring_soon'])->avg('monthly_rate');
+        $avgMoveIns = round($complete->avg('moved_in') ?? 0, 1);
+        $recorded = $history->whereNotNull('expenses');
+        $avgExpenses = $recorded->count() ? round($recorded->avg('expenses'), 2) : 0.0;
+
+        $occupied = Bed::where('status', 'occupied')->count();
+        $forecast = [];
+        for ($i = 1; $i <= $ahead; $i++) {
+            $month = now()->startOfMonth()->addMonthsNoOverflow($i);
+            $ending = LeaseContract::whereIn('status', ['active', 'expiring_soon'])
+                ->whereNull('terminated_at')
+                ->whereBetween('end_date', [$month->toDateString(), $month->copy()->endOfMonth()->toDateString()])
+                ->count();
+            $occupied = (int) round(max(0, min($totalBeds, $occupied - $ending + $avgMoveIns)));
+            $income = round($occupied * $incomePerBed, 2);
+
+            $forecast[] = [
+                'label' => $month->format('M Y'),
+                'ending_leases' => $ending,
+                'occupied' => $occupied,
+                'occupancy_rate' => $totalBeds > 0 ? round($occupied / $totalBeds * 100, 1) : 0,
+                'income' => $income,
+                'expenses' => $avgExpenses,
+                'net' => round($income - $avgExpenses, 2),
+            ];
+        }
+
+        return [
+            'generated_at' => now()->format('M j, Y g:ia'),
+            'range' => $forecast[0]['label'] . ' to ' . end($forecast)['label'],
+            'total_beds' => $totalBeds,
+            'history' => $history->all(),
+            'forecast' => $forecast,
+            'totals' => [
+                'income' => round(array_sum(array_column($forecast, 'income')), 2),
+                'expenses' => round(array_sum(array_column($forecast, 'expenses')), 2),
+                'net' => round(array_sum(array_column($forecast, 'net')), 2),
+                'ending_leases' => array_sum(array_column($forecast, 'ending_leases')),
+            ],
+            'assumptions' => [
+                'avg_move_ins' => $avgMoveIns,
+                'income_per_bed' => round($incomePerBed, 2),
+                'avg_expenses' => $avgExpenses,
+                'expense_months' => $recorded->count(),
+            ],
         ];
     }
 }

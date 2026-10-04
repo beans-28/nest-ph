@@ -51,13 +51,15 @@
   <div class="letter-header">
     @if($brandLogoFile)<img src="{{ $brandLogoFile }}" class="brand-logo"><br>@endif
     <h1>{{ $dormName }}</h1>
-    <p>{{ $type === 'occupancy' ? 'Occupancy Report' : 'Financial / Billing Report' }}</p>
+    <p>{{ ['occupancy' => 'Occupancy Report', 'financial' => 'Financial / Billing Report', 'forecast' => 'Forecast Report'][$type] }}</p>
   </div>
 
   <table class="meta">
     <tr><td><strong>Date Generated:</strong></td><td>{{ now()->format('F j, Y g:i A') }}</td></tr>
     @if($type === 'occupancy')
       <tr><td><strong>Coverage:</strong></td><td>Current room and bed status (live snapshot), plus a 12-month trend</td></tr>
+    @elseif($type === 'forecast')
+      <tr><td><strong>Coverage:</strong></td><td>Estimates for {{ $report['range'] }}, based on the last 6 months</td></tr>
     @else
       <tr><td><strong>Period Covered:</strong></td><td>{{ $report['range']['start'] }} to {{ $report['range']['end'] }}</td></tr>
     @endif
@@ -142,6 +144,66 @@
             <td>{{ $t['moved_in'] }}</td>
             <td>{{ $t['moved_out'] }}</td>
             <td class="rate">{{ $t['occupancy_rate'] }}%</td>
+          </tr>
+        @endforeach
+      </tbody>
+    </table>
+  @elseif($type === 'forecast')
+    <h2 class="section">Overview</h2>
+    <p class="body-text">
+      This report estimates occupancy, income and expenses for {{ $dormName }} from
+      {{ $report['range'] }}. The estimates use simple averages of the last 6 months
+      and the lease end dates on file, so treat them as a guide, not a guarantee.
+    </p>
+
+    <div class="highlight-box">
+      <table>
+        <tr>
+          <td>
+            <div class="label">Expected Income (3 months)</div>
+            <div class="value">PHP {{ number_format($report['totals']['income'], 2) }}</div>
+            <div class="note">Expected expenses: PHP {{ number_format($report['totals']['expenses'], 2) }}</div>
+          </td>
+          <td>
+            <div class="label">Expected Net</div>
+            <div class="value" @if($report['totals']['net'] < 0) style="color:#ba2828;" @endif>PHP {{ number_format($report['totals']['net'], 2) }}</div>
+            <div class="note">{{ $report['totals']['ending_leases'] }} lease(s) ending in this period</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <h2 class="section">How the Estimates Are Made</h2>
+    <table class="summary">
+      <thead><tr><th>Assumption</th><th style="text-align:right;">Value</th></tr></thead>
+      <tbody>
+        <tr><td>Average new move-ins per month</td><td class="amount">{{ $report['assumptions']['avg_move_ins'] }}</td></tr>
+        <tr><td>Average income per occupied bed</td><td class="amount">PHP {{ number_format($report['assumptions']['income_per_bed'], 2) }}</td></tr>
+        <tr><td>Average monthly expenses</td><td class="amount">PHP {{ number_format($report['assumptions']['avg_expenses'], 2) }}</td></tr>
+        <tr><td>Months of expenses recorded (of last 6)</td><td class="amount">{{ $report['assumptions']['expense_months'] }}</td></tr>
+      </tbody>
+    </table>
+    <p class="body-text">Tenants whose lease ends in a month are counted as moving out, so if some renew, actual occupancy will be higher.</p>
+
+    <h2 class="section" style="margin-top:26px;">Actual and Estimated Months</h2>
+    <div class="chart-title">Occupancy rate (* = estimate)</div>
+    <div class="chart"><img src="{{ $charts['occupancy'] }}" width="660"></div>
+    <div class="chart-title">Income vs. expenses (* = estimate)</div>
+    <div class="chart"><img src="{{ $charts['money'] }}" width="660"></div>
+    <table class="detail-table">
+      <thead><tr><th class="first">Month</th><th>Kind</th><th>Leases Ending</th><th>Occupied</th><th>Occupancy</th><th>Income</th><th>Expenses</th><th>Net</th></tr></thead>
+      <tbody>
+        @foreach(array_merge($report['history'], $report['forecast']) as $r)
+          @php $est = isset($r['ending_leases']); @endphp
+          <tr @if($est) style="font-style:italic;" @endif>
+            <td class="first">{{ $r['label'] }}</td>
+            <td>{{ $est ? 'Estimate' : 'Actual' }}</td>
+            <td>{{ $est ? $r['ending_leases'] : '' }}</td>
+            <td>{{ $r['occupied'] }}</td>
+            <td class="rate">{{ $r['occupancy_rate'] }}%</td>
+            <td>PHP {{ number_format($r['income'], 2) }}</td>
+            <td>{{ $r['expenses'] === null ? 'Not recorded' : 'PHP ' . number_format($r['expenses'], 2) }}</td>
+            <td @if(($r['net'] ?? 0) < 0) style="color:#ba2828;" @endif>{{ $r['net'] === null ? '-' : 'PHP ' . number_format($r['net'], 2) }}</td>
           </tr>
         @endforeach
       </tbody>
