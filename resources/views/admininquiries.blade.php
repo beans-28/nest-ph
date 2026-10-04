@@ -71,6 +71,12 @@
   .msg-box{ background:#fbfcfb; border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-size:13px; line-height:1.7; white-space:pre-line; }
 
   .reply-box textarea{ width:100%; border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:13px; font-family:var(--font-body); min-height:110px; resize:vertical; margin-bottom:12px; }
+  .tpl-label{ font-size:11px; font-weight:600; color:var(--text-light); margin-bottom:8px; }
+  .tpl-row{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .tpl-chip{ border:1px solid var(--border); background:#fff; border-radius:999px; padding:5px 12px; font-size:12px; font-family:var(--font-body); cursor:pointer; color:var(--text); }
+  .tpl-chip:hover{ border-color:var(--green-accent); }
+  .tpl-chip.active{ background:var(--green-accent); border-color:var(--green-accent); color:#fff; }
+  .reply-box textarea{ min-height:220px; }
   .already-replied{ background:var(--status-vacant-bg); border:1px solid var(--status-vacant); border-radius:10px; padding:14px 16px; font-size:12.5px; color:var(--green-accent); line-height:1.6; }
 
   .status-row{ display:flex; gap:8px; flex-wrap:wrap; }
@@ -225,6 +231,115 @@
     });
   }
 
+  // Pre-filled answers to common questions. Details come from Pureza Station's signed documents (Sept 30, 2026); update here if rates or rules change.
+  const TEMPLATES = {
+    availability: {
+      label: 'Room availability',
+      keywords: ['available', 'availability', 'vacant', 'vacancy', 'slot', 'bakante', 'may room'],
+      body: `Thank you for your interest in Pureza Station Dormitory!
+
+{room_line}You can see which rooms and beds are open right now on the Rooms page of our website (thenestphils.purezastationdormitory.com/rooms). Bed availability updates as soon as a slot is reserved, so we recommend applying early.
+
+We offer the following:
+- Solo fan room (ground floor): ₱4,500/month
+- Room with AC, 4 persons (ground floor): ₱4,500/month per bed
+- Room with AC, 4 persons (2nd–5th floor): ₱4,200/month per bed
+- Room with AC, 6 persons (2nd–5th floor): ₱4,000/month per bed
+- Room with AC, 10–16 persons (2nd–5th floor): ₱3,800/month per bed
+
+To reserve a bed, just submit an application on our website.`,
+    },
+    rates: {
+      label: 'Rates & payment',
+      keywords: ['rate', 'price', 'how much', 'magkano', 'cost', 'rent', 'monthly', 'fee', 'payment', 'deposit', 'advance'],
+      body: `Thank you for your inquiry!
+
+{room_line}Here are our current monthly rates:
+- Solo fan room (ground floor): ₱4,500/month
+- Room with AC, 4 persons (ground floor): ₱4,500/month per bed
+- Room with AC, 4 persons (2nd–5th floor): ₱4,200/month per bed
+- Room with AC, 6 persons (2nd–5th floor): ₱4,000/month per bed
+- Room with AC, 10–16 persons (2nd–5th floor): ₱3,800/month per bed
+
+Short-term stay (less than 3 months): ₱4,500/month. Transient: ₱300/night.
+
+Upon registration, we collect a reservation fee made up of one (1) month advance rent and one (1) month security deposit. The reservation is valid for one month. The advance covers your first month, and rent is then due every 1st of the month (3-day grace period; a 10% late penalty applies after that).
+
+The minimum stay is 3 months. The security deposit is refundable after the minimum stay, less any unpaid charges or damages, within 21 days after check-out.
+
+We accept cash, GCash and bank deposit (BDO).`,
+    },
+    viewing: {
+      label: 'Visit / viewing',
+      keywords: ['visit', 'view', 'viewing', 'tour', 'see the room', 'tingnan', 'schedule', 'ocular'],
+      body: `Thank you for reaching out!
+
+You are welcome to visit Pureza Station Dormitory at 329 C De Dios, Brgy. 632, Sta. Mesa, Manila. Kindly reply with your preferred date and time so we can confirm and prepare for your visit. Visitors are received at the receiving area.
+
+In the meantime, you can take a virtual tour of our rooms on our website: thenestphils.purezastationdormitory.com/vr-tour`,
+    },
+    requirements: {
+      label: 'Requirements',
+      keywords: ['requirement', 'document', 'needed', 'kailangan', 'apply', 'application', 'reserve', 'reservation'],
+      body: `Thank you for your interest in staying with us!
+
+You can apply online at thenestphils.purezastationdormitory.com/apply. Please prepare the following:
+- A valid ID (photo or PDF)
+- Your school or company name and address
+- Your home address and cellphone number
+- An emergency contact person (name, cellphone number and relationship)
+- Your preferred room, bed and move-in date
+
+During the application you will read and sign our Tenant Agreement, Rules and Regulations, and Payments and Fees Schedule. Once approved, a reservation fee (one month advance rent plus one month security deposit) secures your bed.`,
+    },
+    rules: {
+      label: 'House rules',
+      keywords: ['rule', 'curfew', 'visitor', 'pet', 'cook', 'policy', 'allowed', 'bawal', 'pwede'],
+      body: `Thank you for your question!
+
+Here are the main house rules of Pureza Station Dormitory:
+- Quiet hours: 10:00 PM to 6:00 AM
+- Curfew: 11:00 PM to 4:00 AM (please inform management in advance if you will be out late)
+- Visitors are received at the receiving area only; no overnight guests
+- No alcohol, smoking or vaping on the premises
+- No pets
+- No cooking stoves, gas or other hazardous items (₱500 fine)
+- High-power appliances need management approval
+- Aircon runs from 10:00 PM to 5:00 AM
+- Washing clothes inside the dorm is not allowed; a laundry service is available nearby
+
+You can read the full Rules and Regulations on our website: thenestphils.purezastationdormitory.com/dorm-info`,
+    },
+    general: {
+      label: 'General',
+      keywords: [],
+      body: `Thank you for your inquiry about Pureza Station Dormitory!
+
+[Your answer]
+
+You can find our rooms, rates, virtual tour and house rules on our website: thenestphils.purezastationdormitory.com. You may also reach us at dormitorypurezastation@gmail.com or on our Facebook page, Pureza Station Dormitory.`,
+    },
+  };
+
+  // Picks the template whose keywords appear most in the inquiry message.
+  function suggestTemplate(i){
+    const msg = (i.message ?? '').toLowerCase();
+    let best = null, bestScore = 0;
+    for (const [key, t] of Object.entries(TEMPLATES)){
+      const score = t.keywords.filter(k => msg.includes(k)).length;
+      if(score > bestScore){ best = key; bestScore = score; }
+    }
+    return best;
+  }
+
+  function fillTemplate(key, i){
+    const firstName = (i.full_name ?? '').trim().split(/\s+/)[0] || 'there';
+    const roomLine = i.room_no
+      ? `Regarding Room ${i.room_no}: you can check its open beds on the Rooms page of our website.\n\n`
+      : (i.preferred_room_type ? `Regarding your interest in a ${i.preferred_room_type} room:\n\n` : '');
+    return `Hi ${firstName},\n\n` + TEMPLATES[key].body.replace('{room_line}', roomLine) + `\n\nThank you!`;
+  }
+
   function replySectionHtml(i){
     if(i.reply_message){
       return `
@@ -238,9 +353,16 @@
       return `<div class="already-replied" style="background:#fdf0f0;border-color:#f3cccc;color:#c0463d;">No email address on file, so a reply cannot be sent for this inquiry.</div>`;
     }
 
+    const suggested = suggestTemplate(i);
     return `
       <div class="reply-box">
-        <textarea id="replyText" placeholder="Type your reply..."></textarea>
+        <div class="tpl-label">Quick replies${suggested ? ' (suggested answer filled in, edit before sending)' : ''}</div>
+        <div class="tpl-row">
+          ${Object.entries(TEMPLATES).map(([key, t]) => `
+            <button type="button" class="tpl-chip ${key === suggested ? 'active' : ''}" data-tpl="${key}">${t.label}</button>
+          `).join('')}
+        </div>
+        <textarea id="replyText" placeholder="Type your reply...">${suggested ? esc(fillTemplate(suggested, i)) : ''}</textarea>
         <button class="btn primary" id="sendReplyBtn" style="width:100%;">Send Reply</button>
       </div>`;
   }
@@ -282,6 +404,19 @@
           `).join('')}
         </div>
       </div>`;
+
+    $('drawerBody').querySelectorAll('[data-tpl]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const box = $('replyText');
+        const edited = box.value.trim() && box.dataset.filled !== box.value;
+        if(edited && !confirm('Replace your current reply with this template?')) return;
+        box.value = fillTemplate(chip.dataset.tpl, i);
+        box.dataset.filled = box.value;
+        $('drawerBody').querySelectorAll('[data-tpl]').forEach(c => c.classList.toggle('active', c === chip));
+        box.focus();
+      });
+    });
+    if($('replyText')) $('replyText').dataset.filled = $('replyText').value;
 
     const sendBtn = $('sendReplyBtn');
     if(sendBtn){

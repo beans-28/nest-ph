@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class Review extends Model
 {
@@ -20,6 +21,7 @@ class Review extends Model
         'tenant_id',
         'rating',
         'comment',
+        'photos',
         'is_approved',
         'status',
         'flag_reasons',
@@ -38,6 +40,7 @@ class Review extends Model
         'rating' => 'integer',
         'is_approved' => 'boolean',
         'flag_reasons' => 'array',
+        'photos' => 'array',
         'moderated_at' => 'datetime',
     ];
 
@@ -51,6 +54,19 @@ class Review extends Model
         static::saving(function (Review $review) {
             $review->is_approved = $review->status === 'published';
         });
+
+        // Clean up the photo files when a review row is deleted.
+        static::deleted(function (Review $review) {
+            Storage::disk('public')->delete($review->photos ?? []);
+        });
+    }
+
+    /**
+     * Public URLs of the review's photos (empty list when none).
+     */
+    public function getPhotoUrlsAttribute(): array
+    {
+        return array_map(fn ($path) => Storage::disk('public')->url($path), $this->photos ?? []);
     }
 
     public function tenant(): BelongsTo

@@ -49,14 +49,26 @@ class ReviewController extends Controller
         $data = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:1000'],
+            'photos' => ['nullable', 'array', 'max:3'],
+            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ], [
             'rating.required' => 'Please select a star rating before submitting.',
+            'photos.max' => 'You can attach up to 3 photos.',
+            'photos.*.image' => 'Photos must be JPG, PNG or WEBP images.',
+            'photos.*.mimes' => 'Photos must be JPG, PNG or WEBP images.',
+            'photos.*.max' => 'Each photo must be 5 MB or smaller.',
         ]);
+
+        $photoPaths = [];
+        foreach ($request->file('photos', []) as $photo) {
+            $photoPaths[] = $photo->store('review-photos', 'public');
+        }
 
         $review = Review::create([
             'tenant_id' => $tenant->id,
             'rating' => $data['rating'],
             'comment' => $data['comment'] ?? null,
+            'photos' => $photoPaths ?: null,
         ]);
 
         $review = app(ReviewModerationService::class)->autoModerate($review);

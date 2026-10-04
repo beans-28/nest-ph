@@ -191,6 +191,9 @@
         .review-item-date{ font-size:11.5px; color:#8a9690; }
         .review-item-stars{ color:#f5b301; font-size:13px; margin-bottom:6px; letter-spacing:1px; }
         .review-item-comment{ font-size:13px; color:#33393c; line-height:1.7; }
+        .review-item-photos{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+        .review-item-photos a{ display:block; width:88px; height:88px; border-radius:10px; overflow:hidden; border:1px solid #e2e6e2; }
+        .review-item-photos img{ width:100%; height:100%; object-fit:cover; display:block; }
         .reviews-empty{ text-align:center; padding:24px 10px; color:#5b6b60; font-size:13px; }
         @media (max-width: 640px) {
             .reviews-summary{ flex-direction:column; align-items:center; text-align:center; }
@@ -277,6 +280,13 @@
                             <span class="visually-hidden">Rated {{ $review->rating }} out of 5 stars</span>
                             @if($review->comment)
                                 <div class="review-item-comment">{{ $review->comment }}</div>
+                            @endif
+                            @if($review->photo_urls)
+                                <div class="review-item-photos">
+                                    @foreach($review->photo_urls as $url)
+                                        <a href="{{ $url }}" target="_blank" rel="noopener"><img src="{{ $url }}" alt="Photo from this review" loading="lazy"></a>
+                                    @endforeach
+                                </div>
                             @endif
                         </div>
                     @endforeach

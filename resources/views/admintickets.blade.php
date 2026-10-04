@@ -20,43 +20,44 @@
     --blue:#33629e; --blue-bg:#e3ecf7;
   }
 
-  .stats-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:20px; }
-  @media (max-width: 900px){ .stats-row{ grid-template-columns:repeat(2, 1fr); } }
-  button.stat-card{ font:inherit; text-align:left; cursor:pointer; width:100%; }
-  button.stat-card:hover{ border-color:#cfd8d0; }
-  button.stat-card[aria-pressed="true"]{ border-color:var(--green-btn); box-shadow:0 0 0 1px var(--green-btn); }
-  .stat-icon.soon{ background:var(--tk-soon-bg); color:var(--tk-soon); }
-  .stat-card{ background:var(--card-bg); border-radius:12px; border:1px solid var(--border); padding:18px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 1px 2px rgba(20,30,20,0.03); }
-  .stat-icon{ width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .stat-icon svg{ width:20px; height:20px; }
-  .stat-icon.open{ background:var(--blue-bg); color:var(--blue); }
-  .stat-icon.progress{ background:var(--status-maintenance-bg); color:var(--status-maintenance); }
-  .stat-icon.overdue{ background:var(--status-occupied-bg); color:var(--status-occupied); }
-  .stat-label{ font-size:12.5px; color:var(--text-mid); margin-bottom:3px; }
-  .stat-value{ font-size:24px; font-weight:700; color:var(--text-dark); }
+  .filters-row{ display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+  .search-input{ flex:1; min-width:200px; max-width:320px; border:1px solid var(--border); border-radius:9px; padding:9px 14px; font-size:13px; font-family:var(--font-body); }
+  .filters-row select{ border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; font-family:var(--font-body); background:#fff; color:var(--text-dark); }
+  .deadline-chips{ display:flex; gap:8px; margin-left:auto; }
+  .dl-chip{ display:inline-flex; align-items:center; gap:7px; border:1px solid var(--border); background:#fff; border-radius:999px; padding:7px 13px; font-size:12.5px; font-weight:600; font-family:var(--font-body); color:var(--text-dark); cursor:pointer; }
+  .dl-chip::before{ content:''; width:8px; height:8px; border-radius:50%; }
+  .dl-chip.overdue::before{ background:var(--tk-late); }
+  .dl-chip.soon::before{ background:#d98a1c; }
+  .dl-chip .n{ color:var(--text-mid); font-weight:500; }
+  .dl-chip[aria-pressed="true"]{ border-color:var(--green-btn); box-shadow:0 0 0 1px var(--green-btn); }
 
-  .filters-row{ display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-  .search-input{ flex:1; min-width:200px; border:1px solid var(--border); border-radius:9px; padding:10px 14px; font-size:13px; font-family:var(--font-body); }
-  .filters-row select{ border:1px solid var(--border); border-radius:9px; padding:10px 14px; font-size:13px; font-family:var(--font-body); background:#fff; color:var(--text-dark); }
+  /* Kanban board: one column per status */
+  .board{ display:grid; grid-template-columns:repeat(4, minmax(240px, 1fr)); gap:14px; align-items:start; }
+  @media (max-width:1100px){ .board{ grid-template-columns:repeat(2, minmax(240px, 1fr)); } }
+  @media (max-width:640px){ .board{ grid-template-columns:1fr; } .deadline-chips{ margin-left:0; } }
+  .col{ border-radius:12px; border:1px solid var(--border); padding:10px; display:flex; flex-direction:column; min-height:160px; }
+  .col.open{ background:#f4f5f4; }
+  .col.in_progress{ background:#fdf6e9; border-color:#f1e2c4; }
+  .col.resolved{ background:#eef7ef; border-color:#d3e8d5; }
+  .col.closed{ background:#f1f3f6; border-color:#dde2e8; }
+  .col-head{ display:flex; justify-content:space-between; align-items:center; padding:4px 6px 10px; }
+  .col-head h2{ font-size:14px; font-weight:700; margin:0; color:var(--text-dark); }
+  .col-count{ background:#fff; border:1px solid var(--border); border-radius:6px; font-size:12px; font-weight:700; padding:1px 8px; min-width:26px; text-align:center; }
+  .col-list{ display:flex; flex-direction:column; gap:8px; max-height:calc(100vh - 250px); overflow-y:auto; padding-right:2px; }
+  .col-empty{ text-align:center; color:var(--text-light); font-size:12.5px; font-style:italic; padding:24px 8px; }
 
-  .empty{ text-align:center; color:var(--text-light); font-style:italic; padding:50px 20px; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; }
-
-  .app-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px; }
-  .app-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:18px; cursor:pointer; display:flex; flex-direction:column; gap:10px; transition:box-shadow .15s ease, border-color .15s ease; }
-  .app-card:hover{ box-shadow:0 4px 14px rgba(20,30,20,0.08); border-color:#cfd8d0; }
-  .ac-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
-  .ac-title{ font-size:14.5px; font-weight:700; color:var(--text-dark); margin:2px 0 0 0; }
-  .ac-meta{ font-size:12.5px; color:var(--text-mid); margin-top:2px; }
-  /* Status reads as text with a coloured dot, not a pill; Overdue is bold
-     red text on the same line. Colours checked at >= 4.5:1 on white. */
-  .ac-status{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 14px; font-size:12.5px; }
-  .status-dot{ display:inline-flex; align-items:center; gap:7px; font-weight:600; color:var(--text-dark); }
-  .status-dot::before{ content:''; width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0; }
-  .status-dot.open::before{ background:var(--tk-pending); }
-  .status-dot.in_progress::before{ background:var(--status-maintenance); }
-  .status-dot.resolved::before{ background:var(--green-accent); }
-  .status-dot.closed::before{ background:var(--tk-closed); }
-
+  .tk-card{ background:#fff; border:1px solid var(--border); border-left:4px solid #c9cfcb; border-radius:9px; padding:10px 12px; cursor:pointer; display:flex; flex-direction:column; gap:6px; transition:box-shadow .15s ease; }
+  .tk-card:hover{ box-shadow:0 4px 12px rgba(20,30,20,0.09); }
+  .tk-card:focus-visible{ outline:2px solid var(--green-btn); outline-offset:2px; }
+  .tk-card.late{ border-left-color:var(--tk-late); }
+  .tk-card.soon{ border-left-color:#d98a1c; }
+  .tk-top{ display:flex; justify-content:space-between; gap:8px; font-size:11.5px; color:var(--text-mid); }
+  .tk-top span:first-child{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tk-title{ font-size:13.5px; font-weight:700; color:var(--text-dark); line-height:1.35; }
+  .tk-meta{ font-size:11.5px; color:var(--text-mid); }
+  .tk-tags{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+  .tk-tags .due{ font-size:11.5px; }
+  .tk-foot{ display:flex; justify-content:space-between; gap:8px; font-size:11.5px; color:var(--text-mid); padding-top:6px; border-top:1px solid #f0f2f0; }
 
   .mb-attachment-grid{ display:flex; gap:8px; flex-wrap:wrap; }
   .unresolved-note{ font-size:12px; color:var(--text-mid); }
@@ -130,53 +131,27 @@
         <h1>Tickets</h1>
       </div>
 
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-icon open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18v10H3z"/><path d="M3 12h18"/></svg></div>
-          <div><div class="stat-label">Pending</div><div class="stat-value" id="statOpen">{{ $openCount }}</div></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
-          <div><div class="stat-label">In Progress</div><div class="stat-value" id="statProgress">{{ $inProgressCount }}</div></div>
-        </div>
-        <button type="button" class="stat-card" data-deadline="overdue" aria-pressed="false">
-          <div class="stat-icon overdue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg></div>
-          <div><div class="stat-label">Overdue</div><div class="stat-value" id="statOverdue">{{ $overdueCount }}</div></div>
-        </button>
-        <button type="button" class="stat-card" data-deadline="soon" aria-pressed="false">
-          <div class="stat-icon soon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12M6 22h12M7 2c0 5 10 5 10 10S7 17 7 22M17 2c0 5-10 5-10 10s10 5 10 10"/></svg></div>
-          <div><div class="stat-label">Due soon</div><div class="stat-value">{{ $dueSoonCount }}</div></div>
-        </button>
-      </div>
-
       <div class="filters-row">
-        <input type="text" class="search-input" id="searchInput" placeholder="Search tenant or title">
-        <select id="categoryFilter">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search tenant, room or title">
+        <select id="categoryFilter" aria-label="Category">
           <option value="">All Categories</option>
           @foreach($categories as $key => $label)
             <option value="{{ $key }}">{{ $label }}</option>
           @endforeach
         </select>
-        <select id="statusFilter">
-          <option value="">All Statuses</option>
-          @foreach($statuses as $key => $label)
-            <option value="{{ $key }}">{{ $label }}</option>
-          @endforeach
-        </select>
-        <select id="priorityFilter">
+        <select id="priorityFilter" aria-label="Priority">
           <option value="">All Priorities</option>
           @foreach($priorities as $key => $label)
             <option value="{{ $key }}">{{ $label }}</option>
           @endforeach
         </select>
-        <select id="deadlineFilter" aria-label="Deadline">
-          <option value="">All Deadlines</option>
-          <option value="overdue">Overdue</option>
-          <option value="soon">Due soon</option>
-        </select>
+        <div class="deadline-chips">
+          <button type="button" class="dl-chip overdue" data-deadline="overdue" aria-pressed="false">Overdue <span class="n">{{ $overdueCount }}</span></button>
+          <button type="button" class="dl-chip soon" data-deadline="soon" aria-pressed="false">Due soon <span class="n">{{ $dueSoonCount }}</span></button>
+        </div>
       </div>
 
-      <div class="app-grid" id="ticketGrid"></div>
+      <div class="board" id="ticketBoard"></div>
     </div>
   </div>
 </div>
@@ -253,7 +228,6 @@
 
   let search = '';
   let categoryFilter = '';
-  let statusFilter = '';
   let priorityFilter = '';
   let deadlineFilter = '';
   let openTicketId = null;
@@ -301,12 +275,11 @@
   function visible(){
     return tickets.filter(t => {
       if(categoryFilter && t.category !== categoryFilter) return false;
-      if(statusFilter && t.status !== statusFilter) return false;
       if(priorityFilter && t.priority !== priorityFilter) return false;
       if(deadlineFilter === 'overdue' && !t.is_overdue) return false;
       if(deadlineFilter === 'soon' && !t.is_due_soon) return false;
       if(!search) return true;
-      const hay = `${t.tenant_name ?? ''} ${t.title ?? ''}`.toLowerCase();
+      const hay = `${t.tenant_name ?? ''} ${t.title ?? ''} ${t.room_no ?? ''}`.toLowerCase();
       return hay.includes(search);
     }).sort(compareTickets);
   }
@@ -321,30 +294,38 @@
     return group(a) === 2 ? b.created_ts - a.created_ts : a.created_ts - b.created_ts;
   }
 
+  const COLUMNS = @json($statuses);
+  const fmtDate = ts => new Date(ts * 1000).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+
+  function cardHtml(t){
+    const urgency = t.is_overdue ? 'late' : (t.is_due_soon ? 'soon' : '');
+    return `
+      <div class="tk-card ${urgency}" data-open="${t.id}" tabindex="0" role="button" aria-label="Open ticket ${esc(t.title)}">
+        <div class="tk-top"><span>${esc(t.tenant_name ?? 'Unknown tenant')}</span><span>#${t.id}</span></div>
+        <div class="tk-title">${esc(t.title)}</div>
+        <div class="tk-meta">${t.room_no ? 'Room ' + esc(t.room_no) + ' · ' : ''}${fmtDate(t.created_ts)}</div>
+        <div class="tk-tags">
+          <span class="prio ${t.priority}">${esc(t.priority_label)}</span>
+          ${t.deadline_label ? `<span class="due ${urgency}">${esc(t.deadline_label)}</span>` : ''}
+        </div>
+        <div class="tk-foot">
+          <span>${esc(t.category_label)}${t.reported_tenant_name ? ': ' + esc(t.reported_tenant_name) : ''}</span>
+          <span>${t.assigned_to_name ? esc(t.assigned_to_name) : 'Unassigned'}</span>
+        </div>
+      </div>`;
+  }
+
   function renderGrid(){
     const list = visible();
 
-    if(list.length === 0){
-      $('ticketGrid').innerHTML = '<div class="empty">No tickets match this view.</div>';
-      return;
-    }
-
-    $('ticketGrid').innerHTML = list.map(t => `
-      <div class="app-card" data-open="${t.id}" tabindex="0" role="button" aria-label="Open ticket ${esc(t.title)}">
-        <div>
-          <div class="ac-title">${esc(t.title)}</div>
-          <div class="ac-meta">${esc(t.tenant_name ?? 'Unknown tenant')}${t.room_no ? ', Room ' + esc(t.room_no) : ''} · ${esc(t.category_label)}${t.reported_tenant_name ? ': ' + esc(t.reported_tenant_name) : ''} · #${t.id}</div>
-        </div>
-        <div class="ac-status">
-          <span class="status-dot ${t.status}">${esc(t.status_label)}</span>
-          ${t.deadline_label ? `<span class="due ${t.is_overdue ? 'late' : (t.is_due_soon ? 'soon' : '')}">${esc(t.deadline_label)}</span>` : ''}
-        </div>
-        <div class="ac-bottom">
-          <span class="ac-prio"><span class="prio ${t.priority}">${esc(t.priority_label)}</span><span class="prio-why">${esc(t.priority_reason ?? '')}</span></span>
-          <span class="ac-assigned">${t.assigned_to_name ? 'Assigned: ' + esc(t.assigned_to_name) : 'Unassigned'}</span>
-        </div>
-      </div>
-    `).join('');
+    $('ticketBoard').innerHTML = Object.entries(COLUMNS).map(([status, label]) => {
+      const items = list.filter(t => t.status === status);
+      return `
+        <section class="col ${status}" aria-label="${esc(label)} tickets">
+          <div class="col-head"><h2>${esc(label)}</h2><span class="col-count">${items.length}</span></div>
+          <div class="col-list">${items.length ? items.map(cardHtml).join('') : '<div class="col-empty">No tickets</div>'}</div>
+        </section>`;
+    }).join('');
 
     document.querySelectorAll('[data-open]').forEach(el => {
       el.addEventListener('click', () => openModal(Number(el.dataset.open)));
@@ -352,7 +333,6 @@
         if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openModal(Number(el.dataset.open)); }
       });
     });
-
   }
 
   async function openModal(id){
@@ -452,17 +432,14 @@
 
   $('searchInput').addEventListener('input', e => { search = e.target.value.toLowerCase(); renderGrid(); });
   $('categoryFilter').addEventListener('change', e => { categoryFilter = e.target.value; renderGrid(); });
-  $('statusFilter').addEventListener('change', e => { statusFilter = e.target.value; renderGrid(); });
   $('priorityFilter').addEventListener('change', e => { priorityFilter = e.target.value; renderGrid(); });
 
-  // Overdue / Due soon stat cards double as quick filters.
+  // Overdue / Due soon chips work as quick filters.
   function setDeadlineFilter(value){
     deadlineFilter = value;
-    $('deadlineFilter').value = value;
     document.querySelectorAll('[data-deadline]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.deadline === value)));
     renderGrid();
   }
-  $('deadlineFilter').addEventListener('change', e => setDeadlineFilter(e.target.value));
   document.querySelectorAll('[data-deadline]').forEach(b => b.addEventListener('click', () =>
     setDeadlineFilter(deadlineFilter === b.dataset.deadline ? '' : b.dataset.deadline)));
 

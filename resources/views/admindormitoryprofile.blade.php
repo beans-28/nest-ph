@@ -263,6 +263,9 @@
   .rv-row[data-status="removed"] .rv-status{ color:var(--text-mid); }
   .rv-stars{ color:#f5b301; font-size:13px; letter-spacing:1px; margin:4px 0; }
   .rv-comment{ font-size:13px; color:var(--text-dark); line-height:1.6; white-space:pre-line; word-break:break-word; }
+  .rv-photos{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .rv-photos a{ display:block; width:72px; height:72px; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  .rv-photos img{ width:100%; height:100%; object-fit:cover; display:block; }
   .rv-comment.empty{ color:var(--text-mid); font-style:italic; }
   .rv-row[data-status="removed"] .rv-comment{ color:var(--text-mid); }
   .rv-meta{ font-size:11.5px; color:var(--text-mid); margin-top:6px; }
@@ -680,6 +683,13 @@
                     <div class="rv-comment">{{ $review->comment }}</div>
                   @else
                     <div class="rv-comment empty">Rating only, no written comment.</div>
+                  @endif
+                  @if($review->photo_urls)
+                    <div class="rv-photos">
+                      @foreach($review->photo_urls as $url)
+                        <a href="{{ $url }}" target="_blank" rel="noopener"><img src="{{ $url }}" alt="Review photo" loading="lazy"></a>
+                      @endforeach
+                    </div>
                   @endif
                   <div class="rv-meta">{{ $review->moderationSummary() }}</div>
                   <div class="rv-actions">

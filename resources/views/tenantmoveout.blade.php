@@ -92,6 +92,14 @@
   .review-modal textarea{ width:100%; min-height:110px; border:1px solid var(--border); border-radius:10px; padding:11px 12px; font-size:14px; font-family:inherit; color:var(--text-dark); resize:vertical; display:block; }
   .review-modal textarea:focus{ outline:none; border-color:var(--sage-600); box-shadow:0 0 0 3px var(--sage-100); }
   .char-count{ font-size:12px; color:var(--text-light); text-align:right; margin:6px 0 18px; }
+  .photo-picker{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+  .photo-thumb{ position:relative; width:72px; height:72px; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+  .photo-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-thumb button{ position:absolute; top:3px; right:3px; width:22px; height:22px; border-radius:50%; border:none; background:rgba(0,0,0,.6); color:#fff; font-size:14px; line-height:22px; padding:0; cursor:pointer; }
+  .photo-add{ width:72px; height:72px; border-radius:10px; border:1.5px dashed var(--border); background:#fff; color:var(--text-mid); font-size:26px; cursor:pointer; font-family:inherit; }
+  .photo-add:hover{ border-color:var(--sage-600); color:var(--sage-600); }
+  .photo-add:focus-visible{ outline:2px solid var(--sage-600); outline-offset:2px; }
+  .photo-hint{ font-size:12px; color:var(--text-light); margin:0 0 18px; }
   .review-modal-actions{ display:flex; justify-content:flex-end; gap:10px; }
 
   /* Tablet */
@@ -236,6 +244,13 @@
         <textarea id="reviewComment" maxlength="1000"></textarea>
         <div class="char-count"><span id="reviewCharCount">0</span> / 1000</div>
 
+        <span class="field-label" id="photoLabel">Add photos (optional)</span>
+        <div class="photo-picker" id="photoPicker" aria-labelledby="photoLabel">
+          <button type="button" class="photo-add" id="addPhotoBtn" aria-label="Add a photo">+</button>
+        </div>
+        <input type="file" id="reviewPhotoInput" accept="image/jpeg,image/png,image/webp" multiple hidden>
+        <p class="photo-hint">Up to 3 photos, JPG, PNG or WEBP, 5 MB each.</p>
+
         <div class="review-modal-actions">
           <button type="button" class="btn-outline" id="cancelReviewBtn">Cancel</button>
           <button type="button" class="btn-review" id="submitReviewBtn">Submit Review</button>
@@ -272,8 +287,69 @@
   const CAPTIONS = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
   const STAR_PATH = 'M12 2.5l2.9 6.06 6.6.7-4.9 4.55 1.28 6.55L12 16.9l-5.88 3.46 1.28-6.55L2.5 9.26l6.6-.7z';
 
+  const photoPicker = document.getElementById('photoPicker');
+  const addPhotoBtn = document.getElementById('addPhotoBtn');
+  const photoInput = document.getElementById('reviewPhotoInput');
+  const MAX_PHOTOS = 3, MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
   let selectedRating = 0;
   let returnFocusTo = null;
+  let photos = []; // { file, url }
+
+  function renderPhotos(){
+    photoPicker.querySelectorAll('.photo-thumb').forEach(el => el.remove());
+    photos.forEach((p, idx) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'photo-thumb';
+      const img = document.createElement('img');
+      img.src = p.url;
+      img.alt = 'Selected photo ' + (idx + 1);
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.textContent = '×';
+      remove.setAttribute('aria-label', 'Remove photo ' + (idx + 1));
+      remove.addEventListener('click', () => {
+        URL.revokeObjectURL(p.url);
+        photos.splice(idx, 1);
+        renderPhotos();
+        addPhotoBtn.focus();
+      });
+      thumb.append(img, remove);
+      photoPicker.insertBefore(thumb, addPhotoBtn);
+    });
+    addPhotoBtn.hidden = photos.length >= MAX_PHOTOS;
+  }
+
+  function clearPhotos(){
+    photos.forEach(p => URL.revokeObjectURL(p.url));
+    photos = [];
+    renderPhotos();
+  }
+
+  addPhotoBtn.addEventListener('click', () => photoInput.click());
+  photoInput.addEventListener('change', () => {
+    errorEl.classList.remove('visible');
+    for (const file of photoInput.files) {
+      if (photos.length >= MAX_PHOTOS) {
+        errorEl.textContent = 'You can attach up to 3 photos.';
+        errorEl.classList.add('visible');
+        break;
+      }
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+        errorEl.textContent = 'Photos must be JPG, PNG or WEBP images.';
+        errorEl.classList.add('visible');
+        continue;
+      }
+      if (file.size > MAX_PHOTO_BYTES) {
+        errorEl.textContent = '"' + file.name + '" is larger than 5 MB.';
+        errorEl.classList.add('visible');
+        continue;
+      }
+      photos.push({ file, url: URL.createObjectURL(file) });
+    }
+    photoInput.value = '';
+    renderPhotos();
+  });
 
   function setRating(value){
     selectedRating = value;
@@ -291,6 +367,7 @@
     setRating(rating || 0);
     commentEl.value = '';
     charCountEl.textContent = '0';
+    clearPhotos();
     overlay.classList.add('open');
     document.body.classList.add('modal-open');
     // Rating already picked from the page? Go straight to the comment box.
@@ -367,13 +444,22 @@
     this.textContent = 'Submitting...';
     try {
       const csrf = document.querySelector('meta[name="csrf-token"]').content;
+      // FormData (not JSON) so the photo files can be sent along.
+      const form = new FormData();
+      form.append('rating', selectedRating);
+      form.append('comment', commentEl.value.trim());
+      photos.forEach(p => form.append('photos[]', p.file));
       const res = await fetch('{{ route('reviews.store') }}', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
-        body: JSON.stringify({ rating: selectedRating, comment: commentEl.value.trim() }),
+        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        body: form,
       });
       const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.message || 'Something went wrong. Please try again.');
+      if (!res.ok) {
+        // Show the first validation error (e.g. a bad photo) instead of the generic message.
+        const firstError = body.errors ? Object.values(body.errors)[0][0] : null;
+        throw new Error(firstError || body.message || 'Something went wrong. Please try again.');
+      }
 
       returnFocusTo = null;
       closeModal();
