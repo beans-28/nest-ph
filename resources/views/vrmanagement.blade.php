@@ -16,6 +16,7 @@
   /* Shared sidebar/topbar/content-header/reset styles now live in
      public/css/admin.css (linked above). Only this page's own VR-tour
      content styling stays here. */
+  .page-head .room-pill.off{ background:#eef1ee; color:var(--text-mid); }
   .page-head .room-pill{ background:var(--status-vacant-bg); color:var(--green-accent); font-size:11.5px; font-weight:700; padding:5px 13px; border-radius:20px; }
 
   .vr-btn{ font-size:12px; font-weight:600; padding:9px 16px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; text-align:center; font-family:var(--font-body); }
@@ -45,6 +46,16 @@
   .vr-card-body{ padding:12px 14px 14px 14px; }
   .vr-card-title{ font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; }
   .vr-floor-chip{ font-size:10px; font-weight:600; color:var(--text-mid); background:#eef1ee; padding:2px 7px; border-radius:20px; }
+  /* Whether visitors can see this room on the public VR Tour page. Worked
+     out from the tour itself (has photos + visibility is Public). */
+  .vr-summary{ display:flex; gap:10px; flex-wrap:wrap; margin:-6px 0 18px 0; }
+  .vr-summary span{ font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px; background:#eef1ee; color:var(--text-mid); }
+  .vr-summary span.live{ background:var(--status-vacant-bg); color:var(--green-accent); }
+  .vr-live{ display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; margin-top:6px; }
+  .vr-live::before{ content:''; width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0; }
+  .vr-live.on{ color:var(--green-accent); }
+  .vr-live.off{ color:var(--text-mid); }
+  .vr-card.is-live{ border-color:var(--green-accent); }
   .vr-card-sub{ font-size:11px; color:var(--text-light); margin:5px 0 10px 0; }
 
   /* ===== EDIT VIEW ===== */
@@ -179,6 +190,7 @@
 
         <div class="vr-card-panel">
           <h2>VR Room Tours</h2>
+          <div class="vr-summary" id="vrSummary"></div>
           <div class="vr-grid" id="vrGrid"></div>
         </div>
       </div>
@@ -429,6 +441,17 @@
   const activeScene = () => activeRoom()?.scenes.find(s => s.id === activeSceneId);
   const defaultSceneOf = room => room.scenes.find(s => s.is_default) || room.scenes[0] || null;
 
+  // Same rule the public VR Tour page uses: at least one 360 photo and
+  // visibility set to Public. Returns why not, so staff know what to fix.
+  function liveStatus(room){
+    if(room.scenes.length > 0 && room.vr_visibility === 'public'){
+      return { live:true, text:'Visible on VR Tour page' };
+    }
+    if(room.scenes.length === 0) return { live:false, text:'Not visible: no 360 photos yet' };
+    if(room.vr_visibility === 'locked') return { live:false, text:'Not visible: tour is locked' };
+    return { live:false, text:'Not visible: tour is still a draft' };
+  }
+
   // ===== LIST VIEW =====
   function renderGrid(){
     if(rooms.length === 0){
@@ -436,21 +459,28 @@
       return;
     }
 
+    const liveCount = rooms.filter(r => liveStatus(r).live).length;
+    $('vrSummary').innerHTML = `
+      <span class="live">${liveCount} visible to visitors</span>
+      <span>${rooms.length - liveCount} not visible</span>`;
+
     $('vrGrid').innerHTML = rooms.map(room => {
       const cover = defaultSceneOf(room);
       const locked = room.vr_visibility === 'locked';
       const n = room.scenes.length;
       const arrows = room.scenes.reduce((sum, s) => sum + s.hotspots.length, 0);
 
+      const status = liveStatus(room);
       return `
-        <div class="vr-card">
+        <div class="vr-card ${status.live ? 'is-live' : ''}">
           <div class="vr-thumb ${cover ? '' : 'empty'}" ${cover ? `style="background-image:url('${cover.panorama_url}')"` : ''}>
             ${cover ? '<span class="vr-badge-360">360°</span>' : '<span>No photos yet</span>'}
             ${cover ? `<span class="vr-lock-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${locked ? '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 118 0v3"/>' : '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 017.5-2"/>'}</svg></span>` : ''}
           </div>
           <div class="vr-card-body">
             <div class="vr-card-title">Room ${esc(room.room_no)} <span class="vr-floor-chip">Floor ${esc(room.floor ?? '—')}</span></div>
-            <div class="vr-card-sub">${n} photo${n===1?'':'s'} · ${arrows} arrow${arrows===1?'':'s'} · ${esc(room.vr_visibility)}</div>
+            <div class="vr-live ${status.live ? 'on' : 'off'}">${status.text}</div>
+            <div class="vr-card-sub">${n} photo${n===1?'':'s'} · ${arrows} arrow${arrows===1?'':'s'}</div>
             <button class="vr-btn primary" data-edit="${room.id}" style="width:100%;">${n === 0 ? 'Start Tour' : 'Edit Tour'}</button>
           </div>
         </div>`;
@@ -470,7 +500,7 @@
     listView.style.display = 'none';
     editView.style.display = 'block';
 
-    $('roomPill').textContent = `Room ${room.room_no} · Floor ${room.floor ?? '—'}`;
+    renderRoomPill();
     $('captionInput').value = room.vr_caption || '';
     $('visibilitySelect').value = room.vr_visibility || 'draft';
     $('lastUpdatedInput').value = room.updated_at || '';
@@ -483,11 +513,19 @@
     renderAll();
   }
 
+  function renderRoomPill(){
+    const room = activeRoom();
+    const live = liveStatus(room).live;
+    const pill = $('roomPill');
+    pill.textContent = `Room ${room.room_no} · Floor ${room.floor ?? '—'} · ${live ? 'Visible to visitors' : 'Not visible'}`;
+    pill.classList.toggle('off', !live);
+  }
+
   function renderTabs(){
     $('vrTabs').innerHTML = rooms.map(room => `
       <div class="vr-tab ${room.id === activeRoomId ? 'active' : ''}" data-tab="${room.id}" tabindex="0" role="tab" aria-selected="${room.id === activeRoomId ? 'true' : 'false'}">
         Room ${esc(room.room_no)}
-        <span class="tab-floor">${room.scenes.length} photo${room.scenes.length===1?'':'s'}</span>
+        <span class="tab-floor">${liveStatus(room).live ? 'Visible' : 'Not visible'} · ${room.scenes.length} photo${room.scenes.length===1?'':'s'}</span>
       </div>`).join('');
 
     $('vrTabs').querySelectorAll('[data-tab]').forEach(tab => {
@@ -499,6 +537,7 @@
   }
 
   function renderAll(){
+    renderRoomPill();
     renderListingPhotos();
     renderPhotoGrid();
     renderStepStatus();
@@ -525,8 +564,9 @@
 
     const s3 = $('step3Status');
     const vis = room.vr_visibility;
-    s3.textContent = vis === 'public' ? 'Live to visitors' : (vis === 'locked' ? 'Hidden' : 'Draft');
-    s3.classList.toggle('done', vis === 'public');
+    const status = liveStatus(room);
+    s3.textContent = status.text;
+    s3.classList.toggle('done', status.live);
   }
 
   function renderPhotoGrid(){
@@ -1015,6 +1055,8 @@
       $('lastUpdatedInput').value = updated.updated_at || '';
 
       renderStepStatus();
+      renderRoomPill();
+      renderTabs();
       const msg = $('saveMsg');
       msg.style.display = 'block';
       setTimeout(() => { msg.style.display = 'none'; }, 2000);
