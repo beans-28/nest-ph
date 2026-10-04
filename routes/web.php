@@ -232,6 +232,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/dormitory-profile', [DormitoryProfileController::class, 'page'])->name('dormitory-profile.index');
     Route::post('/dormitory-profile', [DormitoryProfileController::class, 'updateProfile'])->name('dormitory-profile.update');
     Route::post('/dormitory-profile/cover-photo', [DormitoryProfileController::class, 'uploadCoverPhoto'])->name('dormitory-profile.cover-photo');
+    Route::post('/dormitory-profile/hero-photos', [DormitoryProfileController::class, 'uploadHeroPhoto'])->name('dormitory-profile.hero-photos');
+    Route::delete('/dormitory-profile/hero-photos/{name}', [DormitoryProfileController::class, 'deleteHeroPhoto'])->where('name', '[A-Za-z0-9._-]+');
     Route::post('/dormitory-profile/brand-logo', [DormitoryProfileController::class, 'uploadBrandLogo'])->name('dormitory-profile.brand-logo');
     Route::post('/dormitory-profile/business-permit', [DormitoryProfileController::class, 'uploadBusinessPermit'])->name('dormitory-profile.business-permit');
     Route::delete('/dormitory-profile/business-permit', [DormitoryProfileController::class, 'deleteBusinessPermit']);

@@ -161,12 +161,17 @@
         <tr>
           <td>
             <div class="label">Expected Income (3 months)</div>
-            <div class="value">PHP {{ number_format($report['totals']['income'], 2) }}</div>
-            <div class="note">Expected expenses: PHP {{ number_format($report['totals']['expenses'], 2) }}</div>
+            <div class="value">About PHP {{ number_format($report['totals']['income']) }}</div>
+            <div class="note">Expected expenses: {{ $report['totals']['expenses'] === null ? 'none recorded' : 'about PHP ' . number_format($report['totals']['expenses']) }}</div>
           </td>
           <td>
             <div class="label">Expected Net</div>
-            <div class="value" @if($report['totals']['net'] < 0) style="color:#ba2828;" @endif>PHP {{ number_format($report['totals']['net'], 2) }}</div>
+            @if($report['totals']['net'] === null)
+              <div class="value">-</div>
+              <div class="note">Can't be estimated: no expenses recorded</div>
+            @else
+              <div class="value" @if($report['totals']['net'] < 0) style="color:#ba2828;" @endif>About PHP {{ number_format($report['totals']['net']) }}</div>
+            @endif
             <div class="note">{{ $report['totals']['ending_leases'] }} lease(s) ending in this period</div>
           </td>
         </tr>
@@ -179,11 +184,11 @@
       <tbody>
         <tr><td>Average new move-ins per month</td><td class="amount">{{ $report['assumptions']['avg_move_ins'] }}</td></tr>
         <tr><td>Average income per occupied bed</td><td class="amount">PHP {{ number_format($report['assumptions']['income_per_bed'], 2) }}</td></tr>
-        <tr><td>Average monthly expenses</td><td class="amount">PHP {{ number_format($report['assumptions']['avg_expenses'], 2) }}</td></tr>
+        <tr><td>Average monthly expenses</td><td class="amount">{{ $report['assumptions']['expense_months'] ? 'PHP ' . number_format($report['assumptions']['avg_expenses'], 2) : 'None recorded' }}</td></tr>
         <tr><td>Months of expenses recorded (of last 6)</td><td class="amount">{{ $report['assumptions']['expense_months'] }}</td></tr>
       </tbody>
     </table>
-    <p class="body-text">Tenants whose lease ends in a month are counted as moving out, so if some renew, actual occupancy will be higher.</p>
+    <p class="body-text">Tenants whose lease ends in a month are counted as moving out, so if some renew, actual occupancy will be higher. The current month is not over, so it shows income so far and is left out of the averages. Estimates are rounded to the nearest PHP 100.</p>
 
     <h2 class="section" style="margin-top:26px;">Actual and Estimated Months</h2>
     <div class="chart-title">Occupancy rate (* = estimate)</div>
@@ -194,15 +199,15 @@
       <thead><tr><th class="first">Month</th><th>Kind</th><th>Leases Ending</th><th>Occupied</th><th>Occupancy</th><th>Income</th><th>Expenses</th><th>Net</th></tr></thead>
       <tbody>
         @foreach(array_merge($report['history'], $report['forecast']) as $r)
-          @php $est = isset($r['ending_leases']); @endphp
-          <tr @if($est) style="font-style:italic;" @endif>
-            <td class="first">{{ $r['label'] }}</td>
-            <td>{{ $est ? 'Estimate' : 'Actual' }}</td>
-            <td>{{ $est ? $r['ending_leases'] : '' }}</td>
+          @php $est = isset($r['ending_leases']); $partial = ! empty($r['partial']); @endphp
+          <tr @if($est || $partial) style="font-style:italic;" @endif>
+            <td class="first">{{ $r['label'] }}{{ $partial ? ' (so far)' : '' }}</td>
+            <td>{{ $est ? 'Estimate' : ($partial ? 'So far' : 'Actual') }}</td>
+            <td>{{ $est ? $r['ending_leases'] : '-' }}</td>
             <td>{{ $r['occupied'] }}</td>
             <td class="rate">{{ $r['occupancy_rate'] }}%</td>
             <td>PHP {{ number_format($r['income'], 2) }}</td>
-            <td>{{ $r['expenses'] === null ? 'Not recorded' : 'PHP ' . number_format($r['expenses'], 2) }}</td>
+            <td>{{ $r['expenses'] === null ? ($est ? '-' : 'Not recorded') : 'PHP ' . number_format($r['expenses'], 2) }}</td>
             <td @if(($r['net'] ?? 0) < 0) style="color:#ba2828;" @endif>{{ $r['net'] === null ? '-' : 'PHP ' . number_format($r['net'], 2) }}</td>
           </tr>
         @endforeach

@@ -37,6 +37,7 @@ class DormitoryProfileController extends Controller
         return view('admindormitoryprofile', [
             'profile' => $profile,
             'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
+            'heroPhotos' => $this->heroPhotoList($profile),
             'businessPermitName' => $profile->business_permit_path ? basename($profile->business_permit_path) : null,
             'businessPermitExt' => $profile->business_permit_path ? strtoupper(pathinfo($profile->business_permit_path, PATHINFO_EXTENSION)) : null,
             'businessPermitImageUrl' => $this->isImageFile($profile->business_permit_path)
@@ -121,6 +122,72 @@ class DormitoryProfileController extends Controller
             'message' => 'Cover photo updated.',
             'cover_photo_url' => Storage::disk('public')->url($path),
         ]);
+    }
+
+    /**
+     * Extra homepage slideshow photos (shown after the cover photo). The
+     * cover counts toward the 5-photo limit, so at most 4 extras.
+     */
+    public function uploadHeroPhoto(Request $request): JsonResponse
+    {
+        $request->validate([
+            'photo' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ]);
+
+        $profile = DormitoryProfile::current();
+        if (! $profile->exists) {
+            $profile->save();
+        }
+
+        $paths = $profile->hero_photo_paths ?? [];
+        if (count($paths) >= DormitoryProfile::MAX_HERO_PHOTOS - 1) {
+            return response()->json([
+                'message' => 'You can have up to ' . DormitoryProfile::MAX_HERO_PHOTOS . ' homepage photos, including the cover photo. Remove one first.',
+            ], 422);
+        }
+
+        $paths[] = $request->file('photo')->store('dormitory-profile/hero', 'public');
+        $profile->update(['hero_photo_paths' => $paths]);
+
+        return response()->json([
+            'message' => 'Homepage photo added.',
+            'photos' => $this->heroPhotoList($profile),
+        ]);
+    }
+
+    /**
+     * Removes by file name, not list position, so an old tab or two quick
+     * clicks can't remove the wrong photo.
+     */
+    public function deleteHeroPhoto(string $name): JsonResponse
+    {
+        $profile = DormitoryProfile::current();
+        $paths = $profile->hero_photo_paths ?? [];
+        $index = array_search($name, array_map('basename', $paths), true);
+
+        if ($index === false) {
+            return response()->json([
+                'message' => 'That photo was already removed.',
+                'photos' => $this->heroPhotoList($profile),
+            ], 404);
+        }
+
+        Storage::disk('public')->delete($paths[$index]);
+        array_splice($paths, $index, 1);
+        $profile->update(['hero_photo_paths' => $paths]);
+
+        return response()->json([
+            'message' => 'Homepage photo removed.',
+            'photos' => $this->heroPhotoList($profile),
+        ]);
+    }
+
+    private function heroPhotoList(DormitoryProfile $profile): array
+    {
+        return array_map(
+            fn ($p) => ['url' => Storage::disk('public')->url($p), 'name' => basename($p)],
+            $profile->hero_photo_paths ?? []
+        );
     }
 
     /**

@@ -125,7 +125,29 @@
             box-shadow: inset 0 4px 4px rgba(0,0,0,0.25);
             background: linear-gradient(135deg, #e7e5e5, #818080);
         }
+        .hero-image { position: relative; }
         .hero-image img { width: 100%; height: 100%; object-fit: cover; }
+        .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity .8s ease; }
+        .hero-slide.active { opacity: 1; }
+        .hero-arrow {
+            position: absolute; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border-radius: 50%;
+            border: none; background: rgba(255,255,255,0.85); color: #292420; cursor: pointer; z-index: 2;
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .hero-arrow svg { width: 18px; height: 18px; }
+        .hero-arrow.prev { left: 10px; } .hero-arrow.next { right: 10px; }
+        .hero-arrow:focus-visible, .hero-dots button:focus-visible, .hero-pause:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+        .hero-dots { position: absolute; bottom: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 2px; z-index: 2; }
+        /* 28px tap area around a 10px dot */
+        .hero-dots button { width: 28px; height: 28px; border: none; padding: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .hero-dots button::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.55); box-shadow: 0 0 0 1px rgba(0,0,0,0.25); }
+        .hero-dots button[aria-current="true"]::before { background: #fff; }
+        .hero-pause {
+            position: absolute; top: 10px; right: 10px; width: 32px; height: 32px; border-radius: 50%; border: none; z-index: 2;
+            background: rgba(255,255,255,0.85); color: #292420; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .hero-pause svg { width: 14px; height: 14px; }
+        @media (prefers-reduced-motion: reduce) { .hero-slide { transition: none; } }
 
         .stats-bar {
             background: linear-gradient(90deg, var(--green-dark), var(--green-light));
@@ -238,6 +260,8 @@
             .newsletter button { min-height: 44px; }
         }
         .footer-badge img{ width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0; }
+        .footer-badge-image{ display:block; max-width:300px; }
+        .footer-badge-image img{ display:block; max-width:100%; max-height:200px; width:auto; height:auto; object-fit:contain; border-radius:6px; }
         .about-contact-note{ text-align: center; margin-top: 32px; font-size: 13px; color: rgba(255,255,255,0.85); }
         .about-contact-note a{ color: #fff; font-weight: 600; text-decoration: underline; }
     </style>
@@ -257,9 +281,19 @@
                 <a href="{{ route('public.vr') }}" class="btn btn-outline-green btn-lg">VR Tour</a>
             </div>
         </div>
-        <div class="hero-image">
-            @if($coverPhotoUrl)
-                <img src="{{ $coverPhotoUrl }}" alt="{{ $dormName }}">
+        <div class="hero-image" id="heroCarousel" @if(count($heroPhotoUrls) > 1) role="region" aria-roledescription="carousel" aria-label="Photos of {{ $dormName }}" @endif>
+            @foreach($heroPhotoUrls as $i => $url)
+                <img src="{{ $url }}" alt="{{ $i === 0 ? $dormName : '' }}" class="hero-slide {{ $i === 0 ? 'active' : '' }}" @if($i > 0) loading="lazy" aria-hidden="true" @endif>
+            @endforeach
+            @if(count($heroPhotoUrls) > 1)
+                <button type="button" class="hero-pause" aria-label="Pause slideshow"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></button>
+                <button type="button" class="hero-arrow prev" aria-label="Previous photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+                <button type="button" class="hero-arrow next" aria-label="Next photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></button>
+                <div class="hero-dots">
+                    @foreach($heroPhotoUrls as $i => $url)
+                        <button type="button" aria-label="Show photo {{ $i + 1 }} of {{ count($heroPhotoUrls) }}" @if($i === 0) aria-current="true" @endif></button>
+                    @endforeach
+                </div>
             @endif
         </div>
     </section>
@@ -363,14 +397,16 @@
             </div>
             <div>
                 @if($isBirVerified)
+                @if($birRegistrationImageUrl)
+                <div class="footer-badge-image">
+                    <img src="{{ $birRegistrationImageUrl }}" alt="Registered with the Bureau of Internal Revenue" loading="lazy">
+                </div>
+                @else
                 <div class="footer-badge">
-                    @if($birRegistrationImageUrl)
-                        <img src="{{ $birRegistrationImageUrl }}" alt="BIR registration certificate" loading="lazy">
-                    @else
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M20 6L9 17l-5-5"/></svg>
-                    @endif
                     <span>Registered with the Bureau of Internal Revenue</span>
                 </div>
+                @endif
                 @endif
             </div>
         </div>
@@ -383,6 +419,51 @@
     </div>
 
     <script>
+        // Hero slideshow: only runs with 2+ photos. Auto-advances every 5s
+        // unless the visitor prefers reduced motion; pauses on hover, on
+        // keyboard focus, and with the pause button. Swipe works on phones.
+        (function () {
+            const root = document.getElementById('heroCarousel');
+            const slides = root ? root.querySelectorAll('.hero-slide') : [];
+            if (slides.length < 2) return;
+            const dots = root.querySelectorAll('.hero-dots button');
+            const pauseBtn = root.querySelector('.hero-pause');
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg>';
+            const PAUSE = pauseBtn.innerHTML;
+            let current = 0, timer = null, paused = reduceMotion, hovering = false;
+            function show(n) {
+                slides[current].classList.remove('active'); slides[current].setAttribute('aria-hidden', 'true');
+                dots[current].removeAttribute('aria-current');
+                current = (n + slides.length) % slides.length;
+                slides[current].classList.add('active'); slides[current].removeAttribute('aria-hidden');
+                dots[current].setAttribute('aria-current', 'true');
+            }
+            function sync() {
+                clearInterval(timer);
+                if (!paused && !hovering) timer = setInterval(() => show(current + 1), 5000);
+                pauseBtn.innerHTML = paused ? PLAY : PAUSE;
+                pauseBtn.setAttribute('aria-label', paused ? 'Play slideshow' : 'Pause slideshow');
+            }
+            pauseBtn.addEventListener('click', () => { paused = !paused; sync(); });
+            root.querySelector('.prev').addEventListener('click', () => { show(current - 1); sync(); });
+            root.querySelector('.next').addEventListener('click', () => { show(current + 1); sync(); });
+            dots.forEach((d, i) => d.addEventListener('click', () => { show(i); sync(); }));
+            root.addEventListener('mouseenter', () => { hovering = true; sync(); });
+            root.addEventListener('mouseleave', () => { hovering = false; sync(); });
+            root.addEventListener('focusin', () => { hovering = true; sync(); });
+            root.addEventListener('focusout', e => { if (!root.contains(e.relatedTarget)) { hovering = false; sync(); } });
+            let startX = null;
+            root.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+            root.addEventListener('touchend', e => {
+                if (startX === null) return;
+                const dx = e.changedTouches[0].clientX - startX;
+                if (Math.abs(dx) > 40) { show(current + (dx < 0 ? 1 : -1)); sync(); }
+                startX = null;
+            });
+            sync();
+        })();
+
         window.addEventListener('scroll', function () {
             const nav = document.querySelector('.topnav');
             if (window.scrollY > 10) {

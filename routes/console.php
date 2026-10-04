@@ -52,3 +52,11 @@ Schedule::call(function () {
  * placeholder value still in place.
  */
 Schedule::command('escalation:process')->daily();
+
+/**
+ * Pending applications waiting 3+ days: email the admins once per
+ * application (the admin bell also shows them). Same inert-without-a-real-
+ * cron situation as the schedules above -- run
+ * `php artisan applications:notify-overdue` by hand to test locally.
+ */
+Schedule::command('applications:notify-overdue')->daily();

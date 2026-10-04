@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Console\Commands\NotifyOverdueApplications;
 use App\Models\Application;
 use App\Models\BillingStatement;
 use App\Models\Inquiry;
@@ -22,6 +23,8 @@ class AdminNotificationController extends Controller
     public function index(): JsonResponse
     {
         $overdueTickets = MaintenanceTicket::overdueSummary();
+        $overdueSince = now()->subDays(NotifyOverdueApplications::DAYS);
+        $overdueLabel = 'waiting ' . NotifyOverdueApplications::DAYS . '+ days';
 
         $items = [
             [
@@ -31,8 +34,16 @@ class AdminNotificationController extends Controller
             ],
             [
                 'key' => 'applications', 'urgent' => false, 'link' => '/applications',
-                'count' => Application::where('status', 'pending')->count(),
+                // Only the recent ones; older ones get their own urgent item below.
+                'count' => Application::where('status', 'pending')->where('created_at', '>', $overdueSince)->count(),
                 'one' => 'new application', 'many' => 'new applications',
+            ],
+            [
+                'key' => 'applications_overdue', 'urgent' => true, 'link' => '/applications',
+                'count' => Application::where('status', 'pending')
+                    ->where('created_at', '<=', $overdueSince)
+                    ->count(),
+                'one' => 'application ' . $overdueLabel, 'many' => 'applications ' . $overdueLabel,
             ],
             [
                 'key' => 'inquiries', 'urgent' => false, 'link' => '/inquiries',

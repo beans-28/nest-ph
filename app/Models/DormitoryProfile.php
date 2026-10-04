@@ -15,6 +15,7 @@ class DormitoryProfile extends Model
         'contact_number',
         'contact_email',
         'logo_path',
+        'hero_photo_paths',
         'brand_logo_path',
         'policies_file_path',
         'contract_template_path',
@@ -75,6 +76,7 @@ class DormitoryProfile extends Model
     ];
 
     protected $casts = [
+        'hero_photo_paths' => 'array',
         'rent_due_day' => 'integer',
         'grace_period_days' => 'integer',
         'late_penalty_percent' => 'float',
@@ -138,5 +140,22 @@ class DormitoryProfile extends Model
     public function isBirVerified(): bool
     {
         return (bool) $this->bir_registration_path;
+    }
+
+    /** Cover photo + extra slideshow photos: at most this many in total. */
+    public const MAX_HERO_PHOTOS = 5;
+
+    /**
+     * Landing page hero slideshow: the cover photo first, then the extra
+     * homepage photos. One photo = a still image; 2+ = a carousel.
+     */
+    public function heroPhotoUrls(): array
+    {
+        $paths = array_filter(array_merge([$this->logo_path], $this->hero_photo_paths ?? []));
+
+        return array_values(array_map(
+            fn ($p) => \Illuminate\Support\Facades\Storage::disk('public')->url($p),
+            array_slice($paths, 0, self::MAX_HERO_PHOTOS)
+        ));
     }
 }

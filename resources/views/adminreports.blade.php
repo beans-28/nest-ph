@@ -437,19 +437,21 @@
   function renderForecast(data){
     const a = data.assumptions, t = data.totals;
     const rows = data.history.map(r => ({ ...r, est:false })).concat(data.forecast.map(r => ({ ...r, est:true })));
-    const netClass = t.net < 0 ? 'loss' : 'profit';
+    const netClass = t.net === null ? '' : (t.net < 0 ? 'loss' : 'profit');
+    const kind = r => r.est ? 'Estimate' : (r.partial ? 'So far' : 'Actual');
+    const monthLabel = r => r.partial ? `${r.label} (so far)` : r.label;
     const cell = v => v === null ? '<span style="color:var(--text-light)">Not recorded</span>' : money(v);
     let html = `
       <div class="results-head"><h2>Forecast: ${data.range}</h2></div>
       <div class="generated-note">Generated ${data.generated_at}. These are estimates, not records.</div>
-      ${a.expense_months === 0 ? `<div class="missing-note">No expenses recorded in the last 6 months, so expected expenses show as ₱0. <button type="button" class="link-btn" id="goExpenses">Record expenses</button></div>` : ''}
+      ${a.expense_months === 0 ? `<div class="missing-note">No expenses recorded in the last 6 months, so expected expenses and net can't be estimated. <button type="button" class="link-btn" id="goExpenses">Record expenses</button></div>` : ''}
       <div class="stats-row money">
-        <div class="stat-card"><div class="stat-label">Expected Income (3 mo.)</div><div class="stat-value">${money(t.income)}</div></div>
-        <div class="stat-card"><div class="stat-label">Expected Expenses (3 mo.)</div><div class="stat-value">${money(t.expenses)}</div></div>
-        <div class="stat-card ${netClass}"><div class="stat-label">Expected Net</div><div class="stat-value">${money(t.net)}</div></div>
+        <div class="stat-card"><div class="stat-label">Expected Income (3 mo.)</div><div class="stat-value">≈ ${money(t.income)}</div></div>
+        <div class="stat-card"><div class="stat-label">Expected Expenses (3 mo.)</div><div class="stat-value">${t.expenses === null ? '&mdash;' : '≈ ' + money(t.expenses)}</div></div>
+        <div class="stat-card ${netClass}"><div class="stat-label">Expected Net</div><div class="stat-value">${t.net === null ? '&mdash;' : '≈ ' + money(t.net)}</div></div>
         <div class="stat-card"><div class="stat-label">Leases Ending</div><div class="stat-value">${t.ending_leases}</div></div>
       </div>
-      <p class="occupancy-note" style="margin-top:0;">How it's estimated: about <strong>${a.avg_move_ins}</strong> new move-ins a month and <strong>${money(a.income_per_bed)}</strong> collected per occupied bed (averages of the last 6 months), expenses of <strong>${money(a.avg_expenses)}</strong> a month (average of ${a.expense_months} recorded month${a.expense_months === 1 ? '' : 's'}). Tenants whose lease ends are counted as moving out, so if some renew, the real numbers will be higher.</p>
+      <p class="occupancy-note" style="margin-top:0;">How it's estimated: about <strong>${a.avg_move_ins}</strong> new move-ins a month and <strong>${money(a.income_per_bed)}</strong> collected per occupied bed (averages of the last 6 months), ${a.expense_months ? `expenses of <strong>${money(a.avg_expenses)}</strong> a month (average of ${a.expense_months} recorded month${a.expense_months === 1 ? '' : 's'})` : 'no expense estimate (none recorded)'}. ${rows.some(r => r.partial) ? 'The current month isn't over, so it shows income so far and is left out of the averages. ' : ''}Estimates are rounded to the nearest ₱100. The date filters above don't apply here: the forecast always uses the last 6 months. Tenants whose lease ends are counted as moving out, so if some renew, the real numbers will be higher.</p>
       <div class="chart-card">
         <h3>Occupancy rate</h3>
         <p class="chart-sub">Solid line is actual. Dashed line is the estimate.</p>
@@ -457,13 +459,13 @@
       </div>
       <div class="chart-card">
         <h3>Income vs. expenses</h3>
-        <p class="chart-sub">Faded bars are estimates.</p>
-        <div class="chart-legend"><span style="--swatch:${C.olive}">Income</span><span style="--swatch:${C.red}">Expenses</span></div>
+        <p class="chart-sub">Faded bars are estimates. The current month only shows income so far.</p>
+        <div class="chart-legend"><span style="--swatch:${C.olive}">Income</span><span style="--swatch:${C.red}">Expenses</span><span style="--swatch:rgba(143,180,143,0.4)">Estimate</span></div>
         <div class="chart-box"><canvas id="fcMoneyChart" role="img" aria-label="Bar chart of actual and estimated income and expenses per month"></canvas></div>
       </div>
       <div class="table-scroll"><table class="report-table">
         <thead><tr><th>Month</th><th>Kind</th><th class="num">Leases Ending</th><th class="num">Occupied</th><th class="num">Occupancy</th><th class="num">Income</th><th class="num">Expenses</th><th class="num">Net</th></tr></thead>
-        <tbody>${rows.map(r => `<tr${r.est ? ' style="font-style:italic"' : ''}><td>${r.label}</td><td>${r.est ? 'Estimate' : 'Actual'}</td><td class="num">${r.est ? r.ending_leases : ''}</td><td class="num">${r.occupied}</td><td class="num">${r.occupancy_rate}%</td><td class="num">${money(r.income)}</td><td class="num">${cell(r.expenses)}</td><td class="num ${r.net < 0 ? 'neg' : ''}">${r.net === null ? '&mdash;' : money(r.net)}</td></tr>`).join('')}</tbody>
+        <tbody>${rows.map(r => `<tr${r.est || r.partial ? ' style="font-style:italic"' : ''}><td>${monthLabel(r)}</td><td>${kind(r)}</td><td class="num">${r.est ? r.ending_leases : '&mdash;'}</td><td class="num">${r.occupied}</td><td class="num">${r.occupancy_rate}%</td><td class="num">${money(r.income)}</td><td class="num">${r.est && r.expenses === null ? '&mdash;' : cell(r.expenses)}</td><td class="num ${r.net !== null && r.net < 0 ? 'neg' : ''}">${r.net === null ? '&mdash;' : money(r.net)}</td></tr>`).join('')}</tbody>
       </table></div>`;
     $('resultsArea').innerHTML = html;
     const go = $('goExpenses');
@@ -478,10 +480,10 @@
         // Dash the line from the last actual month onwards
         segment:{ borderDash: ctx => ctx.p1DataIndex >= firstEst ? [6, 4] : undefined } }] },
       options:{ responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{ label: c => ` ${rows[c.dataIndex].est ? 'Estimated' : 'Actual'}: ${c.parsed.y}% (${rows[c.dataIndex].occupied}/${data.total_beds} beds)` } } },
+        plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{ label: c => ` ${kind(rows[c.dataIndex])}: ${c.parsed.y}% (${rows[c.dataIndex].occupied}/${data.total_beds} beds)` } } },
         scales:{ x:xAxis, y:{ min:0, max:100, border:{ display:false }, grid:{ color:C.grid }, ticks:{ stepSize:25, callback:v => v + '%' } } } }
     });
-    const fade = (color, soft) => rows.map(r => r.est ? soft : color);
+    const fade = (color, soft) => rows.map(r => r.est || r.partial ? soft : color);
     chartOrFallback('fcMoneyChart', {
       type:'bar',
       data:{ labels, datasets:[
@@ -490,7 +492,7 @@
       ] },
       options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
         plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{
-          title: items => items[0].label + (rows[items[0].dataIndex].est ? ' (estimate)' : ''),
+          title: items => items[0].label + (rows[items[0].dataIndex].est ? ' (estimate)' : rows[items[0].dataIndex].partial ? ' (so far)' : ''),
           label: c => ` ${c.dataset.label}: ${c.parsed.y === null ? 'not recorded' : money(c.parsed.y)}` } } },
         scales:{ x:xAxis, y:{ beginAtZero:true, border:{ display:false }, grid:{ color:C.grid }, ticks:{ maxTicksLimit:5, callback:shortPeso } } } }
     });

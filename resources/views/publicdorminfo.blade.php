@@ -173,7 +173,8 @@
         .listing-rules{ list-style:decimal; padding-left:24px; margin:0; }
         .listing-rules-section{ font-size:13px; font-weight:700; color:#1f5130; margin:14px 0 4px 0; }
         .listing-rules li{ font-size:13px; color:#33393c; line-height:1.8; }
-        .listing-badge img{ width:24px; height:24px; border-radius:4px; object-fit:cover; flex-shrink:0; }
+        .listing-badge-image{ display:block; max-width:340px; margin-bottom:16px; }
+        .listing-badge-image img{ display:block; max-width:100%; max-height:220px; width:auto; height:auto; object-fit:contain; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
                 .reviews-card{ background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 14px 34px rgba(0,0,0,0.25); margin-bottom:24px; padding:24px 28px; }
         .reviews-summary{ display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start; margin-bottom:24px; padding-bottom:24px; border-bottom:1px solid #e2e6e2; }
         .reviews-score{ text-align:center; flex-shrink:0; }
@@ -213,14 +214,14 @@
             @endif
             <div class="listing-body">
                 @if($isBirVerified)
-                    <div class="listing-badge">
-                        @if($birRegistrationImageUrl)
-                            <img src="{{ $birRegistrationImageUrl }}" alt="BIR registration certificate">
-                        @else
+                    @if($birRegistrationImageUrl)
+                        <div class="listing-badge-image"><img src="{{ $birRegistrationImageUrl }}" alt="Registered with the Bureau of Internal Revenue" loading="lazy"></div>
+                    @else
+                        <div class="listing-badge">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-                        @endif
-                        <span>Registered with the Bureau of Internal Revenue</span>
-                    </div>
+                            <span>Registered with the Bureau of Internal Revenue</span>
+                        </div>
+                    @endif
                 @endif
                 @if($amenitiesList->count())
                     <div class="listing-section-label">Amenities</div>

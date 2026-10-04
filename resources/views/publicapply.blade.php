@@ -190,6 +190,8 @@
             justify-content: center; gap: 8px; cursor: pointer; position: relative;
         }
         .file-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        #idDrop { align-items: center; text-align: center; }
+        .file-drop .upload-icon { width: 28px; height: 28px; color: #567357; }
         .file-drop .placeholder { font-size: 13px; color: #9aa5ac; }
         .file-drop .filename { font-size: 13px; color: #194e19; font-weight: 500; word-break: break-all; }
         .file-drop-icons { display: flex; gap: 10px; color: #9aa5ac; }
@@ -678,7 +680,8 @@
                             <label for="id_document">ID <span class="req">*</span></label>
                             <div class="file-drop" id="idDrop">
                                 <input type="file" id="id_document" accept=".jpg,.jpeg,.png,.pdf" required>
-                                <span class="placeholder" id="idPlaceholder">Add file (JPG, PNG, or PDF)</span>
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <span class="placeholder" id="idPlaceholder">Add file (JPG, PNG, or PDF, up to 5 MB)</span>
                             </div>
                         </div>
                     </div>
@@ -1020,7 +1023,7 @@
 
     // ===== File drop labels =====
     document.getElementById('id_document').addEventListener('change', function () {
-        document.getElementById('idPlaceholder').textContent = this.files[0]?.name || 'Add file (JPG, PNG, or PDF)';
+        document.getElementById('idPlaceholder').textContent = this.files[0]?.name || 'Add file (JPG, PNG, or PDF, up to 5 MB)';
     });
 
     // ===== Room -> Bed cascading dropdowns =====

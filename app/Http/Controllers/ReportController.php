@@ -850,7 +850,7 @@ class ReportController extends Controller
         $row = $this->xlsxTable($sheet, $row, 'How the Estimates Are Made', ['Assumption', 'Value'], [
             ['Average new move-ins per month', $a['avg_move_ins']],
             ['Average income per occupied bed', $a['income_per_bed']],
-            ['Average monthly expenses', $a['avg_expenses']],
+            ['Average monthly expenses', $a['expense_months'] ? $a['avg_expenses'] : 'None recorded'],
             ['Months of expenses recorded (of last 6)', $a['expense_months']],
         ]);
         $sheet->getStyle('B' . ($row - 4) . ':B' . ($row - 3))->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
@@ -858,10 +858,10 @@ class ReportController extends Controller
         $headers = ['Month', 'Kind', 'Leases Ending', 'Occupied Beds', 'Occupancy Rate', 'Income', 'Expenses', 'Net'];
         $toRow = fn ($r, $kind) => [
             $r['label'], $kind, $r['ending_leases'] ?? '', $r['occupied'], $r['occupancy_rate'] / 100,
-            $r['income'], $r['expenses'], $r['net'],
+            $r['income'], $r['expenses'] ?? '—', $r['net'] ?? '—',
         ];
         $start = $row;
-        $rows = collect($report['history'])->map(fn ($r) => $toRow($r, 'Actual'))
+        $rows = collect($report['history'])->map(fn ($r) => $toRow($r, ! empty($r['partial']) ? 'So far' : 'Actual'))
             ->concat(collect($report['forecast'])->map(fn ($r) => $toRow($r, 'Estimate')))->all();
         $row = $this->xlsxTable($sheet, $row, 'Actual and Estimated Months', $headers, $rows);
         $first = $start + 2;
@@ -905,6 +905,7 @@ class ReportController extends Controller
         $totalBeds = Bed::count();
 
         $history = $trend->map(function ($t, $i) use ($lookBack) {
+            $isCurrent = $i === $lookBack - 1;
             $month = now()->startOfMonth()->subMonthsNoOverflow($lookBack - 1 - $i);
             $expense = MonthlyExpense::whereDate('month', $month->toDateString())->first();
             $income = $this->collectedIn($month);
@@ -917,6 +918,8 @@ class ReportController extends Controller
                 'income' => $income,
                 'expenses' => $expense ? $expense->total() : null,
                 'net' => $expense ? round($income - $expense->total(), 2) : null,
+                // This month isn't over yet, so its numbers are "so far".
+                'partial' => $isCurrent,
             ];
         });
 
@@ -929,10 +932,20 @@ class ReportController extends Controller
             // No history yet: fall back to the average rent on active leases.
             : (float) LeaseContract::whereIn('status', ['active', 'expiring_soon'])->avg('monthly_rate');
         $avgMoveIns = round($complete->avg('moved_in') ?? 0, 1);
-        $recorded = $history->whereNotNull('expenses');
+        $recorded = $complete->whereNotNull('expenses');
         $avgExpenses = $recorded->count() ? round($recorded->avg('expenses'), 2) : 0.0;
 
-        $occupied = Bed::where('status', 'occupied')->count();
+        // Start from today's occupied beds minus the leases that still end
+        // later this month, so next month doesn't count them as staying.
+        $occupied = Bed::where('status', 'occupied')->count()
+            - LeaseContract::whereIn('status', ['active', 'expiring_soon'])
+                ->whereNull('terminated_at')
+                ->whereBetween('end_date', [now()->toDateString(), now()->endOfMonth()->toDateString()])
+                ->count();
+        $hasExpenses = $recorded->count() > 0;
+        // Estimates are rounded to the nearest P100: an exact centavo
+        // figure would look more certain than a guess is.
+        $round100 = fn ($v) => round($v / 100) * 100;
         $forecast = [];
         for ($i = 1; $i <= $ahead; $i++) {
             $month = now()->startOfMonth()->addMonthsNoOverflow($i);
@@ -941,7 +954,7 @@ class ReportController extends Controller
                 ->whereBetween('end_date', [$month->toDateString(), $month->copy()->endOfMonth()->toDateString()])
                 ->count();
             $occupied = (int) round(max(0, min($totalBeds, $occupied - $ending + $avgMoveIns)));
-            $income = round($occupied * $incomePerBed, 2);
+            $income = $round100($occupied * $incomePerBed);
 
             $forecast[] = [
                 'label' => $month->format('M Y'),
@@ -949,8 +962,9 @@ class ReportController extends Controller
                 'occupied' => $occupied,
                 'occupancy_rate' => $totalBeds > 0 ? round($occupied / $totalBeds * 100, 1) : 0,
                 'income' => $income,
-                'expenses' => $avgExpenses,
-                'net' => round($income - $avgExpenses, 2),
+                'expenses' => $hasExpenses ? $round100($avgExpenses) : null,
+                // No expenses recorded = no honest profit figure.
+                'net' => $hasExpenses ? $income - $round100($avgExpenses) : null,
             ];
         }
 
@@ -962,8 +976,8 @@ class ReportController extends Controller
             'forecast' => $forecast,
             'totals' => [
                 'income' => round(array_sum(array_column($forecast, 'income')), 2),
-                'expenses' => round(array_sum(array_column($forecast, 'expenses')), 2),
-                'net' => round(array_sum(array_column($forecast, 'net')), 2),
+                'expenses' => $hasExpenses ? array_sum(array_column($forecast, 'expenses')) : null,
+                'net' => $hasExpenses ? array_sum(array_column($forecast, 'net')) : null,
                 'ending_leases' => array_sum(array_column($forecast, 'ending_leases')),
             ],
             'assumptions' => [

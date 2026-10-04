@@ -47,6 +47,7 @@ class PublicController extends Controller
             'contactEmail' => $profile->contact_email,
             'address' => $profile->address,
             'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
+            'heroPhotoUrls' => $profile->heroPhotoUrls(),
             'isBirVerified' => $profile->isBirVerified(),
             'birRegistrationImageUrl' => $this->isImageFile($profile->bir_registration_path)
                 ? Storage::disk('public')->url($profile->bir_registration_path)

@@ -38,6 +38,30 @@ class ForecastReportTest extends TestCase
         $this->assertSame(now()->startOfMonth()->addMonth()->format('M Y'), $res->json('forecast.0.label'));
         $this->assertEquals(1500, $res->json('assumptions.avg_expenses'));
         $this->assertEquals(4500, $res->json('totals.expenses'));
+        // The current month is still going, so it's marked as "so far".
+        $this->assertTrue($res->json('history.5.partial'));
+        $this->assertFalse($res->json('history.4.partial'));
+    }
+
+    public function test_forecast_has_no_net_when_no_expenses_are_recorded(): void
+    {
+        $res = $this->actingAs($this->admin())->getJson('/reports/forecast')->assertOk();
+
+        $this->assertNull($res->json('totals.net'));
+        $this->assertNull($res->json('totals.expenses'));
+        $this->assertNull($res->json('forecast.0.net'));
+    }
+
+    public function test_current_month_expenses_are_left_out_of_the_average(): void
+    {
+        MonthlyExpense::create(['month' => now()->startOfMonth()->subMonth()->toDateString(),
+            'electricity' => 1000, 'water' => 0, 'internet' => 0, 'salaries' => 0, 'other' => 0]);
+        MonthlyExpense::create(['month' => now()->startOfMonth()->toDateString(),
+            'electricity' => 9000, 'water' => 0, 'internet' => 0, 'salaries' => 0, 'other' => 0]);
+
+        $res = $this->actingAs($this->admin())->getJson('/reports/forecast')->assertOk();
+
+        $this->assertEquals(1000, $res->json('assumptions.avg_expenses'));
     }
 
     public function test_forecast_exports_to_excel_and_pdf(): void

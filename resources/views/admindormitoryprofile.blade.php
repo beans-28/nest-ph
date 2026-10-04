@@ -69,6 +69,14 @@
   .cover-wrap img{ width:100%; height:100%; object-fit:cover; display:block; }
   .cover-empty{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-light); font-size:13px; flex-direction:column; gap:8px; }
   .cover-empty svg{ width:30px; height:30px; }
+  .hero-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:10px; }
+  .hero-thumb{ position:relative; aspect-ratio:4/3; border-radius:8px; overflow:hidden; background:#e2e6e2; }
+  .hero-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .hero-thumb .hero-remove{ position:absolute; top:6px; right:6px; width:28px; height:28px; border-radius:50%; border:none; background:rgba(0,0,0,0.65); color:#fff; cursor:pointer; font-size:17px; line-height:1; }
+  .hero-thumb .hero-remove:focus-visible, .hero-add:focus-visible{ outline:3px solid var(--green-accent); outline-offset:2px; }
+  .hero-add:disabled{ cursor:progress; opacity:0.7; }
+  .hero-add{ aspect-ratio:4/3; border-radius:8px; border:1.5px dashed var(--border); background:#fff; color:var(--text-light); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:12px; }
+  .hero-add svg{ width:22px; height:22px; }
   .cover-actions{ position:absolute; bottom:14px; left:14px; right:14px; display:flex; gap:10px; flex-wrap:wrap; }
 
   .btn{ font-size:12.5px; font-weight:600; padding:10px 18px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); display:inline-flex; align-items:center; gap:7px; }
@@ -203,7 +211,8 @@
   .toast{ position:fixed; bottom:22px; right:22px; background:var(--green-accent); color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; display:none; z-index:99; box-shadow:0 6px 18px rgba(0,0,0,.2); }
   .toast.error{ background:var(--status-occupied); }
   .toast.visible{ display:block; }
-  .badge-pill img{ width:22px; height:22px; border-radius:4px; object-fit:cover; flex-shrink:0; }
+  .badge-pill.is-image{ display:block; padding:0; border:none; background:none; box-shadow:none; max-width:300px; }
+  .badge-pill.is-image img{ display:block; max-width:100%; max-height:180px; width:auto; height:auto; object-fit:contain; border-radius:8px; }
 
   .legit-docs-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px; }
   @media (max-width:640px){ .legit-docs-grid{ grid-template-columns:1fr; } }
@@ -322,6 +331,14 @@
               </div>
             </div>
             <input type="file" id="coverPhotoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
+          </div>
+
+          {{-- Homepage Slideshow --}}
+          <div class="card">
+            <h2>Homepage Slideshow</h2>
+            <p class="card-sub">Your cover photo always shows first on the homepage. Add up to 4 more and they'll rotate every 5 seconds. Landscape photos (4:3) work best; the edges of other shapes get cropped.</p>
+            <div class="hero-grid" id="heroGrid"></div>
+            <input type="file" id="heroPhotoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
           </div>
 
           {{-- Dorm Logo (dual branding: dorm = PIC, NEST.PH = PIP) --}}
@@ -755,18 +772,18 @@
               @if($coverPhotoUrl)
                 <img src="{{ $coverPhotoUrl }}" id="previewCoverImg" alt="">
               @else
-                <img src="" id="previewCoverImg" alt="" style="display:none;">
+                <img id="previewCoverImg" alt="" style="display:none;">
               @endif
             </div>
             <div class="preview-body">
               <div class="preview-badge" id="previewBadgeWrap" style="{{ $profile->isBirVerified() ? '' : 'display:none;' }}">
-                <div class="badge-pill" id="previewBadgePill">
+                <div class="badge-pill{{ $birRegistrationImageUrl ? ' is-image' : '' }}" id="previewBadgePill">
                   @if($birRegistrationImageUrl)
-                    <img src="{{ $birRegistrationImageUrl }}" alt="">
+                    <img src="{{ $birRegistrationImageUrl }}" alt="Registered with the Bureau of Internal Revenue">
                   @else
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+                    <span>Registered with the Bureau of Internal Revenue</span>
                   @endif
-                  <span>Registered with the Bureau of Internal Revenue</span>
                 </div>
               </div>
               <div class="preview-name" id="previewName">{{ $profile->dorm_name }}</div>
@@ -906,6 +923,58 @@
     this.value = '';
   });
 
+  // ===== Homepage Slideshow =====
+  const HERO_MAX_EXTRA = 4;
+  function renderHeroGrid(photos){
+    const grid = $('heroGrid');
+    grid.innerHTML = '';
+    photos.forEach((photo, i) => {
+      const div = document.createElement('div');
+      div.className = 'hero-thumb';
+      div.innerHTML = `<img src="${photo.url}" alt="Slideshow photo ${i + 2}"><button type="button" class="hero-remove" title="Remove" aria-label="Remove slideshow photo ${i + 2}">&times;</button>`;
+      div.querySelector('button').addEventListener('click', async function(){
+        if(!confirm('Remove this photo from the homepage slideshow?')) return;
+        this.disabled = true;
+        try {
+          const body = await api('/dormitory-profile/hero-photos/' + encodeURIComponent(photo.name), { method: 'DELETE' });
+          renderHeroGrid(body.photos);
+          toast(body.message);
+        } catch(e){
+          toast(e.message, true);
+          // Already gone (e.g. removed in another tab): show the real list.
+          if(e.body && e.body.photos) renderHeroGrid(e.body.photos); else this.disabled = false;
+        }
+      });
+      grid.appendChild(div);
+    });
+    if(photos.length < HERO_MAX_EXTRA){
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'hero-add';
+      add.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>Add photo</span>';
+      add.addEventListener('click', () => $('heroPhotoInput').click());
+      grid.appendChild(add);
+    }
+  }
+  renderHeroGrid(@json($heroPhotos));
+  $('heroPhotoInput').addEventListener('change', async function(){
+    const file = this.files[0];
+    if(!file) return;
+    const add = document.querySelector('#heroGrid .hero-add');
+    if(add){ add.disabled = true; add.querySelector('span').textContent = 'Uploading…'; }
+    const fd = new FormData();
+    fd.append('photo', file);
+    try {
+      const body = await api('{{ route('dormitory-profile.hero-photos') }}', { method: 'POST', body: fd });
+      renderHeroGrid(body.photos);
+      toast(body.message);
+    } catch(e){
+      toast(e.message, true);
+      if(add){ add.disabled = false; add.querySelector('span').textContent = 'Add photo'; }
+    }
+    this.value = '';
+  });
+
   // ===== Dorm Logo =====
   // Updates the card, its sidebar preview, and the real sidebar in place so
   // the admin sees the result without reloading.
@@ -1002,8 +1071,9 @@
       renderBirRegistrationPreview(body.file_name, body.image_url);
       $('previewBadgeWrap').style.display = '';
       const pill = document.getElementById('previewBadgePill');
+      pill.classList.toggle('is-image', !!body.image_url);
       pill.innerHTML = body.image_url
-        ? `<img src="${body.image_url}?t=${Date.now()}" alt=""><span>Registered with the Bureau of Internal Revenue</span>`
+        ? `<img src="${body.image_url}?t=${Date.now()}" alt="Registered with the Bureau of Internal Revenue">`
         : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg><span>Registered with the Bureau of Internal Revenue</span>`;
       toast(body.message);
     } catch(e){ toast(e.message, true); }
