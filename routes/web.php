@@ -148,6 +148,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/inquiries/{inquiry}/reply', [InquiryController::class, 'reply']);
     Route::patch('/inquiries/{inquiry}/status', [InquiryController::class, 'updateStatus']);
 
+    Route::post('/vacancy/rooms/{room}/photos', [VacancyController::class, 'storeRoomPhotos']);
     Route::delete('/vacancy/rooms/{room}/photos/{photo}', [VacancyController::class, 'deleteRoomPhoto']);
     Route::post('/vacancy/rooms/{room}/photos/reorder', [VacancyController::class, 'reorderRoomPhotos']);
 

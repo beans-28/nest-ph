@@ -91,6 +91,15 @@
   .tip-list{ margin:6px 0; padding-left:18px; }
   .tip{ background:#eef5ef; border:1px solid #cfe0d1; border-radius:8px; padding:10px 14px; font-size:12px; color:#33513a; line-height:1.6; margin-bottom:16px; }
 
+  /* Listing photos — regular (flat) pictures for the public Rooms page */
+  .lp-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px; }
+  .lp-tile{ border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff; }
+  .lp-tile img{ width:100%; aspect-ratio:16/10; object-fit:cover; display:block; background:#dfe6e0; }
+  .lp-meta{ display:flex; align-items:center; gap:6px; padding:8px 10px; min-height:40px; }
+  .lp-main{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--green-accent); }
+  .lp-meta .vr-btn{ margin-left:auto; }
+  .add-tile.lp-add{ min-height:0; aspect-ratio:16/10; }
+
   /* Step 2 — two column: photo left, arrows right */
   .link-layout{ display:grid; grid-template-columns:1fr 320px; gap:20px; }
   .pano-col{ min-width:0; }
@@ -185,6 +194,21 @@
         <div class="vr-tabs-bar">
           <div class="vr-tabs-scroll" id="vrTabs"></div>
           <div class="vr-tab-scroll-btn" id="tabsRight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div>
+        </div>
+
+        <!-- LISTING PHOTOS (not part of the 360 tour) -->
+        <div class="step-card">
+          <div class="step-head">
+            <div>
+              <div class="step-title">Listing photos</div>
+              <div class="step-sub">Regular photos (not 360) shown on the public Rooms page. Visitors can click them to see them full size. With none, the tour's starting 360 photo is used as the thumbnail once the tour is public.</div>
+            </div>
+            <div class="step-status" id="listingStatus"></div>
+          </div>
+          <div class="step-body">
+            <div class="lp-grid" id="listingPhotoGrid"></div>
+            <input type="file" id="listingPhotoInput" accept="image/jpeg,image/png,image/webp" multiple hidden>
+          </div>
         </div>
 
         <!-- STEP 1 -->
@@ -475,6 +499,7 @@
   }
 
   function renderAll(){
+    renderListingPhotos();
     renderPhotoGrid();
     renderStepStatus();
     renderLinkStep();
@@ -727,6 +752,101 @@
       renderArrowList();
       renderViewer();
       toast('Arrow removed.');
+    } catch(e){ toast(e.message, true); }
+  }
+
+  // ===== Listing photos (regular, non-360) =====
+  // The first photo is the thumbnail on the public Rooms page. "Make main"
+  // moves a photo to the front using the existing reorder endpoint.
+  const MAX_LISTING_PHOTOS = 8;
+
+  function renderListingPhotos(){
+    const room = activeRoom();
+    const photos = room.photos || [];
+
+    $('listingStatus').textContent = photos.length === 0
+      ? 'None yet'
+      : `${photos.length} of ${MAX_LISTING_PHOTOS}`;
+    $('listingStatus').classList.toggle('done', photos.length > 0);
+
+    const tiles = photos.map((photo, i) => `
+      <div class="lp-tile">
+        <img src="${photo.url}" alt="Listing photo ${i + 1} of Room ${esc(room.room_no)}">
+        <div class="lp-meta">
+          ${i === 0 ? '<span class="lp-main">Main thumbnail</span>' : `<button class="vr-btn sm" type="button" data-main="${photo.id}">Make main</button>`}
+          <button class="vr-btn warn sm" type="button" data-del-photo="${photo.id}" aria-label="Remove listing photo ${i + 1}">Remove</button>
+        </div>
+      </div>`).join('');
+
+    const addTile = photos.length < MAX_LISTING_PHOTOS ? `
+      <div class="add-tile lp-add" id="addListingPhotoBtn" tabindex="0" role="button" aria-label="Add listing photos">
+        <span class="plus">+</span>
+        <span>Add photos</span>
+      </div>` : '';
+
+    $('listingPhotoGrid').innerHTML = tiles + addTile;
+
+    const addBtn = $('addListingPhotoBtn');
+    if(addBtn){
+      addBtn.addEventListener('click', () => $('listingPhotoInput').click());
+      addBtn.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); $('listingPhotoInput').click(); }
+      });
+    }
+    $('listingPhotoGrid').querySelectorAll('[data-main]').forEach(btn => {
+      btn.addEventListener('click', () => makeMainPhoto(Number(btn.dataset.main)));
+    });
+    $('listingPhotoGrid').querySelectorAll('[data-del-photo]').forEach(btn => {
+      btn.addEventListener('click', () => deleteListingPhoto(Number(btn.dataset.delPhoto)));
+    });
+  }
+
+  $('listingPhotoInput').addEventListener('change', async function(){
+    const files = [...this.files];
+    this.value = '';
+    if(files.length === 0) return;
+
+    const room = activeRoom();
+    const roomId = room.id;
+    const left = MAX_LISTING_PHOTOS - (room.photos || []).length;
+    if(files.length > left) return toast(`You can add ${left} more photo${left===1?'':'s'} to this room.`, true);
+    if(files.some(f => f.size > 5 * 1024 * 1024)) return toast('Each photo must be 5MB or smaller.', true);
+
+    const form = new FormData();
+    files.forEach(f => form.append('photos[]', f));
+
+    const addBtn = $('addListingPhotoBtn');
+    if(addBtn){ addBtn.style.pointerEvents = 'none'; addBtn.lastElementChild.textContent = 'Uploading…'; }
+    try {
+      findRoom(roomId).photos = await api(`/vacancy/rooms/${roomId}/photos`, { method:'POST', body: form });
+      toast(files.length === 1 ? 'Photo added.' : `${files.length} photos added.`);
+    } catch(e){ toast(e.message, true); }
+    if(activeRoomId === roomId) renderListingPhotos();
+  });
+
+  async function makeMainPhoto(photoId){
+    const room = activeRoom();
+    const ordered = [room.photos.find(p => p.id === photoId), ...room.photos.filter(p => p.id !== photoId)];
+    try {
+      await api(`/vacancy/rooms/${room.id}/photos/reorder`, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ photo_ids: ordered.map(p => p.id) }),
+      });
+      room.photos = ordered;
+      renderListingPhotos();
+      toast('Main thumbnail updated.');
+    } catch(e){ toast(e.message, true); }
+  }
+
+  async function deleteListingPhoto(photoId){
+    if(!confirm('Remove this listing photo?')) return;
+    const room = activeRoom();
+    try {
+      await api(`/vacancy/rooms/${room.id}/photos/${photoId}`, { method:'DELETE' });
+      room.photos = room.photos.filter(p => p.id !== photoId);
+      renderListingPhotos();
+      toast('Photo removed.');
     } catch(e){ toast(e.message, true); }
   }
 

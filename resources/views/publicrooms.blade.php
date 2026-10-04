@@ -91,10 +91,6 @@
             cursor: pointer; line-height: 1; padding: 0; margin-bottom: 16px;
         }
         .rooms-header-text { text-align: center; }
-        .rooms-header .eyebrow {
-            font-weight: 700; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase;
-            color: #004f0f; margin-bottom: 6px;
-        }
         .rooms-header h1 {
             font-weight: 700; font-size: clamp(22px, 3vw, 30px); color: #1f272a;
             letter-spacing: 0.01em; margin-bottom: 18px;
@@ -112,20 +108,37 @@
             background: linear-gradient(8deg, #605a58 -20%, rgba(37,26,22,0.85) 85%);
             padding: clamp(24px, 4vw, 40px) clamp(16px, 4vw, 40px);
         }
-        .status-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-            max-width: 1400px; margin: 0 auto;
+        .status-grid { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+        .floor-group-title {
+            display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
+            color: #f2f4f8; font-weight: 700; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase;
         }
+        .floor-group-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.2); }
+        .floor-rooms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
         .status-card {
-            background: #ddd8d7; border: 1px solid #496342; border-radius: 8px;
-            padding: 16px 20px;
+            background: #ddd8d7; border-radius: 12px; padding: 16px 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            display: flex; flex-direction: column;
         }
         .status-card-head {
-            display: flex; justify-content: space-between; align-items: baseline;
-            font-weight: 700; font-size: 14px; color: #0b151d; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-weight: 700; font-size: 16px; color: #0b151d;
+            padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.12);
         }
-        .status-card-head .floor { font-weight: 500; font-size: 12px; color: #4c5c6b; }
-        .bed-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #0b151d; padding: 3px 0; }
+        .status-card-head .open-count {
+            font-weight: 700; font-size: 11px; letter-spacing: 0.03em; padding: 4px 10px; border-radius: 999px;
+            background: #cfe9d2; color: #197335;
+        }
+        .status-card-head .open-count.full { background: #f1d0d2; color: #a3262d; }
+        /* Beds sit in two columns, and every card reserves room for the
+           biggest room's bed count (--bed-rows, set in JS) so all cards
+           are the same size. */
+        .bed-list {
+            display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px;
+            grid-auto-rows: 24px; align-content: start;
+            min-height: calc(var(--bed-rows, 1) * 24px);
+        }
+        .bed-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #0b151d; }
         .bed-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
         .bed-dot.vacant { background: radial-gradient(circle, #ffeeef 0%, #00d444 100%); }
         .bed-dot.occupied { background: radial-gradient(circle, #ffeeef 0%, #e24149 100%); }
@@ -133,6 +146,12 @@
         .bed-dot.maintenance { background: radial-gradient(circle, #ffeeef 0%, #d4c130 100%); }
         .bed-label { font-weight: 700; min-width: 22px; }
         .bed-status { color: #4c5c6b; text-transform: capitalize; }
+        /* Taken beds recede so the available ones are what the eye finds first. */
+        .bed-row.occupied { color: #5d6a75; }
+        .bed-row.occupied .bed-label { font-weight: 500; }
+        .bed-row.vacant .bed-status { color: #197335; font-weight: 700; }
+        .status-card-head .open-count, .bed-label { font-variant-numeric: tabular-nums; }
+        ::selection { background: #a2d9a4; color: #292420; }
         .empty-note { color: #eeeded; font-size: 13px; text-align: center; padding: 20px; grid-column: 1 / -1; }
 
         /* ===== VR Tour CTA ===== */
@@ -158,6 +177,37 @@
             width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block;
             background: linear-gradient(135deg, #e7e5e5, #818080);
         }
+        button.listing-photo-btn { display: block; width: 100%; padding: 0; border: none; background: none; cursor: zoom-in; position: relative; }
+        .listing-photo-btn:hover .listing-photo { filter: brightness(1.05); }
+        .photo-count {
+            position: absolute; left: 12px; bottom: 12px; background: rgba(20,20,15,0.65); color: #fff;
+            font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 999px; font-variant-numeric: tabular-nums;
+        }
+
+        /* ===== Photo viewer (click a listing photo to enlarge) ===== */
+        .lightbox[hidden] { display: none; }
+        .lightbox {
+            position: fixed; inset: 0; z-index: 2000; background: rgba(15,18,14,0.92);
+            display: flex; align-items: center; justify-content: center; padding: 56px 72px;
+        }
+        .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .lightbox button {
+            position: absolute; width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+            background: rgba(255,255,255,0.14); color: #fff; display: flex; align-items: center; justify-content: center;
+        }
+        .lightbox button[hidden] { display: none; }
+        .lightbox button:hover { background: rgba(255,255,255,0.26); }
+        .lightbox button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+        .lightbox button svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+        .lb-close { top: 14px; right: 14px; }
+        .lb-prev { left: 14px; top: 50%; transform: translateY(-50%); }
+        .lb-next { right: 14px; top: 50%; transform: translateY(-50%); }
+        .lb-caption { position: absolute; bottom: 16px; left: 0; right: 0; text-align: center; color: #e8ebe6; font-size: 13px; font-variant-numeric: tabular-nums; }
+        @media (max-width: 640px) {
+            .lightbox { padding: 64px 12px; }
+            .lb-prev, .lb-next { top: auto; bottom: 8px; transform: none; }
+        }
+
         .listing-favorite {
             position: absolute; top: 12px; right: 12px; width: 30px; height: 30px;
             border-radius: 50%; background: rgba(0,0,0,0.25); display: flex; align-items: center;
@@ -203,12 +253,12 @@
         .banner-footer-spacer { height: clamp(24px, 4vw, 40px); }
 
         @media (max-width: 1024px) {
-            .status-grid { grid-template-columns: repeat(2, 1fr); }
+            .floor-rooms { grid-template-columns: repeat(2, 1fr); }
             .listing-grid { grid-template-columns: 1fr; }
             .topnav { padding: 14px 24px; flex-wrap: wrap; }
         }
         @media (max-width: 640px) {
-            .status-grid { grid-template-columns: 1fr; }
+            .floor-rooms { grid-template-columns: 1fr; }
             .legend { gap: 16px; }
 
             /* Topnav: the flex-wrap layout at wider breakpoints packs the
@@ -262,7 +312,6 @@
         <div class="rooms-header">
             <button class="back-button" type="button" aria-label="Go back" onclick="window.location.href='{{ route('home') }}'">←</button>
             <div class="rooms-header-text">
-                <div class="eyebrow">Pureza Station Dormitory</div>
                 <h1>Available Rooms</h1>
                 <div class="legend">
                     <div class="legend-item"><span class="legend-dot available"></span> Available</div>
@@ -298,11 +347,19 @@
 
     </div>
 
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Room photos" hidden>
+        <img alt="">
+        <button type="button" class="lb-close" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <button type="button" class="lb-prev" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <button type="button" class="lb-next" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+        <div class="lb-caption"></div>
+    </div>
+
     <script>
         // Bed status → legend dot color mapping. "reserved" is now a genuine
         // status (an applicant has claimed the bed pending admin review), not
         // an approximation of anything else.
-        const STATUS_LABELS = { vacant: 'Open', occupied: 'Occupied', reserved: 'Reserved', maintenance: 'Maintenance' };
+        const STATUS_LABELS = { vacant: 'Available', occupied: 'Occupied', reserved: 'Reserved', maintenance: 'Maintenance' };
 
         function escapeHtml(str) {
             const div = document.createElement('div');
@@ -318,20 +375,48 @@
                 return;
             }
 
-            grid.innerHTML = rooms.map(room => `
-                <div class="status-card">
-                    <div class="status-card-head">
-                        <span>Room ${escapeHtml(room.room_no)}</span>
-                        <span class="floor">${escapeHtml(room.floor_label || '')}</span>
-                    </div>
-                    ${room.beds.map(bed => `
-                        <div class="bed-row">
-                            <span class="bed-dot ${bed.status}"></span>
-                            <span class="bed-label">${escapeHtml(bed.label)}</span>
-                            <span class="bed-status">${STATUS_LABELS[bed.status] || bed.status}</span>
+            // Rooms arrive already sorted Floor 1 → 5 (see the fetch below).
+            const sorted = rooms;
+
+            const maxBeds = Math.max(1, ...sorted.map(r => r.beds.length));
+            grid.style.setProperty('--bed-rows', Math.ceil(maxBeds / 2));
+
+            const floors = [];
+            sorted.forEach(room => {
+                let group = floors[floors.length - 1];
+                if (!group || group.floor !== room.floor) {
+                    group = { floor: room.floor, label: room.floor_label, rooms: [] };
+                    floors.push(group);
+                }
+                group.rooms.push(room);
+            });
+
+            const cardHtml = room => {
+                const open = room.beds.filter(b => b.status === 'vacant').length;
+                return `
+                    <div class="status-card">
+                        <div class="status-card-head">
+                            <span>Room ${escapeHtml(room.room_no)}</span>
+                            <span class="open-count ${open === 0 ? 'full' : ''}">${open === 0 ? 'Full' : `${open} of ${room.beds.length} available`}</span>
                         </div>
-                    `).join('')}
-                </div>
+                        <div class="bed-list">
+                            ${room.beds.map(bed => `
+                                <div class="bed-row ${bed.status}">
+                                    <span class="bed-dot ${bed.status}"></span>
+                                    <span class="bed-label">${escapeHtml(bed.label)}</span>
+                                    <span class="bed-status">${STATUS_LABELS[bed.status] || bed.status}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            };
+
+            grid.innerHTML = floors.map(group => `
+                <section>
+                    <h2 class="floor-group-title">${escapeHtml(group.label || 'Other')}</h2>
+                    <div class="floor-rooms">${group.rooms.map(cardHtml).join('')}</div>
+                </section>
             `).join('');
         }
 
@@ -358,9 +443,17 @@
                     .map(a => `<span>• ${escapeHtml(a)}</span>`)
                     .join('');
 
-                const photoHtml = room.photo_url
-                    ? `<img src="${room.photo_url}" class="listing-photo" alt="Room ${escapeHtml(room.room_no)}" loading="lazy" decoding="async">`
-                    : `<div class="listing-photo"></div>`;
+                // Regular listing photos open in the viewer; a room with only a
+                // 360 panorama keeps it as a plain (non-clickable) thumbnail.
+                const gallery = room.photo_urls || [];
+                const photoHtml = gallery.length
+                    ? `<button type="button" class="listing-photo-btn" data-gallery="${room.id}" aria-label="View photos of Room ${escapeHtml(room.room_no)}">
+                           <img src="${gallery[0]}" class="listing-photo" alt="" loading="lazy" decoding="async">
+                           ${gallery.length > 1 ? `<span class="photo-count">${gallery.length} photos</span>` : ''}
+                       </button>`
+                    : room.photo_url
+                        ? `<img src="${room.photo_url}" class="listing-photo" alt="Room ${escapeHtml(room.room_no)}" loading="lazy" decoding="async">`
+                        : `<div class="listing-photo"></div>`;
 
                 const tourButton = room.has_vr_tour
                     ? `<a href="{{ route('public.vr') }}">Start Tour</a>`
@@ -385,7 +478,78 @@
                     </div>
                 `;
             }).join('');
+
+            grid.querySelectorAll('[data-gallery]').forEach(btn => {
+                const room = rooms.find(r => r.id === Number(btn.dataset.gallery));
+                btn.addEventListener('click', () => openLightbox(room, btn));
+            });
         }
+
+        // ===== Photo viewer =====
+        const lightbox = document.getElementById('lightbox');
+        const lb = { photos: [], index: 0, roomNo: '', returnFocus: null };
+
+        function openLightbox(room, trigger) {
+            lb.photos = room.photo_urls;
+            lb.roomNo = room.room_no;
+            lb.index = 0;
+            lb.returnFocus = trigger;
+            const many = lb.photos.length > 1;
+            lightbox.querySelector('.lb-prev').hidden = !many;
+            lightbox.querySelector('.lb-next').hidden = !many;
+            showLightboxPhoto();
+            lightbox.hidden = false;
+            document.body.style.overflow = 'hidden';
+            lightbox.querySelector('.lb-close').focus();
+        }
+
+        function showLightboxPhoto() {
+            const img = lightbox.querySelector('img');
+            img.src = lb.photos[lb.index];
+            img.alt = `Room ${lb.roomNo}, photo ${lb.index + 1} of ${lb.photos.length}`;
+            lightbox.querySelector('.lb-caption').textContent =
+                `Room ${lb.roomNo}` + (lb.photos.length > 1 ? ` · ${lb.index + 1} / ${lb.photos.length}` : '');
+        }
+
+        function stepLightbox(delta) {
+            lb.index = (lb.index + delta + lb.photos.length) % lb.photos.length;
+            showLightboxPhoto();
+        }
+
+        function closeLightbox() {
+            lightbox.hidden = true;
+            document.body.style.overflow = '';
+            lb.returnFocus?.focus();
+        }
+
+        // Phones: swipe left/right to move between photos.
+        let touchStartX = null;
+        lightbox.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+        lightbox.addEventListener('touchend', e => {
+            if (touchStartX === null || lb.photos.length < 2) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            touchStartX = null;
+            if (Math.abs(dx) > 50) stepLightbox(dx < 0 ? 1 : -1);
+        });
+
+        lightbox.querySelector('.lb-close').addEventListener('click', closeLightbox);
+        lightbox.querySelector('.lb-prev').addEventListener('click', () => stepLightbox(-1));
+        lightbox.querySelector('.lb-next').addEventListener('click', () => stepLightbox(1));
+        // Clicking the dark backdrop (not the photo or buttons) closes it.
+        lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+        document.addEventListener('keydown', e => {
+            if (lightbox.hidden) return;
+            if (e.key === 'Escape') closeLightbox();
+            else if (e.key === 'ArrowLeft' && lb.photos.length > 1) stepLightbox(-1);
+            else if (e.key === 'ArrowRight' && lb.photos.length > 1) stepLightbox(1);
+            else if (e.key === 'Tab') {
+                // Keep keyboard focus inside the viewer while it's open.
+                const buttons = [...lightbox.querySelectorAll('button:not([hidden])')];
+                const i = buttons.indexOf(document.activeElement);
+                e.preventDefault();
+                buttons[(i + (e.shiftKey ? -1 : 1) + buttons.length) % buttons.length].focus();
+            }
+        });
 
         function setTourBanner(rooms) {
             const withPhoto = rooms.find(r => r.photo_url);
@@ -397,6 +561,10 @@
         fetch('/public-api/rooms')
             .then(r => r.json())
             .then(rooms => {
+                rooms.sort((a, b) =>
+                    (a.floor ?? 99) - (b.floor ?? 99) ||
+                    String(a.room_no).localeCompare(String(b.room_no), undefined, { numeric: true })
+                );
                 renderStatusGrid(rooms);
                 renderListingGrid(rooms);
                 setTourBanner(rooms);

@@ -272,6 +272,42 @@ class VacancyController extends Controller
     }
 
     /**
+     * Adds regular (flat, non-360) listing photos to a room. Used by the VR
+     * Management page's "Listing photos" card; the first photo by sort order
+     * is the thumbnail on the public Rooms page.
+     */
+    public function storeRoomPhotos(Request $request, Room $room): JsonResponse
+    {
+        $remaining = 8 - $room->photos()->count();
+
+        $request->validate([
+            'photos' => ['required', 'array', 'min:1', 'max:' . max(0, $remaining)],
+            'photos.*' => ['file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ], [
+            'photos.max' => 'A room can have up to 8 listing photos.',
+        ]);
+
+        $nextSortOrder = (int) $room->photos()->max('sort_order') + 1;
+
+        foreach ($request->file('photos') as $index => $photo) {
+            $room->photos()->create([
+                'path' => $photo->store('room-photos', 'public'),
+                'sort_order' => $nextSortOrder + $index,
+            ]);
+        }
+
+        return response()->json($this->photoList($room->fresh('photos')), 201);
+    }
+
+    private function photoList(Room $room): array
+    {
+        return $room->photos->map(fn ($photo) => [
+            'id' => $photo->id,
+            'url' => Storage::disk('public')->url($photo->path),
+        ])->values()->all();
+    }
+
+    /**
      * Reorders a room's photos — for a drag-to-reorder admin UI. Optional;
      * only wire this up if the room-edit UI actually supports reordering.
      */
@@ -298,7 +334,7 @@ class VacancyController extends Controller
      */
     public function vrIndex()
     {
-        $rooms = Room::with(['floor', 'vrScenes.hotspots.targetScene:id,title'])
+        $rooms = Room::with(['floor', 'photos', 'vrScenes.hotspots.targetScene:id,title'])
             ->orderBy('room_no')
             ->get()
             ->map(fn ($room) => $this->transformVrRoom($room))
@@ -366,6 +402,7 @@ class VacancyController extends Controller
             'vr_caption' => $room->vr_caption,
             'vr_visibility' => $room->vr_visibility,
             'updated_at' => $room->updated_at?->format('M j, Y g:ia'),
+            'photos' => $room->relationLoaded('photos') ? $this->photoList($room) : [],
             'scenes' => $room->vrScenes->map(fn ($scene) => [
                 'id' => $scene->id,
                 'title' => $scene->title,
