@@ -196,7 +196,7 @@
             background: #2f2723; color: rgba(255,255,255,0.78);
             padding: clamp(36px, 5vw, 56px) clamp(20px, 6vw, 64px) 22px; font-size: 13.5px; line-height: 1.6;
         }
-        .footer-grid { display: grid; grid-template-columns: 1.6fr 1.4fr 1fr 1fr; gap: 40px; padding-bottom: 32px; }
+        .footer-grid { display: grid; grid-template-columns: 1.5fr 1.4fr 0.9fr 1.3fr; gap: 40px; padding-bottom: 32px; }
         .footer-name { color: #fff; font-weight: 700; font-size: 18px; margin-bottom: 10px; }
         .footer-tagline { max-width: 320px; }
         .footer-note { margin-top: 14px; font-size: 12px; color: rgba(255,255,255,0.55); }
@@ -205,6 +205,7 @@
         .site-footer li { margin-bottom: 8px; overflow-wrap: anywhere; }
         .site-footer a { color: rgba(255,255,255,0.78); text-decoration: none; }
         .site-footer a:hover { color: #fff; text-decoration: underline; }
+        .footer-bir { display: block; max-width: 100%; max-height: 140px; width: auto; border-radius: 6px; background: #fff; }
         .footer-muted { color: rgba(255,255,255,0.5); }
         .footer-bottom {
             display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
@@ -341,7 +342,7 @@
             <div class="footer-brand">
                 <div class="footer-name">{{ $brandDormName }}</div>
                 <p class="footer-tagline">Safe, affordable rooms for students and young professionals, a short walk from PUP and LRT-2 Pureza Station.</p>
-                @if($isBirVerified)
+                @if($isBirVerified && ! $birRegistrationImageUrl)
                 <p class="footer-note">BIR-registered business</p>
                 @endif
             </div>
@@ -363,12 +364,9 @@
                 </ul>
             </div>
             <div>
-                <h4>Office Hours</h4>
-                <ul>
-                    <li>Monday to Saturday</li>
-                    <li>8:00 AM &ndash; 6:00 PM</li>
-                    <li class="footer-muted">Viewings by appointment</li>
-                </ul>
+                @if($isBirVerified && $birRegistrationImageUrl)
+                <img src="{{ $birRegistrationImageUrl }}" alt="Certificate of Registration with the Bureau of Internal Revenue" class="footer-bir" loading="lazy">
+                @endif
             </div>
         </div>
         <div class="footer-bottom">
