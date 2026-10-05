@@ -14,18 +14,17 @@ use Illuminate\Support\Facades\Storage;
 class EscalationService
 {
     /**
-     * How many days a tenant stays at each of Stages 3-6 before
-     * auto-advancing to the next stage, if still unpaid (and the prior
-     * stage actually completed -- see canProceedPastStage()).
-     *
-     * The use cases (Tables 24-27) don't specify a day count for these --
-     * only Stage 1 (day 0) and Stage 2 (day 1/3/7) have explicit numbers in
-     * the manuscript. Set to 1 for fast testing/demo purposes per the team's
-     * decision (Sep 2 planning). Raise this once a real policy is settled
-     * for the actual defense -- this single constant retimes every later
-     * stage at once (see stageDayThresholds() below).
+     * Day (counted from the end of the grace period) each of Stages 3-6
+     * starts, if the bill is still unpaid. Set by the team on 2026-10-05
+     * to fit Pureza's documents, which give no day counts for these steps
+     * except that termination needs three months of unpaid rent (Payments
+     * and Fees Schedule 5.5, Agreement 3.4):
+     *   Stage 3 (portal limited to Billing, Fees 5.3)    day 14
+     *   Stage 4 (emergency contact, with consent, 5.4)   day 30, one month unpaid
+     *   Stage 5 (demand letter)                          day 75, deadline before 3 months
+     *   Stage 6 (blacklist / termination, 5.5)           day 90, three months unpaid
      */
-    private const DAYS_PER_STAGE = 1;
+    public const STAGE_DAYS = [3 => 14, 4 => 30, 5 => 75, 6 => 90];
 
     /**
      * Stage 2 SMS reminder days. Table 23 literally specifies Day 1, 3, 7
@@ -33,9 +32,9 @@ class EscalationService
      * reminder never land in the same engine run, while keeping fairly
      * even spacing between reminders and Day 7 as the "full week" urgent
      * final notice. Deliberate team decision, not an oversight -- flagged
-     * for BAGUI to reflect in the manuscript alongside DAYS_PER_STAGE.
+     * for BAGUI to reflect in the manuscript alongside STAGE_DAYS.
      */
-    private const STAGE_2_DAYS = [2, 4, 7];
+    public const STAGE_2_DAYS = [2, 4, 7];
 
     /** A log row in this status counts as "this action actually succeeded." */
     private const COMPLETE_STATUSES = ['sent', 'resolved'];
@@ -164,19 +163,10 @@ class EscalationService
         }
     }
 
-    /**
-     * Cumulative day thresholds for Stages 3-6, built from the single
-     * DAYS_PER_STAGE constant above. With DAYS_PER_STAGE = 1: Stage 3 at
-     * day 8, Stage 4 at day 9, Stage 5 at day 10, Stage 6 at day 11.
-     */
+    /** Start days of Stages 3-6, in order (see STAGE_DAYS). */
     private function stageDayThresholds(): array
     {
-        $stage3Day = max(self::STAGE_2_DAYS) + self::DAYS_PER_STAGE;
-        $stage4Day = $stage3Day + self::DAYS_PER_STAGE;
-        $stage5Day = $stage4Day + self::DAYS_PER_STAGE;
-        $stage6Day = $stage5Day + self::DAYS_PER_STAGE;
-
-        return [$stage3Day, $stage4Day, $stage5Day, $stage6Day];
+        return array_values(self::STAGE_DAYS);
     }
 
     /**

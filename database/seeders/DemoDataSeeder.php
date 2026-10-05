@@ -504,7 +504,7 @@ class DemoDataSeeder extends Seeder
                 '45 Mabini St., Brgy. Poblacion, Lipa City, Batangas', 'Carmelita Reyes', 'Mother', '102-1', 'paid', 'L' => 15, 'k' => 6,
                 'review' => [4, 'Maayos ang WiFi at tahimik sa gabi. Minsan lang medyo mahina ang tubig sa umaga pero agad naman inaayos.']],
             ['John Paul', 'Mendoza', 'male', '2004-08-17', 'student', 'Mapúa University', 'Muralla St., Intramuros, Manila',
-                'Brgy. Bagong Silang, Lucena City, Quezon', 'Rosalie Mendoza', 'Mother', '303-4', 'overdue', 'L' => 14, 'k' => 3, 'days' => 9,
+                'Brgy. Bagong Silang, Lucena City, Quezon', 'Rosalie Mendoza', 'Mother', '303-4', 'overdue', 'L' => 14, 'k' => 3, 'days' => 30,
                 'consent' => false],
 
             // ---- Room 103 (4-person AC, ground floor) ----
@@ -564,7 +564,7 @@ class DemoDataSeeder extends Seeder
                 'lease' => 'moved_out',
                 'review' => [5, 'Nag-move out na ako kasi lumipat ang work ko, pero sobrang saya ng stay ko dito. Salamat Pureza Station!']],
             ['Joseph Allan', 'Cruz', 'male', '2003-03-27', 'student', 'Emilio Aguinaldo College', 'Gen. Malvar St., Malate, Manila',
-                'Brgy. Tabing Ilog, Marilao, Bulacan', 'Nora Cruz', 'Mother', '303-1', 'overdue', 'L' => 50, 'k' => 4, 'days' => 45,
+                'Brgy. Tabing Ilog, Marilao, Bulacan', 'Nora Cruz', 'Mother', '303-1', 'overdue', 'L' => 50, 'k' => 4, 'days' => 95,
                 'lease' => 'blacklisted'],
 
             // ---- More scenario tenants ----
@@ -590,11 +590,11 @@ class DemoDataSeeder extends Seeder
             // tenant was notified instead of the emergency contact, Joseph = Stage 6 blacklisted.)
             // Stage 3: portal restricted, waiting for the emergency-contact step.
             ['Rowell Dominic', 'Lacsamana', 'male', '2003-08-29', 'student', 'Technological University of the Philippines', 'Ayala Blvd., Ermita, Manila',
-                'Brgy. Poblacion, Pagsanjan, Laguna', 'Corazon Lacsamana', 'Mother', '401-1', 'overdue', 'L' => 6, 'k' => 2, 'days' => 8,
+                'Brgy. Poblacion, Pagsanjan, Laguna', 'Corazon Lacsamana', 'Mother', '401-1', 'overdue', 'L' => 6, 'k' => 2, 'days' => 14,
                 'consent' => true],
             // Stage 5: emergency contact texted and a demand letter issued -- one step from blacklisting.
             ['Trisha Mae', 'Galvez', 'female', '2004-04-04', 'working_student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
-                'Brgy. Sta. Lucia, San Fernando, Pampanga', 'Edgardo Galvez', 'Father', '401-2', 'overdue', 'L' => 10, 'k' => 3, 'days' => 10,
+                'Brgy. Sta. Lucia, San Fernando, Pampanga', 'Edgardo Galvez', 'Father', '401-2', 'overdue', 'L' => 10, 'k' => 3, 'days' => 75,
                 'consent' => true],
             // Stage 1: just flagged overdue, no SMS reminder yet. "Dominic" in the walkthrough
             // script: escalated live from Stage 1 to Stage 6, so every SMS reaches the demo phone.
@@ -605,7 +605,7 @@ class DemoDataSeeder extends Seeder
             // Stage 3, emergency contact did NOT agree to billing reminders. Run the escalation
             // once and Stage 4 falls back to texting HER number and emailing her instead.
             ['Bianca Louise', 'Mercado', 'female', '2004-02-18', 'student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
-                'Brgy. Poblacion, Lemery, Batangas', 'Reynaldo Mercado', 'Father', '402-1', 'overdue', 'L' => 7, 'k' => 2, 'days' => 8,
+                'Brgy. Poblacion, Lemery, Batangas', 'Reynaldo Mercado', 'Father', '402-1', 'overdue', 'L' => 7, 'k' => 2, 'days' => 20,
                 'sms' => self::DEMO_SMS_NUMBER,
                 'consent' => false],
 
@@ -690,7 +690,7 @@ class DemoDataSeeder extends Seeder
                     ? ['Moved out at the end of contract -- transferred to a job in Laguna.', $end->copy()->addDay(), $this->admins['kristine']]
                     : null,
                 'blacklisted' => $lease === 'blacklisted',
-                'portal_restricted' => $isOverdue && $spec['days'] >= 8,
+                'portal_restricted' => $isOverdue && $spec['days'] >= EscalationService::STAGE_DAYS[3],
                 'paused' => ! empty($spec['paused']),
                 'discount' => $spec['discount'] ?? 0,
                 // A moved-out tenant's contract is terminated, the same as the
@@ -1416,33 +1416,34 @@ class DemoDataSeeder extends Seeder
         $steps = [
             [0, 1, 'account_flagged', null, 'resolved'],
         ];
-        foreach ([2, 4, 7] as $d) {
+        foreach (EscalationService::STAGE_2_DAYS as $d) {
             $urgency = $d >= 7 ? 'URGENT' : 'Reminder';
             $steps[] = [$d, 2, "sms_reminder_day{$d}",
                 "{$urgency}: Your account with NEST PH is now {$d} day(s) overdue. Outstanding balance (incl. penalties): PHP {$balance}. Please pay via the tenant portal to avoid further account restrictions.",
                 'sent'];
         }
-        $steps[] = [8, 3, 'portal_restricted', "PAYMENT REQUIRED: Your rent of PHP {$balance} (due {$due->format('M j, Y')}) is still unpaid. Pay now and upload your proof at " . route('tenant.billing') . '. Your portal is limited to Billing until this is settled; unpaid balances lead to a formal demand letter. - NEST PH', 'sent'];
+        [$s3, $s4, $s5, $s6] = array_values(EscalationService::STAGE_DAYS);
+        $steps[] = [$s3, 3, 'portal_restricted', "PAYMENT REQUIRED: Your rent of PHP {$balance} (due {$due->format('M j, Y')}) is still unpaid. Pay now and upload your proof at " . route('tenant.billing') . '. Your portal is limited to Billing until this is settled; unpaid balances lead to a formal demand letter. - NEST PH', 'sent'];
         // Tenant Agreement 9.3: only with the emergency contact's consent,
         // and only the amount, due date and penalty -- no tenant details.
         $steps[] = $tenant->emergency_billing_reminders
-            ? [9, 4, 'emergency_contact_notified',
+            ? [$s4, 4, 'emergency_contact_notified',
                 "NEST PH billing reminder: amount due PHP {$balance}, due " . $due->format('M j, Y') . ', includes penalty PHP '
                     . number_format((float) $bill->penalty_amount, 2) . '. You receive this because you agreed to billing reminders as an emergency contact. To stop, email dormitorypurezastation@gmail.com.',
                 'sent']
-            : [9, 4, 'emergency_contact_notified',
+            : [$s4, 4, 'emergency_contact_notified',
                 'Emergency contact has not agreed to billing reminders (Tenant Agreement 9.3), so the tenant was notified instead (SMS: sent, email: sent). '
                     . "Your account with NEST PH is still overdue. Amount due: PHP {$balance}, due " . $due->format('M j, Y') . ', includes penalty PHP '
                     . number_format((float) $bill->penalty_amount, 2) . '. Please pay via the tenant portal to avoid a formal demand letter.',
                 'sent'];
         // Like EscalationService: the deadline is the day before blacklisting
-        // (Stage 6, day 11), and the amount is everything still overdue.
+        // (Stage 6), and the amount is everything still overdue.
         $owed = (float) DB::table('billing_statements')->where('tenant_id', $tenantId)->where('status', 'overdue')->sum('total_amount');
         $deadline = $this->demandLetterDeadline($graceEnd);
-        $steps[] = [10, 5, 'demand_letter_generated', null, 'sent'];
-        $steps[] = [10, 5, 'demand_letter_sms', EscalationService::demandLetterSms($owed, $deadline), 'sent'];
-        $steps[] = [11, 6, 'delinquent_blacklisted', null, 'resolved'];
-        $steps[] = [11, 6, 'blacklist_sms', EscalationService::blacklistSms('PHP ' . number_format($owed, 2)), 'sent'];
+        $steps[] = [$s5, 5, 'demand_letter_generated', null, 'sent'];
+        $steps[] = [$s5, 5, 'demand_letter_sms', EscalationService::demandLetterSms($owed, $deadline), 'sent'];
+        $steps[] = [$s6, 6, 'delinquent_blacklisted', null, 'resolved'];
+        $steps[] = [$s6, 6, 'blacklist_sms', EscalationService::blacklistSms('PHP ' . number_format($owed, 2)), 'sent'];
 
         foreach ($steps as [$day, $stage, $action, $message, $status]) {
             if ($days < $day) {
@@ -1480,10 +1481,10 @@ class DemoDataSeeder extends Seeder
         }
     }
 
-    /** Day 10 after the grace period: the day before Stage 6 blacklists (day 11). */
+    /** The day before Stage 6 blacklists (see EscalationService::STAGE_DAYS). */
     private function demandLetterDeadline(Carbon $graceEnd): Carbon
     {
-        return $graceEnd->copy()->addDays(10)->startOfDay();
+        return $graceEnd->copy()->addDays(EscalationService::STAGE_DAYS[6] - 1)->startOfDay();
     }
 
     /** Generates a real demand letter PDF the same way EscalationService does. */

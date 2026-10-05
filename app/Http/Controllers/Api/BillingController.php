@@ -157,6 +157,19 @@ class BillingController extends Controller
     }
 
     /**
+     * How many days before a period begins its bill is issued. Matches the
+     * reminder window in TenantNotificationService, so the "due in 10 days"
+     * reminder can actually appear: a bill only exists once it's issued.
+     */
+    private const BILL_LEAD_DAYS = \App\Services\TenantNotificationService::REMINDER_DAYS;
+
+    /** Latest period start date that can be billed today. */
+    private function issueCutoff(): Carbon
+    {
+        return now()->startOfDay()->addDays(self::BILL_LEAD_DAYS);
+    }
+
+    /**
      * Core billing-generation logic.
      *
      * Matches Use Case Report Table 18 ("Generate Billing Statement") and
@@ -173,8 +186,9 @@ class BillingController extends Controller
      *     included in the rent.
      *   - Any unbilled penalties are folded in.
      *
-     * Only bills a period once it has actually begun, so future months
-     * aren't billed early, and never past the contract's end date.
+     * A period is billed up to BILL_LEAD_DAYS before it begins (see
+     * issueCutoff()), so the tenant sees the bill and gets the "due in X
+     * days" reminder before the due date. Never past the contract's end date.
      */
     private function generateForContract(LeaseContract $contract): ?BillingStatement
     {
@@ -211,7 +225,7 @@ class BillingController extends Controller
                 $periodStart = $start->copy();
             }
 
-            if ($periodStart->isAfter(now())) {
+            if ($periodStart->isAfter($this->issueCutoff())) {
                 return null;
             }
 
@@ -317,7 +331,7 @@ class BillingController extends Controller
             $from = $start->copy();
         }
 
-        if ($from->isAfter(now())) {
+        if ($from->isAfter($this->issueCutoff())) {
             return null;
         }
         if ($contract->end_date && $from->isAfter($contract->end_date)) {

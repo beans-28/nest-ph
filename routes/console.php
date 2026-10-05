@@ -40,16 +40,10 @@ Schedule::call(function () {
  * see that comment for local dev options (schedule:work, or a real cron
  * entry on deployment).
  *
- * IMPORTANT — read before this ever actually runs on a live schedule:
- * EscalationService::DAYS_PER_STAGE is still set to 1 (a placeholder for
- * fast local testing/demo). Once this is wired to a real cron on a real
- * server, that constant is what decides how fast a genuinely overdue tenant
- * gets SMS'd, portal-restricted, and blacklisted -- 1 day per stage means a
- * tenant who misses a payment could be fully blacklisted in about a week.
- * This MUST be revisited with a real policy decision (see
- * app/Services/EscalationService.php) before deploying anywhere tenants
- * actually see it -- don't let this schedule entry go live with the
- * placeholder value still in place.
+ * Stage timing lives in EscalationService::STAGE_DAYS (days after the
+ * grace period): portal restriction day 14, emergency contact day 30,
+ * demand letter day 75, blacklist day 90 (three months unpaid, as the
+ * Payments and Fees Schedule 5.5 requires).
  */
 Schedule::command('escalation:process')->daily();
 

@@ -27,10 +27,10 @@ class DelinquencyTestingController extends Controller
     private const STAGE_DAYS = [
         1 => 1,
         2 => 7,
-        3 => 8,
-        4 => 9,
-        5 => 10,
-        6 => 11,
+        3 => EscalationService::STAGE_DAYS[3],
+        4 => EscalationService::STAGE_DAYS[4],
+        5 => EscalationService::STAGE_DAYS[5],
+        6 => EscalationService::STAGE_DAYS[6],
     ];
 
     /** All active tenants, tagged with their current stage (0 = not delinquent). */

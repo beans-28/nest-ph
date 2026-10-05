@@ -132,6 +132,23 @@ class DormitoryDocumentsAlignmentTest extends TestCase
         $this->assertSame(4200.0, (float) $bill->base_rent); // advance paid October in full
     }
 
+    public function test_bill_is_issued_ten_days_before_the_due_date(): void
+    {
+        $contract = $this->tenantWithContract('2026-10-20');
+
+        Carbon::setTestNow('2026-10-21 08:00:00');
+        app(BillingController::class)->generate(new Request());
+        $this->assertFalse(BillingStatement::where('contract_id', $contract->id)->where('type', 'monthly')->exists());
+
+        Carbon::setTestNow('2026-10-22 08:00:00');
+        app(BillingController::class)->generate(new Request());
+        $bill = BillingStatement::where('contract_id', $contract->id)->where('type', 'monthly')->sole();
+        $this->assertSame('2026-11-01', $bill->due_date->toDateString());
+
+        $bills = app(\App\Services\TenantNotificationService::class)->billsNeedingAttention($contract->tenant);
+        $this->assertSame(10, $bills->firstWhere('id', $bill->id)['days_left']);
+    }
+
     public function test_prorated_move_in_credits_the_unused_days_on_the_first_bill(): void
     {
         DormitoryProfile::current()->update(['mid_month_move_in' => 'prorated']);
@@ -226,13 +243,38 @@ class DormitoryDocumentsAlignmentTest extends TestCase
         $contract->tenant->update(['emergency_contact_number' => '09181111111', 'emergency_billing_reminders' => false]);
         $bill = $this->monthlyBill($contract, '2026-10-01');
 
-        Carbon::setTestNow('2026-10-25 08:00:00');
+        Carbon::setTestNow('2026-11-03 08:00:00'); // day 30 after the grace period (Stage 4)
         app(EscalationService::class)->processBillingStatement($bill);
 
         $log = EscalationLog::where('billing_id', $bill->id)->where('action_type', 'emergency_contact_notified')->sole();
-        $this->assertSame('resolved', $log->status);
-        $this->assertStringStartsWith('Skipped', $log->message_content);
+        $this->assertSame('sent', $log->status);
+        $this->assertStringStartsWith('Emergency contact has not agreed', $log->message_content);
         $sms->shouldNotHaveReceived('send', ['09181111111', \Mockery::any()]);
+    }
+
+    public function test_stages_follow_the_agreed_days_after_the_grace_period(): void
+    {
+        $sms = $this->mock(TextbeeService::class);
+        $sms->shouldReceive('send')->andReturn(true);
+
+        $contract = $this->tenantWithContract('2026-09-01');
+        $bill = $this->monthlyBill($contract, '2026-10-01'); // grace ends Oct 4
+        $tenant = $contract->tenant;
+        $run = function (string $date) use ($bill, $tenant) {
+            Carbon::setTestNow($date . ' 08:00:00');
+            app(EscalationService::class)->processBillingStatement($bill->fresh());
+            $tenant->refresh();
+        };
+
+        $run('2026-10-17'); // day 13
+        $this->assertFalse((bool) $tenant->portal_restricted);
+        $run('2026-10-18'); // day 14: Stage 3
+        $this->assertTrue((bool) $tenant->portal_restricted);
+
+        $run('2027-01-01'); // day 89
+        $this->assertFalse((bool) $tenant->is_blacklisted);
+        $run('2027-01-02'); // day 90: Stage 6
+        $this->assertTrue((bool) $tenant->is_blacklisted);
     }
 
     public function test_consenting_emergency_contact_message_has_no_tenant_details(): void
@@ -244,7 +286,7 @@ class DormitoryDocumentsAlignmentTest extends TestCase
         $contract->tenant->update(['emergency_contact_number' => '09181111111', 'emergency_billing_reminders' => true]);
         $bill = $this->monthlyBill($contract, '2026-10-01');
 
-        Carbon::setTestNow('2026-10-25 08:00:00');
+        Carbon::setTestNow('2026-11-03 08:00:00'); // day 30 after the grace period (Stage 4)
         app(EscalationService::class)->processBillingStatement($bill);
 
         $message = EscalationLog::where('billing_id', $bill->id)->where('action_type', 'emergency_contact_notified')->value('message_content');
