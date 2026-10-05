@@ -595,6 +595,10 @@ class DemoDataSeeder extends Seeder
             ['Trisha Mae', 'Galvez', 'female', '2004-04-04', 'working_student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
                 'Brgy. Sta. Lucia, San Fernando, Pampanga', 'Edgardo Galvez', 'Father', '401-2', 'overdue', 'L' => 10, 'k' => 3, 'days' => 10,
                 'consent' => true],
+            // Stage 1: just flagged overdue, no SMS reminder yet.
+            ['Dominic James', 'Salvador', 'male', '2005-03-09', 'student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
+                'Brgy. Poblacion, Gapan City, Nueva Ecija', 'Marissa Salvador', 'Mother', '401-6', 'overdue', 'L' => 5, 'k' => 2, 'days' => 1,
+                'consent' => true],
 
             // ---- Half-paid move-in fees (Partial Payment = half; Fees Schedule 3.2: one-month reservation) ----
             // First half approved 26 days ago: reservation ends in about 5 days, so the admin bell shows

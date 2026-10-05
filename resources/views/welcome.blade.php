@@ -428,10 +428,9 @@
             if (slides.length < 2) return;
             const dots = root.querySelectorAll('.hero-dots button');
             const pauseBtn = root.querySelector('.hero-pause');
-            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             const PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg>';
             const PAUSE = pauseBtn.innerHTML;
-            let current = 0, timer = null, paused = reduceMotion, hovering = false;
+            let current = 0, timer = null, paused = false, hovering = false;
             function show(n) {
                 slides[current].classList.remove('active'); slides[current].setAttribute('aria-hidden', 'true');
                 dots[current].removeAttribute('aria-current');
