@@ -63,6 +63,24 @@ public function login(Request $request)
 
     $user = Auth::user();
 
+    // Each login page only accepts its own kind of account: admins must
+    // use /admin/login and tenants must use /tenant/login.
+    $isAdmin = $user->role?->role_name === 'admin';
+    $wrongPortal = ($request->is('admin/login') && ! $isAdmin)
+        || ($request->is('tenant/login') && $isAdmin);
+
+    if ($wrongPortal) {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json([
+            'message' => $isAdmin
+                ? 'This is an admin account. Please use the admin login page.'
+                : 'This is a tenant account. Please use the tenant login page.',
+        ], 403);
+    }
+
     // Exception for Table 42: a moved-out tenant (inactive, not
     // blacklisted) who hasn't reviewed yet may still log in, but only to
     // leave a review -- RestrictMovedOutTenant keeps them on the move-out
