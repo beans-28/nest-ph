@@ -454,7 +454,7 @@
 
   function signSectionHtml(c){
     if(c.esign_status === 'signed'){
-      return `<div class="signed-note"><strong>Signed${c.signed_at ? ' on ' + esc(c.signed_at) : ''}.</strong><br>${c.signed_document_url ? `<a href="${c.signed_document_url}" target="_blank" rel="noopener">View the signed document</a>` : 'No file attached.'}</div>`;
+      return `<div class="signed-note"><strong>Signed${c.signed_at ? ' on ' + esc(c.signed_at) : ''}.</strong><br>${c.signed_document_url ? `<a href="${c.signed_document_url}" data-lightbox="contract-${c.id}" target="_blank" rel="noopener">View the signed document</a>` : 'No file attached.'}</div>`;
     }
     if(c.esign_status === 'not_applicable'){
       return `<div class="signed-note"><strong>Marked as not requiring a signature.</strong></div>`;
@@ -776,5 +776,6 @@
 })();
 </script>
 
+@include('partials.photo-lightbox')
 </body>
 </html>

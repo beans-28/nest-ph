@@ -121,7 +121,7 @@
   const list = document.getElementById('notifList');
   const badge = document.getElementById('notifBadge');
   const readAll = document.getElementById('notifReadAll');
-  const URGENT = ['bill_overdue', 'payment_rejected', 'account_restricted', 'demand_letter'];
+  const URGENT = ['bill_overdue', 'payment_rejected', 'account_restricted', 'demand_letter', 'blacklisted'];
   let items = [];
   let loaded = false;
 

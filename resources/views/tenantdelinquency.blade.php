@@ -321,7 +321,7 @@
 
               @if($isExpandedCurrent && $stageRow['stage'] === 3)
                 <div class="timeline-expanded-body">
-                  <p>Your account access has been restricted due to unpaid balance. Please settle your balance to restore full access.</p>
+                  <p>Your rent is overdue. Pay your outstanding balance and upload your proof on the Billing page. Full portal access comes back once it's settled.</p>
                 </div>
               @elseif($isExpandedCurrent && $stageRow['stage'] === 4)
                 <div class="timeline-expanded-body emergency-contact-body">

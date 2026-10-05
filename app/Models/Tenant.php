@@ -29,6 +29,7 @@ class Tenant extends Model
         'home_address',
         'tenant_type',
         'id_document_path',
+        'emergency_contact_id_path',
         'signed_contract_path',
         'deactivation_reason',
         'deactivated_at',

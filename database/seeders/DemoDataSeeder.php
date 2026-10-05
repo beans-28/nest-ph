@@ -7,6 +7,7 @@ use App\Models\DormitoryProfile;
 use App\Models\RoomType;
 use App\Models\Tenant;
 use App\Models\VrScene;
+use App\Services\EscalationService;
 use App\Services\PanoramaFillService;
 use App\Services\TenancyDocuments;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -1086,6 +1087,7 @@ class DemoDataSeeder extends Seeder
             'home_address' => $t['home'],
             'tenant_type' => $t['type'],
             'id_document_path' => $idDoc,
+            'emergency_contact_id_path' => $this->files['emergency_id'],
             'signed_contract_path' => $packet ?? $this->files['contract'],
             'status' => $t['status'],
             'deactivation_reason' => $t['deactivation'][0] ?? null,
@@ -1123,6 +1125,7 @@ class DemoDataSeeder extends Seeder
             'tenant_end_date' => $end->toDateString(),
             'type_of_tenant' => $t['type'],
             'id_document_path' => $idDoc,
+            'emergency_contact_id_path' => $this->files['emergency_id'],
             'signed_contract_path' => $applicationContract,
             'dpa_consent' => true,
             'status' => 'approved',
@@ -1419,7 +1422,7 @@ class DemoDataSeeder extends Seeder
                 "{$urgency}: Your account with NEST PH is now {$d} day(s) overdue. Outstanding balance (incl. penalties): PHP {$balance}. Please pay via the tenant portal to avoid further account restrictions.",
                 'sent'];
         }
-        $steps[] = [8, 3, 'portal_restricted', 'Your account access has been restricted due to unpaid balance. Please settle your balance to restore full access. - NEST PH', 'sent'];
+        $steps[] = [8, 3, 'portal_restricted', "PAYMENT REQUIRED: Your rent of PHP {$balance} (due {$due->format('M j, Y')}) is still unpaid. Pay now and upload your proof at " . route('tenant.billing') . '. Your portal is limited to Billing until this is settled; unpaid balances lead to a formal demand letter. - NEST PH', 'sent'];
         // Tenant Agreement 9.3: only with the emergency contact's consent,
         // and only the amount, due date and penalty -- no tenant details.
         $steps[] = $tenant->emergency_billing_reminders
@@ -1432,15 +1435,21 @@ class DemoDataSeeder extends Seeder
                     . "Your account with NEST PH is still overdue. Amount due: PHP {$balance}, due " . $due->format('M j, Y') . ', includes penalty PHP '
                     . number_format((float) $bill->penalty_amount, 2) . '. Please pay via the tenant portal to avoid a formal demand letter.',
                 'sent'];
+        // Like EscalationService: the deadline is the day before blacklisting
+        // (Stage 6, day 11), and the amount is everything still overdue.
+        $owed = (float) DB::table('billing_statements')->where('tenant_id', $tenantId)->where('status', 'overdue')->sum('total_amount');
+        $deadline = $this->demandLetterDeadline($graceEnd);
         $steps[] = [10, 5, 'demand_letter_generated', null, 'sent'];
+        $steps[] = [10, 5, 'demand_letter_sms', EscalationService::demandLetterSms($owed, $deadline), 'sent'];
         $steps[] = [11, 6, 'delinquent_blacklisted', null, 'resolved'];
+        $steps[] = [11, 6, 'blacklist_sms', EscalationService::blacklistSms('PHP ' . number_format($owed, 2)), 'sent'];
 
         foreach ($steps as [$day, $stage, $action, $message, $status]) {
             if ($days < $day) {
                 break;
             }
             if ($action === 'demand_letter_generated') {
-                $message = $this->demandLetter($tenantId, $billId);
+                $message = $this->demandLetter($tenantId, $billId, $deadline);
             }
             $at = $graceEnd->copy()->addDays($day)->setTime(6, 0);
             DB::table('escalation_logs')->insert([
@@ -1471,13 +1480,18 @@ class DemoDataSeeder extends Seeder
         }
     }
 
+    /** Day 10 after the grace period: the day before Stage 6 blacklists (day 11). */
+    private function demandLetterDeadline(Carbon $graceEnd): Carbon
+    {
+        return $graceEnd->copy()->addDays(10)->startOfDay();
+    }
+
     /** Generates a real demand letter PDF the same way EscalationService does. */
-    private function demandLetter(int $tenantId, int $billId): ?string
+    private function demandLetter(int $tenantId, int $billId, Carbon $deadline): ?string
     {
         try {
             $tenant = Tenant::find($tenantId);
             $bills = \App\Models\BillingStatement::where('tenant_id', $tenantId)->where('status', 'overdue')->orderBy('billing_period_start')->get();
-            $deadline = now()->addDays(7);
 
             $pdf = Pdf::loadView('pdfs.demand-letter', [
                 'tenant' => $tenant,
@@ -1741,14 +1755,22 @@ class DemoDataSeeder extends Seeder
         }
 
         // Escalation steps the tenant is told about.
-        foreach (DB::table('escalation_logs')->whereIn('tenant_id', $ids)->whereIn('action_type', ['portal_restricted', 'demand_letter_generated'])->get() as $log) {
+        $owed = fn ($tenantId) => $peso(DB::table('billing_statements')->where('tenant_id', $tenantId)->where('status', 'overdue')->sum('total_amount'));
+        foreach (DB::table('escalation_logs')->whereIn('tenant_id', $ids)->whereIn('action_type', ['portal_restricted', 'demand_letter_generated', 'delinquent_blacklisted'])->get() as $log) {
+            if ($log->action_type === 'delinquent_blacklisted') {
+                $add($log->tenant_id, 'blacklisted', 'Your account has been deactivated',
+                    $owed($log->tenant_id) . ' remained unpaid after the demand letter deadline, so your account has been blacklisted and online payment is no longer available. Settle the balance directly with the dormitory office.',
+                    '/my/delinquency', $log->created_at, "blacklisted:{$log->billing_id}");
+
+                continue;
+            }
             $log->action_type === 'portal_restricted'
-                ? $add($log->tenant_id, 'account_restricted', 'Your portal access is restricted',
-                    'Because of an unpaid balance, only Billing and Delinquency are available. Settle your balance to restore full access.',
+                ? $add($log->tenant_id, 'account_restricted', 'Payment required: your rent is overdue',
+                    'Pay your outstanding balance now and upload your proof on the Billing page. Until it is settled, only Billing and Delinquency are open in your portal, and the next step is a formal demand letter.',
                     '/billing', $log->created_at, "account_restricted:{$log->billing_id}")
                 : $add($log->tenant_id, 'demand_letter', 'A formal demand letter has been issued',
-                    'Pay ' . $peso(DB::table('billing_statements')->where('tenant_id', $log->tenant_id)->where('status', 'overdue')->sum('total_amount'))
-                        . ' by ' . Carbon::parse($log->created_at)->addDays(7)->format('F j, Y') . ' to avoid being blacklisted. You can download the letter on the Delinquency page.',
+                    'Pay ' . $owed($log->tenant_id)
+                        . ' by ' . Carbon::parse($log->created_at)->format('F j, Y') . ' to avoid being blacklisted. You can download the letter on the Delinquency page.',
                     '/my/delinquency', $log->created_at, "demand_letter:{$log->billing_id}");
         }
 
@@ -1835,7 +1857,8 @@ class DemoDataSeeder extends Seeder
                 'school_company' => $school,
                 'school_company_address' => 'Manila',
                 'type_of_tenant' => $type,
-                'id_document_path' => $this->files['id'][0],
+                'id_document_path' => $first === 'Ana Beatriz' ? $this->files['ana_id'] : $this->files['id'][0],
+                'emergency_contact_id_path' => $first === 'Ana Beatriz' ? $this->files['ana_emergency_id'] : $this->files['emergency_id'],
                 'signed_contract_path' => $packet,
                 'emergency_contact_signed' => true,
                 'emergency_billing_consent' => $consent,
@@ -2231,6 +2254,11 @@ class DemoDataSeeder extends Seeder
     {
         $disk = Storage::disk('public');
         $disk->put('demo/sample-valid-id.png', $this->demoImage('SAMPLE VALID ID', ['Name: (demo tenant)', 'ID No.: 0000-0000-0000', 'For defense demo only']));
+        $disk->put('demo/sample-emergency-contact-id.png', $this->demoImage("SAMPLE EMERGENCY CONTACT'S ID", ['Name: (demo emergency contact)', 'ID No.: 0000-0000-0000', 'For defense demo only']));
+        // Ana's application uses real ID photos (hers and her emergency contact's),
+        // so the panel sees what actual uploads look like.
+        $disk->put('application-documents/demo/ana-valid-id.jpg', File::get(database_path('seeders/demo-assets/ana valid ID.jpg')));
+        $disk->put('application-documents/demo/ana-emergency-contact-id.png', File::get(database_path('seeders/demo-assets/Ana emergency contact valid ID.png')));
         $disk->put('demo/sample-payment-proof.png', $this->demoImage('SAMPLE PAYMENT PROOF', ['Paid to: Pureza Station Dormitory', 'GCash 0917 893 2970 (Patricia Joy N.)', 'Reference No.: see payment record', 'For defense demo only']));
 
         $disk->put('demo/sample-ticket-photo.png', $this->demoImage('SAMPLE TICKET PHOTO', ['Photo attached by the tenant', '(e.g. the damaged outlet or ceiling leak)', 'For defense demo only']));
@@ -2248,6 +2276,9 @@ class DemoDataSeeder extends Seeder
 
         $this->files = [
             'id' => ['demo/sample-valid-id.png'],
+            'emergency_id' => 'demo/sample-emergency-contact-id.png',
+            'ana_id' => 'application-documents/demo/ana-valid-id.jpg',
+            'ana_emergency_id' => 'application-documents/demo/ana-emergency-contact-id.png',
             'contract' => $disk->exists('contracts/dormitory-contract.pdf') ? 'contracts/dormitory-contract.pdf' : null,
             'proof' => 'demo/sample-payment-proof.png',
             'ticket_photo' => 'demo/sample-ticket-photo.png',

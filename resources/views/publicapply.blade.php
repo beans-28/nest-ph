@@ -198,7 +198,7 @@
             justify-content: center; gap: 8px; cursor: pointer; position: relative;
         }
         .file-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
-        #idDrop { align-items: center; text-align: center; }
+        #idDrop, #emergencyIdDrop { align-items: center; text-align: center; }
         .file-drop .upload-icon { width: 28px; height: 28px; color: #567357; }
         .file-drop .placeholder { font-size: 13px; color: #9aa5ac; }
         .file-drop .filename { font-size: 13px; color: #194e19; font-weight: 500; word-break: break-all; }
@@ -685,11 +685,19 @@
 
                     <div class="field-row">
                         <div class="field">
-                            <label for="id_document">ID <span class="req">*</span></label>
+                            <label for="id_document">Your Valid ID <span class="req">*</span></label>
                             <div class="file-drop" id="idDrop">
                                 <input type="file" id="id_document" accept=".jpg,.jpeg,.png,.pdf" required>
                                 <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                 <span class="placeholder" id="idPlaceholder">Add file (JPG, PNG, or PDF, up to 5 MB)</span>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="emergency_contact_id">Emergency Contact's Valid ID <span class="req">*</span></label>
+                            <div class="file-drop" id="emergencyIdDrop">
+                                <input type="file" id="emergency_contact_id" accept=".jpg,.jpeg,.png,.pdf" required>
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <span class="placeholder" id="emergencyIdPlaceholder">Add file (JPG, PNG, or PDF, up to 5 MB)</span>
                             </div>
                         </div>
                     </div>
@@ -748,7 +756,8 @@
                                 <div class="summary-item"><span class="label">Room</span><span class="value" id="sum_room"></span></div>
                                 <div class="summary-item"><span class="label">Bed</span><span class="value" id="sum_bed"></span></div>
                                 <div class="summary-item"><span class="label">Type of Tenant</span><span class="value" id="sum_tenant_type"></span></div>
-                                <div class="summary-item"><span class="label">ID File</span><span class="value" id="sum_id_file"></span></div>
+                                <div class="summary-item"><span class="label">Your ID</span><span class="value" id="sum_id_file"></span></div>
+                                <div class="summary-item"><span class="label">Emergency Contact's ID</span><span class="value" id="sum_emergency_id_file"></span></div>
                                 <div class="summary-item"><span class="label">Signed Documents</span><span class="value" id="sum_contract_file"></span></div>
                             </div>
                         </div>
@@ -1026,12 +1035,16 @@
         setSummary('sum_bed', bedText);
         setSummary('sum_tenant_type', tenantTypeLabel);
         setSummary('sum_id_file', document.getElementById('id_document').files[0]?.name);
+        setSummary('sum_emergency_id_file', document.getElementById('emergency_contact_id').files[0]?.name);
         setSummary('sum_contract_file', document.getElementById('signed_contract_path').value ? 'Signed by you and your emergency contact' : 'Not signed yet');
     }
 
     // ===== File drop labels =====
     document.getElementById('id_document').addEventListener('change', function () {
         document.getElementById('idPlaceholder').textContent = this.files[0]?.name || 'Add file (JPG, PNG, or PDF, up to 5 MB)';
+    });
+    document.getElementById('emergency_contact_id').addEventListener('change', function () {
+        document.getElementById('emergencyIdPlaceholder').textContent = this.files[0]?.name || 'Add file (JPG, PNG, or PDF, up to 5 MB)';
     });
 
     // ===== Room -> Bed cascading dropdowns =====
@@ -1122,6 +1135,8 @@
 
         const idFile = document.getElementById('id_document').files[0];
         if (idFile) formData.append('id_document', idFile);
+        const emergencyIdFile = document.getElementById('emergency_contact_id').files[0];
+        if (emergencyIdFile) formData.append('emergency_contact_id', emergencyIdFile);
         formData.append('signed_contract_path', document.getElementById('signed_contract_path').value);
 
         formData.append('dpa_consent', document.getElementById('dpa_consent').checked ? '1' : '0');

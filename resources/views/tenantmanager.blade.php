@@ -669,8 +669,9 @@
         <div class="sec" id="depositSec">${depositHtml(t)}</div>
         <div class="sec">
           <h3>Documents</h3>
-          ${t.id_document_url ? `<a class="doc-link" href="${t.id_document_url}" target="_blank">View Valid ID</a>` : '<span class="v empty-v">No valid ID on file</span>'}
-          ${t.signed_contract_url ? `<a class="doc-link" href="${t.signed_contract_url}" target="_blank">View Signed Contract</a>` : ''}
+          ${t.id_document_url ? `<a class="doc-link" href="${t.id_document_url}" data-lightbox="tenant-docs-${t.id}" target="_blank" rel="noopener">View Valid ID</a>` : '<span class="v empty-v">No valid ID on file</span>'}
+          ${t.emergency_contact_id_url ? `<a class="doc-link" href="${t.emergency_contact_id_url}" data-lightbox="tenant-docs-${t.id}" target="_blank" rel="noopener">View Emergency Contact's ID</a>` : ''}
+          ${t.signed_contract_url ? `<a class="doc-link" href="${t.signed_contract_url}" data-lightbox="tenant-docs-${t.id}" target="_blank" rel="noopener">View Signed Contract</a>` : ''}
         </div>
         ${t.status === 'inactive' ? `
         <div class="sec">
@@ -943,5 +944,6 @@
 })();
 </script>
 
+@include('partials.photo-lightbox')
 </body>
 </html>

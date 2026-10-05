@@ -73,6 +73,7 @@ class ApplicationController extends Controller
             'tenant_end_date' => ['nullable', 'date', 'after:preferred_start_date'],
             'type_of_tenant' => ['nullable', Rule::in(self::TENANT_TYPES)],
             'id_document' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'emergency_contact_id' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'signed_contract' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
 
             // Use Case Report — Apply for Occupancy, step 7.1: "Prevent
@@ -90,6 +91,11 @@ class ApplicationController extends Controller
             'contract_acceptance.accepted' => 'You must confirm you have reviewed the dormitory contract before submitting.',
             'preferred_start_date.after_or_equal' => 'Preferred start date cannot be in the past.',
             'tenant_end_date.after' => 'Tenant end date must be after the preferred start date.',
+            'emergency_contact_id.required' => 'Please upload a valid ID of your emergency contact.',
+            'emergency_contact_id.mimes' => "Your emergency contact's ID must be a JPG, PNG, or PDF file.",
+            'emergency_contact_id.max' => "Your emergency contact's ID file is larger than 5 MB. Please upload a smaller photo or scan.",
+            'id_document.mimes' => 'Your ID must be a JPG, PNG, or PDF file.',
+            'id_document.max' => 'Your ID file is larger than 5 MB. Please upload a smaller photo or scan.',
             'birthdate.required' => 'Please enter your birthdate.',
             'birthdate.before_or_equal' => 'Tenants must be at least 18 years old.',
         ]);
@@ -145,6 +151,8 @@ class ApplicationController extends Controller
         // on the form still match what was signed. A raw file upload is
         // kept as a fallback for anyone whose browser can't run the
         // signature pad (no emergency-contact consent is recorded then).
+        $emergencyContactIdPath = $request->file('emergency_contact_id')->store('application-documents', 'public');
+
         $signingRecord = $this->readSigningRecord($request->input('signed_contract_path'));
 
         if ($signingRecord) {
@@ -170,7 +178,7 @@ class ApplicationController extends Controller
             ], 422);
         }
 
-        $application = DB::transaction(function () use ($data, $bed, $idDocumentPath, $signedContractPath, $signingRecord) {
+        $application = DB::transaction(function () use ($data, $bed, $idDocumentPath, $emergencyContactIdPath, $signedContractPath, $signingRecord) {
             $application = Application::create([
                 'inquiry_id' => $data['inquiry_id'] ?? null,
                 'tenant_id' => null,
@@ -205,6 +213,7 @@ class ApplicationController extends Controller
                 'tenant_end_date' => $data['tenant_end_date'] ?? null,
                 'type_of_tenant' => $data['type_of_tenant'] ?? null,
                 'id_document_path' => $idDocumentPath,
+                'emergency_contact_id_path' => $emergencyContactIdPath,
                 'signed_contract_path' => $signedContractPath,
 
                 'dpa_consent' => true,
@@ -719,6 +728,7 @@ class ApplicationController extends Controller
                 'tenant_end_date' => $application->tenant_end_date?->format('M j, Y'),
                 'type_of_tenant' => $application->type_of_tenant,
                 'id_document_url' => $this->publicUrlFor($application->id_document_path),
+                'emergency_contact_id_url' => $this->publicUrlFor($application->emergency_contact_id_path),
                 'signed_contract_url' => $this->publicUrlFor($application->signed_contract_path),
                 'rejection_reason' => $application->rejection_reason,
                 're_application_note' => $application->re_application_note,
@@ -808,6 +818,7 @@ class ApplicationController extends Controller
             'home_address' => $application->home_address,
             'tenant_type' => $application->type_of_tenant,
             'id_document_path' => $application->id_document_path,
+            'emergency_contact_id_path' => $application->emergency_contact_id_path,
             'signed_contract_path' => $application->signed_contract_path,
             'status' => 'pending_move_in_payment',
         ]);

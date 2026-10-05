@@ -259,10 +259,13 @@
   function docLinksHtml(a){
     const links = [];
     if(a.id_document_url){
-      links.push(`<a class="doc-link" href="${a.id_document_url}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>View ID</a>`);
+      links.push(`<a class="doc-link" href="${a.id_document_url}" data-lightbox="app-docs-${a.id}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>View ID</a>`);
+    }
+    if(a.emergency_contact_id_url){
+      links.push(`<a class="doc-link" href="${a.emergency_contact_id_url}" data-lightbox="app-docs-${a.id}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>Emergency Contact's ID</a>`);
     }
     if(a.signed_contract_url){
-      links.push(`<a class="doc-link" href="${a.signed_contract_url}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Signed Documents</a>`);
+      links.push(`<a class="doc-link" href="${a.signed_contract_url}" data-lightbox="app-docs-${a.id}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>Signed Documents</a>`);
     }
     if(links.length === 0) return '<span class="doc-missing">No documents were attached to this application.</span>';
     return `<div class="doc-links">${links.join('')}</div>`;
@@ -534,5 +537,6 @@
 })();
 </script>
 
+@include('partials.photo-lightbox')
 </body>
 </html>

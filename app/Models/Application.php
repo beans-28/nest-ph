@@ -47,6 +47,7 @@ class Application extends Model
         'tenant_end_date',
         'type_of_tenant',
         'id_document_path',
+        'emergency_contact_id_path',
         'signed_contract_path',
 
         'dpa_consent',

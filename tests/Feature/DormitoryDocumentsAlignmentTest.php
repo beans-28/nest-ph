@@ -309,11 +309,22 @@ class DormitoryDocumentsAlignmentTest extends TestCase
 
         $this->post('/api/applications', $applicant + [
             'signed_contract_path' => $path, 'contract_acceptance' => '1', 'dpa_consent' => '1',
+            'emergency_contact_id' => \Illuminate\Http\UploadedFile::fake()->image('guardian-id.jpg'),
         ], ['Accept' => 'application/json'])->assertCreated();
 
         $application = \App\Models\Application::sole();
         $this->assertTrue($application->emergency_contact_signed);
         $this->assertTrue($application->emergency_billing_consent);
+        Storage::disk('public')->assertExists($application->emergency_contact_id_path);
+    }
+
+    public function test_emergency_contact_valid_id_is_required(): void
+    {
+        $bed = $this->roomOfType('Room with AC, 6 persons', '2nd to 5th floor', 6)->beds->first();
+
+        $this->post('/api/applications', $this->applicant($bed) + [
+            'contract_acceptance' => '1', 'dpa_consent' => '1',
+        ], ['Accept' => 'application/json'])->assertStatus(422)->assertJsonValidationErrors('emergency_contact_id');
     }
 
     public function test_changing_details_after_signing_requires_signing_again(): void
@@ -343,6 +354,7 @@ class DormitoryDocumentsAlignmentTest extends TestCase
 
         $this->post('/api/applications', array_merge($applicant, ['tenant_end_date' => now()->addMonth()->toDateString()]) + [
             'contract_acceptance' => '1', 'dpa_consent' => '1',
+            'emergency_contact_id' => \Illuminate\Http\UploadedFile::fake()->image('guardian-id.jpg'),
         ], ['Accept' => 'application/json'])->assertStatus(422)->assertJsonValidationErrors('tenant_end_date');
     }
 

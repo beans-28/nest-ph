@@ -178,6 +178,7 @@ class TenantController extends Controller
             'deactivated_at' => $this->formatDate($tenant->deactivated_at, 'M j, Y g:ia'),
             'deactivated_by_name' => $tenant->deactivatedBy?->name,
             'id_document_url' => $this->publicUrlFor($tenant->id_document_path),
+            'emergency_contact_id_url' => $this->publicUrlFor($tenant->emergency_contact_id_path),
             'signed_contract_url' => $this->publicUrlFor($tenant->signed_contract_path),
             'contract' => $contract ? [
                 'room_no' => $contract->bed?->room?->room_no,

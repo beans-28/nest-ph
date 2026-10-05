@@ -250,7 +250,7 @@
 
             <div class="lease-actions">
               @if($contractDocumentUrl)
-                <a href="{{ $contractDocumentUrl }}" target="_blank" rel="noopener" class="btn-outline-sm">
+                <a href="{{ $contractDocumentUrl }}" data-lightbox="my-contract" target="_blank" rel="noopener" class="btn-outline-sm">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
                   View Lease Contract
                 </a>
@@ -265,7 +265,7 @@
         <aside class="id-card" aria-label="Submitted ID">
           <h3 class="profile-section-title">Submitted ID</h3>
           @if($idDocUrl)
-            <a href="{{ $idDocUrl }}" target="_blank" rel="noopener" class="id-frame" title="Open full size">
+            <a href="{{ $idDocUrl }}" data-lightbox="my-id" target="_blank" rel="noopener" class="id-frame" title="Open full size">
               @if($idDocIsPdf)
                 <div class="id-placeholder">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
@@ -484,5 +484,6 @@
 })();
 </script>
 
+@include('partials.photo-lightbox')
 </body>
 </html>

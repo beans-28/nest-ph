@@ -264,6 +264,34 @@ class EscalationService
         ]);
     }
 
+    /** Stage 5 SMS. Public so the demo seeder sends the same wording. */
+    public static function demandLetterSms(float $totalOwed, \Carbon\Carbon $deadline): string
+    {
+        return 'FORMAL DEMAND: A demand letter has been issued for your unpaid rent of PHP ' . number_format($totalOwed, 2)
+            . '. Pay by ' . $deadline->format('M j, Y') . ' to avoid being blacklisted. '
+            . 'Pay and view the letter at ' . route('tenant.billing') . ' - ' . TextbeeService::BRAND_NAME;
+    }
+
+    /**
+     * Stage 6 SMS; $amount is already formatted ("PHP 1,234.00"). A
+     * blacklisted tenant can no longer open Billing or pay online, so this
+     * sends them to the office instead of the portal.
+     */
+    public static function blacklistSms(string $amount): string
+    {
+        return "FINAL NOTICE: Your NEST PH tenant account has been deactivated and blacklisted because {$amount} remained unpaid after the demand letter deadline. "
+            . 'You can no longer pay online. The balance is still due: settle it directly with the dormitory office'
+            . self::officeContactSuffix() . ' - ' . TextbeeService::BRAND_NAME;
+    }
+
+    private static function officeContactSuffix(): string
+    {
+        $profile = \App\Models\DormitoryProfile::current();
+        $contacts = array_filter([$profile->contact_number, $profile->contact_email]);
+
+        return $contacts ? ' (' . implode(' / ', $contacts) . ').' : '.';
+    }
+
     private function stage2Message(BillingStatement $bill, int $day): string
     {
         $urgency = $day >= 7 ? 'URGENT' : 'Reminder';
@@ -291,15 +319,23 @@ class EscalationService
         $tenant = $bill->tenant;
         $wasRestricted = $tenant->portal_restricted;
         $tenant->update(['portal_restricted' => true]);
+
+        // Lead with the amount and how to pay, not the lock: the point of
+        // this stage is to get the bill paid. Billing stays open on purpose.
+        $amount = 'PHP ' . number_format($bill->remainingBalance(), 2);
+        $due = $bill->due_date->format('M j, Y');
         if (! $wasRestricted) {
             \App\Models\TenantNotification::send($tenant->id, 'account_restricted',
-                'Your portal access is restricted',
-                'Because of an unpaid balance, only Billing and Delinquency are available. Settle your balance to restore full access.',
+                "Payment required: {$amount} overdue",
+                "Your rent due {$due} is still unpaid. Pay {$amount} now and upload your proof on the Billing page. "
+                    . 'Until it is settled, only Billing and Delinquency are open in your portal, and the next step is a formal demand letter.',
                 '/billing', "account_restricted:{$bill->id}");
         }
 
-        $message = 'Your account access has been restricted due to unpaid balance. '
-            . 'Please settle your balance to restore full access. - ' . TextbeeService::BRAND_NAME;
+        $message = "PAYMENT REQUIRED: Your rent of {$amount} (due {$due}) is still unpaid. "
+            . 'Pay now and upload your proof at ' . route('tenant.billing') . '. '
+            . 'Your portal is limited to Billing until this is settled; unpaid balances lead to a formal demand letter. - '
+            . TextbeeService::BRAND_NAME;
 
         $sent = $this->sms->send($tenant->contact_number ?? '', $message);
 
@@ -510,10 +546,25 @@ class EscalationService
             'Pay ₱' . number_format($totalOwed, 2) . ' by ' . $deadline->format('F j, Y') . ' to avoid being blacklisted. You can download the letter on the Delinquency page.',
             '/my/delinquency', "demand_letter:{$bill->id}");
 
+        // The letter is the stage's real output, so the SMS gets its own
+        // log row: a failed send shows on the timeline without holding
+        // back the letter's row (Stage 6 waits on that one).
+        $smsMessage = self::demandLetterSms($totalOwed, $deadline);
+        $smsSent = $this->sms->send($tenant->contact_number ?? '', $smsMessage);
+        EscalationLog::create([
+            'tenant_id' => $tenant->id,
+            'billing_id' => $bill->id,
+            'stage' => 5,
+            'action_type' => 'demand_letter_sms',
+            'message_content' => $smsMessage,
+            'status' => $smsSent ? 'sent' : 'pending',
+        ]);
+
         Log::info('[escalation] Stage 5: demand letter generated', [
             'tenant_id' => $tenant->id,
             'billing_id' => $bill->id,
             'path' => $path,
+            'sms' => $smsSent,
         ]);
     }
 
@@ -562,8 +613,28 @@ class EscalationService
             'status' => 'resolved',
         ]);
 
+        // The balance is still owed after blacklisting, but online payment is
+        // closed now, so the tenant is pointed to the office.
+        $amount = 'PHP ' . number_format(BillingStatement::where('tenant_id', $tenant->id)->where('status', 'overdue')
+            ->withApprovedPaid()->get()->sum(fn ($b) => $b->remainingBalance()), 2);
+        \App\Models\TenantNotification::send($tenant->id, 'blacklisted',
+            'Your account has been deactivated',
+            "{$amount} remained unpaid after the demand letter deadline, so your account has been blacklisted and online payment is no longer available. Settle the balance directly with the dormitory office.",
+            '/my/delinquency', "blacklisted:{$bill->id}");
+        $smsMessage = self::blacklistSms($amount);
+        $smsSent = $this->sms->send($tenant->contact_number ?? '', $smsMessage);
+        EscalationLog::create([
+            'tenant_id' => $tenant->id,
+            'billing_id' => $bill->id,
+            'stage' => 6,
+            'action_type' => 'blacklist_sms',
+            'message_content' => $smsMessage,
+            'status' => $smsSent ? 'sent' : 'pending',
+        ]);
+
         Log::info('[escalation] Stage 6: tenant flagged delinquent and blacklisted', [
             'tenant_id' => $tenant->id,
+            'sms' => $smsSent,
         ]);
     }
 

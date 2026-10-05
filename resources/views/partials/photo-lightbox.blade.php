@@ -39,7 +39,8 @@
   .plb-prev { left: 16px; }
   .plb-next { right: 16px; }
   .plb.single .plb-nav, .plb.single .plb-count { visibility: hidden; }
-  [data-lightbox] { cursor: zoom-in; }
+  /* Only image links open here (PDFs keep a new tab), so only they get the zoom cursor. */
+  a[data-lightbox]:is([href*=".jpg" i], [href*=".jpeg" i], [href*=".png" i], [href*=".gif" i], [href*=".webp" i], [href*=".avif" i], [href*=".bmp" i]) { cursor: zoom-in; }
   @media (max-width: 640px) {
     .plb-stage { padding: 64px 8px 80px; }
     .plb-nav { top: auto; bottom: 16px; transform: none; }
@@ -55,6 +56,7 @@
   const img = dlg.querySelector('.plb-img');
   const count = dlg.querySelector('.plb-count');
   let items = [], index = 0, opener = null;
+  const isImage = (url) => /\.(jpe?g|png|gif|webp|avif|bmp)(\?|#|$)/i.test(url);
 
   function show(i) {
     index = (i + items.length) % items.length;
@@ -62,16 +64,17 @@
     img.classList.add('loading');
     img.onload = () => img.classList.remove('loading');
     img.src = link.href;
-    img.alt = link.querySelector('img')?.alt || 'Photo';
+    img.alt = link.querySelector('img')?.alt || link.textContent.trim().replace(/\s*→$/, '') || 'Photo';
     count.textContent = (index + 1) + ' of ' + items.length;
   }
 
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[data-lightbox]');
     if (!link || e.ctrlKey || e.metaKey || e.shiftKey) return; // allow "open in new tab" on purpose
+    if (!isImage(link.href)) return; // PDFs etc. keep opening in a new tab
     e.preventDefault();
     const group = link.dataset.lightbox;
-    items = Array.from(document.querySelectorAll('a[data-lightbox]')).filter(a => a.dataset.lightbox === group);
+    items = Array.from(document.querySelectorAll('a[data-lightbox]')).filter(a => a.dataset.lightbox === group && isImage(a.href));
     opener = link;
     dlg.classList.toggle('single', items.length < 2);
     show(items.indexOf(link));

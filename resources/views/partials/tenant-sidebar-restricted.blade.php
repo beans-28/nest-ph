@@ -15,7 +15,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
     </div>
     <h2 class="lock-panel-title">PORTAL ACCESS<br>RESTRICTED</h2>
-    <p class="lock-panel-text">Your account access has been restricted due to unpaid balance. Please settle your balance to restore full access.</p>
+    <p class="lock-panel-text">Your rent is overdue. Pay your outstanding balance and upload your proof on the Billing page. Full portal access comes back once it's settled.</p>
   </div>
   <div class="sidebar-footer">
     <div class="nav-item" id="logoutBtn" tabindex="0">

@@ -785,8 +785,8 @@
       <div class="sec">
         <h3>Tenant Documents</h3>
         <div class="doc-links">
-          ${p.id_document_url ? `<a class="proof-preview-link" href="${p.id_document_url}" target="_blank" rel="noopener">View valid ID →</a>` : '<span class="v empty-v">No ID on file</span>'}
-          ${p.signed_contract_url ? `<a class="proof-preview-link" href="${p.signed_contract_url}" target="_blank" rel="noopener">View signed contract →</a>` : '<span class="v empty-v">No signed contract on file</span>'}
+          ${p.id_document_url ? `<a class="proof-preview-link" href="${p.id_document_url}" data-lightbox="docs-${p.id}" target="_blank" rel="noopener">View valid ID →</a>` : '<span class="v empty-v">No ID on file</span>'}
+          ${p.signed_contract_url ? `<a class="proof-preview-link" href="${p.signed_contract_url}" data-lightbox="docs-${p.id}" target="_blank" rel="noopener">View signed contract →</a>` : '<span class="v empty-v">No signed contract on file</span>'}
         </div>
       </div>` : ''}
 
@@ -1236,7 +1236,7 @@
         <td><span class="status-pill ${p.status === 'waived' ? 'paid' : 'pending'}">${p.status === 'waived' ? 'Waived' : 'Active'}</span></td>
         <td>
           <div class="action-cell">
-            ${p.damage_photo_url ? `<a class="btn sm" href="${p.damage_photo_url}" target="_blank" rel="noopener">Photo</a>` : ''}
+            ${p.damage_photo_url ? `<a class="btn sm" href="${p.damage_photo_url}" data-lightbox="damage-${p.id}" target="_blank" rel="noopener">Photo</a>` : ''}
             ${p.status === 'active' ? `<button class="btn sm" data-edit-penalty="${p.id}">Edit</button>` : ''}
             ${p.status === 'active' ? `<button class="btn sm warn" data-waive="${p.id}">Waive</button>` : ''}
             ${p.status === 'waived' ? `<button class="btn sm" data-reinstate="${p.id}">Reinstate</button>` : ''}
@@ -1754,5 +1754,6 @@
 })();
 </script>
 
+@include('partials.photo-lightbox')
 </body>
 </html>

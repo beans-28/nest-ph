@@ -1021,7 +1021,7 @@
           ${p.status === 'rejected' && p.review_notes ? `<div class="reject-reason"><span>Reason:</span><span>${esc(p.review_notes)}</span></div>` : ''}
           ${p.proof_url
             ? (/\.(jpe?g|png|gif|webp)$/i.test(p.proof_url)
-                ? `<a class="proof-img-link" href="${p.proof_url}" target="_blank" rel="noopener"><img class="proof-img" src="${p.proof_url}" alt="Proof of payment"></a>`
+                ? `<a class="proof-img-link" href="${p.proof_url}" data-lightbox="proof-${p.id}" target="_blank" rel="noopener"><img class="proof-img" src="${p.proof_url}" alt="Proof of payment"></a>`
                 : `<div><span>Proof</span><a class="receipt-link" href="${p.proof_url}" target="_blank" rel="noopener">Open PDF</a></div>`)
             : ''}
           ${p.status === 'approved' ? `<div><span>Receipt</span><a class="receipt-link" href="/my/billing/payments/${p.id}/receipt">Download PDF</a></div>` : ''}
@@ -1064,5 +1064,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 @include('partials.qr-lightbox')
+@include('partials.photo-lightbox')
 </body>
 </html>
