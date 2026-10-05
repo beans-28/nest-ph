@@ -2,11 +2,13 @@
 
 namespace App\Services;
 
+use App\Mail\DelinquencyFinalNoticeMail;
 use App\Models\BillingStatement;
 use App\Models\EscalationLog;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class EscalationService
@@ -331,17 +333,10 @@ class EscalationService
 
         // Tenant Agreement 9.3: an emergency contact gets billing reminders
         // ONLY if they separately agreed (the consent box they tick when
-        // signing). Without consent this stage is recorded as done-but-
-        // skipped, so the ladder can still move on, and nothing is sent.
+        // signing). Without consent the emergency contact is never
+        // contacted -- instead the tenant gets this notice by SMS AND email.
         if (! $tenant->emergency_billing_reminders) {
-            $this->saveLog($log, [
-                'tenant_id' => $tenant->id,
-                'billing_id' => $bill->id,
-                'stage' => 4,
-                'action_type' => 'emergency_contact_notified',
-                'message_content' => 'Skipped: the emergency contact has not agreed to receive billing reminders (Tenant Agreement Section 9.3).',
-                'status' => 'resolved',
-            ]);
+            $this->stage4TenantFallback($bill, $log);
 
             return;
         }
@@ -392,6 +387,54 @@ class EscalationService
             // notification has been sent." Same stub pattern as Stage 1/3.
             Log::info('[escalation] Stage 4: emergency contact notified', ['tenant_id' => $tenant->id]);
         }
+    }
+
+    /**
+     * Stage 4 fallback when the emergency contact did not consent: text the
+     * tenant's own number and email the tenant. Counts as done if either
+     * channel got through; if both fail it stays 'pending' and is retried.
+     */
+    private function stage4TenantFallback(BillingStatement $bill, ?EscalationLog $log): void
+    {
+        $tenant = $bill->tenant;
+
+        $message = 'Your account with ' . TextbeeService::BRAND_NAME . ' is still overdue. Amount due: PHP '
+            . number_format($bill->remainingBalance(), 2)
+            . ', due ' . $bill->due_date->format('M j, Y')
+            . ((float) $bill->penalty_amount > 0 ? ', includes penalty PHP ' . number_format((float) $bill->penalty_amount, 2) : '')
+            . '. Please pay via the tenant portal to avoid a formal demand letter.';
+
+        $smsSent = $this->sms->send($tenant->contact_number ?? '', $message);
+
+        $emailSent = false;
+        if ($tenant->email) {
+            try {
+                Mail::to($tenant->email)->send(new DelinquencyFinalNoticeMail($tenant, $bill));
+                $emailSent = true;
+            } catch (\Throwable $e) {
+                Log::warning('[escalation] Stage 4 fallback email failed to send', [
+                    'tenant_id' => $tenant->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $this->saveLog($log, [
+            'tenant_id' => $tenant->id,
+            'billing_id' => $bill->id,
+            'stage' => 4,
+            'action_type' => 'emergency_contact_notified',
+            'message_content' => 'Emergency contact has not agreed to billing reminders (Tenant Agreement 9.3), so the tenant was notified instead'
+                . ' (SMS: ' . ($smsSent ? 'sent' : 'failed') . ', email: ' . ($emailSent ? 'sent' : 'failed') . '). '
+                . $message,
+            'status' => ($smsSent || $emailSent) ? 'sent' : 'pending',
+        ]);
+
+        Log::info('[escalation] Stage 4: emergency contact not consented, tenant notified instead', [
+            'tenant_id' => $tenant->id,
+            'sms' => $smsSent,
+            'email' => $emailSent,
+        ]);
     }
 
     /**

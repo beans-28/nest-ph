@@ -399,6 +399,7 @@ class DormitoryProfileController extends Controller
             'website_url' => ['nullable', 'url', 'max:255'],
 
             'rent_due_day' => ['required', 'integer', 'min:1', 'max:28'],
+            'rent_due_basis' => ['sometimes', Rule::in(['fixed_day', 'start_date'])],
             'grace_period_days' => ['required', 'integer', 'min:0', 'max:31'],
             'late_penalty_percent' => ['required', 'numeric', 'min:0', 'max:100'],
             'minimum_stay_months' => ['required', 'integer', 'min:1', 'max:24'],
@@ -422,7 +423,7 @@ class DormitoryProfileController extends Controller
         $profile->fill($data)->save();
 
         return response()->json([
-            'message' => 'Rental policy saved. New applicants will sign documents with these terms.',
+            'message' => 'Rental policy saved. New applicants will sign documents with these terms, and billing changes apply to future bills only.',
         ]);
     }
 

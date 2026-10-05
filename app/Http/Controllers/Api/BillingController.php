@@ -162,7 +162,8 @@ class BillingController extends Controller
      * Matches Use Case Report Table 18 ("Generate Billing Statement") and
      * the dorm's Payments and Fees Schedule:
      *   - Bills follow CALENDAR months, and rent is due on the dorm's rent
-     *     due day (the 1st). The grace period and late penalty are handled
+     *     due day (the 1st) -- or, if the dorm bills "based on tenant start
+     *     date", on the tenant's start day each month (startDatePeriod()). The grace period and late penalty are handled
      *     later by BillingStatement::syncOverdueStatuses().
      *   - The advance rent paid with the move-in fee covers the month the
      *     tenant moves in (Agreement 4.3), so the first monthly bill is for
@@ -190,48 +191,59 @@ class BillingController extends Controller
 
         $start = $contract->start_date->copy()->startOfDay();
 
-        if ($lastBill) {
-            $periodStart = $lastBill->billing_period_end->copy()->addDay();
-        } elseif ($hasMoveInBill) {
-            // The advance rent already paid for the move-in month.
-            $periodStart = $start->copy()->addMonthNoOverflow()->startOfMonth();
-        } else {
-            // Walk-in contracts with no move-in fee: bill from the start date.
-            $periodStart = $start->copy();
-        }
-
-        if ($periodStart->isAfter(now())) {
-            return null;
-        }
-
-        if ($contract->end_date && $periodStart->isAfter($contract->end_date)) {
-            return null;
-        }
-
-        // Calendar month, cut short by the contract's end date if it falls
-        // mid-month. A period that doesn't cover the whole month (an old
-        // anniversary-style period, a walk-in starting mid-month, or a
-        // mid-month end date) is charged for the days it covers.
-        $periodEnd = $periodStart->copy()->endOfMonth()->startOfDay();
-        if ($contract->end_date && $contract->end_date->lt($periodEnd)) {
-            $periodEnd = $contract->end_date->copy()->startOfDay();
-        }
-
-        $rate = (float) $contract->monthly_rate;
-        $baseRent = $this->rentForPeriod($rate, $periodStart, $periodEnd, $profile, ! $lastBill && ! $hasMoveInBill);
-
-        // Prorated mid-month move-in: the advance covered a whole month but
-        // the tenant only used part of the move-in month, so the unused days
-        // come off the first monthly bill.
-        if (! $lastBill && $hasMoveInBill && $profile->mid_month_move_in === 'prorated' && $start->day > 1) {
-            $daysInMonth = $start->daysInMonth;
-            $unusedDays = $start->day - 1;
-            $baseRent = max(0, round($baseRent - $rate * $unusedDays / $daysInMonth, 2));
-        }
-
-        $dueDate = $periodStart->copy()->day(min($profile->rent_due_day, $periodStart->daysInMonth));
-        if ($dueDate->lt($periodStart)) {
+        if ($profile->rent_due_basis === 'start_date') {
+            // Due on the same day of the month as the tenant's start date
+            // (start Oct 15 -> due Nov 15, Dec 15...). No proration needed.
+            $period = $this->startDatePeriod($contract, $start, $lastBill, $hasMoveInBill);
+            if (! $period) {
+                return null;
+            }
+            [$periodStart, $periodEnd, $baseRent] = $period;
             $dueDate = $periodStart->copy();
+        } else {
+            if ($lastBill) {
+                $periodStart = $lastBill->billing_period_end->copy()->addDay();
+            } elseif ($hasMoveInBill) {
+                // The advance rent already paid for the move-in month.
+                $periodStart = $start->copy()->addMonthNoOverflow()->startOfMonth();
+            } else {
+                // Walk-in contracts with no move-in fee: bill from the start date.
+                $periodStart = $start->copy();
+            }
+
+            if ($periodStart->isAfter(now())) {
+                return null;
+            }
+
+            if ($contract->end_date && $periodStart->isAfter($contract->end_date)) {
+                return null;
+            }
+
+            // Calendar month, cut short by the contract's end date if it falls
+            // mid-month. A period that doesn't cover the whole month (an old
+            // anniversary-style period, a walk-in starting mid-month, or a
+            // mid-month end date) is charged for the days it covers.
+            $periodEnd = $periodStart->copy()->endOfMonth()->startOfDay();
+            if ($contract->end_date && $contract->end_date->lt($periodEnd)) {
+                $periodEnd = $contract->end_date->copy()->startOfDay();
+            }
+
+            $rate = (float) $contract->monthly_rate;
+            $baseRent = $this->rentForPeriod($rate, $periodStart, $periodEnd, $profile, ! $lastBill && ! $hasMoveInBill);
+
+            // Prorated mid-month move-in: the advance covered a whole month but
+            // the tenant only used part of the move-in month, so the unused days
+            // come off the first monthly bill.
+            if (! $lastBill && $hasMoveInBill && $profile->mid_month_move_in === 'prorated' && $start->day > 1) {
+                $daysInMonth = $start->daysInMonth;
+                $unusedDays = $start->day - 1;
+                $baseRent = max(0, round($baseRent - $rate * $unusedDays / $daysInMonth, 2));
+            }
+
+            $dueDate = $periodStart->copy()->day(min($profile->rent_due_day, $periodStart->daysInMonth));
+            if ($dueDate->lt($periodStart)) {
+                $dueDate = $periodStart->copy();
+            }
         }
 
         [$utilitiesShare, $wifiShare] = $this->splitUtilityCost($contract);
@@ -284,6 +296,53 @@ class BillingController extends Controller
             '/billing');
 
         return $bill;
+    }
+
+    /**
+     * "Based on tenant start date" billing: each period runs from the start
+     * day of one month to the day before it in the next (start Oct 16 ->
+     * Oct 16-Nov 15, then Nov 16-Dec 15). The advance rent in the move-in
+     * fee covers the first full period, so the first monthly bill starts
+     * one month after the start date. A period cut short (contract ending
+     * early, or switching over from calendar-month bills) is charged by
+     * the day. Returns [start, end, rent], or null if nothing is due yet.
+     */
+    private function startDatePeriod(LeaseContract $contract, Carbon $start, ?BillingStatement $lastBill, bool $hasMoveInBill): ?array
+    {
+        if ($lastBill) {
+            $from = $lastBill->billing_period_end->copy()->addDay()->startOfDay();
+        } elseif ($hasMoveInBill) {
+            $from = $start->copy()->addMonthNoOverflow();
+        } else {
+            $from = $start->copy();
+        }
+
+        if ($from->isAfter(now())) {
+            return null;
+        }
+        if ($contract->end_date && $from->isAfter($contract->end_date)) {
+            return null;
+        }
+
+        // Find the start-day "anchors" on either side of $from.
+        $n = 0;
+        while ($start->copy()->addMonthsNoOverflow($n + 1)->lte($from)) {
+            $n++;
+        }
+        $prevAnchor = $start->copy()->addMonthsNoOverflow($n);
+        $nextAnchor = $start->copy()->addMonthsNoOverflow($n + 1);
+
+        $to = $nextAnchor->copy()->subDay();
+        if ($contract->end_date && $contract->end_date->lt($to)) {
+            $to = $contract->end_date->copy()->startOfDay();
+        }
+
+        $rate = (float) $contract->monthly_rate;
+        $periodDays = (int) round(abs($prevAnchor->diffInDays($nextAnchor)));
+        $days = (int) round(abs($from->diffInDays($to))) + 1;
+        $rent = $days >= $periodDays ? $rate : round($rate * $days / $periodDays, 2);
+
+        return [$from, $to, $rent];
     }
 
     /**

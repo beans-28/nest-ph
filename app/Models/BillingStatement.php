@@ -20,7 +20,11 @@ class BillingStatement extends Model
         'billing_period_start',
         'billing_period_end',
         'due_date',
+        'grace_period_days',
+        'late_penalty_percent',
         'base_rent',
+        'advance_amount',
+        'deposit_amount',
         'utilities_amount',
         'wifi_amount',
         'penalty_amount',
@@ -34,12 +38,52 @@ class BillingStatement extends Model
         'billing_period_end' => 'date',
         'due_date' => 'date',
         'reservation_expired_at' => 'datetime',
+        'grace_period_days' => 'integer',
+        'late_penalty_percent' => 'float',
         'base_rent' => 'decimal:2',
+        'advance_amount' => 'decimal:2',
+        'deposit_amount' => 'decimal:2',
         'utilities_amount' => 'decimal:2',
         'wifi_amount' => 'decimal:2',
         'penalty_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
     ];
+
+    /**
+     * Every new bill keeps a copy of the grace period and late penalty %
+     * in effect when it was created. Changing the settings later only
+     * affects bills created after the change, never older ones.
+     *
+     * A move-in fee is 1 month advance rent + 1 month security deposit; if
+     * the caller didn't split it, split it evenly here.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (BillingStatement $bill) {
+            if ($bill->grace_period_days === null || $bill->late_penalty_percent === null) {
+                $profile = DormitoryProfile::current();
+                $bill->grace_period_days ??= $profile->grace_period_days;
+                $bill->late_penalty_percent ??= $profile->late_penalty_percent;
+            }
+
+            if ($bill->type === 'move_in' && $bill->deposit_amount === null) {
+                $bill->advance_amount ??= round((float) $bill->base_rent / 2, 2);
+                $bill->deposit_amount = round((float) $bill->base_rent - (float) $bill->advance_amount, 2);
+            }
+        });
+    }
+
+    /** Grace period for this bill: its own copy, or today's setting for very old rows. */
+    public function graceDays(?DormitoryProfile $profile = null): int
+    {
+        return $this->grace_period_days ?? ($profile ?? DormitoryProfile::current())->grace_period_days;
+    }
+
+    /** Late penalty % for this bill: its own copy, or today's setting for very old rows. */
+    public function penaltyPercent(?DormitoryProfile $profile = null): float
+    {
+        return (float) ($this->late_penalty_percent ?? ($profile ?? DormitoryProfile::current())->late_penalty_percent);
+    }
 
     public function contract(): BelongsTo
     {
@@ -143,11 +187,20 @@ class BillingStatement extends Model
         // Move-in fee bills never go overdue: the tenant hasn't moved in
         // yet, so the delinquency ladder (SMS, portal lock, blacklist) must
         // not start for them. They stay unpaid/partial until settled.
-        static::whereIn('status', ['unpaid', 'partial'])
+        //
+        // Each bill uses its OWN grace period (the one in effect when it
+        // was created), so this checks bill by bill.
+        $overdueIds = static::whereIn('status', ['unpaid', 'partial'])
             ->where('type', '!=', 'move_in')
             ->whereNotNull('due_date')
-            ->where('due_date', '<', now()->startOfDay()->subDays($profile->grace_period_days))
-            ->update(['status' => 'overdue']);
+            ->where('due_date', '<', now()->startOfDay())
+            ->get(['id', 'due_date', 'grace_period_days'])
+            ->filter(fn (BillingStatement $bill) => $bill->isPastGrace($profile))
+            ->pluck('id');
+
+        if ($overdueIds->isNotEmpty()) {
+            static::whereIn('id', $overdueIds)->update(['status' => 'overdue']);
+        }
 
         static::applyLatePenalties($profile);
     }
@@ -160,7 +213,7 @@ class BillingStatement extends Model
     {
         $profile ??= DormitoryProfile::current();
 
-        return $this->due_date?->copy()->addDays($profile->grace_period_days);
+        return $this->due_date?->copy()->addDays($this->graceDays($profile));
     }
 
     /** True once today is after the grace deadline. */
@@ -208,7 +261,7 @@ class BillingStatement extends Model
 
     /**
      * The part of this month's RENT still unpaid at the grace deadline.
-     * Utilities, WiFi and other penalties are not "monthly rent", so the 10%
+     * Utilities, WiFi and other penalties are not "monthly rent", so the late %
      * is never charged on them. On-time payments count against the bill's
      * charges first, then whatever is left unpaid is capped at the rent.
      */
@@ -222,8 +275,8 @@ class BillingStatement extends Model
 
     /**
      * Payments and Fees Schedule 5.2 / Agreement 3.3: if rent is still
-     * unpaid after the grace period, add a ONE-TIME penalty of 10% of the
-     * overdue monthly rent. Never compounded and never charged twice on the
+     * unpaid after the grace period, add a ONE-TIME penalty (the bill's own
+     * late penalty %, e.g. 10%) of the overdue monthly rent. Never compounded and never charged twice on the
      * same bill (a waived one is not re-added either).
      *
      * Waits while the tenant has a proof under review that is dated on
@@ -233,11 +286,6 @@ class BillingStatement extends Model
     public static function applyLatePenalties(?DormitoryProfile $profile = null): void
     {
         $profile ??= DormitoryProfile::current();
-        $percent = (float) $profile->late_penalty_percent;
-
-        if ($percent <= 0) {
-            return;
-        }
 
         $bills = static::where('status', 'overdue')
             ->where('type', 'monthly')
@@ -245,6 +293,11 @@ class BillingStatement extends Model
             ->get();
 
         foreach ($bills as $bill) {
+            $percent = $bill->penaltyPercent($profile);
+            if ($percent <= 0) {
+                continue;
+            }
+
             if (! $bill->isPastGrace($profile)) {
                 continue;
             }

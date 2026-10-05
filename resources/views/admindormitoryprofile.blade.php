@@ -94,6 +94,7 @@
   .field-row.full{ grid-template-columns:1fr; }
   @media (max-width:640px){ .field-row{ grid-template-columns:1fr; } }
   .field{ display:flex; flex-direction:column; gap:6px; }
+  .field[hidden]{ display:none; }
   .field label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
   .field .req{ color:var(--status-occupied); }
   .field input, .field textarea{ border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13.5px; font-family:var(--font-body); color:var(--text-dark); }
@@ -496,8 +497,17 @@
             </div>
 
             <h3 class="policy-sub">Rent and late payment</h3>
-            <div class="field-row three">
+            <div class="field-row full">
               <div class="field">
+                <label for="polDueBasis">Monthly rent due date</label>
+                <select id="polDueBasis">
+                  <option value="fixed_day" @selected($profile->rent_due_basis === 'fixed_day')>Fixed monthly due date</option>
+                  <option value="start_date" @selected($profile->rent_due_basis === 'start_date')>Based on tenant start date</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-row three">
+              <div class="field" id="polDueDayField">
                 <label for="polDueDay">Rent due day of the month</label>
                 <input type="number" id="polDueDay" min="1" max="28" value="{{ $profile->rent_due_day }}">
               </div>
@@ -511,9 +521,10 @@
               </div>
             </div>
             <p class="policy-hint" id="polRentHint"></p>
+            <p class="policy-hint">Changes apply to bills created from now on. Bills already issued keep the grace period and penalty they were created with.</p>
 
             <div class="field-row">
-              <div class="field">
+              <div class="field" id="polMidMonthField">
                 <label for="polMidMonth">Mid-month move-in: first month is</label>
                 <select id="polMidMonth">
                   <option value="full" @selected($profile->mid_month_move_in === 'full')>Charged in full</option>
@@ -1910,11 +1921,20 @@
     const pct = Number($('polPenalty').value) || 0;
     const ord = (n) => n + (['th','st','nd','rd'][(n % 100 - 20) % 10] || ['th','st','nd','rd'][n % 100] || 'th');
     const last = day + grace;
+    const byStart = $('polDueBasis').value === 'start_date';
+    $('polDueDayField').hidden = byStart;
+    $('polMidMonthField').hidden = byStart;
+    if (byStart) {
+      $('polRentHint').textContent = `Rent is due every month on the tenant's start day (start Oct 16 → due Nov 16). The advance rent covers the first month, so there is no proration. `
+        + (pct > 0 ? `After ${grace} day(s) of grace, a one-time ${pct}% of the unpaid rent is added.` : 'No late penalty is charged.');
+      return;
+    }
     $('polRentHint').textContent = pct > 0
       ? `Rent is due on the ${ord(day)}. A tenant can pay until the ${ord(last)} without penalty; from the ${ord(last + 1)}, a one-time ${pct}% of the unpaid rent is added.`
       : `Rent is due on the ${ord(day)}. No late penalty is charged.`;
   }
   ['polDueDay', 'polGrace', 'polPenalty'].forEach(id => $(id).addEventListener('input', updateRentHint));
+  $('polDueBasis').addEventListener('change', updateRentHint);
   updateRentHint();
 
   $('savePolicyBtn').addEventListener('click', async function(){
@@ -1925,6 +1945,7 @@
       facebook_url: $('polFbUrl').value.trim() || null,
       website_url: $('polWebsite').value.trim() || null,
       rent_due_day: $('polDueDay').value,
+      rent_due_basis: $('polDueBasis').value,
       grace_period_days: $('polGrace').value,
       late_penalty_percent: $('polPenalty').value,
       minimum_stay_months: $('polMinStay').value,

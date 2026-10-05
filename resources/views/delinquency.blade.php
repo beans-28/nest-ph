@@ -156,6 +156,22 @@
 
   @media (max-width: 1100px){ .stage-row{ grid-template-columns:repeat(3,1fr); } }
   @media (max-width: 640px){ .stage-row{ grid-template-columns:repeat(2,1fr); } }
+  /* Phones: each account becomes a stacked card so the View/Override
+     buttons are always on screen (no sideways table dragging needed). */
+  @media (max-width: 760px){
+    .main .table-panel:not(.testing-tools-panel){ overflow:visible; background:none; border:none; }
+    .table-panel > table{ min-width:0; display:block; }
+    .table-panel > table colgroup, .table-panel > table thead{ display:none; }
+    .table-panel > table tbody{ display:flex; flex-direction:column; gap:12px; }
+    .table-panel > table tbody tr{ display:block; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:6px 14px; }
+    .table-panel > table tbody td{ display:flex; justify-content:space-between; align-items:center; gap:12px; text-align:right !important; padding:9px 0; border-bottom:1px solid #f0f2f0; }
+    .table-panel > table tbody td:last-child{ border-bottom:none; }
+    .table-panel > table tbody td[data-label]::before{ content:attr(data-label); font-size:11px; font-weight:700; color:var(--text-mid); text-transform:uppercase; text-align:left; }
+    .table-panel > table tbody td:first-child{ text-align:left !important; }
+    .table-panel > table .tenant-email{ overflow-wrap:anywhere; }
+    .table-panel > table .empty-row td{ justify-content:center; }
+    .table-panel .table-footer{ padding:14px 2px; flex-wrap:wrap; gap:10px; }
+  }
 </style>
 @include('partials.role-tag-style')
 </head>
@@ -167,7 +183,7 @@
 
   <div class="main">
     <div class="topbar">
-      <div class="hamburger" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
+      <div class="hamburger" id="hamburgerBtn" role="button" tabindex="0" aria-label="Toggle sidebar"><span></span><span></span><span></span></div>
       <div class="topbar-right">
         <div class="topbar-icon" tabindex="0" aria-label="Account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
       </div>
@@ -423,17 +439,17 @@
               </div>
             </div>
           </td>
-          <td>${esc(a.room)}</td>
-          <td class="days-cell">${a.days_overdue} day${a.days_overdue === 1 ? '' : 's'}</td>
-          <td class="balance-cell">${peso(a.balance)}</td>
-          <td><span class="stage-pill" style="background:${a.stage_accent};color:${a.stage_text};">Stage ${a.stage}: ${esc(a.stage_name)}</span>${a.escalation_paused ? ' <span class="stage-pill" style="background:#eee;color:#888;">Paused</span>' : ''}</td>
-          <td>${a.last_payment ? esc(a.last_payment) : '—'}</td>
-          <td>
+          <td data-label="Room">${esc(a.room)}</td>
+          <td class="days-cell" data-label="Days Overdue">${a.days_overdue} day${a.days_overdue === 1 ? '' : 's'}</td>
+          <td class="balance-cell" data-label="Balance">${peso(a.balance)}</td>
+          <td data-label="Stage"><span class="stage-pill" style="background:${a.stage_accent};color:${a.stage_text};">Stage ${a.stage}: ${esc(a.stage_name)}</span>${a.escalation_paused ? ' <span class="stage-pill" style="background:#eee;color:#888;">Paused</span>' : ''}</td>
+          <td data-label="Last Payment">${a.last_payment ? esc(a.last_payment) : '—'}</td>
+          <td data-label="Actions">
             <div class="action-btns">
-              <button class="edit-btn" data-history="${a.id}" title="View escalation history">
+              <button class="edit-btn" data-history="${a.id}" aria-label="View escalation history for ${esc(a.name)}" title="View escalation history">
                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/></svg>
               </button>
-              <button class="edit-btn" data-override="${a.id}" title="Override escalation (Table 28)">
+              <button class="edit-btn" data-override="${a.id}" aria-label="Override escalation for ${esc(a.name)}" title="Override escalation (Table 28)">
                 <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
               </button>
             </div>

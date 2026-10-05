@@ -585,8 +585,8 @@ class DemoDataSeeder extends Seeder
                 'Brgy. San Vicente, Tacloban City, Leyte', 'Nelia Villareal', 'Mother', '303-6', 'paid', 'L' => 24, 'k' => 4],
 
             // ---- Escalation ladder: one tenant at each stage not covered above ----
-            // (Ben = Stage 2, Camille = Stage 2 paused, John Paul = Stage 4 with
-            // the emergency-contact SMS skipped, Joseph = Stage 6 blacklisted.)
+            // (Ben = Stage 2, Camille = Stage 2 paused, John Paul = Stage 4 where the
+            // tenant was notified instead of the emergency contact, Joseph = Stage 6 blacklisted.)
             // Stage 3: portal restricted, waiting for the emergency-contact step.
             ['Rowell Dominic', 'Lacsamana', 'male', '2003-08-29', 'student', 'Technological University of the Philippines', 'Ayala Blvd., Ermita, Manila',
                 'Brgy. Poblacion, Pagsanjan, Laguna', 'Corazon Lacsamana', 'Mother', '401-1', 'overdue', 'L' => 6, 'k' => 2, 'days' => 8,
@@ -601,6 +601,12 @@ class DemoDataSeeder extends Seeder
                 'Brgy. Poblacion, Gapan City, Nueva Ecija', 'Marissa Salvador', 'Mother', '401-6', 'overdue', 'L' => 5, 'k' => 2, 'days' => 1,
                 'sms' => self::DEMO_SMS_NUMBER,
                 'consent' => true],
+            // Stage 3, emergency contact did NOT agree to billing reminders. Run the escalation
+            // once and Stage 4 falls back to texting HER number and emailing her instead.
+            ['Bianca Louise', 'Mercado', 'female', '2004-02-18', 'student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
+                'Brgy. Poblacion, Lemery, Batangas', 'Reynaldo Mercado', 'Father', '402-1', 'overdue', 'L' => 7, 'k' => 2, 'days' => 8,
+                'sms' => self::DEMO_SMS_NUMBER,
+                'consent' => false],
 
             // ---- Half-paid move-in fees (Partial Payment = half; Fees Schedule 3.2: one-month reservation) ----
             // First half approved 26 days ago: reservation ends in about 5 days, so the admin bell shows
@@ -1422,7 +1428,10 @@ class DemoDataSeeder extends Seeder
                     . number_format((float) $bill->penalty_amount, 2) . '. You receive this because you agreed to billing reminders as an emergency contact. To stop, email dormitorypurezastation@gmail.com.',
                 'sent']
             : [9, 4, 'emergency_contact_notified',
-                'Skipped: the emergency contact has not agreed to receive billing reminders (Tenant Agreement Section 9.3).', 'resolved'];
+                'Emergency contact has not agreed to billing reminders (Tenant Agreement 9.3), so the tenant was notified instead (SMS: sent, email: sent). '
+                    . "Your account with NEST PH is still overdue. Amount due: PHP {$balance}, due " . $due->format('M j, Y') . ', includes penalty PHP '
+                    . number_format((float) $bill->penalty_amount, 2) . '. Please pay via the tenant portal to avoid a formal demand letter.',
+                'sent'];
         $steps[] = [10, 5, 'demand_letter_generated', null, 'sent'];
         $steps[] = [11, 6, 'delinquent_blacklisted', null, 'resolved'];
 

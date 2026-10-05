@@ -31,7 +31,7 @@ class DepositRefund extends Model
     }
 
     /**
-     * The deposit a tenant paid: half of their PAID move-in fee
+     * The deposit a tenant paid: the deposit part of their PAID move-in fee
      * (1 month deposit + 1 month advance, see ApplicationController).
      * 0 when there's no paid move-in fee (e.g. walk-in tenants).
      */
@@ -43,6 +43,10 @@ class DepositRefund extends Model
             ->latest('id')
             ->first();
 
-        return $moveIn ? round((float) $moveIn->base_rent / 2, 2) : 0.0;
+        if (! $moveIn) {
+            return 0.0;
+        }
+
+        return round((float) ($moveIn->deposit_amount ?? $moveIn->base_rent / 2), 2);
     }
 }

@@ -495,6 +495,10 @@ class ApplicationController extends Controller
                 'billing_period_end' => $contract->start_date,
                 'due_date' => $contract->start_date,
                 'base_rent' => $moveInFeeAmount,
+                // Kept apart so the deposit is never counted as rent. The
+                // advance covers the tenant's first rental period.
+                'advance_amount' => $monthlyRate,
+                'deposit_amount' => $monthlyRate,
                 'utilities_amount' => 0,
                 'wifi_amount' => 0,
                 'penalty_amount' => 0,

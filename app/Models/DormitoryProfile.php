@@ -37,6 +37,7 @@ class DormitoryProfile extends Model
         // Rental policy -- billing reads these, and the signed documents
         // print them, so the two can never disagree.
         'rent_due_day',
+        'rent_due_basis',
         'grace_period_days',
         'late_penalty_percent',
         'minimum_stay_months',
@@ -76,6 +77,7 @@ class DormitoryProfile extends Model
      */
     protected $attributes = [
         'rent_due_day' => 1,
+        'rent_due_basis' => 'fixed_day',
         'grace_period_days' => 3,
         'late_penalty_percent' => 10,
         'minimum_stay_months' => 3,

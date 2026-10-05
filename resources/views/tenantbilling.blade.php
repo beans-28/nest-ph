@@ -302,9 +302,8 @@
 
   <div class="main">
     <div class="topbar">
-      @unless($portalRestricted)
-        <div class="hamburger-icon" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><svg width="20" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
-      @endunless
+      {{-- Restricted tenants: menu button only on mobile, so they can open the lock panel and Log Out --}}
+      <div class="hamburger-icon{{ $portalRestricted ? ' mobile-only' : '' }}" id="hamburgerBtn" role="button" tabindex="0" aria-label="Toggle sidebar"><svg width="20" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
       <div class="topbar-right">
         <span class="topbar-username" id="topbarUsername"></span>
         <div class="topbar-icon" data-href="{{ route('tenant.account') }}" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
@@ -588,7 +587,7 @@
   const SIDEBAR_COLLAPSE_KEY = 'nestph_sidebar_collapsed';
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const sidebar = document.getElementById('sidebar');
-  if (hamburgerBtn && sidebar) {
+  if (hamburgerBtn && sidebar && !sidebar.classList.contains('restricted-lock')) {
     if (localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1') {
       sidebar.classList.add('collapsed');
     }
