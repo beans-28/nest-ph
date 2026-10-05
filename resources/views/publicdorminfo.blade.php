@@ -284,7 +284,7 @@
                             @if($review->photo_urls)
                                 <div class="review-item-photos">
                                     @foreach($review->photo_urls as $url)
-                                        <a href="{{ $url }}" target="_blank" rel="noopener"><img src="{{ $url }}" alt="Photo from this review" loading="lazy"></a>
+                                        <a href="{{ $url }}" target="_blank" rel="noopener" data-lightbox="review-{{ $review->id }}"><img src="{{ $url }}" alt="Photo from this review" loading="lazy"></a>
                                     @endforeach
                                 </div>
                             @endif
@@ -368,5 +368,6 @@
         });
     </script>
 
+@include('partials.photo-lightbox')
 </body>
 </html>
