@@ -31,8 +31,10 @@ use Illuminate\Support\Str;
  *   - rent due on the 1st, a 3-day grace period, a one-time 10% late fee,
  *   - a 3-month minimum stay, move-out at the end of the month,
  *   - one month advance + one month deposit on move-in,
- *   - water, electricity and Wi-Fi included in the rent (not stated in the
- *     documents -- a realistic dummy choice; change it in Dormitory Profile),
+ *   - water, electricity and Wi-Fi billed on top of the rent as a fixed
+ *     monthly share per bed (the documents leave this unticked -- a dummy
+ *     choice; see UTILITY_PER_BED / WIFI_PER_BED, change it in Dormitory
+ *     Profile and on each room),
  *   - its 25 house rules, other charges and GCash/BDO accounts
  *     (PurezaStationSeeder).
  * Current tenants have their own signed copies of Pureza's three documents.
@@ -65,6 +67,17 @@ class DemoDataSeeder extends Seeder
     private const DEFENSE_DATE = '2026-10-06';
 
     private const OWNER_EMAIL = 'owner@nestph.test';
+
+    /** Dummy monthly water + electricity share per bed (aircon rooms use more power). */
+    private const UTILITY_PER_BED_AC = 650;
+
+    private const UTILITY_PER_BED_FAN = 350;
+
+    /** Dummy monthly Wi-Fi share per bed. */
+    private const WIFI_PER_BED = 150;
+
+    /** contract id => [utilities, wifi] share, so each bill doesn't re-query the room. */
+    private array $sharesByContract = [];
 
     /**
      * The SMS gateway (TextBee) is LIVE. The escalation engine automatically
@@ -224,10 +237,10 @@ class DemoDataSeeder extends Seeder
             // From the dorm's own contract letterhead.
             'contact_number' => '09774322155',
             // Dummy: the fee schedule leaves these boxes for the dorm to tick.
-            // Flat per-bed rates with everything included is the common setup.
-            'water_included' => true,
-            'electricity_included' => true,
-            'wifi_included' => true,
+            // Utilities and Wi-Fi are billed as a fixed share per bed.
+            'water_included' => false,
+            'electricity_included' => false,
+            'wifi_included' => false,
             'mid_month_move_in' => 'full',
         ]);
         if (blank($profile->description) || str_contains((string) $profile->description, 'NEST')) {
@@ -418,9 +431,9 @@ class DemoDataSeeder extends Seeder
                 'room_type' => $type->name,
                 'amenities' => json_encode($amen),
                 'monthly_rate' => $type->wholeRoomRate($bedCount),
-                // Water, electricity and Wi-Fi are included in the rent.
-                'monthly_utility_cost' => 0,
-                'monthly_wifi_cost' => 0,
+                // Water + electricity and Wi-Fi, split evenly per bed on each bill.
+                'monthly_utility_cost' => $bedCount * ($typeName === 'Solo fan room' ? self::UTILITY_PER_BED_FAN : self::UTILITY_PER_BED_AC),
+                'monthly_wifi_cost' => $bedCount * self::WIFI_PER_BED,
                 'status' => $no === '104' ? 'maintenance' : 'available',
                 'updated_at' => now(),
             ];
@@ -1219,6 +1232,8 @@ class DemoDataSeeder extends Seeder
     /** One calendar-month rent bill, due on the 1st (or $due for overdue demos). */
     private function monthlyBill(int $contractId, int $tenantId, float $rate, Carbon $month, Carbon $due, ?Carbon $issuedAt = null): int
     {
+        [$utilities, $wifi] = $this->sharesByContract[$contractId] ??= $this->utilitySharesFor($contractId);
+
         return DB::table('billing_statements')->insertGetId([
             'contract_id' => $contractId,
             'tenant_id' => $tenantId,
@@ -1227,15 +1242,39 @@ class DemoDataSeeder extends Seeder
             'billing_period_end' => $month->copy()->endOfMonth()->toDateString(),
             'due_date' => $due->toDateString(),
             'base_rent' => $rate,
-            // Water, electricity and Wi-Fi are included in Pureza's rent.
-            'utilities_amount' => 0,
-            'wifi_amount' => 0,
+            // Each bed's share of the room's water, electricity and Wi-Fi,
+            // the same split BillingController uses (Room::utilityShares).
+            'utilities_amount' => $utilities,
+            'wifi_amount' => $wifi,
             'penalty_amount' => 0,
-            'total_amount' => $rate,
+            'total_amount' => $rate + $utilities + $wifi,
             'status' => 'unpaid',
-            'created_at' => ($issuedAt ?? $month->copy()->startOfMonth())->copy()->setTime(0, 5),
+            // Issued 10 days before the 1st, like BillingController.
+            'created_at' => ($issuedAt ?? $month->copy()->startOfMonth()->subDays(10))->copy()->setTime(0, 5),
             'updated_at' => now(),
         ]);
+    }
+
+    /** [utilities, wifi] share per bed for the room on this contract. */
+    private function utilitySharesFor(int $contractId): array
+    {
+        $room = DB::table('lease_contracts')
+            ->join('beds', 'beds.id', '=', 'lease_contracts.bed_id')
+            ->join('rooms', 'rooms.id', '=', 'beds.room_id')
+            ->where('lease_contracts.id', $contractId)
+            ->first(['rooms.id', 'rooms.monthly_utility_cost', 'rooms.monthly_wifi_cost']);
+        if (! $room) {
+            return [0, 0];
+        }
+        $beds = max(1, DB::table('beds')->where('room_id', $room->id)->count());
+
+        return [round((float) $room->monthly_utility_cost / $beds, 2), round((float) $room->monthly_wifi_cost / $beds, 2)];
+    }
+
+    /** What the bill currently totals (rent + utilities + Wi-Fi + penalties). */
+    private function billTotal(int $billId): float
+    {
+        return (float) DB::table('billing_statements')->where('id', $billId)->value('total_amount');
     }
 
     /**
@@ -1254,7 +1293,7 @@ class DemoDataSeeder extends Seeder
             $total = $this->refreshBillTotal($billId);
             $paidOn = $graceEnd->copy()->addDays(2 + $seed % 6);
         } else {
-            $total = $rate;
+            $total = $this->billTotal($billId);
             $paidOn = $due->copy()->addDays($seed % ($this->grace + 1));
         }
         if ($paidOn->gt($this->today)) {
@@ -1374,11 +1413,11 @@ class DemoDataSeeder extends Seeder
                 break;
 
             case 'proof_pending':
-                $this->payment($billId, $tenantId, $rate, 'gcash', $proofDate, 'pending', 'Time of payment: 08:42. Full payment for this month po.');
+                $this->payment($billId, $tenantId, $this->billTotal($billId), 'gcash', $proofDate, 'pending', 'Time of payment: 08:42. Full payment for this month po.');
                 break;
 
             case 'proof_rejected':
-                $this->payment($billId, $tenantId, $rate, 'gcash', $proofDate, 'rejected', 'Bayad ko po for this month.',
+                $this->payment($billId, $tenantId, $this->billTotal($billId), 'gcash', $proofDate, 'rejected', 'Bayad ko po for this month.',
                     'Screenshot is cropped -- the reference number and amount are not visible. Please upload the full receipt.');
                 break;
 
