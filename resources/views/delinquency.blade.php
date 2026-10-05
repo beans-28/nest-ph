@@ -248,7 +248,7 @@
         </div>
       </div>
 
-      @env('local')
+      @if (config('app.demo_tools'))
       <button type="button" class="testing-tools-toggle" id="testingToolsToggle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         <span>Testing Tools</span>
@@ -270,7 +270,7 @@
           <button type="button" class="modal-btn confirm" data-test-stage="6">Stage 6</button>
         </div>
       </div>
-      @endenv
+      @endif
 
     </div>
   </div>

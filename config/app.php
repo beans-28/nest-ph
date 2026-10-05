@@ -41,6 +41,10 @@ return [
 
     'debug' => (bool) env('APP_DEBUG', false),
 
+    // Delinquency "Testing Tools" panel. Always on locally; on a deployed
+    // server it only appears when DEMO_TOOLS_ENABLED=true is set.
+    'demo_tools' => env('APP_ENV') === 'local' || (bool) env('DEMO_TOOLS_ENABLED', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application URL

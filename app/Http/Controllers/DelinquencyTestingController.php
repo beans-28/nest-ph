@@ -61,7 +61,7 @@ class DelinquencyTestingController extends Controller
     /** Push (stage 1-6) or reset (stage 0) one tenant, real SMS included. */
     public function escalate(Request $request, Tenant $tenant, EscalationService $escalation): JsonResponse
     {
-        if (! app()->environment('local')) {
+        if (! config('app.demo_tools')) {
             abort(404);
         }
 
