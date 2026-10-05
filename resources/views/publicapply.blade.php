@@ -227,6 +227,12 @@
             font-size: 14px; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;
             text-decoration: none;
         }
+        .otp-row { display: flex; gap: 6px; margin-top: 6px; }
+        .otp-row input { flex: 1; min-width: 0; }
+        .otp-btn { padding: 6px 12px; border: 1px solid #345234; background: #fff; color: #345234; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .otp-btn:disabled { opacity: .55; cursor: default; }
+        .field-hint.ok { color: #2f7a3a; font-weight: 600; }
+        .field-hint.bad { color: #b3261e; }
         .btn-nav.primary { background: #345234; color: #fff; }
         .btn-nav.primary:hover { background: #26401f; }
         .btn-nav.secondary { background: transparent; color: #567357; border: 1px solid #a6b69f; }
@@ -552,6 +558,13 @@
                         <div class="field">
                             <label for="contact_number">Cellphone No. <span class="req">*</span></label>
                             <input type="tel" id="contact_number" placeholder="09-" required>
+                            <div class="otp-row">
+                                <button type="button" class="otp-btn" id="otpSendBtn" onclick="sendOtp()">Send code</button>
+                                <input type="text" id="otp_code" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code" hidden>
+                                <button type="button" class="otp-btn" id="otpVerifyBtn" onclick="verifyOtp()" hidden>Verify</button>
+                            </div>
+                            <span class="field-hint" id="otpStatus">We'll text you a code to confirm this number.</span>
+                            <input type="hidden" id="phone_verification_token">
                         </div>
                         <div class="field">
                             <label for="email">Email</label>
@@ -922,6 +935,17 @@
         const stepEl = document.getElementById('step-' + currentStep);
         if (!validateStep(stepEl)) return;
 
+        if (currentStep === 2) {
+            if (sameDigits(val('contact_number'), val('emergency_contact_number'))) {
+                showFormError("Your emergency contact's cellphone number can't be the same as your own.");
+                return;
+            }
+            if (!val('phone_verification_token')) {
+                showFormError('Please verify your cellphone number. Tap "Send code" and enter the code we text you.');
+                return;
+            }
+        }
+
         if (currentStep === 3) {
             buildVerifySummary();
         }
@@ -938,6 +962,109 @@
         const el = document.getElementById(id);
         return el ? el.value : '';
     }
+
+    // ===== Cellphone OTP =====
+    // Compares two PH numbers ignoring spaces/dashes and 0 / 63 / +63 prefixes.
+    function sameDigits(a, b) {
+        const norm = n => n.replace(/\D/g, '').replace(/^(63|0)/, '');
+        return norm(a) !== '' && norm(a) === norm(b);
+    }
+
+    function setOtpStatus(text, kind) {
+        const el = document.getElementById('otpStatus');
+        el.textContent = text;
+        el.className = 'field-hint' + (kind ? ' ' + kind : '');
+    }
+
+    async function postOtp(url, body) {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            },
+            body: JSON.stringify(body),
+        });
+        let data = {};
+        try { data = await res.json(); } catch (e) {}
+        return { ok: res.ok, data };
+    }
+
+    let otpTimer = null;
+
+    async function sendOtp() {
+        const number = val('contact_number').trim();
+        if (!number) { setOtpStatus('Enter your cellphone number first.', 'bad'); return; }
+
+        const btn = document.getElementById('otpSendBtn');
+        btn.disabled = true;
+        setOtpStatus('Sending code…');
+        const { ok, data } = await postOtp('/api/applications/otp/send', { contact_number: number }).catch(() => ({ ok: false, data: {} }));
+
+        if (!ok) {
+            btn.disabled = false;
+            setOtpStatus(data.message || 'Could not send the code. Please try again.', 'bad');
+            return;
+        }
+
+        document.getElementById('otp_code').hidden = false;
+        document.getElementById('otpVerifyBtn').hidden = false;
+        document.getElementById('otp_code').focus();
+        setOtpStatus(data.message);
+
+        // Allow "Resend" after the server's 1-minute cooldown.
+        let left = 60;
+        btn.textContent = `Resend (${left})`;
+        clearInterval(otpTimer);
+        otpTimer = setInterval(() => {
+            left--;
+            if (left <= 0 || val('phone_verification_token')) {
+                clearInterval(otpTimer);
+                btn.textContent = 'Resend';
+                btn.disabled = !!val('phone_verification_token');
+                return;
+            }
+            btn.textContent = `Resend (${left})`;
+        }, 1000);
+    }
+
+    async function verifyOtp() {
+        const btn = document.getElementById('otpVerifyBtn');
+        btn.disabled = true;
+        const { ok, data } = await postOtp('/api/applications/otp/verify', {
+            contact_number: val('contact_number').trim(),
+            code: val('otp_code').trim(),
+        }).catch(() => ({ ok: false, data: {} }));
+        btn.disabled = false;
+
+        if (!ok) {
+            const firstError = data.errors ? Object.values(data.errors)[0][0] : null;
+            setOtpStatus(firstError || data.message || 'Could not verify the code. Please try again.', 'bad');
+            return;
+        }
+
+        document.getElementById('phone_verification_token').value = data.phone_verification_token;
+        document.getElementById('otp_code').hidden = true;
+        btn.hidden = true;
+        document.getElementById('otpSendBtn').hidden = true;
+        setOtpStatus('✓ Cellphone number verified', 'ok');
+    }
+
+    // Changing the number after verifying means it has to be verified again.
+    document.getElementById('contact_number').addEventListener('input', function () {
+        if (!val('phone_verification_token') && document.getElementById('otp_code').hidden) return;
+        clearInterval(otpTimer);
+        document.getElementById('phone_verification_token').value = '';
+        document.getElementById('otp_code').value = '';
+        document.getElementById('otp_code').hidden = true;
+        document.getElementById('otpVerifyBtn').hidden = true;
+        const send = document.getElementById('otpSendBtn');
+        send.hidden = false;
+        send.disabled = false;
+        send.textContent = 'Send code';
+        setOtpStatus("We'll text you a code to confirm this number.");
+    });
 
     function checkedRadioValue(name) {
         const el = document.querySelector(`input[name="${name}"]:checked`);
@@ -1139,6 +1266,7 @@
         if (emergencyIdFile) formData.append('emergency_contact_id', emergencyIdFile);
         formData.append('signed_contract_path', document.getElementById('signed_contract_path').value);
 
+        formData.append('phone_verification_token', val('phone_verification_token'));
         formData.append('dpa_consent', document.getElementById('dpa_consent').checked ? '1' : '0');
         formData.append('contract_acceptance', document.getElementById('contract_acceptance').value === '1' ? '1' : '0');
 

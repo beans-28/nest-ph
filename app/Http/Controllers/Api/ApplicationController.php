@@ -16,6 +16,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use App\Services\TenancyDocuments;
+use App\Services\TextbeeService;
 
 class ApplicationController extends Controller
 {
@@ -84,7 +86,12 @@ class ApplicationController extends Controller
             'contract_acceptance' => ['required', 'accepted'],
 
             'dpa_consent' => ['required', 'accepted'],
+
+            // Token handed back by verifyOtp() once the applicant typed the
+            // code we texted to their cellphone number.
+            'phone_verification_token' => ['required', 'string', 'max:100'],
         ], [
+            'phone_verification_token.required' => 'Please verify your cellphone number with the code we text you.',
             'dpa_consent.required' => 'You must consent to the data privacy notice before submitting.',
             'dpa_consent.accepted' => 'You must consent to the data privacy notice before submitting.',
             'contract_acceptance.required' => 'You must confirm you have reviewed the dormitory contract before submitting.',
@@ -112,6 +119,24 @@ class ApplicationController extends Controller
                     'errors' => ['tenant_end_date' => ["The earliest end date is {$minimumEnd->format('F j, Y')}."]],
                 ], 422);
             }
+        }
+
+        if ($error = $this->sameNumberError($data)) {
+            return response()->json([
+                'message' => $error,
+                'errors' => ['emergency_contact_number' => [$error]],
+            ], 422);
+        }
+
+        // The cellphone number must be the one the OTP was sent to and
+        // confirmed, otherwise anyone could apply using someone else's number.
+        $textbee = app(TextbeeService::class);
+        $verifiedNumber = Cache::get('apply-otp-verified:' . $data['phone_verification_token']);
+        if (! $verifiedNumber || $verifiedNumber !== $textbee->normalizePhilippineNumber((string) ($data['contact_number'] ?? ''))) {
+            return response()->json([
+                'message' => 'Please verify your cellphone number with the code we text you.',
+                'errors' => ['contact_number' => ['Your cellphone number has not been verified.']],
+            ], 422);
         }
 
         if (empty($data['contact_number']) && empty($data['email'])) {
@@ -1033,10 +1058,117 @@ class ApplicationController extends Controller
             'tenant_end_date' => ['nullable', 'date'],
         ]);
 
+        if ($error = $this->sameNumberError($data)) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['emergency_contact_number' => [$error]]);
+        }
+
         $bed = ! empty($data['bed_id'])
             ? Bed::with('room.roomType', 'room.floor')->find($data['bed_id'])
             : null;
 
         return [$data, $bed];
+    }
+
+    /**
+     * The emergency contact has to be a different person, so their
+     * cellphone number can't be the applicant's own. Numbers are compared
+     * after normalizing, so "0917 123 4567" and "+639171234567" match.
+     */
+    private function sameNumberError(array $data): ?string
+    {
+        $textbee = app(TextbeeService::class);
+        $mine = $textbee->normalizePhilippineNumber((string) ($data['contact_number'] ?? ''));
+        $theirs = $textbee->normalizePhilippineNumber((string) ($data['emergency_contact_number'] ?? ''));
+
+        if ($mine && $mine === $theirs) {
+            return "Your emergency contact's cellphone number can't be the same as your own.";
+        }
+
+        return null;
+    }
+
+    /**
+     * Apply page: texts a 6-digit code to the applicant's cellphone number.
+     * The code lasts 10 minutes. A number can only get a new code once a
+     * minute, so the SMS gateway can't be spammed.
+     */
+    public function sendOtp(Request $request, TextbeeService $textbee): JsonResponse
+    {
+        $data = $request->validate(['contact_number' => ['required', 'string', 'max:20']]);
+
+        $number = $textbee->normalizePhilippineNumber($data['contact_number']);
+        if (! $number) {
+            return response()->json([
+                'message' => 'Please enter a valid Philippine cellphone number (e.g. 09171234567).',
+            ], 422);
+        }
+
+        if (! Cache::add('apply-otp-cooldown:' . $number, true, now()->addMinute())) {
+            return response()->json([
+                'message' => 'A code was just sent. Please wait a minute before asking for a new one.',
+            ], 429);
+        }
+
+        $code = (string) random_int(100000, 999999);
+        Cache::put('apply-otp:' . $number, ['code' => $code, 'attempts' => 0], now()->addMinutes(10));
+
+        $sent = $textbee->send($number, 'Your ' . TextbeeService::BRAND_NAME . " verification code is {$code}. It expires in 10 minutes. Do not share this code with anyone.");
+
+        if (! $sent) {
+            Cache::forget('apply-otp-cooldown:' . $number);
+
+            return response()->json([
+                'message' => "We couldn't send the code right now. Please try again in a moment.",
+            ], 503);
+        }
+
+        return response()->json(['message' => 'Code sent. Please check your messages.']);
+    }
+
+    /**
+     * Apply page: checks the code the applicant typed. On success, hands
+     * back a token the application submission must include (good for 1
+     * hour). After 5 wrong tries the code is thrown away.
+     */
+    public function verifyOtp(Request $request, TextbeeService $textbee): JsonResponse
+    {
+        $data = $request->validate([
+            'contact_number' => ['required', 'string', 'max:20'],
+            'code' => ['required', 'digits:6'],
+        ], [
+            'code.digits' => 'The code is 6 digits.',
+        ]);
+
+        $number = $textbee->normalizePhilippineNumber($data['contact_number']);
+        $entry = $number ? Cache::get('apply-otp:' . $number) : null;
+
+        if (! $entry) {
+            return response()->json([
+                'message' => 'This code has expired. Please request a new one.',
+            ], 422);
+        }
+
+        if (! hash_equals($entry['code'], $data['code'])) {
+            $entry['attempts']++;
+            if ($entry['attempts'] >= 5) {
+                Cache::forget('apply-otp:' . $number);
+
+                return response()->json([
+                    'message' => 'Too many wrong tries. Please request a new code.',
+                ], 422);
+            }
+            Cache::put('apply-otp:' . $number, $entry, now()->addMinutes(10));
+
+            return response()->json(['message' => 'That code is incorrect. Please try again.'], 422);
+        }
+
+        Cache::forget('apply-otp:' . $number);
+        $token = Str::random(40);
+        Cache::put('apply-otp-verified:' . $token, $number, now()->addHour());
+
+        return response()->json([
+            'message' => 'Cellphone number verified.',
+            'phone_verification_token' => $token,
+        ]);
     }
 }

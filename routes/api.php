@@ -24,6 +24,9 @@ Route::get('/public/rooms', [PublicRoomController::class, 'index']);
 // Week 4 — prospective tenants submit these from the public site
 Route::post('/inquiries', [InquiryController::class, 'store']);
 Route::post('/applications', [ApplicationController::class, 'store']);
+// Cellphone OTP check on the apply page (throttled, since every SMS costs money).
+Route::post('/applications/otp/send', [ApplicationController::class, 'sendOtp'])->middleware('throttle:5,10');
+Route::post('/applications/otp/verify', [ApplicationController::class, 'verifyOtp'])->middleware('throttle:20,10');
 // The dorm's tenancy documents, filled in with the applicant's details:
 // shown on the page as PDF pages, then signed (applicant + emergency contact).
 Route::post('/applications/contract-preview', [ApplicationController::class, 'previewContract']);

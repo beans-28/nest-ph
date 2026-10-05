@@ -133,7 +133,7 @@ class TextbeeService
      * Returns null if the digits don't match any recognizable PH mobile
      * pattern, so callers know not to send rather than firing a bad request.
      */
-    private function normalizePhilippineNumber(string $number): ?string
+    public function normalizePhilippineNumber(string $number): ?string
     {
         $digits = preg_replace('/\D/', '', $number);
 

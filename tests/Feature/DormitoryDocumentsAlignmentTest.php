@@ -22,6 +22,7 @@ use Carbon\Carbon;
 use Database\Seeders\PurezaStationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -297,7 +298,11 @@ class DormitoryDocumentsAlignmentTest extends TestCase
 
     private function applicant(Bed $bed): array
     {
+        // As if the applicant already confirmed their number by OTP.
+        Cache::put('apply-otp-verified:test-token', '+639170001111', now()->addHour());
+
         return [
+            'phone_verification_token' => 'test-token',
             'first_name' => 'Bea', 'last_name' => 'Santos', 'birthdate' => '2004-05-01',
             'home_address' => 'Quezon City', 'contact_number' => '09170001111', 'email' => 'bea@test.ph',
             'emergency_contact_name' => 'Lito Santos', 'emergency_contact_number' => '09170002222', 'emergency_contact_relation' => 'parent',
@@ -367,6 +372,51 @@ class DormitoryDocumentsAlignmentTest extends TestCase
         $this->post('/api/applications', $this->applicant($bed) + [
             'contract_acceptance' => '1', 'dpa_consent' => '1',
         ], ['Accept' => 'application/json'])->assertStatus(422)->assertJsonValidationErrors('emergency_contact_id');
+    }
+
+    public function test_applicant_must_verify_their_cellphone_number_by_otp(): void
+    {
+        $sms = [];
+        $this->mock(TextbeeService::class, function ($mock) use (&$sms) {
+            $mock->shouldReceive('normalizePhilippineNumber')->andReturnUsing(fn ($n) => (new TextbeeService)->normalizePhilippineNumber($n));
+            $mock->shouldReceive('send')->andReturnUsing(function ($to, $message) use (&$sms) {
+                $sms[] = $message;
+
+                return true;
+            });
+        });
+        $bed = $this->roomOfType('Room with AC, 6 persons', '2nd to 5th floor', 6)->beds->first();
+        $applicant = array_merge($this->applicant($bed), ['phone_verification_token' => 'never-issued']);
+
+        $this->post('/api/applications', $applicant + ['contract_acceptance' => '1', 'dpa_consent' => '1',
+            'emergency_contact_id' => \Illuminate\Http\UploadedFile::fake()->image('id.jpg'),
+        ], ['Accept' => 'application/json'])->assertStatus(422)->assertJsonValidationErrors('contact_number');
+
+        $this->postJson('/api/applications/otp/send', ['contact_number' => '0917 000 1111'])->assertOk();
+        $this->postJson('/api/applications/otp/send', ['contact_number' => '09170001111'])->assertStatus(429); // 1-minute cooldown
+        preg_match('/\d{6}/', $sms[0], $code);
+
+        $this->postJson('/api/applications/otp/verify', ['contact_number' => '09170001111', 'code' => $code[0] === '000000' ? '111111' : '000000'])->assertStatus(422);
+        $token = $this->postJson('/api/applications/otp/verify', ['contact_number' => '09170001111', 'code' => $code[0]])
+            ->assertOk()->json('phone_verification_token');
+
+        // The token is tied to the number it verified.
+        $this->assertSame('+639170001111', Cache::get('apply-otp-verified:' . $token));
+        // A code can't be reused.
+        $this->postJson('/api/applications/otp/verify', ['contact_number' => '09170001111', 'code' => $code[0]])->assertStatus(422);
+    }
+
+    public function test_emergency_contact_number_cannot_be_the_applicants_own(): void
+    {
+        $bed = $this->roomOfType('Room with AC, 6 persons', '2nd to 5th floor', 6)->beds->first();
+        $applicant = array_merge($this->applicant($bed), ['emergency_contact_number' => '+63 917 000 1111']);
+
+        $this->post('/api/applications', $applicant + ['contract_acceptance' => '1', 'dpa_consent' => '1',
+            'emergency_contact_id' => \Illuminate\Http\UploadedFile::fake()->image('id.jpg'),
+        ], ['Accept' => 'application/json'])->assertStatus(422)->assertJsonValidationErrors('emergency_contact_number');
+
+        $this->postJson('/api/applications/contract-preview', $applicant)
+            ->assertStatus(422)->assertJsonValidationErrors('emergency_contact_number');
     }
 
     public function test_changing_details_after_signing_requires_signing_again(): void
