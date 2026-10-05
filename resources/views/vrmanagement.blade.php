@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css">
-<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<link rel="stylesheet" href="{{ asset('vendor/pannellum/pannellum.css') }}">
+<script src="{{ asset('vendor/pannellum/pannellum.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in

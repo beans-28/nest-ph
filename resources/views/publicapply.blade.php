@@ -1173,7 +1173,7 @@
 </script>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+<script src="{{ asset('vendor/pdfjs/pdf.min.js') }}" defer></script>
 <script>
 (function(){
     function val(id){ return document.getElementById(id)?.value || ''; }
@@ -1320,7 +1320,7 @@
     const tabs = Array.from(document.querySelectorAll('.doc-tab'));
     // PDF.js (from cdnjs) draws the real filled-in PDF pages, so applicants
     // see exactly the dorm's documents (letterhead and all) that they sign.
-    const PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const PDFJS_WORKER = '{{ asset('vendor/pdfjs/pdf.worker.min.js') }}';
     let pdfCache = {};      // document key -> loaded PDF, for the current form details
     let currentDoc = 'agreement';
     let renderToken = 0;    // ignores a slow render if the user switched tabs

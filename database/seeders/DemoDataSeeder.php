@@ -2002,7 +2002,12 @@ class DemoDataSeeder extends Seeder
         DB::table('room_photos')->delete();
         $fourPax = $copy('4 pax room placeholder image 1.webp', 'room-photos/demo/4-pax-room.webp');
         $bigRoom = $copy('placeholder image 8 pax room 2.webp', 'room-photos/demo/big-room.webp');
+        // Rooms with real VR photos get no placeholder, so the Rooms page shows their tour photo instead.
+        $hasVr = DB::table('vr_scenes')->distinct()->pluck('room_id')->all();
         foreach ($this->rooms as $room) {
+            if (in_array($room->id, $hasVr)) {
+                continue;
+            }
             $path = match ($room->type) {
                 'Room with AC, 4 persons' => $fourPax,
                 'Room with AC, 10–16 persons' => $bigRoom,
@@ -2028,6 +2033,9 @@ class DemoDataSeeder extends Seeder
         // Pureza's GCash QR.
         DB::table('payment_methods')->whereRaw('LOWER(name) = ?', ['gcash'])
             ->update(['qr_path' => $copy('DORM gcash qr.jpg', 'payment-qr/demo-gcash.jpg')]);
+
+        // Dummy BIR Certificate of Registration for the Legitimacy Documents section.
+        DormitoryProfile::current()->update(['bir_registration_path' => $copy('BIR.png', 'dormitory-profile/demo-bir-registration.png')]);
     }
 
     /* ------------------------------------------------------------------ */
