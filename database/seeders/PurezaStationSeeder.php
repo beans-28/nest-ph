@@ -48,8 +48,8 @@ class PurezaStationSeeder extends Seeder
             'address' => '329 C De Dios, Brgy. 632, Sta. Mesa, Manila',
             'contact_email' => 'dormitorypurezastation@gmail.com',
             'facebook_page_name' => 'Pureza Station Dormitory',
-            'facebook_url' => 'https://www.facebook.com/pureza.dom',
-            'website_url' => 'https://thenestphils.purezastationdormitory.com',
+            'facebook_url' => 'https://www.facebook.com/pureza.dom/',
+            'website_url' => 'https://nestph.laravel.cloud',
 
             'rent_due_day' => 1,
             'grace_period_days' => 3,

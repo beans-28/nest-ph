@@ -192,41 +192,24 @@
             letter-spacing: 0.05em; color: #292420; line-height: 1.8;
         }
 
-        footer {
-            background: linear-gradient(2deg, #59473f 20%, rgba(35,27,23,0.71) 85%);
-            color: var(--cream);
-            padding: clamp(28px, 5vw, 40px) clamp(20px, 6vw, 64px) 20px;
+        .site-footer {
+            background: #2f2723; color: rgba(255,255,255,0.78);
+            padding: clamp(36px, 5vw, 56px) clamp(20px, 6vw, 64px) 22px; font-size: 13.5px; line-height: 1.6;
         }
-        .footer-top {
-            display: flex; align-items: center; gap: 32px; padding-bottom: 20px;
-            border-bottom: 1px solid var(--gray-border); margin-bottom: 24px;
-        }
-        .footer-logo { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 19px; }
-        .footer-logo .logo-img { height: 28px; width: auto; }
-        .newsletter { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
-        .newsletter input {
-            background: var(--cream-light); border: none; border-bottom: 1px solid var(--gray-border);
-            padding: 11px 14px; font-size: 13px; color: #555; min-width: 240px;
-        }
-        .newsletter button {
-            background: var(--green-dark); border: 2px solid var(--green-dark); color: #fff;
-            font-weight: 500; padding: 0 20px; cursor: pointer; font-size: 13px;
-        }
-        .footer-columns { display: grid; grid-template-columns: 1fr 1fr 1fr 1.4fr; gap: 32px; margin-bottom: 24px; }
-        .footer-columns h4 { font-size: 13.5px; font-weight: 700; margin-bottom: 12px; }
-        .footer-columns p, .footer-columns a { display: block; font-size: 13px; margin-bottom: 10px; color: var(--cream); }
-        .social-icons { display: flex; gap: 14px; margin-top: 6px; }
-        .social-icons svg { width: 18px; height: 18px; }
-        .footer-badge {
-            background: #fff; border-radius: 4px; padding: 10px; display: inline-flex;
-            align-items: center; gap: 8px; color: #292420; font-size: 10px; max-width: 230px;
-        }
+        .footer-grid { display: grid; grid-template-columns: 1.6fr 1.4fr 1fr 1fr; gap: 40px; padding-bottom: 32px; }
+        .footer-name { color: #fff; font-weight: 700; font-size: 18px; margin-bottom: 10px; }
+        .footer-tagline { max-width: 320px; }
+        .footer-note { margin-top: 14px; font-size: 12px; color: rgba(255,255,255,0.55); }
+        .site-footer h4 { color: #fff; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
+        .site-footer ul { list-style: none; padding: 0; margin: 0; }
+        .site-footer li { margin-bottom: 8px; overflow-wrap: anywhere; }
+        .site-footer a { color: rgba(255,255,255,0.78); text-decoration: none; }
+        .site-footer a:hover { color: #fff; text-decoration: underline; }
+        .footer-muted { color: rgba(255,255,255,0.5); }
         .footer-bottom {
-            display: flex; justify-content: space-between; align-items: center;
-            padding-top: 14px; border-top: 1px solid var(--gray-border); font-size: 12px;
-            flex-wrap: wrap; gap: 10px;
+            display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+            padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 12px;
         }
-        .footer-bottom .links { display: flex; gap: 14px; }
 
         @media (max-width: 1024px) {
             .topnav, .hero, .stats-bar, .why-section, .about-section, footer { padding-left: 28px; padding-right: 28px; }
@@ -234,17 +217,14 @@
             .hero-image { max-width: 100%; margin-left: 0; }
             .stats-row { grid-template-columns: repeat(2, 1fr); }
             .feature-grid { grid-template-columns: 1fr; }
-            .footer-columns { grid-template-columns: 1fr 1fr; }
+            .footer-grid { grid-template-columns: 1fr 1fr; }
             .topnav { flex-wrap: wrap; }
         }
         @media (max-width: 640px) {
             .topnav, .hero, .stats-bar, .why-section, .about-section, footer { padding-left: 18px; padding-right: 18px; }
             .hero-text h1 { font-size: 24px; }
             .stats-row { grid-template-columns: 1fr 1fr; }
-            .footer-top { flex-direction: column; align-items: flex-start; }
-            .newsletter { justify-content: flex-start; flex-wrap: wrap; }
-            .newsletter input { min-width: 0; flex: 1; }
-            .footer-columns { grid-template-columns: 1fr; }
+            .footer-grid { grid-template-columns: 1fr; gap: 28px; }
             .footer-bottom { flex-direction: column; align-items: flex-start; }
 
             /* Topnav: the flex-wrap layout at wider breakpoints packs the
@@ -256,12 +236,7 @@
             .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
             .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
 
-            .newsletter input { padding-top: 13px; padding-bottom: 13px; font-size: 16px; }
-            .newsletter button { min-height: 44px; }
         }
-        .footer-badge img{ width:20px; height:20px; border-radius:4px; object-fit:cover; flex-shrink:0; }
-        .footer-badge-image{ display:block; max-width:300px; }
-        .footer-badge-image img{ display:block; max-width:100%; max-height:200px; width:auto; height:auto; object-fit:contain; border-radius:6px; }
         .about-contact-note{ text-align: center; margin-top: 32px; font-size: 13px; color: rgba(255,255,255,0.85); }
         .about-contact-note a{ color: #fff; font-weight: 600; text-decoration: underline; }
     </style>
@@ -361,58 +336,44 @@
         <p class="about-contact-note">Want NEST.PH for your own dormitory? Contact us at thenestphils@gmail.com.</p>
     </section>
 
-    <footer>
-        <div class="footer-top">
-            <div class="footer-logo"><img src="{{ $brandLogoUrl ?? asset('images/nestph.png') }}" alt="" class="logo-img"> {{ $brandDormName }}</div>
-            <form class="newsletter" onsubmit="return false;">
-                <label for="newsletter-email" class="visually-hidden">Email address</label>
-                <input id="newsletter-email" type="email" name="email" placeholder="Enter your email to inquire" autocomplete="email" required>
-                <button type="submit">Send</button>
-            </form>
-        </div>
-
-        <div class="footer-columns">
-            <div>
-                <h4>CONTACTS</h4>
-                <p>{{ $contactNumber ?? '(02) 8123-4567 / +63 917 123 4567' }}</p>
-                <p>{{ $contactEmail ?? 'admin@nestph-pureza.com' }}</p>
-                <p>{{ $address ?? 'Pureza Street, Santa Mesa, Manila, 1016 Metro Manila, Philippines' }}</p>
-            </div>
-            <div>
-                <h4>STUFF</h4>
-                <a href="{{ route('login.tenant') }}">[ Tenant Portal Login ]</a>
-                <a href="#">[ Terms &amp; Conditions ]</a>
-                <a href="#">[ Privacy Policy ]</a>
-            </div>
-            <div>
-                <h4>SOCIALS</h4>
-                <p style="margin-bottom:16px;">Join Us</p>
-                <div class="social-icons">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.5V8.5l6.3 3.5-6.3 3.5z"/></svg>
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 10-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0022 12z"/></svg>
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 4.9a9 9 0 01-2.6.7 4.5 4.5 0 002-2.5 9 9 0 01-2.9 1.1 4.5 4.5 0 00-7.7 4.1A12.8 12.8 0 012 3.9a4.5 4.5 0 001.4 6 4.5 4.5 0 01-2-.6v.1a4.5 4.5 0 003.6 4.4 4.5 4.5 0 01-2 .1 4.5 4.5 0 004.2 3.1A9 9 0 011 19a12.8 12.8 0 006.9 2c8.3 0 12.8-6.9 12.8-12.8v-.6A9.2 9.2 0 0023 4.9z"/></svg>
-                    <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4" fill="#59473f"/><circle cx="17.5" cy="6.5" r="1.2" fill="#59473f"/></svg>
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 11-.02 5 2.5 2.5 0 01.02-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.7-2 4 0 4.7 2.6 4.7 6V21h-4v-5.3c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9V21H9z"/></svg>
-                </div>
-            </div>
-            <div>
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <div class="footer-name">{{ $brandDormName }}</div>
+                <p class="footer-tagline">Safe, affordable rooms for students and young professionals, a short walk from PUP and LRT-2 Pureza Station.</p>
                 @if($isBirVerified)
-                @if($birRegistrationImageUrl)
-                <div class="footer-badge-image">
-                    <img src="{{ $birRegistrationImageUrl }}" alt="Registered with the Bureau of Internal Revenue" loading="lazy">
-                </div>
-                @else
-                <div class="footer-badge">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M20 6L9 17l-5-5"/></svg>
-                    <span>Registered with the Bureau of Internal Revenue</span>
-                </div>
-                @endif
+                <p class="footer-note">BIR-registered business</p>
                 @endif
             </div>
+            <div>
+                <h4>Contact</h4>
+                <ul>
+                    @if($address)<li>{{ $address }}</li>@endif
+                    @if($contactNumber)<li><a href="tel:{{ preg_replace('/[^0-9+]/', '', $contactNumber) }}">{{ $contactNumber }}</a></li>@endif
+                    @if($contactEmail)<li><a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a></li>@endif
+                    @if($facebookUrl)<li><a href="{{ $facebookUrl }}" target="_blank" rel="noopener">Facebook: {{ $facebookPageName ?: $brandDormName }}</a></li>@endif
+                </ul>
+            </div>
+            <div>
+                <h4>Explore</h4>
+                <ul>
+                    <li><a href="{{ route('public.rooms') }}">Rooms &amp; Rates</a></li>
+                    <li><a href="{{ route('public.vr') }}">Virtual Tour</a></li>
+                    <li><a href="{{ route('login.tenant') }}">Tenant Portal</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Office Hours</h4>
+                <ul>
+                    <li>Monday to Saturday</li>
+                    <li>8:00 AM &ndash; 6:00 PM</li>
+                    <li class="footer-muted">Viewings by appointment</li>
+                </ul>
+            </div>
         </div>
-
         <div class="footer-bottom">
-            <span>&copy; 2026 {{ $brandDormName }}. All rights reserved. &middot; Powered by NEST.PH Dormitory Management System</span>
+            <span>&copy; {{ date('Y') }} {{ $brandDormName }}. All rights reserved.</span>
+            <span class="footer-muted">Powered by NEST.PH Dormitory Management System</span>
         </div>
     </footer>
     </div>

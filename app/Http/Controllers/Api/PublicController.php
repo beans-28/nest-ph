@@ -45,6 +45,8 @@ class PublicController extends Controller
             'description' => $profile->description,
             'contactNumber' => $profile->contact_number,
             'contactEmail' => $profile->contact_email,
+            'facebookUrl' => $profile->facebook_url,
+            'facebookPageName' => $profile->facebook_page_name,
             'address' => $profile->address,
             'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
             'heroPhotoUrls' => $profile->heroPhotoUrls(),
@@ -493,6 +495,8 @@ class PublicController extends Controller
             'address' => $profile->address,
             'contactNumber' => $profile->contact_number,
             'contactEmail' => $profile->contact_email,
+            'facebookUrl' => $profile->facebook_url,
+            'facebookPageName' => $profile->facebook_page_name,
             'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
             'isBirVerified' => $profile->isBirVerified(),
             'birRegistrationImageUrl' => $this->isImageFile($profile->bir_registration_path)
