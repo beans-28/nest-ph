@@ -859,7 +859,11 @@ class ApplicationController extends Controller
             'document' => ['nullable', Rule::in(array_keys(TenancyDocuments::DOCUMENTS))],
         ])['document'] ?? null;
 
-        return $documents->pdf($documents->data($applicant, $bed), $only)
+        if ($only) {
+            return $documents->respond($only, $documents->data($applicant, $bed), 'Tenancy-Documents-Preview.pdf');
+        }
+
+        return $documents->pdf($documents->data($applicant, $bed))
             ->stream('Tenancy-Documents-Preview.pdf');
     }
 
@@ -912,13 +916,26 @@ class ApplicationController extends Controller
         $signedAt = now();
         $applicant['emergency_billing_consent'] = (bool) $signed['emergency_billing_consent'];
 
+        $path = self::SIGNED_DOCUMENTS_DIR . Str::uuid() . '.pdf';
+
+        // Freeze a copy of any document the owner uploaded, so replacing
+        // that file later never changes what this applicant signed.
+        $uploadedCopies = [];
+        foreach (array_keys(TenancyDocuments::DOCUMENTS) as $document) {
+            if ($source = $documents->uploaded($document)) {
+                $copy = preg_replace('/\.pdf$/', '-' . $document . '.pdf', $path);
+                Storage::disk('public')->copy($source, $copy);
+                $uploadedCopies[$document] = Storage::disk('public')->url($copy);
+            }
+        }
+
         $data = $documents->data($applicant, $bed, [
             'tenant' => $signed['signature_image'],
             'emergency_contact' => $signed['emergency_signature_image'],
             'signed_at' => $signedAt,
+            'uploaded_copies' => $uploadedCopies,
         ]);
 
-        $path = self::SIGNED_DOCUMENTS_DIR . Str::uuid() . '.pdf';
         Storage::disk('public')->put($path, $documents->pdf($data)->output());
 
         Storage::disk('public')->put($this->signingRecordPath($path), json_encode([
@@ -926,6 +943,7 @@ class ApplicationController extends Controller
             'fingerprint' => $this->signingFingerprint($applicant, $bed),
             'emergency_contact_signed' => true,
             'emergency_billing_consent' => $applicant['emergency_billing_consent'],
+            'uploaded_copies' => $uploadedCopies,
         ]));
 
         return response()->json([

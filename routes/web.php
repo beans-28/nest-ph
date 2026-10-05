@@ -253,6 +253,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/dormitory-profile/documents/{document}', [DormitoryProfileController::class, 'previewDocument'])
         ->whereIn('document', array_keys(\App\Services\TenancyDocuments::DOCUMENTS))
         ->name('dormitory-profile.documents');
+    // The owner's own PDF in place of a generated document.
+    Route::post('/dormitory-profile/documents/{document}', [DormitoryProfileController::class, 'uploadDocument'])
+        ->whereIn('document', array_keys(\App\Services\TenancyDocuments::DOCUMENTS))
+        ->name('dormitory-profile.documents.upload');
+    Route::delete('/dormitory-profile/documents/{document}', [DormitoryProfileController::class, 'deleteDocument'])
+        ->whereIn('document', array_keys(\App\Services\TenancyDocuments::DOCUMENTS));
     Route::post('/dormitory-profile/room-types', [DormitoryProfileController::class, 'storeRoomType']);
     Route::patch('/dormitory-profile/room-types/{roomType}', [DormitoryProfileController::class, 'updateRoomType']);
     Route::delete('/dormitory-profile/room-types/{roomType}', [DormitoryProfileController::class, 'destroyRoomType']);

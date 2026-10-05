@@ -533,15 +533,13 @@ class PublicController extends Controller
      */
     public function policiesFileView(\App\Services\TenancyDocuments $documents)
     {
-        return $documents->pdf($documents->data(), 'rules')
-            ->stream('Dormitory-Rules-and-Regulations.pdf');
+        return $documents->respond('rules', $documents->data(), 'Dormitory-Rules-and-Regulations.pdf');
     }
 
     /** Same document as a download, for the "Download PDF" button. */
     public function policiesFileDownload(\App\Services\TenancyDocuments $documents)
     {
-        return $documents->pdf($documents->data(), 'rules')
-            ->download('Dormitory-Rules-and-Regulations.pdf');
+        return $documents->respond('rules', $documents->data(), 'Dormitory-Rules-and-Regulations.pdf', true);
     }
 
     private function isImageFile(?string $path): bool

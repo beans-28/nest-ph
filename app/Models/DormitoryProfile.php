@@ -53,7 +53,21 @@ class DormitoryProfile extends Model
         'rules_version',
         'fees_version',
         'documents_effective_date',
+        'agreement_file_path',
+        'rules_file_path',
+        'fees_file_path',
     ];
+
+    /**
+     * The owner's uploaded PDF for one tenancy document (agreement, rules,
+     * fees), or null when NEST.PH generates it from the policy fields.
+     */
+    public function uploadedDocumentPath(string $document): ?string
+    {
+        $path = $this->{$document . '_file_path'} ?? null;
+
+        return $path && \Illuminate\Support\Facades\Storage::disk('public')->exists($path) ? $path : null;
+    }
 
     /**
      * Same defaults as the migration, so an unsaved profile (no row yet)

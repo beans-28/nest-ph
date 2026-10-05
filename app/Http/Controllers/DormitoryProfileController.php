@@ -48,6 +48,8 @@ class DormitoryProfileController extends Controller
             'birRegistrationImageUrl' => $this->isImageFile($profile->bir_registration_path)
                 ? Storage::disk('public')->url($profile->bir_registration_path)
                 : null,
+            'uploadedDocuments' => collect(\App\Services\TenancyDocuments::DOCUMENTS)
+                ->map(fn ($title, $key) => (bool) $profile->uploadedDocumentPath($key))->all(),
             'amenities' => $amenities,
             'houseRules' => $houseRules,
             'paymentMethods' => \App\Models\PaymentMethod::ordered()->map->toClientArray()->values(),
@@ -227,8 +229,47 @@ class DormitoryProfileController extends Controller
      */
     public function previewDocument(string $document, \App\Services\TenancyDocuments $documents)
     {
-        return $documents->pdf($documents->data(), $document)
-            ->stream(\Illuminate\Support\Str::slug(\App\Services\TenancyDocuments::DOCUMENTS[$document]) . '.pdf');
+        return $documents->respond($document, $documents->data(),
+            \Illuminate\Support\Str::slug(\App\Services\TenancyDocuments::DOCUMENTS[$document]) . '.pdf');
+    }
+
+    /**
+     * The owner's own PDF for one tenancy document (agreement, rules, fees).
+     * Once uploaded it replaces the generated version everywhere: the Apply
+     * page, the public Dorm Info page, and what applicants sign. The old file
+     * is kept on disk on purpose -- signed sets keep their own frozen copy,
+     * but nothing else may still point at it.
+     */
+    public function uploadDocument(Request $request, string $document): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+        ], [
+            'file.mimes' => 'Please upload the document as a PDF.',
+        ]);
+
+        $profile = DormitoryProfile::current();
+        if (! $profile->exists) {
+            $profile->save();
+        }
+
+        $path = $request->file('file')->store('dormitory-profile/documents', 'public');
+        $profile->update([$document . '_file_path' => $path]);
+
+        return response()->json([
+            'message' => \App\Services\TenancyDocuments::DOCUMENTS[$document] . ' uploaded. Applicants will now see and sign your file.',
+            'file_name' => $request->file('file')->getClientOriginalName(),
+        ]);
+    }
+
+    /** Goes back to the generated version of this document. */
+    public function deleteDocument(string $document): JsonResponse
+    {
+        DormitoryProfile::current()->update([$document . '_file_path' => null]);
+
+        return response()->json([
+            'message' => 'Your file was removed. NEST.PH will generate the ' . \App\Services\TenancyDocuments::DOCUMENTS[$document] . ' from your policy settings again.',
+        ]);
     }
 
     /**

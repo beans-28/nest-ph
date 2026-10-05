@@ -79,6 +79,15 @@ class TenancyDocuments
             'agreementDate' => $signedAt
                 ? Carbon::parse($signedAt)
                 : (filled($applicant['first_name'] ?? null) ? now() : null),
+            // Documents the owner uploaded their own PDF for: these are
+            // listed on the acknowledgment page instead of being generated.
+            // 'url' points at the frozen copy saved with a signed set.
+            'uploadedDocuments' => collect(array_keys(self::DOCUMENTS))
+                ->filter(fn ($d) => $profile->uploadedDocumentPath($d))
+                ->map(fn ($d) => [
+                    'title' => self::DOCUMENTS[$d],
+                    'url' => $signatures['uploaded_copies'][$d] ?? null,
+                ])->values()->all(),
             'tenantSignature' => $signatures['tenant'] ?? null,
             'emergencySignature' => $signatures['emergency_contact'] ?? null,
         ];
@@ -91,7 +100,15 @@ class TenancyDocuments
      */
     public function pdf(array $data, ?string $only = null)
     {
-        $documents = $only ? [$only] : array_keys(self::DOCUMENTS);
+        // Uploaded documents can't be filled in or signed, so they are left
+        // out and an acknowledgment page (with the signatures) is added.
+        $documents = array_values(array_filter(
+            $only ? [$only] : array_keys(self::DOCUMENTS),
+            fn ($d) => ! $this->uploaded($d)
+        ));
+        if (! $only && ! empty($data['uploadedDocuments'])) {
+            $documents[] = 'uploaded';
+        }
 
         // Where each document starts, so its pages can be numbered from 1.
         $starts = [1];
@@ -114,6 +131,34 @@ class TenancyDocuments
         });
 
         return $pdf;
+    }
+
+    /** The owner's uploaded PDF for this document, or null. */
+    public function uploaded(string $document): ?string
+    {
+        return DormitoryProfile::current()->uploadedDocumentPath($document);
+    }
+
+    /**
+     * One document as an HTTP response: the owner's uploaded PDF when there
+     * is one, otherwise the generated copy filled in with $data.
+     */
+    public function respond(string $document, array $data, string $fileName, bool $download = false)
+    {
+        if ($path = $this->uploaded($document)) {
+            $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+            return $download
+                ? $disk->download($path, $fileName)
+                : response($disk->get($path), 200, [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $fileName . '"',
+                ]);
+        }
+
+        $pdf = $this->pdf($data, $document);
+
+        return $download ? $pdf->download($fileName) : $pdf->stream($fileName);
     }
 
     private function render(array $data, array $documents)

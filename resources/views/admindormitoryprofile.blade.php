@@ -181,6 +181,7 @@
   .doc-status{ font-size:11.5px; color:var(--text-light); margin-top:2px; }
   .doc-status.uploaded{ color:var(--green-accent); font-weight:600; }
   .doc-actions{ display:flex; gap:8px; flex-shrink:0; }
+  .doc-row[data-doc] .doc-actions{ flex-wrap:wrap; justify-content:flex-end; flex-shrink:1; }
 
   .badge-pill{ display:inline-flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--border); border-radius:8px; padding:9px 13px; color:var(--text-dark); font-size:11px; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
   .badge-pill svg{ width:15px; height:15px; color:var(--green-accent); flex-shrink:0; }
@@ -581,6 +582,23 @@
                 <input type="date" id="polEffective" value="{{ $profile->documents_effective_date?->toDateString() }}">
               </div>
             </div>
+
+            <h3 class="policy-sub">Use your own documents (optional)</h3>
+            <p class="card-sub" style="margin-bottom:6px;">Already have your own signed contract or rules? Upload them as PDFs and applicants will read and sign your files instead of the ones generated from the fields above. Signatures go on a separate acknowledgment page added at the end. Billing still follows the numbers above, so keep them matching your documents.</p>
+            @foreach(\App\Services\TenancyDocuments::DOCUMENTS as $docKey => $docTitle)
+              <div class="doc-row" data-doc="{{ $docKey }}">
+                <div>
+                  <div class="doc-title">{{ $docTitle }}</div>
+                  <div class="doc-status {{ $uploadedDocuments[$docKey] ? 'uploaded' : '' }}" data-role="status">{{ $uploadedDocuments[$docKey] ? 'Using your uploaded PDF' : 'Generated from your settings' }}</div>
+                </div>
+                <div class="doc-actions">
+                  <a class="btn sm" href="{{ route('dormitory-profile.documents', $docKey) }}" target="_blank" rel="noopener">View</a>
+                  <button type="button" class="btn sm" data-role="upload">{{ $uploadedDocuments[$docKey] ? 'Replace PDF' : 'Upload PDF' }}</button>
+                  <button type="button" class="btn sm" data-role="remove" style="{{ $uploadedDocuments[$docKey] ? '' : 'display:none' }}">Use generated</button>
+                  <input type="file" accept="application/pdf" hidden data-role="input">
+                </div>
+              </div>
+            @endforeach
 
             <div class="form-actions">
               <a class="btn" href="{{ route('dormitory-profile.documents', 'agreement') }}" target="_blank" rel="noopener">Preview documents</a>
@@ -1012,6 +1030,39 @@
     btn.disabled = false;
     btn.textContent = $('brandLogoPreviewImg').classList.contains('is-dorm') ? 'Replace Logo' : 'Upload Logo';
     this.value = '';
+  });
+
+  // ===== Own tenancy documents (replace the generated ones) =====
+  document.querySelectorAll('.doc-row[data-doc]').forEach(row => {
+    const url = '{{ url('/dormitory-profile/documents') }}/' + row.dataset.doc;
+    const el = role => row.querySelector(`[data-role="${role}"]`);
+    const setState = uploaded => {
+      el('status').textContent = uploaded ? 'Using your uploaded PDF' : 'Generated from your settings';
+      el('status').classList.toggle('uploaded', uploaded);
+      el('upload').textContent = uploaded ? 'Replace PDF' : 'Upload PDF';
+      el('remove').style.display = uploaded ? '' : 'none';
+    };
+    el('upload').addEventListener('click', () => el('input').click());
+    el('input').addEventListener('change', async function(){
+      const file = this.files[0];
+      if(!file) return;
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const body = await api(url, { method: 'POST', body: fd });
+        setState(true);
+        toast(body.message);
+      } catch(e){ toast(e.message, true); }
+      this.value = '';
+    });
+    el('remove').addEventListener('click', async () => {
+      if(!confirm('Stop using your uploaded file and go back to the generated document?')) return;
+      try {
+        const body = await api(url, { method: 'DELETE' });
+        setState(false);
+        toast(body.message);
+      } catch(e){ toast(e.message, true); }
+    });
   });
 
   // ===== Business Permit =====
