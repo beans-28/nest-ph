@@ -426,6 +426,15 @@ class PaymentController extends Controller
             ], 409);
         }
 
+        // Catch an overpayment now instead of at admin review.
+        $balance = $this->balanceOf($billingStatement);
+        if ($data['amount_paid'] > $balance) {
+            return response()->json([
+                'message' => 'The amount cannot be more than your remaining balance of ' . number_format($balance, 2) . '.',
+                'errors' => ['amount_paid' => ['The amount cannot be more than your remaining balance of ' . number_format($balance, 2) . '.']],
+            ], 422);
+        }
+
         // Don't let a tenant stack multiple pending submissions on one bill.
         $hasPending = Payment::where('billing_id', $billingStatement->id)
             ->where('status', 'pending')

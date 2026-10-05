@@ -166,6 +166,8 @@ class TenantOnboardingController extends Controller
             'tenant' => $tenant,
             'billing' => $billing,
             'paymentType' => $paymentType,
+            // What's still owed after any approved partial payments.
+            'balance' => $billing?->remainingBalance() ?? 0,
             'method' => $method->toClientArray(),
             'dormName' => $profile->dorm_name ?: 'NEST.PH',
             'rejectedProof' => $this->latestRejectedProof($tenant),

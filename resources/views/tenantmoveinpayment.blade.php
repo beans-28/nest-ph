@@ -136,7 +136,7 @@
                     <div class="top-row">
                         <div class="balance-card">
                             <div class="balance-label">Balance to pay</div>
-                            <div class="balance-amount">₱{{ number_format($billing?->total_amount ?? 0, 2) }}</div>
+                            <div class="balance-amount">₱{{ number_format($balance, 2) }}</div>
                             <div class="balance-type">{{ $paymentType === 'partial' ? 'Partial payment — enter the amount you sent below.' : 'Full payment' }}</div>
                         </div>
 
@@ -205,9 +205,12 @@
                                 </div>
                                 <div class="fld">
                                     <label for="amountPaid">Amount paid <span class="req" aria-hidden="true">*</span></label>
-                                    <input type="number" id="amountPaid" inputmode="decimal" step="0.01" min="0.01" value="{{ $billing?->total_amount ?? '' }}" {{ $paymentType === 'partial' ? '' : 'readonly' }} required>
-                                    @if($paymentType !== 'partial')
-                                        <div class="fld-hint">Set to the full move-in fee.</div>
+                                    @if($paymentType === 'partial')
+                                        <input type="number" id="amountPaid" inputmode="decimal" step="0.01" min="0.01" max="{{ $balance }}" placeholder="e.g. 3000.00" required>
+                                        <div class="fld-hint">Enter only the amount you sent (up to ₱{{ number_format($balance, 2) }}).</div>
+                                    @else
+                                        <input type="number" id="amountPaid" inputmode="decimal" step="0.01" min="0.01" value="{{ $balance }}" readonly required>
+                                        <div class="fld-hint">Set to the full remaining balance.</div>
                                     @endif
                                 </div>
                                 <div class="fld">
@@ -318,6 +321,12 @@
             const label = document.querySelector(`label[for="${missing.id}"]`).firstChild.textContent.trim();
             showError(`Please fill in ${label.toLowerCase()}.`);
             missing.focus();
+            return;
+        }
+        const amountInput = document.getElementById('amountPaid');
+        if (Number(amountInput.value) <= 0 || Number(amountInput.value) > {{ $balance }}) {
+            showError('Amount paid must be between ₱0.01 and ₱{{ number_format($balance, 2) }}.');
+            amountInput.focus();
             return;
         }
 
