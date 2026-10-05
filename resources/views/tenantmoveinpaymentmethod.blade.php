@@ -59,7 +59,7 @@
                 <form class="panel-body" method="POST" action="{{ route('tenant.movein.payment-method.store') }}" id="methodForm">
                     @csrf
                     <h2 id="pageHeading">Select a payment method</h2>
-                    <p class="helper-text">Your room will be automatically reserved when payment is received!</p>
+                    <p class="helper-text">Your bedspace is already reserved for you. Your Move-In Permit is sent once your full payment is verified.</p>
 
                     <fieldset class="choice-group">
                         <legend class="visually-hidden">Payment method</legend>

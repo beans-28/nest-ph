@@ -45,6 +45,7 @@ class TenantOnboardingController extends Controller
 
         return view('tenantmoveinwelcome', [
             'tenant' => $tenant,
+            'billing' => $this->pendingMoveInBill($tenant),
             'rejectedProof' => $this->latestRejectedProof($tenant),
         ]);
     }
@@ -91,6 +92,12 @@ class TenantOnboardingController extends Controller
         $data = $request->validate([
             'payment_type' => ['required', Rule::in(['full', 'partial'])],
         ]);
+
+        // Half already paid: only the remaining balance is left, so "partial" no longer applies.
+        $billing = $this->pendingMoveInBill(Tenant::where('user_id', Auth::id())->firstOrFail());
+        if ($data['payment_type'] === 'partial' && $billing && ! $billing->canPayMoveInHalf()) {
+            return back()->withErrors(['payment_type' => 'Your first half is already paid. Please pay the remaining balance in full.']);
+        }
 
         session(['move_in_payment_type' => $data['payment_type']]);
 
@@ -167,7 +174,9 @@ class TenantOnboardingController extends Controller
             'billing' => $billing,
             'paymentType' => $paymentType,
             // What's still owed after any approved partial payments.
-            'balance' => $billing?->remainingBalance() ?? 0,
+            'balance' => $balance = $billing?->remainingBalance() ?? 0,
+            // Partial = half of the move-in fee (see BillingStatement::moveInHalfAmount()).
+            'amountDue' => $paymentType === 'partial' && $billing ? $billing->moveInHalfAmount() : $balance,
             'method' => $method->toClientArray(),
             'dormName' => $profile->dorm_name ?: 'NEST.PH',
             'rejectedProof' => $this->latestRejectedProof($tenant),

@@ -25,6 +25,7 @@
             position: absolute; left: 18px; top: 20px; width: 18px; height: 18px; margin: 0;
             accent-color: var(--green-darker);
         }
+        .choice-grid.is-single { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
         .choice-title { font-weight: 700; font-size: 15px; color: var(--ink); }
         .choice-desc { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
         .choice:has(input:checked) { border-color: var(--green-darker); box-shadow: 0 2px 10px rgba(25,115,53,0.12); }
@@ -58,32 +59,45 @@
 
                 <form class="panel-body" method="POST" action="{{ route('tenant.movein.payment-type.store') }}" id="typeForm">
                     @csrf
-                    <h2 id="pageHeading">Choose your payment type</h2>
+                    @php
+                        $remaining = $billing?->remainingBalance() ?? 0;
+                        $halfPaid = $billing && $remaining < (float) $billing->total_amount;
+                        $canHalf = $billing && $billing->canPayMoveInHalf();
+                        $half = $billing?->moveInHalfAmount() ?? 0;
+                    @endphp
+                    <h2 id="pageHeading">{{ $halfPaid ? 'Pay your remaining balance' : 'Choose your payment type' }}</h2>
 
-                    @if($billing)
+                    @if($halfPaid)
+                        @include('partials.movein-ledger', ['billing' => $billing])
+                    @elseif($billing)
                         <p class="fee-amount">Total move-in fee due <strong>₱{{ number_format($billing->total_amount, 2) }}</strong></p>
                     @endif
+                    @error('payment_type')<p class="form-error is-static" role="alert">{{ $message }}</p>@enderror
 
                     <fieldset class="choice-group">
                         <legend class="visually-hidden">Payment type</legend>
-                        <div class="choice-grid">
+                        <div class="choice-grid{{ $canHalf ? '' : ' is-single' }}">
                             <label class="choice">
-                                <input type="radio" name="payment_type" value="full" required>
-                                <span class="choice-title">Full Payment</span>
-                                <span class="choice-desc">Settle the whole move-in fee at once.</span>
+                                <input type="radio" name="payment_type" value="full" required @checked(! $canHalf)>
+                                <span class="choice-title">{{ $halfPaid ? 'Remaining Balance' : 'Full Payment' }}</span>
+                                <span class="choice-desc">{{ $halfPaid ? 'Pay ₱' . number_format($remaining, 2) . '. Your Move-In Permit is sent once it is verified.' : 'Pay the whole ₱' . number_format($remaining, 2) . ' at once.' }}</span>
                             </label>
+                            @if($canHalf)
                             <label class="choice">
                                 <input type="radio" name="payment_type" value="partial" required>
                                 <span class="choice-title">Partial Payment</span>
-                                <span class="choice-desc">Pay part now and the remaining balance later.</span>
+                                <span class="choice-desc">Pay half (₱{{ number_format($half, 2) }}) now. The other half is due within one month of your payment, or your bedspace is released.</span>
                             </label>
+                            @endif
                         </div>
                     </fieldset>
 
-                    <p class="helper-text">Your room will be automatically reserved when payment is received!</p>
+                    @unless($halfPaid)
+                        <p class="helper-text">Your bedspace is already reserved for you. Your Move-In Permit is sent once your full payment is verified.</p>
+                    @endunless
                     <p class="sub-text">Please wait for the administrator's review and approval. Kindly check your inbox regularly for updates regarding your application status.</p>
 
-                    <button type="submit" class="btn-login" id="continueBtn" disabled>
+                    <button type="submit" class="btn-login" id="continueBtn" @disabled($canHalf)>
                         <span class="spinner"></span>
                         <span>Continue</span>
                     </button>

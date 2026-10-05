@@ -60,3 +60,7 @@ Schedule::command('escalation:process')->daily();
  * `php artisan applications:notify-overdue` by hand to test locally.
  */
 Schedule::command('applications:notify-overdue')->daily();
+
+// Payments and Fees Schedule 3.2: release the bed when a half-paid move-in
+// fee is still unpaid one month after the payment (ExpireMoveInReservations).
+Schedule::command('reservations:expire')->daily();

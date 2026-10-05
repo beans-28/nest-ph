@@ -152,6 +152,15 @@
       </div>
 
       <div class="board" id="ticketBoard"></div>
+
+      @include('partials.demo-tools', [
+        'tool' => 'tickets',
+        'hint' => 'Open tickets. Moves the ticket\'s clock so its current deadline (respond or resolve) is just past, or inside the last quarter of its window.',
+        'actions' => [
+          ['key' => 'overdue', 'label' => 'Make overdue', 'needsItem' => true],
+          ['key' => 'due_soon', 'label' => 'Make due soon', 'needsItem' => true],
+        ],
+      ])
     </div>
   </div>
 </div>

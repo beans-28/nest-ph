@@ -71,7 +71,9 @@ public function login(Request $request)
     $canLogInToReview = $tenant
         && $tenant->status === 'inactive'
         && ! $tenant->is_blacklisted
-        && ! $tenant->review;
+        && ! $tenant->review
+        // Never moved in (reservation expired) -- nothing to review.
+        && ! \App\Models\BillingStatement::where('tenant_id', $tenant->id)->whereNotNull('reservation_expired_at')->exists();
 
     if (! $user->is_active && ! $canLogInToReview) {
         Auth::logout();

@@ -272,6 +272,15 @@
       </div>
       @endif
 
+      @include('partials.demo-tools', [
+        'tool' => 'escalation',
+        'title' => 'Testing Tools: Daily Scheduler',
+        'hint' => 'Runs the daily escalation check now (the scheduler is off on the server). Real SMS can go out to tenants whose stage changes.',
+        'actions' => [
+          ['key' => 'sweep', 'label' => 'Run daily escalation check', 'needsItem' => false],
+        ],
+      ])
+
     </div>
   </div>
 </div>

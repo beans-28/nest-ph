@@ -170,6 +170,18 @@ class TenantPortalController extends Controller
             return response()->json(['message' => 'This statement is already fully paid.'], 409);
         }
 
+        // Never accept more than what's still owed.
+        $remaining = $bill->remainingBalance();
+        $amount = round((float) $data['amount_paid'], 2);
+        if ($amount > $remaining) {
+            return response()->json(['message' => 'Amount paid cannot be more than the remaining balance of ₱' . number_format($remaining, 2) . '.'], 422);
+        }
+
+        // Move-in fee: either the fixed half (Partial Payment) or the full remaining balance.
+        if ($bill->type === 'move_in' && $amount !== $remaining && $amount !== $bill->moveInHalfAmount()) {
+            return response()->json(['message' => 'For the move-in fee, please pay either half (₱' . number_format($bill->moveInHalfAmount(), 2) . ') or the full remaining balance (₱' . number_format($remaining, 2) . ').'], 422);
+        }
+
         // The admin-configured method the tenant paid through decides the
         // enum and label, so the client can't claim a method that isn't offered.
         $method = isset($data['payment_method_id']) ? PaymentMethod::find($data['payment_method_id']) : null;

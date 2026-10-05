@@ -122,7 +122,8 @@ class DemoDataSeeder extends Seeder
     {
         // This seeder empties tables before filling them with demo data.
         // On the live site that would wipe real tenants and payments.
-        if (app()->environment('production')) {
+        // The only exception: the demo site, where DEMO_RESET_ON_DEPLOY=true says resetting is wanted.
+        if (app()->environment('production') && ! config('app.demo_reset_on_deploy')) {
             throw new \RuntimeException('DemoDataSeeder refuses to run in production: it deletes existing data.');
         }
 
@@ -473,6 +474,8 @@ class DemoDataSeeder extends Seeder
      *   overdue         overdue by `days` days after the grace period --
      *                   late fee and escalation ladder applied
      *   pending_movein  approved, has not paid move-in fees yet
+     *                   (movein_half = paid the first half N days ago;
+     *                    movein_half_proof / movein_expired for the follow-ups)
      *
      * k = months of (paid) billing history before the latest bill
      * L = moves the move-in day within its month (variety only)
@@ -589,6 +592,19 @@ class DemoDataSeeder extends Seeder
             ['Trisha Mae', 'Galvez', 'female', '2004-04-04', 'working_student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
                 'Brgy. Sta. Lucia, San Fernando, Pampanga', 'Edgardo Galvez', 'Father', '401-2', 'overdue', 'L' => 10, 'k' => 3, 'days' => 10,
                 'consent' => true],
+
+            // ---- Half-paid move-in fees (Partial Payment = half; Fees Schedule 3.2: one-month reservation) ----
+            // First half approved 26 days ago: reservation ends in about 5 days, so the admin bell shows
+            // "half-paid move-in fee due within 7 days". Use "Skip past deadline" (Billing Testing Tools) to expire it.
+            ['Jasmine Rose', 'Aquino', 'female', '2005-05-25', 'student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
+                'Brgy. Poblacion, Calapan City, Oriental Mindoro', 'Teodoro Aquino', 'Father', '401-3', 'pending_movein', 'movein_half' => 26],
+            // First half approved 12 days ago, second-half proof waiting for review: approving it activates him and sends the Move-In Permit.
+            ['Mark Anthony', 'Villanueva', 'male', '2004-12-01', 'student', 'Technological University of the Philippines', 'Ayala Blvd., Ermita, Manila',
+                'Brgy. San Roque, Antipolo City, Rizal', 'Josefina Villanueva', 'Mother', '401-4', 'pending_movein', 'movein_half' => 12, 'movein_half_proof' => true],
+            // Paid only the first half 34 days ago and never the rest: the reservation already expired 2 days ago,
+            // bed released, account closed, tenant emailed. Shows as "reservation expired" in the admin bell.
+            ['Ella Mae', 'Fernandez', 'female', '2005-08-17', 'student', 'Far Eastern University', 'Nicanor Reyes St., Sampaloc, Manila',
+                'Brgy. Bagumbayan, Naga City, Camarines Sur', 'Rodrigo Fernandez', 'Father', '401-5', 'pending_movein', 'movein_half' => 34, 'movein_expired' => true],
         ];
     }
 
@@ -684,6 +700,11 @@ class DemoDataSeeder extends Seeder
                 'move_in_paid' => $scenario !== 'pending_movein',
             ]);
             [$tenantId, $contractId, $rate, $moveInBillId] = $ids;
+
+            if ($scenario === 'pending_movein' && ! empty($spec['movein_half'])) {
+                $this->halfPaidMoveIn($spec, $tenantId, $contractId, $bedId, $moveInBillId, $rate);
+                continue;
+            }
 
             if ($scenario === 'pending_movein') {
                 if (! empty($spec['movein_proof'])) {
@@ -1143,6 +1164,38 @@ class DemoDataSeeder extends Seeder
         }
 
         return [$tenantId, $contractId, $rate, $moveInBillId];
+    }
+
+    /**
+     * A move-in fee paid by halves (Partial Payment). The first half was
+     * approved `movein_half` days ago; the reservation lasts one month from
+     * that payment (ExpireMoveInReservations).
+     */
+    private function halfPaidMoveIn(array $spec, int $tenantId, int $contractId, int $bedId, int $billId, float $rate): void
+    {
+        $half = round($rate, 2); // move-in fee is 2 x rate, so half is one month's rate
+        $paidOn = $this->today->copy()->subDays($spec['movein_half'])->setTime(14, 20);
+
+        $this->payment($billId, $tenantId, $half, 'gcash', $paidOn, 'approved',
+            'First half of the move-in fee po. Second half next month.', 'Verified: first half of the move-in fee.');
+        DB::table('billing_statements')->where('id', $billId)->update(['status' => 'partial']);
+
+        if (! empty($spec['movein_half_proof'])) {
+            $this->payment($billId, $tenantId, $half, 'gcash', $this->today->copy()->subDay()->setTime(19, 5), 'pending',
+                'Second half of the move-in fee. Thank you po!');
+        }
+
+        if (! empty($spec['movein_expired'])) {
+            $expiredAt = $paidOn->copy()->startOfDay()->addMonthNoOverflow()->addDay()->setTime(0, 5);
+            DB::table('billing_statements')->where('id', $billId)->update(['reservation_expired_at' => $expiredAt]);
+            DB::table('lease_contracts')->where('id', $contractId)->update(['status' => 'terminated']);
+            DB::table('beds')->where('id', $bedId)->update(['status' => 'vacant']);
+            DB::table('tenants')->where('id', $tenantId)->update(['status' => 'inactive']);
+            $userId = DB::table('tenants')->where('id', $tenantId)->value('user_id');
+            if ($userId) {
+                DB::table('users')->where('id', $userId)->update(['is_active' => false]);
+            }
+        }
     }
 
     /** One calendar-month rent bill, due on the 1st (or $due for overdue demos). */
@@ -2095,10 +2148,14 @@ class DemoDataSeeder extends Seeder
 
         // The file Ana uploads live in Part 2 of the walkthrough.
         $anaAmount = number_format($this->anaMoveInFee(), 2);
-        File::ensureDirectoryExists(base_path('docs/demo'));
-        File::put(base_path('docs/demo/Ana_move-in_payment_proof.png'), $this->demoImage('PAYMENT PROOF - ANA', [
-            'Paid to: Pureza Station Dormitory', "Amount: PHP {$anaAmount}", 'Reference No.: 1029 384 756', 'Move-in fee (1 month advance + 1 month deposit)', 'For defense demo only',
-        ]));
+        // A local helper file only; skipped where the app folder is read-only (e.g. a Cloud deploy).
+        try {
+            File::ensureDirectoryExists(base_path('docs/demo'));
+            File::put(base_path('docs/demo/Ana_move-in_payment_proof.png'), $this->demoImage('PAYMENT PROOF - ANA', [
+                'Paid to: Pureza Station Dormitory', "Amount: PHP {$anaAmount}", 'Reference No.: 1029 384 756', 'Move-in fee (1 month advance + 1 month deposit)', 'For defense demo only',
+            ]));
+        } catch (\Throwable) {
+        }
 
         $this->files = [
             'id' => ['demo/sample-valid-id.png'],

@@ -46,6 +46,22 @@ class AdminNotificationController extends Controller
                 'one' => 'application ' . $overdueLabel, 'many' => 'applications ' . $overdueLabel,
             ],
             [
+                'key' => 'reservations_expired', 'urgent' => true, 'link' => '/tenants',
+                // Shown for a week after the bed was released (reservations:expire).
+                'count' => BillingStatement::where('reservation_expired_at', '>=', now()->subDays(7))->count(),
+                'one' => 'reservation expired and its bed was released',
+                'many' => 'reservations expired and their beds were released',
+            ],
+            [
+                'key' => 'reservations_expiring', 'urgent' => false, 'link' => '/payments',
+                // Half-paid move-in fees whose one-month reservation ends within 7 days.
+                'count' => BillingStatement::where('type', 'move_in')->where('status', 'partial')
+                    ->whereNull('reservation_expired_at')->get()
+                    ->filter(fn ($b) => $b->reservationDeadline()?->lte(now()->addDays(7)))->count(),
+                'one' => 'half-paid move-in fee due within 7 days',
+                'many' => 'half-paid move-in fees due within 7 days',
+            ],
+            [
                 'key' => 'inquiries', 'urgent' => false, 'link' => '/inquiries',
                 'count' => Inquiry::where('status', 'new')->count(),
                 'one' => 'inquiry waiting for a reply', 'many' => 'inquiries waiting for a reply',

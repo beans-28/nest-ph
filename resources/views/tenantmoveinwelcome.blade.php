@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Approved · {{ $brandDormName }}</title>
+    <title>{{ $billing && $billing->status === 'partial' ? 'Remaining Balance' : 'Application Approved' }} · {{ $brandDormName }}</title>
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,6 +28,7 @@
             <section class="login-right centered" aria-labelledby="pageHeading">
                 @include('partials.movein-steps', ['step' => 1])
 
+                @php $halfPaid = $billing && $billing->status === 'partial'; @endphp
                 <div class="panel-body">
                     @if($rejectedProof)
                         {{-- A rejected proof comes first: the tenant's next step is to resend it, not to celebrate. --}}
@@ -43,10 +44,16 @@
                         </svg>
                     @endif
 
-                    <h2 id="pageHeading">Welcome to Pureza Station Dormitory!</h2>
-                    <p class="lead">We are pleased to inform you that your application has been approved by the dormitory administration. To proceed with your move-in process, please settle your required move-in fees to receive your official Move-In Permit.</p>
+                    @if($halfPaid)
+                        <h2 id="pageHeading">Your first half is verified</h2>
+                        <p class="lead">Thank you. Pay the remaining balance to receive your official Move-In Permit.</p>
+                        @include('partials.movein-ledger', ['billing' => $billing])
+                    @else
+                        <h2 id="pageHeading">Welcome to Pureza Station Dormitory!</h2>
+                        <p class="lead">We are pleased to inform you that your application has been approved by the dormitory administration. To proceed with your move-in process, please settle your required move-in fees to receive your official Move-In Permit.</p>
+                    @endif
 
-                    <a href="{{ route('tenant.movein.payment-type') }}" class="btn-login">{{ $rejectedProof ? 'Submit a New Proof of Payment' : 'Proceed with Payment' }}</a>
+                    <a href="{{ route('tenant.movein.payment-type') }}" class="btn-login">{{ $rejectedProof ? 'Submit a New Proof of Payment' : ($halfPaid ? 'Pay the Remaining Balance' : 'Proceed with Payment') }}</a>
                 </div>
             </section>
         </div>

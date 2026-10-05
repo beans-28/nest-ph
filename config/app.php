@@ -45,6 +45,11 @@ return [
     // server it only appears when DEMO_TOOLS_ENABLED=true is set.
     'demo_tools' => env('APP_ENV') === 'local' || (bool) env('DEMO_TOOLS_ENABLED', false),
 
+    // When true, `php artisan demo:reset` (a Laravel Cloud deploy command)
+    // wipes and re-seeds the defense demo data on every deploy. Never turn
+    // this on once real tenants are using the site.
+    'demo_reset_on_deploy' => (bool) env('DEMO_RESET_ON_DEPLOY', false),
+
     /*
     |--------------------------------------------------------------------------
     | Application URL

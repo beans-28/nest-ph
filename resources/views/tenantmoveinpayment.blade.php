@@ -135,9 +135,13 @@
 
                     <div class="top-row">
                         <div class="balance-card">
-                            <div class="balance-label">Balance to pay</div>
-                            <div class="balance-amount">₱{{ number_format($balance, 2) }}</div>
-                            <div class="balance-type">{{ $paymentType === 'partial' ? 'Partial payment — enter the amount you sent below.' : 'Full payment' }}</div>
+                            <div class="balance-label">{{ $paymentType === 'partial' ? 'Pay now: first half' : 'Balance to pay' }}</div>
+                            <div class="balance-amount">₱{{ number_format($amountDue, 2) }}</div>
+                            @if($paymentType === 'partial')
+                                <div class="balance-type">Half of your ₱{{ number_format($balance, 2) }} move-in fee. The other ₱{{ number_format(max(0, $balance - $amountDue), 2) }} is due within one month of this payment.</div>
+                            @else
+                                <div class="balance-type">Full payment</div>
+                            @endif
                         </div>
 
                         <div class="qr-card">
@@ -206,11 +210,11 @@
                                 <div class="fld">
                                     <label for="amountPaid">Amount paid <span class="req" aria-hidden="true">*</span></label>
                                     @if($paymentType === 'partial')
-                                        <input type="number" id="amountPaid" inputmode="decimal" step="0.01" min="0.01" max="{{ $balance }}" placeholder="e.g. 3000.00" required>
-                                        <div class="fld-hint">Enter only the amount you sent (up to ₱{{ number_format($balance, 2) }}).</div>
+                                        <input type="number" id="amountPaid" inputmode="decimal" step="0.01" min="0.01" value="{{ number_format($amountDue, 2, '.', '') }}" readonly required>
+                                        <div class="fld-hint">Set to half of your move-in fee. Send exactly this amount.</div>
                                     @else
-                                        <input type="number" id="amountPaid" inputmode="decimal" step="0.01" min="0.01" value="{{ $balance }}" readonly required>
-                                        <div class="fld-hint">Set to the full remaining balance.</div>
+                                        <input type="number" id="amountPaid" inputmode="decimal" step="0.01" min="0.01" value="{{ number_format($balance, 2, '.', '') }}" readonly required>
+                                        <div class="fld-hint">Set to your full remaining balance. Send exactly this amount.</div>
                                     @endif
                                 </div>
                                 <div class="fld">
@@ -324,8 +328,8 @@
             return;
         }
         const amountInput = document.getElementById('amountPaid');
-        if (Number(amountInput.value) <= 0 || Number(amountInput.value) > {{ $balance }}) {
-            showError('Amount paid must be between ₱0.01 and ₱{{ number_format($balance, 2) }}.');
+        if (Number(amountInput.value) <= 0 || Number(amountInput.value) > {{ $amountDue }}) {
+            showError('Amount paid must be between ₱0.01 and ₱{{ number_format($amountDue, 2) }}.');
             amountInput.focus();
             return;
         }

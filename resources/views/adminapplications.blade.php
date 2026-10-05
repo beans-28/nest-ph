@@ -135,6 +135,15 @@
       </div>
 
       <div class="app-grid" id="appGrid"></div>
+
+      @include('partials.demo-tools', [
+        'tool' => 'applications',
+        'hint' => 'Pending applications. "Make 4 days old" back-dates one so it shows as waiting 3+ days, then sends the overdue email to admins.',
+        'actions' => [
+          ['key' => 'age', 'label' => 'Make 4 days old', 'needsItem' => true],
+          ['key' => 'sweep', 'label' => 'Run daily overdue email', 'needsItem' => false],
+        ],
+      ])
     </div>
   </div>
 </div>

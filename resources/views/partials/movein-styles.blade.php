@@ -165,6 +165,7 @@
         border-radius: 8px; padding: 12px 14px; font-size: 13px; line-height: 1.5; margin-bottom: 18px;
     }
     .form-error.visible { display: block; }
+    .form-error.is-static { display: block; width: 100%; max-width: 560px; margin-left: auto; margin-right: auto; text-align: left; }
 
     /* Rejected move-in proof reason (welcome + payment pages). */
     .rejection-notice {
@@ -173,6 +174,21 @@
         overflow-wrap: anywhere;
     }
     .rejection-notice strong, .rejection-notice span { display: block; }
+
+    /* Half-paid move-in fee: what's paid, what's left, and the deadline (welcome + payment type). */
+    .movein-ledger {
+        width: 100%; max-width: 420px; margin: 0 auto 18px; text-align: left;
+        background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 4px 18px;
+        font-variant-numeric: tabular-nums;
+    }
+    .movein-ledger div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 11px 0; font-size: 14px; }
+    .movein-ledger div + div { border-top: 1px solid #e8ece8; }
+    .movein-ledger dt { color: var(--muted); }
+    .movein-ledger dd { margin: 0; color: var(--ink); font-weight: 500; }
+    .movein-ledger .is-due dt { color: var(--ink); font-weight: 700; }
+    .movein-ledger .is-due dd { color: var(--green-deep); font-weight: 900; font-size: 18px; }
+    .movein-deadline { font-size: 13px; line-height: 1.6; color: var(--ink); max-width: 46ch; margin: 0 auto 24px; }
+    .movein-deadline strong { color: #8a4b08; }
 
     .visually-hidden {
         position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;

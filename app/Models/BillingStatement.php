@@ -26,12 +26,14 @@ class BillingStatement extends Model
         'penalty_amount',
         'total_amount',
         'status',
+        'reservation_expired_at',
     ];
 
     protected $casts = [
         'billing_period_start' => 'date',
         'billing_period_end' => 'date',
         'due_date' => 'date',
+        'reservation_expired_at' => 'datetime',
         'base_rent' => 'decimal:2',
         'utilities_amount' => 'decimal:2',
         'wifi_amount' => 'decimal:2',
@@ -65,6 +67,40 @@ class BillingStatement extends Model
         $paid = $this->approved_paid ?? $this->payments()->where('status', 'approved')->sum('amount_paid');
 
         return max(0, round((float) $this->total_amount - (float) $paid, 2));
+    }
+
+    /**
+     * Move-in "Partial Payment" is a fixed half of the move-in fee. Once the
+     * first half is approved, what's left is the other half, so this simply
+     * caps at the remaining balance.
+     */
+    public function moveInHalfAmount(): float
+    {
+        return min($this->remainingBalance(), round((float) $this->total_amount / 2, 2));
+    }
+
+    /**
+     * Payments and Fees Schedule 3.2: a reservation is valid for one month
+     * from the date of payment. Counted from the first approved payment on
+     * a half-paid move-in fee; null if nothing has been approved yet.
+     */
+    public function reservationDeadline(): ?\Carbon\Carbon
+    {
+        if ($this->type !== 'move_in') {
+            return null;
+        }
+
+        $firstPaid = $this->payments()->where('status', 'approved')->min('payment_date');
+
+        return $firstPaid
+            ? \Carbon\Carbon::parse($firstPaid)->startOfDay()->addMonthsNoOverflow(\App\Console\Commands\ExpireMoveInReservations::MONTHS)->endOfDay()
+            : null;
+    }
+
+    /** True when the remaining balance is more than half, i.e. paying half still leaves something for later. */
+    public function canPayMoveInHalf(): bool
+    {
+        return $this->moveInHalfAmount() < $this->remainingBalance();
     }
 
     /** Query scope: preload the approved-payments sum used by remainingBalance(). */

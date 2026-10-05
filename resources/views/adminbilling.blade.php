@@ -351,6 +351,15 @@
         </div>
       </div>
 
+      @include('partials.demo-tools', [
+        'tool' => 'reservations',
+        'hint' => 'Half-paid move-in fees. "Skip past deadline" moves the first payment back a month and runs the daily reservation check, so the bed is released and the tenant is emailed.',
+        'actions' => [
+          ['key' => 'expire', 'label' => 'Skip past deadline', 'needsItem' => true],
+          ['key' => 'sweep', 'label' => 'Run daily reservation check', 'needsItem' => false],
+        ],
+      ])
+
     </div>
   </div>
 </div>

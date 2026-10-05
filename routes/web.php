@@ -193,6 +193,9 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // --- Delinquency Escalation Testing Tools (dev/demo only, not a manuscript use case) ---
     Route::get('/delinquency-testing/tenants', [DelinquencyTestingController::class, 'index']);
     Route::post('/delinquency-testing/{tenant}/escalate', [DelinquencyTestingController::class, 'escalate']);
+    // Testing Tools on Payments / Applications / Tickets / Delinquency: move a record's clock or run a daily job now.
+    Route::get('/demo-tools/{tool}/items', [\App\Http\Controllers\DemoToolsController::class, 'items']);
+    Route::post('/demo-tools/{tool}/{action}', [\App\Http\Controllers\DemoToolsController::class, 'run']);
 
     // --- Delinquency Escalation (Week 6, Thu) ---
     // Table 26 step 8 (download the system-generated Stage 5 demand
