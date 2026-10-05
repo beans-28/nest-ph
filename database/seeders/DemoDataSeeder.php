@@ -6,6 +6,8 @@ use App\Models\Bed;
 use App\Models\DormitoryProfile;
 use App\Models\RoomType;
 use App\Models\Tenant;
+use App\Models\VrScene;
+use App\Services\PanoramaFillService;
 use App\Services\TenancyDocuments;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -91,8 +93,8 @@ class DemoDataSeeder extends Seeder
     private const DOCUMENTS_EFFECTIVE = '2026-09-30';
 
     /** Beds left empty on purpose so the dorm isn't 100% full (vacant beds to apply for). */
-    private const LEAVE_VACANT = ['105-1', '204-5', '204-6', '303-11', '303-12', '402-13', '402-14', '402-15', '402-16',
-        '501-12', '501-13', '501-14', '502-4'];
+    private const LEAVE_VACANT = ['101-4', '102-4', '105-1', '204-5', '204-6', '303-11', '303-12', '402-13', '402-14', '402-15', '402-16',
+        '501-12', '501-13', '501-14'];
 
     /** Beds held by the pending applications (seedPendingApplications). */
     private const PENDING_APPLICATION_BEDS = ['202-2', '203-3', '301-3', '302-2'];
@@ -110,6 +112,7 @@ class DemoDataSeeder extends Seeder
 
     private array $beds = [];     // '101-1' => bed id
 
+    private array $reviewPhotos = []; // set by seedDemoPhotos()
     private array $rooms = [];    // '101' => room row
 
     private array $files = [];    // reusable demo files
@@ -151,6 +154,7 @@ class DemoDataSeeder extends Seeder
         $this->pickExistingFiles();
         $this->seedAdmins();
         $this->seedFloorsRoomsBeds();
+        $this->seedDemoPhotos();
         $this->seedTenants();
         $this->seedCurrentTenants();
         $this->seedFormerTenants();
@@ -231,9 +235,8 @@ class DemoDataSeeder extends Seeder
         }
         $profile->save();
 
-        // The GCash QR on file was for the old "NEST PH" test account, not
-        // Pureza's. Unlinked so tenants never scan the wrong QR; upload the
-        // real one in Dormitory Profile > Payment Methods.
+        // Old test QRs are unlinked so tenants never scan the wrong one;
+        // seedDemoPhotos() then attaches Pureza's own GCash QR.
         DB::table('payment_methods')->where('type', '!=', 'cash')->update(['qr_path' => null]);
 
         $this->grace = $profile->grace_period_days;
@@ -566,7 +569,7 @@ class DemoDataSeeder extends Seeder
             // ---- More scenario tenants ----
             // Last in the list so they're processed after the former tenants of 302-1/303-1 free those beds, and so the scenario tenants' numbering (tickets, Juan's late fee) stays the same.
             ['Stephanie Claire', 'Uy', 'female', '2004-09-02', 'student', 'University of Santo Tomas', 'España Blvd., Sampaloc, Manila',
-                'Brgy. Lourdes, Dagupan City, Pangasinan', 'Henry Uy', 'Father', '101-4', 'paid', 'L' => 16, 'k' => 7,
+                'Brgy. Lourdes, Dagupan City, Pangasinan', 'Henry Uy', 'Father', '502-4', 'paid', 'L' => 16, 'k' => 7,
                 'review' => [5, 'Ang ganda ng study hall sa baba, dito ako nagre-review lagi. Mabilis din sumagot ang admin sa tickets.']],
             ['Adrian Paul', 'Castro', 'male', '1999-12-12', 'full_time_employee', 'Teleperformance Philippines', 'Robinsons Cybergate, Mandaluyong City',
                 'Brgy. Sampaloc, Tanauan City, Batangas', 'Leticia Castro', 'Mother', '102-2', 'paid', 'L' => 11, 'k' => 3],
@@ -1581,12 +1584,11 @@ class DemoDataSeeder extends Seeder
     private function review(int $tenantId, int $rating, string $comment): void
     {
         // The first review shows the "photos on a review" feature, using the
-        // dorm's own room photos (reviews allow up to 3).
+        // review photos from database/seeders/demo-assets (reviews allow up to 3).
         static $photosUsed = false;
         $photos = null;
         if (! $photosUsed) {
-            $paths = DB::table('room_photos')->orderBy('id')->limit(2)->pluck('path')->all();
-            $photos = $paths ? json_encode($paths) : null;
+            $photos = $this->reviewPhotos ? json_encode($this->reviewPhotos) : null;
             $photosUsed = true;
         }
 
@@ -1926,42 +1928,104 @@ class DemoDataSeeder extends Seeder
     }
 
     /**
-     * Walkthrough Part 1: Room 105 is the only room with a VR tour. Rooms 101
-     * and 102 are full, and the public VR page only lists rooms with a vacant
-     * bed, so the tour photos are moved onto Room 105 (its one bed is left
-     * vacant). The arrows between them are removed so Vince can add one live
-     * in step 1.4.
+     * Walkthrough Part 1: Rooms 101 and 102 have the VR tours (photos from
+     * seedDemoPhotos). The public VR page only lists rooms with a vacant
+     * bed, so 101-4 and 102-4 are left empty (LEAVE_VACANT). Room 101 has no
+     * arrows between its scenes so Vince can add one live in step 1.4;
+     * Room 102's two scenes are already linked.
      */
     private function prepareVrDemo(): void
     {
-        $target = $this->rooms['105']->id ?? null;
-        if (! $target) {
-            return;
+        $tourRooms = [$this->rooms['101']->id, $this->rooms['102']->id];
+
+        DB::table('rooms')->whereNotIn('id', $tourRooms)->update(['vr_visibility' => 'draft']);
+        DB::table('rooms')->whereIn('id', $tourRooms)->update(['vr_visibility' => 'public']);
+    }
+
+    /**
+     * Copies the photos in database/seeders/demo-assets into storage and puts
+     * each one in its place, so every reset (locally or on Laravel Cloud)
+     * looks the same. To change a demo photo, replace the file in that
+     * folder (keep the same name) and run: php artisan demo:reset --force
+     */
+    private function seedDemoPhotos(): void
+    {
+        $disk = Storage::disk('public');
+        $copy = function (string $file, string $to) use ($disk): string {
+            $disk->put($to, File::get(database_path("seeders/demo-assets/{$file}")));
+
+            return $to;
+        };
+
+        // VR tours: [room, scene title, file, stored as]. A room's first scene is where its tour opens.
+        DB::table('vr_hotspots')->delete();
+        foreach (VrScene::all() as $old) {
+            $disk->delete(array_filter([$old->panorama_path, $old->filled_path]));
+        }
+        DB::table('vr_scenes')->delete();
+
+        $scenes = [
+            ['101', 'Living Room', 'Room 101 Starting point Living Room.jpg', 'vr-scenes/demo/room-101-living-room.jpg'],
+            ['101', 'Kitchen', 'Room 101 Starting Point Kitchen.jpg', 'vr-scenes/demo/room-101-kitchen.jpg'],
+            ['102', 'Living Room', 'Room 102 Living Room.jpg', 'vr-scenes/demo/room-102-living-room.jpg'],
+            ['102', 'Bedroom', 'Room 102 Bedroom.jpg', 'vr-scenes/demo/room-102-bedroom.jpg'],
+        ];
+        $filler = app(PanoramaFillService::class);
+        $made = ['101' => [], '102' => []];
+        foreach ($scenes as [$no, $title, $file, $to]) {
+            $scene = VrScene::create([
+                'room_id' => $this->rooms[$no]->id,
+                'title' => $title,
+                'panorama_path' => $copy($file, $to),
+                'photo_updated_at' => now(),
+                'is_default' => $made[$no] === [],
+                'sort_order' => count($made[$no]),
+                // All four are full 360° panoramas (2:1 photos).
+                'haov' => 360, 'vaov' => 180, 'v_offset' => 0, 'is_partial' => false,
+            ]);
+            $filler->fill($scene); // a smaller copy for phones, like a normal upload
+            $made[$no][] = $scene;
         }
 
-        // Take the photos from whichever room has them (102 first: Living Room + Computer Room).
-        $sourceId = null;
-        foreach (['102', '101', '105'] as $no) {
-            $id = $this->rooms[$no]->id ?? null;
-            if ($id && DB::table('vr_scenes')->where('room_id', $id)->exists()) {
-                $sourceId = $id;
-                break;
+        // Room 102: arrows both ways between the Living Room and the Bedroom.
+        [$living, $bedroom] = $made['102'];
+        DB::table('vr_hotspots')->insert([
+            ['vr_scene_id' => $living->id, 'target_scene_id' => $bedroom->id, 'pitch' => -5, 'yaw' => 0, 'label' => 'Go to Bedroom', 'created_at' => now(), 'updated_at' => now()],
+            ['vr_scene_id' => $bedroom->id, 'target_scene_id' => $living->id, 'pitch' => -5, 'yaw' => 180, 'label' => 'Go to Living Room', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+        DB::table('rooms')->where('id', $this->rooms['101']->id)->update(['vr_caption' => '4-person room with its own living room and kitchen']);
+        DB::table('rooms')->where('id', $this->rooms['102']->id)->update(['vr_caption' => 'Quiet 4-person room with a living room']);
+
+        // Room listing photos: one for the 4-person rooms, one for the 10–16 person rooms.
+        DB::table('room_photos')->delete();
+        $fourPax = $copy('4 pax room placeholder image 1.webp', 'room-photos/demo/4-pax-room.webp');
+        $bigRoom = $copy('placeholder image 8 pax room 2.webp', 'room-photos/demo/big-room.webp');
+        foreach ($this->rooms as $room) {
+            $path = match ($room->type) {
+                'Room with AC, 4 persons' => $fourPax,
+                'Room with AC, 10–16 persons' => $bigRoom,
+                default => null,
+            };
+            if ($path) {
+                DB::table('room_photos')->insert(['room_id' => $room->id, 'path' => $path, 'sort_order' => 0, 'created_at' => now(), 'updated_at' => now()]);
             }
         }
-        if (! $sourceId) {
-            return;
-        }
 
-        DB::table('vr_scenes')->where('room_id', $sourceId)->update(['room_id' => $target]);
-        $scenes = DB::table('vr_scenes')->where('room_id', $target)->pluck('id');
-        DB::table('vr_hotspots')->whereIn('vr_scene_id', $scenes)->delete();
+        // Photos on the first published review (see review()).
+        $this->reviewPhotos = [
+            $copy('Review photo.jpg', 'reviews/demo/review-photo-1.jpg'),
+            $copy('review photo 2.jpg', 'reviews/demo/review-photo-2.jpg'),
+        ];
 
-        // Any other room keeps its photos but is hidden from visitors.
-        DB::table('rooms')->where('id', '!=', $target)->update(['vr_visibility' => 'draft']);
-        DB::table('rooms')->where('id', $target)->update([
-            'vr_visibility' => 'public',
-            'vr_caption' => 'Solo fan room on the ground floor, near the living room',
-        ]);
+        // Homepage slideshow (shown after the cover photo).
+        DormitoryProfile::current()->update(['hero_photo_paths' => [
+            $copy('Slideshow landing page 1.webp', 'dormitory-profile/hero/demo-slide-1.webp'),
+            $copy('Slideshow landing page 2.webp', 'dormitory-profile/hero/demo-slide-2.webp'),
+        ]]);
+
+        // Pureza's GCash QR.
+        DB::table('payment_methods')->whereRaw('LOWER(name) = ?', ['gcash'])
+            ->update(['qr_path' => $copy('DORM gcash qr.jpg', 'payment-qr/demo-gcash.jpg')]);
     }
 
     /* ------------------------------------------------------------------ */
