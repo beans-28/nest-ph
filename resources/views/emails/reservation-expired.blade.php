@@ -9,9 +9,15 @@
             <td style="padding:32px;">
                 <h2 style="color:#292420;margin:0 0 12px;font-size:20px;">Your reservation has expired, {{ $tenant->full_name }}</h2>
                 <p style="color:#4b5f4c;font-size:14px;line-height:1.6;margin:0 0 20px;">
-                    You paid half of your move-in fee, but the remaining balance wasn't paid within one month
-                    of your payment. As stated in the Payments and Fees Schedule (Section 3.2), a reservation is
-                    valid for one month, so your bedspace has been released.
+                    @if($bill->status === 'unpaid')
+                        Your application was approved, but no move-in fee payment was received within
+                        {{ \App\Console\Commands\ExpireMoveInReservations::UNPAID_DAYS }} days of approval,
+                        so your bedspace has been released and your account has been deactivated.
+                    @else
+                        You paid half of your move-in fee, but the remaining balance wasn't paid within one month
+                        of your payment. As stated in the Payments and Fees Schedule (Section 3.2), a reservation is
+                        valid for one month, so your bedspace has been released.
+                    @endif
                 </p>
 
                 <div style="background:#eeeded;border-radius:10px;padding:16px 18px;margin:0 0 20px;">

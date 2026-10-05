@@ -140,12 +140,11 @@ public function login(Request $request)
     }
 
     /**
-     * Keyed by email + IP, so one user mistyping their password doesn't
-     * lock out anyone else, and repeatedly trying different emails from
-     * the same IP doesn't dodge the limiter either.
+     * Keyed by email only, so once an account is locked it stays locked
+     * from every device and IP -- switching networks can't dodge it.
      */
     private function throttleKeyBase(Request $request): string
     {
-        return Str::transliterate(Str::lower($request->input('email', ''))).'|'.$request->ip();
+        return Str::transliterate(Str::lower($request->input('email', '')));
     }
 }

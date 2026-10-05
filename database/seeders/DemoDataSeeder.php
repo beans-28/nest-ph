@@ -1916,6 +1916,70 @@ class DemoDataSeeder extends Seeder
                 DB::table('beds')->where('id', $this->beds[$bedKey])->update(['status' => 'reserved']);
             }
         }
+
+        $this->seedReturningTenantApplication();
+    }
+
+    /**
+     * A former tenant applying again, so the "Returning tenant" badge and the
+     * Apply Discount field show up on the admin Applications page. Uses the
+     * same email and phone as their old stay, which is what
+     * ApplicationController::findReturningTenant() matches on.
+     */
+    private function seedReturningTenantApplication(): void
+    {
+        $old = DB::table('tenants')
+            ->join('applications', 'applications.tenant_id', '=', 'tenants.id')
+            ->where('tenants.status', 'inactive')
+            ->where('tenants.is_blacklisted', false)
+            ->orderByDesc('tenants.deactivated_at')
+            ->select('tenants.*', 'applications.gender', 'applications.birthdate', 'applications.occupation',
+                'applications.school_company', 'applications.emergency_contact_relation')
+            ->first();
+        $bedId = DB::table('beds')->where('status', 'vacant')->orderBy('id')->value('id');
+        if (! $old || ! $bedId) {
+            return;
+        }
+
+        $created = $this->today->copy()->subDay()->setTime(10, 20);
+        $start = $this->today->copy()->addDays(10);
+        $row = [
+            'first_name' => $old->first_name,
+            'last_name' => $old->last_name,
+            'contact_number' => $old->contact_number,
+            'email' => $old->email,
+            'home_address' => $old->home_address,
+            'emergency_contact_name' => $old->emergency_contact_name,
+            'emergency_contact_number' => $old->emergency_contact_number,
+            'emergency_contact_relation' => $old->emergency_contact_relation,
+            'bed_id' => $bedId,
+            'preferred_start_date' => $start->toDateString(),
+            'tenant_end_date' => DormitoryProfile::current()->minimumEndDate($start)->endOfMonth()->toDateString(),
+        ];
+        $packet = $this->signedPacket($row + ['emergency_billing_consent' => true], $bedId, $created, $row['emergency_contact_name']);
+
+        DB::table('applications')->insert($row + [
+            'birthdate' => $old->birthdate,
+            'gender' => $old->gender,
+            'nationality' => 'Filipino',
+            'medical_condition' => 'None',
+            'occupation' => $old->occupation,
+            'school_company' => $old->school_company,
+            'school_company_address' => 'Manila',
+            'type_of_tenant' => $old->tenant_type,
+            'id_document_path' => $this->files['id'][0],
+            'emergency_contact_id_path' => $this->files['emergency_id'],
+            'signed_contract_path' => $packet,
+            'emergency_contact_signed' => true,
+            'emergency_billing_consent' => true,
+            'dpa_consent' => true,
+            'status' => 'pending',
+            'created_at' => $created,
+            'updated_at' => $created,
+        ]);
+        DB::table('beds')->where('id', $bedId)->update(['status' => 'reserved']);
+
+        $this->command?->info("Seeded returning-tenant application: {$old->first_name} {$old->last_name}.");
     }
 
     /* ------------------------------------------------------------------ */

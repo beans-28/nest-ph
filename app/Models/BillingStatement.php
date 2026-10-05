@@ -126,7 +126,8 @@ class BillingStatement extends Model
     /**
      * Payments and Fees Schedule 3.2: a reservation is valid for one month
      * from the date of payment. Counted from the first approved payment on
-     * a half-paid move-in fee; null if nothing has been approved yet.
+     * a half-paid move-in fee. A move-in fee with nothing paid yet holds the
+     * bed for UNPAID_DAYS from approval (the bill is created on approval).
      */
     public function reservationDeadline(): ?\Carbon\Carbon
     {
@@ -136,8 +137,12 @@ class BillingStatement extends Model
 
         $firstPaid = $this->payments()->where('status', 'approved')->min('payment_date');
 
-        return $firstPaid
-            ? \Carbon\Carbon::parse($firstPaid)->startOfDay()->addMonthsNoOverflow(\App\Console\Commands\ExpireMoveInReservations::MONTHS)->endOfDay()
+        if ($firstPaid) {
+            return \Carbon\Carbon::parse($firstPaid)->startOfDay()->addMonthsNoOverflow(\App\Console\Commands\ExpireMoveInReservations::MONTHS)->endOfDay();
+        }
+
+        return $this->status === 'unpaid' && $this->created_at
+            ? $this->created_at->copy()->startOfDay()->addDays(\App\Console\Commands\ExpireMoveInReservations::UNPAID_DAYS)->endOfDay()
             : null;
     }
 

@@ -148,6 +148,16 @@ class ApplicationController extends Controller
             ], 422);
         }
 
+        // One email = one person. If a current tenant already uses this
+        // email, accepting the application would merge a second person (or a
+        // second stay) into that tenant's record and account.
+        if (! empty($data['email']) && $this->findCurrentTenantByEmail($data['email'])) {
+            return response()->json([
+                'message' => 'This email address is already used by a current tenant. Please use a different email, or contact the dormitory if you are already staying here.',
+                'errors' => ['email' => ['This email is already used by a current tenant.']],
+            ], 422);
+        }
+
         $bed = Bed::with('room')->findOrFail($data['bed_id']);
 
         if ($bed->status !== 'vacant') {
@@ -438,6 +448,14 @@ class ApplicationController extends Controller
             ], 409);
         }
 
+        // Safety net for applications submitted before the check in store()
+        // existed, or whose email became a current tenant's in the meantime.
+        if (! empty($application->email) && $this->findCurrentTenantByEmail($application->email)) {
+            return response()->json([
+                'message' => 'This email belongs to a current tenant. Reject this application or ask the applicant to re-apply with their own email.',
+            ], 409);
+        }
+
         $returningTenant = $this->findReturningTenant($application);
 
         $result = DB::transaction(function () use ($application, $bed, $data, $returningTenant, $request) {
@@ -724,6 +742,7 @@ class ApplicationController extends Controller
             'bed.room:id,room_no,room_type,monthly_rate',
         ])->latest()->get()->map(function ($application) {
             $returning = $this->findReturningTenant($application);
+            $current = $application->email ? $this->findCurrentTenantByEmail($application->email) : null;
 
             return [
                 'id' => $application->id,
@@ -761,6 +780,10 @@ class ApplicationController extends Controller
                 'returning_tenant' => $returning ? [
                     'id' => $returning->id,
                     'full_name' => $returning->full_name,
+                ] : null,
+                'current_tenant' => $current ? [
+                    'id' => $current->id,
+                    'full_name' => $current->full_name,
                 ] : null,
             ];
         })->values();
@@ -858,11 +881,17 @@ class ApplicationController extends Controller
      * never on name alone. A phone number by itself isn't enough: siblings
      * and parents often share one, and a false match would merge two
      * different people.
+     *
+     * Only tenants who have moved out (inactive) count as "returning". A
+     * current tenant with the same email is blocked instead — see
+     * findCurrentTenantByEmail().
      */
     private function findReturningTenant(Application $application): ?Tenant
     {
         if (! empty($application->email)) {
-            $byEmail = Tenant::where('email', $application->email)->first();
+            $byEmail = Tenant::where('status', 'inactive')
+                ->whereRaw('LOWER(email) = ?', [strtolower($application->email)])
+                ->first();
             if ($byEmail) {
                 return $byEmail;
             }
@@ -872,8 +901,20 @@ class ApplicationController extends Controller
             return null;
         }
 
-        return Tenant::where('contact_number', $application->contact_number)
+        return Tenant::where('status', 'inactive')
+            ->where('contact_number', $application->contact_number)
             ->where('last_name', $application->last_name)
+            ->first();
+    }
+
+    /**
+     * A tenant who is staying here now (active) or has been approved and is
+     * about to move in (pending_move_in_payment) with this email, if any.
+     */
+    private function findCurrentTenantByEmail(string $email): ?Tenant
+    {
+        return Tenant::whereIn('status', ['active', 'pending_move_in_payment'])
+            ->whereRaw('LOWER(email) = ?', [strtolower($email)])
             ->first();
     }
 

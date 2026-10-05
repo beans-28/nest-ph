@@ -18,23 +18,31 @@ use Illuminate\Support\Facades\Mail;
  * reservation: the bed goes back to Vacant, the contract is terminated and
  * the tenant account is closed. The tenant is emailed; the admin bell shows
  * it for a week (AdminNotificationController).
+ *
+ * An approved tenant who pays nothing at all gets the same treatment
+ * UNPAID_DAYS after approval, unless a proof of payment is still waiting
+ * for admin review (that delay isn't the tenant's fault).
  */
 class ExpireMoveInReservations extends Command
 {
     public const MONTHS = 1;
 
+    public const UNPAID_DAYS = 7;
+
     protected $signature = 'reservations:expire';
 
-    protected $description = 'Release beds for half-paid move-in fees that are past the one-month reservation.';
+    protected $description = 'Release beds for move-in fees that are unpaid 7 days after approval, or half-paid past the one-month reservation.';
 
     public function handle(): int
     {
         $bills = BillingStatement::with('contract', 'tenant.user')
             ->where('type', 'move_in')
-            ->where('status', 'partial')
+            ->whereIn('status', ['partial', 'unpaid'])
             ->whereNull('reservation_expired_at')
             ->get()
-            ->filter(fn (BillingStatement $bill) => $bill->reservationDeadline()?->isPast());
+            ->filter(fn (BillingStatement $bill) => $bill->reservationDeadline()?->isPast())
+            ->reject(fn (BillingStatement $bill) => $bill->status === 'unpaid'
+                && $bill->payments()->where('status', 'pending')->exists());
 
         foreach ($bills as $bill) {
             DB::transaction(function () use ($bill) {

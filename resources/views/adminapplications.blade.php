@@ -278,6 +278,13 @@
       <div class="sec">
         <h3>Decision</h3>
 
+        ${a.current_tenant ? `
+          <div class="returning-note" style="border-color:#c0392b;background:#fdecea;color:#7b1d14;">
+            <strong>This email already belongs to a current tenant</strong> (${esc(a.current_tenant.full_name)}).
+            It can't be approved. Reject it, or request re-application so the applicant uses their own email.
+          </div>
+        ` : ''}
+
         ${a.returning_tenant ? `
           <div class="returning-note">
             <strong>This applicant matches an existing tenant record</strong> (${esc(a.returning_tenant.full_name)}).
@@ -290,7 +297,7 @@
         ` : ''}
 
         <div class="action-row">
-          <button class="btn primary" id="approveBtn">Approve</button>
+          <button class="btn primary" id="approveBtn" ${a.current_tenant ? 'disabled title="Email belongs to a current tenant"' : ''}>Approve</button>
           <button class="btn warn" id="showRejectBtn">Reject</button>
           <button class="btn info" id="showReapplyBtn">Request Re-application</button>
         </div>
