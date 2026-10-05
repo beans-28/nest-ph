@@ -1759,7 +1759,9 @@ class DemoDataSeeder extends Seeder
         }
 
         foreach (array_chunk($rows, 200) as $chunk) {
-            DB::table('tenant_notifications')->insert($chunk);
+            // insertOrIgnore: the app may already have sent some of these
+            // (e.g. a late_penalty notice while bills were built); keep that one.
+            DB::table('tenant_notifications')->insertOrIgnore($chunk);
         }
         $this->command?->info('Seeded ' . count($rows) . ' tenant notifications.');
     }

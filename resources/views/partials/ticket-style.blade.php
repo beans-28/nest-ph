@@ -1,6 +1,7 @@
 {{-- Shared ticket colours (admin Tickets, tenant Tickets, admin dashboard).
      One rule keeps them readable at a glance:
-       - TIME (overdue / due soon) uses colour: red and amber.
+       - TIME (overdue / due soon) is plain text with an icon and a left
+         bar, never a pill, so it can't be mistaken for a priority.
        - PRIORITY is colour-coded pills: Critical red, High orange,
          Medium blue, Low grey.
      Markup: <span class="prio critical">Critical</span>
@@ -22,6 +23,9 @@
   .prio.low{ background:#eceeec; color:#4a524e; }
 
   .due{ font-size:12.5px; color:#5d6661; }
-  .due.late{ color:var(--tk-late); font-weight:700; }
-  .due.soon{ color:var(--tk-soon); font-weight:700; }
+  .due.late, .due.soon{ display:inline-flex; align-items:center; gap:5px; font-weight:700; padding-left:8px; border-left:3px solid currentColor; }
+  .due.late{ color:var(--tk-late); }
+  .due.late::before{ content:'\26A0'; font-size:13px; }
+  .due.soon{ color:var(--tk-soon); }
+  .due.soon::before{ content:'\23F1'; font-size:13px; }
 </style>
