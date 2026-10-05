@@ -245,6 +245,12 @@ class BillingController extends Controller
             $rate = (float) $contract->monthly_rate;
             $baseRent = $this->rentForPeriod($rate, $periodStart, $periodEnd, $profile, ! $lastBill && ! $hasMoveInBill);
 
+            // Mid-month move-out charged in full: the last month is billed
+            // as a whole month even though the contract ends partway through.
+            if ($profile->mid_month_move_out === 'full' && $this->endsMidMonthAtContractEnd($contract, $periodEnd)) {
+                $baseRent = $rate;
+            }
+
             // Prorated mid-month move-in: the advance covered a whole month but
             // the tenant only used part of the move-in month, so the unused days
             // come off the first monthly bill.
@@ -356,6 +362,12 @@ class BillingController extends Controller
         $days = (int) round(abs($from->diffInDays($to))) + 1;
         $rent = $days >= $periodDays ? $rate : round($rate * $days / $periodDays, 2);
 
+        // Mid-month move-out charged in full: a period cut short by the
+        // contract's end date is billed as a whole period.
+        if (DormitoryProfile::current()->mid_month_move_out === 'full' && $contract->end_date && $to->isSameDay($contract->end_date) && $days < $periodDays) {
+            $rent = $rate;
+        }
+
         return [$from, $to, $rent];
     }
 
@@ -366,6 +378,14 @@ class BillingController extends Controller
      * by the day. The very first bill of a walk-in contract that starts
      * mid-month is charged in full unless the dorm prorates move-ins.
      */
+    /** True when this period was cut short because the contract ends before the month does. */
+    private function endsMidMonthAtContractEnd($contract, Carbon $periodEnd): bool
+    {
+        return $contract->end_date
+            && $periodEnd->isSameDay($contract->end_date)
+            && ! $periodEnd->isSameDay($periodEnd->copy()->endOfMonth());
+    }
+
     private function rentForPeriod(float $rate, Carbon $from, Carbon $to, DormitoryProfile $profile, bool $isWalkInFirstBill): float
     {
         $daysInMonth = $from->daysInMonth;

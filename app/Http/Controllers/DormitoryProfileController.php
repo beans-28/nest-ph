@@ -408,6 +408,7 @@ class DormitoryProfileController extends Controller
             'deposit_refund_days' => ['required', 'integer', 'min:0', 'max:180'],
             'reservation_validity_days' => ['required', 'integer', 'min:1', 'max:180'],
             'mid_month_move_in' => ['required', Rule::in(['full', 'prorated'])],
+            'mid_month_move_out' => ['sometimes', Rule::in(['full', 'prorated'])],
             'water_included' => ['required', 'boolean'],
             'electricity_included' => ['required', 'boolean'],
             'wifi_included' => ['required', 'boolean'],

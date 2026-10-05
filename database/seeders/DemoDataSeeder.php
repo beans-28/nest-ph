@@ -113,6 +113,9 @@ class DemoDataSeeder extends Seeder
     /** Beds held by the pending applications (seedPendingApplications). */
     private const PENDING_APPLICATION_BEDS = ['202-2', '203-3', '301-3', '302-2'];
 
+    /** Bed held by the returning tenant's application (seedReturningTenantApplication). Must be in LEAVE_VACANT. */
+    private const RETURNING_TENANT_BED = '402-13';
+
     private Carbon $today;
 
     private int $grace;
@@ -242,6 +245,7 @@ class DemoDataSeeder extends Seeder
             'electricity_included' => false,
             'wifi_included' => false,
             'mid_month_move_in' => 'full',
+            'mid_month_move_out' => 'prorated',
         ]);
         if (blank($profile->description) || str_contains((string) $profile->description, 'NEST')) {
             $profile->description = 'Pureza Station Dormitory has been a trusted home for students and young professionals since 1996. '
@@ -1936,8 +1940,10 @@ class DemoDataSeeder extends Seeder
             ->select('tenants.*', 'applications.gender', 'applications.birthdate', 'applications.occupation',
                 'applications.school_company', 'applications.emergency_contact_relation')
             ->first();
-        $bedId = DB::table('beds')->where('status', 'vacant')->orderBy('id')->value('id');
-        if (! $old || ! $bedId) {
+        // A fixed bed in a big room, so it never takes 101-4 / 102-4 (the VR tour
+        // rooms need a vacant bed for their tour to show on the public site).
+        $bedId = $this->beds[self::RETURNING_TENANT_BED] ?? null;
+        if (! $old || ! $bedId || DB::table('beds')->where('id', $bedId)->value('status') !== 'vacant') {
             return;
         }
 

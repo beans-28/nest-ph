@@ -531,6 +531,13 @@
                   <option value="prorated" @selected($profile->mid_month_move_in === 'prorated')>Prorated (unused days credited on the first bill)</option>
                 </select>
               </div>
+              <div class="field" id="polMidMonthOutField">
+                <label for="polMidMonthOut">Mid-month move-out: last month is</label>
+                <select id="polMidMonthOut">
+                  <option value="prorated" @selected($profile->mid_month_move_out === 'prorated')>Prorated (only the days stayed are charged)</option>
+                  <option value="full" @selected($profile->mid_month_move_out === 'full')>Charged in full</option>
+                </select>
+              </div>
               <fieldset class="field policy-checks">
                 <legend>Included in the rent</legend>
                 <label><input type="checkbox" id="polWater" @checked($profile->water_included)> Water</label>
@@ -1954,6 +1961,7 @@
       deposit_refund_days: $('polRefund').value,
       reservation_validity_days: $('polReservation').value,
       mid_month_move_in: $('polMidMonth').value,
+      mid_month_move_out: $('polMidMonthOut').value,
       water_included: $('polWater').checked,
       electricity_included: $('polElectricity').checked,
       wifi_included: $('polWifi').checked,
