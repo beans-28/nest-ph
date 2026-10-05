@@ -589,22 +589,34 @@ function showInlineError(data) {
 }
 
 let lockoutInterval = null;
+const LOCKOUT_KEY = 'nest_lockout_until_tenant';
 
+// The countdown uses a fixed end time (saved in localStorage) instead of
+// counting down one tick at a time, so it stays correct while the tab is in
+// the background and after the page is closed and reopened.
 function showLockoutModal(seconds) {
+    const until = Date.now() + seconds * 1000;
+    try { localStorage.setItem(LOCKOUT_KEY, String(until)); } catch (e) {}
+    startLockoutCountdown(until);
+}
+
+function startLockoutCountdown(until) {
     document.getElementById('lockoutModal').classList.add('visible');
     document.querySelector('.lockout-modal').focus();
-    updateLockoutTimer(seconds);
 
     clearInterval(lockoutInterval);
-    lockoutInterval = setInterval(function () {
-        seconds -= 1;
+    const tick = function () {
+        const seconds = Math.ceil((until - Date.now()) / 1000);
         if (seconds <= 0) {
             clearInterval(lockoutInterval);
+            try { localStorage.removeItem(LOCKOUT_KEY); } catch (e) {}
             document.getElementById('lockoutModal').classList.remove('visible');
             return;
         }
         updateLockoutTimer(seconds);
-    }, 1000);
+    };
+    tick();
+    lockoutInterval = setInterval(tick, 1000);
 }
 
 function updateLockoutTimer(seconds) {
@@ -612,6 +624,13 @@ function updateLockoutTimer(seconds) {
     const secs = seconds % 60;
     document.getElementById('lockoutTimer').textContent = minutes + ':' + String(secs).padStart(2, '0');
 }
+
+// Resume an unfinished lockout when the page is reopened.
+(function () {
+    let until = 0;
+    try { until = Number(localStorage.getItem(LOCKOUT_KEY)) || 0; } catch (e) {}
+    if (until > Date.now()) startLockoutCountdown(until);
+})();
 
 window.addEventListener('scroll', function () {
     const nav = document.querySelector('.topnav');

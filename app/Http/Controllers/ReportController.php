@@ -90,7 +90,7 @@ class ReportController extends Controller
     }
 
     /**
-     * GET /reports/export?type=occupancy|financial|forecast&start=&end=&format=xlsx|pdf
+     * GET /reports/export?type=occupancy|financial|forecast|expenses&start=&end=&format=xlsx|pdf
      * Table 36, step 4 — "Click Export -> generate and download the
      * report." Two formats:
      *   - xlsx (default): a styled Excel workbook (PhpSpreadsheet). This
@@ -101,7 +101,7 @@ class ReportController extends Controller
     public function export(Request $request)
     {
         $data = $request->validate([
-            'type' => ['required', Rule::in(['occupancy', 'financial', 'forecast'])],
+            'type' => ['required', Rule::in(['occupancy', 'financial', 'forecast', 'expenses'])],
             'start' => ['nullable', 'date'],
             'end' => ['nullable', 'date'],
             'format' => ['nullable', Rule::in(['xlsx', 'pdf'])],
@@ -112,6 +112,8 @@ class ReportController extends Controller
             $report = $this->computeOccupancy();
         } elseif ($type === 'forecast') {
             $report = $this->computeForecast();
+        } elseif ($type === 'expenses') {
+            $report = $this->computeExpenses();
         } else {
             [$start, $end] = $this->resolveRange($request);
             $report = $this->computeFinancial($start, $end);
@@ -155,6 +157,7 @@ class ReportController extends Controller
         'occupancy' => 'Occupancy Report',
         'financial' => 'Financial / Billing Report',
         'forecast' => 'Forecast Report',
+        'expenses' => 'Expenses and Profit Report',
     ];
 
     /**
@@ -171,7 +174,7 @@ class ReportController extends Controller
             ->setCompany('Generated via NEST.PH');
         $sheet = $book->getActiveSheet();
         $sheet->setTitle(ucfirst($type));
-        $lastCol = ['occupancy' => 'G', 'financial' => 'B', 'forecast' => 'H'][$type];
+        $lastCol = ['occupancy' => 'G', 'financial' => 'B', 'forecast' => 'H', 'expenses' => 'I'][$type];
 
         // Title block
         $sheet->setCellValue('A1', $dormName);
@@ -188,6 +191,7 @@ class ReportController extends Controller
         $sheet->setCellValue('B5', match ($type) {
             'occupancy' => 'Current room and bed status (live snapshot)',
             'forecast' => 'Estimates for ' . $report['range'] . ', based on the last 6 months',
+            'expenses' => $report['range'] ?? 'No months recorded yet',
             default => $report['range']['start'] . ' to ' . $report['range']['end'],
         });
         $sheet->getStyle('A4:A5')->getFont()->setBold(true);
@@ -238,6 +242,33 @@ class ReportController extends Controller
             ], '0', 'G');
         } elseif ($type === 'forecast') {
             $row = $this->xlsxForecast($sheet, $row, $report);
+        } elseif ($type === 'expenses') {
+            $t = $report['totals'];
+            $start = $row;
+            $row = $this->xlsxTable($sheet, $row, 'Profit by Month',
+                ['Month', 'Collected', 'Electricity (Meralco)', 'Water', 'Internet / WiFi', 'Staff Salaries', 'Others', 'Total Expenses', 'Net Profit'],
+                collect($report['months'])->map(fn ($m) => [
+                    $m['label'], $m['collected'], $m['electricity'], $m['water'], $m['internet'], $m['salaries'], $m['other'], $m['total'], $m['net'],
+                ])->all() ?: [['No months recorded yet.']],
+                $report['months'] ? ['Total', $t['collected'], $t['electricity'], $t['water'], $t['internet'], $t['salaries'], $t['other'], $t['total'], $t['net']] : null);
+            $first = $start + 2;
+            $last = $row - 2;
+            $sheet->getStyle("B{$first}:I{$last}")->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+            $sheet->getStyle('A' . ($start + 1) . ':I' . ($start + 1))->getAlignment()->setWrapText(true);
+            foreach ($report['months'] as $i => $m) {
+                if ($m['net'] < 0) {
+                    $sheet->getStyle('I' . ($first + $i))->getFont()->getColor()->setRGB(self::RED);
+                }
+            }
+            if ($report['months']) {
+                // Chart reads the month rows only (not the Total row).
+                $lastMonth = $last - 1;
+                $row = $this->xlsxChart($sheet, $row, 'Collected vs. Expenses per Month', "A{$first}:A{$lastMonth}", [
+                    [DataSeries::TYPE_BARCHART, 'Collected', "B{$first}:B{$lastMonth}", '8FB48F'],
+                    [DataSeries::TYPE_BARCHART, 'Total Expenses', "H{$first}:H{$lastMonth}", 'C0504D'],
+                    [DataSeries::TYPE_LINECHART, 'Net Profit', "I{$first}:I{$lastMonth}", self::GREEN],
+                ], '"₱"#,##0', 'I');
+            }
         } else {
             $row = $this->xlsxTable($sheet, $row, 'Revenue and Profit', ['Description', 'Amount'], [
                 ['Total Collected', $report['total_collected']],
@@ -304,6 +335,10 @@ class ReportController extends Controller
         $sheet->getColumnDimension('A')->setWidth(34);
         foreach (range('B', $lastCol) as $col) {
             $sheet->getColumnDimension($col)->setWidth(16);
+        }
+        if ($type === 'expenses') {
+            $sheet->getColumnDimension('A')->setWidth(18);
+            $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
         }
         if ($type === 'financial') {
             $sheet->getColumnDimension('B')->setWidth(22);
@@ -496,6 +531,19 @@ class ReportController extends Controller
             ];
         }
 
+        if ($type === 'expenses') {
+            $m = collect($report['months']);
+            $labels = $m->pluck('label')->map(fn ($l) => substr($l, 0, 3) . " '" . substr($l, -2))->all();
+            $peso = fn ($v) => 'PHP ' . (abs($v) >= 1000 ? rtrim(rtrim(number_format($v / 1000, 1), '0'), '.') . 'k' : round($v));
+
+            return $m->isEmpty() ? [] : [
+                'profit' => $this->svgChart($labels, [
+                    ['Collected', '8FB48F', $m->pluck('collected')->all()],
+                    ['Expenses', 'C0504D', $m->pluck('total')->all()],
+                ], ['Net profit', '194E19', $m->pluck('net')->all()], $peso),
+            ];
+        }
+
         $m = collect($report['monthly']);
         $labels = $m->pluck('label')->map(fn ($l) => substr($l, 0, 3) . " '" . substr($l, -2))->all();
         $peso = fn ($v) => 'PHP ' . (abs($v) >= 1000 ? rtrim(rtrim(number_format($v / 1000, 1), '0'), '.') . 'k' : round($v));
@@ -579,16 +627,42 @@ class ReportController extends Controller
             // expenses from this to show the month's net profit as you type.
             'collected' => $this->collectedIn($month),
             'expense' => $row ? $this->expensePayload($row) : null,
-            'history' => MonthlyExpense::orderByDesc('month')->limit(12)->get()
-                ->map(function (MonthlyExpense $e) {
-                    $collected = $this->collectedIn($e->month);
-
-                    return $this->expensePayload($e) + [
-                        'collected' => $collected,
-                        'net' => round($collected - $e->total(), 2),
-                    ];
-                })->values(),
+            'history' => $this->expenseHistory(),
         ]);
+    }
+
+    /** The last 12 saved months (newest first), each with collected and net profit. */
+    private function expenseHistory()
+    {
+        return MonthlyExpense::orderByDesc('month')->limit(12)->get()
+            ->map(function (MonthlyExpense $e) {
+                $collected = $this->collectedIn($e->month);
+
+                return $this->expensePayload($e) + [
+                    'collected' => $collected,
+                    'net' => round($collected - $e->total(), 2),
+                ];
+            })->values();
+    }
+
+    /**
+     * Data for the Expenses and Profit export: the same months as the
+     * "Profit by Month" table on the page, oldest first (so charts read
+     * left to right), plus a total for every column.
+     */
+    private function computeExpenses(): array
+    {
+        $months = $this->expenseHistory()->reverse()->values()->all();
+        $totals = [];
+        foreach (['collected', 'electricity', 'water', 'internet', 'salaries', 'other', 'total', 'net'] as $k) {
+            $totals[$k] = round(array_sum(array_map(fn ($m) => (float) $m[$k], $months)), 2);
+        }
+
+        return [
+            'months' => $months,
+            'totals' => $totals,
+            'range' => $months ? $months[0]['label'] . ' to ' . end($months)['label'] : null,
+        ];
     }
 
     /** Total approved payments dated within the given month. */

@@ -211,7 +211,14 @@
             <button type="submit" class="btn primary" id="saveExpenseBtn">Save Expenses</button>
           </div>
         </form>
-        <div class="results-head"><h2>Profit by Month</h2></div>
+        <div class="results-head">
+          <h2>Profit by Month</h2>
+          <div class="report-actions">
+            <button type="button" class="btn secondary" id="expExportBtn">Export Excel</button>
+            <button type="button" class="btn secondary" id="expExportPdfBtn">Export PDF</button>
+          </div>
+        </div>
+        <p class="export-error" id="expExportError" role="alert"></p>
         <div class="table-scroll" id="expenseHistory"></div>
       </div>
     </div>
@@ -618,14 +625,15 @@
   // Downloads via fetch (not a page redirect) so the button can show
   // "Exporting..." while the file builds, and a failure shows a message
   // here instead of sending the admin to an error page.
-  async function exportReport(btn, format){
-    if(!hasResults || !generatedParams) return;
-    const params = new URLSearchParams(generatedParams);
+  async function exportReport(btn, format, fixedParams, errorId){
+    if(!fixedParams && (!hasResults || !generatedParams)) return;
+    const params = new URLSearchParams(fixedParams || generatedParams);
     params.set('format', format);
+    const errBox = $(errorId || 'exportError');
     const label = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Exporting...';
-    $('exportError').classList.remove('visible');
+    errBox.classList.remove('visible');
     try {
       const res = await fetch('/reports/export?' + params.toString());
       if(!res.ok) throw new Error();
@@ -639,14 +647,17 @@
       a.remove();
       URL.revokeObjectURL(url);
     } catch(e){
-      $('exportError').textContent = 'The report could not be exported. Please try again, or refresh the page if it keeps failing.';
-      $('exportError').classList.add('visible');
+      errBox.textContent = 'The report could not be exported. Please try again, or refresh the page if it keeps failing.';
+      errBox.classList.add('visible');
     }
     btn.disabled = false;
     btn.textContent = label;
   }
   $('exportBtn').addEventListener('click', function(){ exportReport(this, 'xlsx'); });
   $('exportPdfBtn').addEventListener('click', function(){ exportReport(this, 'pdf'); });
+  // Expenses & Profit tab: exports the saved months shown under "Profit by Month".
+  $('expExportBtn').addEventListener('click', function(){ exportReport(this, 'xlsx', { type:'expenses' }, 'expExportError'); });
+  $('expExportPdfBtn').addEventListener('click', function(){ exportReport(this, 'pdf', { type:'expenses' }, 'expExportError'); });
 })();
 </script>
 </body>

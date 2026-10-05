@@ -51,13 +51,15 @@
   <div class="letter-header">
     @if($brandLogoFile)<img src="{{ $brandLogoFile }}" class="brand-logo"><br>@endif
     <h1>{{ $dormName }}</h1>
-    <p>{{ ['occupancy' => 'Occupancy Report', 'financial' => 'Financial / Billing Report', 'forecast' => 'Forecast Report'][$type] }}</p>
+    <p>{{ ['occupancy' => 'Occupancy Report', 'financial' => 'Financial / Billing Report', 'forecast' => 'Forecast Report', 'expenses' => 'Expenses and Profit Report'][$type] }}</p>
   </div>
 
   <table class="meta">
     <tr><td><strong>Date Generated:</strong></td><td>{{ now()->format('F j, Y g:i A') }}</td></tr>
     @if($type === 'occupancy')
       <tr><td><strong>Coverage:</strong></td><td>Current room and bed status (live snapshot), plus a 12-month trend</td></tr>
+    @elseif($type === 'expenses')
+      <tr><td><strong>Months Covered:</strong></td><td>{{ $report['range'] ?? 'No months recorded yet' }}</td></tr>
     @elseif($type === 'forecast')
       <tr><td><strong>Coverage:</strong></td><td>Estimates for {{ $report['range'] }}, based on the last 6 months</td></tr>
     @else
@@ -213,6 +215,76 @@
         @endforeach
       </tbody>
     </table>
+  @elseif($type === 'expenses')
+    @php $t = $report['totals']; @endphp
+    <h2 class="section">Overview</h2>
+    <p class="body-text">
+      This report lists the expenses recorded for {{ $dormName }} (up to the last 12 months),
+      the approved tenant payments collected in each of those months, and the net profit.
+    </p>
+
+    <div class="highlight-box">
+      <table>
+        <tr>
+          <td>
+            <div class="label">Total Collected</div>
+            <div class="value">PHP {{ number_format($t['collected'], 2) }}</div>
+          </td>
+          <td style="color:#ba2828;">
+            <div class="label">Total Expenses</div>
+            <div class="value">PHP {{ number_format($t['total'], 2) }}</div>
+          </td>
+          <td @if($t['net'] < 0) style="color:#ba2828;" @endif>
+            <div class="label">Net Profit</div>
+            <div class="value">PHP {{ number_format($t['net'], 2) }}</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <h2 class="section">Expenses Breakdown</h2>
+    <table class="summary">
+      <thead><tr><th>Expense</th><th style="text-align:right;">Amount</th></tr></thead>
+      <tbody>
+        <tr class="sub"><td>Electricity (Meralco)</td><td class="amount">PHP {{ number_format($t['electricity'], 2) }}</td></tr>
+        <tr class="sub"><td>Water</td><td class="amount">PHP {{ number_format($t['water'], 2) }}</td></tr>
+        <tr class="sub"><td>Internet / WiFi</td><td class="amount">PHP {{ number_format($t['internet'], 2) }}</td></tr>
+        <tr class="sub"><td>Staff Salaries</td><td class="amount">PHP {{ number_format($t['salaries'], 2) }}</td></tr>
+        <tr class="sub"><td>Others</td><td class="amount">PHP {{ number_format($t['other'], 2) }}</td></tr>
+        <tr class="total"><td>Total Expenses:</td><td class="amount warn">PHP {{ number_format($t['total'], 2) }}</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section" style="margin-top:26px;">Profit by Month</h2>
+    @if(isset($charts['profit']))
+      <div class="chart-title">Collected vs. expenses per month (line = net profit)</div>
+      <div class="chart"><img src="{{ $charts['profit'] }}" width="660"></div>
+    @endif
+    @if(count($report['months']))
+      <table class="detail-table">
+        <thead><tr><th class="first" style="font-size:9px;">Month</th>@foreach(['Collected', 'Meralco', 'Water', 'WiFi', 'Salaries', 'Others', 'Total Exp.', 'Net Profit'] as $h)<th style="font-size:9px;">{{ $h }}</th>@endforeach</tr></thead>
+        <tbody>
+          @foreach($report['months'] as $m)
+            <tr>
+              <td class="first" style="font-size:9px;">{{ $m['label'] }}</td>
+              @foreach(['collected', 'electricity', 'water', 'internet', 'salaries', 'other', 'total'] as $k)
+                <td style="font-size:9px;">{{ number_format($m[$k], 2) }}</td>
+              @endforeach
+              <td class="rate" style="font-size:9px;@if($m['net'] < 0) color:#ba2828;@endif">{{ number_format($m['net'], 2) }}</td>
+            </tr>
+          @endforeach
+          <tr style="background:#dcebdc;font-weight:bold;">
+            <td class="first" style="font-size:9px;">Total</td>
+            @foreach(['collected', 'electricity', 'water', 'internet', 'salaries', 'other', 'total', 'net'] as $k)
+              <td style="font-size:9px;@if($k === 'net' && $t['net'] < 0) color:#ba2828;@endif">{{ number_format($t[$k], 2) }}</td>
+            @endforeach
+          </tr>
+        </tbody>
+      </table>
+      <p class="body-text" style="font-size:9.5px;color:#8a8a8a;margin-top:6px;">Amounts in PHP. Collected = approved tenant payments dated within the month.</p>
+    @else
+      <p class="body-text">No months recorded yet.</p>
+    @endif
   @else
     <h2 class="section">Overview</h2>
     <p class="body-text">
