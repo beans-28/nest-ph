@@ -33,11 +33,12 @@ class AdminPrivilegeController extends Controller
 
     public function index(Request $request)
     {
+        $online = \App\Services\EmergencyDispatcher::onlineAdminIds()->flip();
         $admins = User::whereHas('role', fn ($q) => $q->where('role_name', 'admin'))
             ->with('privileges', 'role')
             ->orderBy('name')
             ->get()
-            ->map(function (User $user) {
+            ->map(function (User $user) use ($online) {
                 $lastLog = AdminAccessLog::where('user_id', $user->id)->latest('created_at')->first();
                 $grantedAt = $lastLog?->created_at ?? $user->privileges->min('granted_at');
 
@@ -46,6 +47,8 @@ class AdminPrivilegeController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'is_active' => (bool) $user->is_active,
+                    // Active in the last few minutes (see EmergencyDispatcher).
+                    'online' => $online->has($user->id),
                     'role_tag' => $user->roleTag(),
                     'privileges' => $user->privileges->pluck('privilege_name')->values(),
                     'granted_at' => $grantedAt ? Carbon::parse($grantedAt)->toIso8601String() : null,

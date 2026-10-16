@@ -71,6 +71,30 @@
   .reply-row button:hover{ background:var(--green-btn-hover); }
   .reply-row button:disabled{ opacity:.6; cursor:not-allowed; }
 
+  /* ===== Safety pop-up (emergency concern types) ===== */
+  .safety-overlay{ display:none; position:fixed; inset:0; background:rgba(40,10,10,.55); z-index:400; align-items:center; justify-content:center; padding:20px; }
+  .safety-overlay.open{ display:flex; }
+  .safety-box{ background:#fff; border-radius:16px; width:100%; max-width:420px; max-height:90vh; overflow-y:auto; box-shadow:0 24px 60px rgba(0,0,0,.3); animation:safetyIn .3s cubic-bezier(.16,1,.3,1); }
+  @keyframes safetyIn{ from{ opacity:0; transform:translateY(10px) scale(.98); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ .safety-box{ animation:none; } }
+  .safety-head{ background:#b42318; color:#fff; padding:18px 22px 16px; border-radius:16px 16px 0 0; }
+  .safety-head .tag{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; opacity:.85; }
+  .safety-head h2{ margin:4px 0 0; font-size:19px; line-height:1.25; color:#fff; }
+  .safety-steps{ list-style:none; counter-reset:step; margin:0; padding:18px 22px 6px; }
+  .safety-steps li{ counter-increment:step; position:relative; padding-left:34px; margin-bottom:12px; font-size:14px; line-height:1.45; color:#26302a; }
+  .safety-steps li::before{ content:counter(step); position:absolute; left:0; top:-1px; width:24px; height:24px; border-radius:50%; background:#fde8e6; color:#b42318; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+  .safety-actions{ display:flex; flex-direction:column; gap:8px; padding:8px 22px 22px; }
+  .safety-actions a, .safety-actions button{ min-height:46px; border-radius:10px; font-size:14.5px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; cursor:pointer; font-family:inherit; }
+  .safety-actions a{ background:#b42318; color:#fff; border:none; }
+  .safety-actions a svg{ width:18px; height:18px; }
+  .safety-actions button{ background:#fff; color:#26302a; border:1px solid var(--border); }
+  .safety-actions :focus-visible{ outline:2px solid #26302a; outline-offset:2px; }
+  .success-state.emergency h2{ color:#b42318; }
+  .success-safety{ text-align:left; background:#fff6f5; border:1px solid #f6d3cf; border-radius:10px; padding:12px 14px; margin:0 0 16px; font-size:13px; color:#26302a; }
+  .success-safety strong{ display:block; margin-bottom:6px; color:#b42318; }
+  .success-safety ul{ margin:0; padding-left:18px; line-height:1.5; }
+  .success-safety a{ color:#b42318; font-weight:700; }
+
   /* ===== New Ticket modal ===== */
   .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(20,30,20,.5); z-index:60; align-items:center; justify-content:center; padding:20px; }
   .modal-overlay.open{ display:flex; }
@@ -240,7 +264,22 @@
       </svg>
       <h2 id="successHeading">Ticket Submitted!</h2>
       <p id="successMessage">An administrator will review your ticket shortly.</p>
+      <div class="success-safety" id="successSafety" hidden></div>
       <button id="successDoneBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="safety-overlay" id="safetyModal">
+  <div class="safety-box" role="alertdialog" aria-modal="true" aria-labelledby="safetyTitle" aria-describedby="safetySteps">
+    <div class="safety-head">
+      <div class="tag">Before you report</div>
+      <h2 id="safetyTitle"></h2>
+    </div>
+    <ol class="safety-steps" id="safetySteps"></ol>
+    <div class="safety-actions">
+      <a href="tel:911"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>Call 911</a>
+      <button type="button" id="safetyContinueBtn">I'm safe, continue my report</button>
     </div>
   </div>
 </div>
@@ -458,6 +497,7 @@
     $('formError').classList.remove('visible');
     $('formState').style.display = 'block';
     $('successState').classList.remove('active');
+    shownSafety.clear();
   }
 
   // Show the "who / why" fields only for Report a Tenant.
@@ -468,6 +508,26 @@
     $('roomLabel').textContent = isReport ? 'Your room' : 'Room';
   }
   $('concernType').addEventListener('change', updateReportFields);
+
+  // Emergency concern types: show what to do right now before the form.
+  const SAFETY = @json($safetyGuidance);
+  const shownSafety = new Set();
+  function showSafety(category){
+    const g = SAFETY[category];
+    if(!g) return;
+    $('safetyTitle').textContent = g.title;
+    $('safetySteps').innerHTML = g.steps.map(t => `<li>${esc(t)}</li>`).join('');
+    $('safetyModal').classList.add('open');
+    $('safetyContinueBtn').focus();
+  }
+  $('concernType').addEventListener('change', e => {
+    const c = e.target.value;
+    if(SAFETY[c] && !shownSafety.has(c)){ shownSafety.add(c); showSafety(c); }
+  });
+  $('safetyContinueBtn').addEventListener('click', () => {
+    $('safetyModal').classList.remove('open');
+    $('subjectInput').focus();
+  });
 
   $('openNewTicketBtn').addEventListener('click', () => {
     if(portalRestricted){
@@ -519,6 +579,13 @@
       renderList();
 
       $('successMessage').textContent = res.message;
+      const g = SAFETY[category];
+      $('successState').classList.toggle('emergency', !!res.emergency);
+      $('successHeading').textContent = res.emergency ? 'Emergency Reported' : 'Ticket Submitted!';
+      $('successSafety').hidden = !res.emergency;
+      $('successSafety').innerHTML = res.emergency
+        ? `<strong>${esc(g ? g.title : 'Stay safe while you wait.')}</strong><ul>${(g ? g.steps : ['Move away from any danger.', 'Keep your phone with you.']).map(t => `<li>${esc(t)}</li>`).join('')}</ul><p style="margin:8px 0 0;">In danger? <a href="tel:911">Call 911</a>.</p>`
+        : '';
       $('formState').style.display = 'none';
       $('successState').classList.add('active');
     } catch(e){ showFormError(e.message); }
@@ -529,7 +596,8 @@
 
   document.addEventListener('keydown', (e) => {
     if(e.key !== 'Escape') return;
-    if($('lightbox').classList.contains('open')) $('lightbox').classList.remove('open');
+    if($('safetyModal').classList.contains('open')) $('safetyModal').classList.remove('open');
+    else if($('lightbox').classList.contains('open')) $('lightbox').classList.remove('open');
     else if($('newTicketModal').classList.contains('open')) $('newTicketModal').classList.remove('open');
   });
 

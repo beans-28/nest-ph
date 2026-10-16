@@ -19,6 +19,23 @@
   .admin-notif-list .dot{ width:8px; height:8px; border-radius:50%; background:var(--green-accent, #2f6f3c); flex:none; }
   .admin-notif-list .urgent .dot{ background:#d64541; }
   .admin-notif-list .go{ margin-left:auto; width:16px; height:16px; color:var(--text-light, #8b938a); flex:none; }
+  /* Emergency pop-up: stays until dismissed or opened, one per ticket. */
+  .emergency-pop{ position:fixed; top:74px; right:16px; width:min(360px, calc(100vw - 32px)); z-index:210; background:#fff; border:1px solid #f0c4c1; border-radius:12px; box-shadow:0 18px 44px rgba(120,20,20,.22); overflow:hidden; font-family:var(--font-body); animation:emPop .28s cubic-bezier(.16,1,.3,1); }
+  @keyframes emPop{ from{ opacity:0; transform:translateY(-8px); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion:reduce){ .emergency-pop{ animation:none; } }
+  .emergency-pop header{ display:flex; align-items:center; gap:8px; background:#b42318; color:#fff; padding:10px 14px; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+  .emergency-pop header .pulse{ width:8px; height:8px; border-radius:50%; background:#fff; box-shadow:0 0 0 0 rgba(255,255,255,.7); animation:emPulse 1.6s infinite; }
+  @keyframes emPulse{ 70%{ box-shadow:0 0 0 8px rgba(255,255,255,0); } 100%{ box-shadow:0 0 0 0 rgba(255,255,255,0); } }
+  /* Out of the way while a ticket or other dialog is open. */
+  body:has(.modal-overlay.open) .emergency-pop{ display:none; }
+  .emergency-pop .body{ padding:12px 14px 14px; }
+  .emergency-pop h3{ margin:0 0 4px; font-size:15px; color:#26302a; }
+  .emergency-pop p{ margin:0 0 12px; font-size:12.5px; color:#5b655d; line-height:1.45; }
+  .emergency-pop .actions{ display:flex; gap:8px; }
+  .emergency-pop .actions a, .emergency-pop .actions button{ flex:1; min-height:38px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; text-decoration:none; font-family:inherit; }
+  .emergency-pop .actions a{ background:#b42318; color:#fff; border:none; }
+  .emergency-pop .actions button{ background:#fff; color:#5b655d; border:1px solid #dfe3df; }
+  .emergency-pop .actions :focus-visible{ outline:2px solid #26302a; outline-offset:2px; }
   .admin-notif-empty{ padding:28px 16px; text-align:center; font-size:13px; color:var(--text-light, #8b938a); }
 </style>
 
@@ -30,6 +47,8 @@
   <h2>Needs your attention</h2>
   <ul class="admin-notif-list" id="adminNotifList"><li class="admin-notif-empty">Loading…</li></ul>
 </section>
+
+<div id="emergencyPops" aria-live="assertive"></div>
 
 <script>
 (function(){
@@ -45,7 +64,8 @@
     right.insertBefore(bell, right.querySelector('.topbar-icon'));
     bell.hidden = false;
     load();
-    setInterval(() => { if(!document.hidden) load(); }, 60000);
+    // 30s: a Critical ticket must be answered within 5 minutes.
+    setInterval(() => { if(!document.hidden) load(); }, 30000);
   });
 
   async function load(){
@@ -59,9 +79,38 @@
       list.innerHTML = data.items.length
         ? data.items.map(i => `<li class="${i.urgent ? 'urgent' : ''}"><a href="${i.link}"><span class="dot" aria-hidden="true"></span>${esc(i.label)}<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a></li>`).join('')
         : '<li class="admin-notif-empty">All caught up. Nothing is waiting for you.</li>';
+      showEmergencies(data.emergencies || []);
     } catch(e){
       list.innerHTML = '<li class="admin-notif-empty">Could not load notifications.</li>';
     }
+  }
+
+  // One pop-up per emergency; "Later" hides it for this browser tab only,
+  // so it comes back after a reload if still nobody has responded.
+  const dismissed = new Set(JSON.parse(sessionStorage.getItem('dismissedEmergencies') || '[]'));
+  function showEmergencies(list){
+    const host = document.getElementById('emergencyPops');
+    const e = list.find(x => !dismissed.has(x.id));
+    if(!e){ host.innerHTML = ''; return; }
+    if(host.dataset.id === String(e.id)) return;
+    host.dataset.id = e.id;
+    const who = e.mine
+      ? (e.team.length > 1 ? `You and ${e.team.length - 1} other${e.team.length > 2 ? 's' : ''} are assigned.` : 'You are assigned.')
+      : 'No one is assigned yet. Can you take it?';
+    host.innerHTML = `<section class="emergency-pop" role="alertdialog" aria-labelledby="emTitle">
+        <header><span class="pulse" aria-hidden="true"></span>Emergency ticket</header>
+        <div class="body">
+          <h3 id="emTitle">${esc(e.title)}</h3>
+          <p>${esc(e.category)}${e.room ? ' · Room ' + esc(e.room) : ''} · ${esc(e.filed)}<br>${who} Respond within 5 minutes.</p>
+          <div class="actions"><a href="/tickets?open=${e.id}">Open ticket</a><button type="button" data-later>Later</button></div>
+        </div>
+      </section>`;
+    host.querySelector('[data-later]').addEventListener('click', () => {
+      dismissed.add(e.id);
+      sessionStorage.setItem('dismissedEmergencies', JSON.stringify([...dismissed]));
+      host.dataset.id = '';
+      showEmergencies(list);
+    });
   }
 
   const close = () => { panel.classList.remove('open'); bell.setAttribute('aria-expanded', 'false'); };

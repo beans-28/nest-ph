@@ -11,6 +11,7 @@ use App\Models\MaintenanceTicket;
 use App\Models\Payment;
 use App\Models\Review;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * GET /admin/notifications (v39) — the admin bell. Unlike the tenant panel,
@@ -20,13 +21,36 @@ use Illuminate\Http\JsonResponse;
  */
 class AdminNotificationController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        // Open emergencies (Critical tickets) that are this admin's job:
+        // assigned to them, or assigned to nobody yet. The bell pops these
+        // up on screen until someone responds.
+        $me = $request->user()->id;
+        $emergencies = MaintenanceTicket::with('bed.room', 'assignees:id,name')
+            ->where('priority', 'critical')
+            ->whereNotIn('status', MaintenanceTicket::CLOSED_STATUSES)
+            ->whereNull('responded_at')
+            ->latest()
+            ->get()
+            ->filter(fn ($t) => $t->assignees->isEmpty() || $t->assignees->contains('id', $me))
+            ->values();
+
         $overdueTickets = MaintenanceTicket::overdueSummary();
         $overdueSince = now()->subDays(NotifyOverdueApplications::DAYS);
         $overdueLabel = 'waiting ' . NotifyOverdueApplications::DAYS . '+ days';
 
         $items = [
+            [
+                'key' => 'emergency_mine', 'urgent' => true, 'link' => '/tickets',
+                'count' => $emergencies->filter(fn ($t) => $t->assignees->isNotEmpty())->count(),
+                'one' => 'emergency assigned to you', 'many' => 'emergencies assigned to you',
+            ],
+            [
+                'key' => 'emergency_unassigned', 'urgent' => true, 'link' => '/tickets',
+                'count' => $emergencies->filter(fn ($t) => $t->assignees->isEmpty())->count(),
+                'one' => 'emergency with no one assigned', 'many' => 'emergencies with no one assigned',
+            ],
             [
                 'key' => 'proofs', 'urgent' => false, 'link' => '/payments',
                 'count' => Payment::where('status', 'pending')->count(),
@@ -115,6 +139,15 @@ class AdminNotificationController extends Controller
         return response()->json([
             'total' => $items->sum('count'),
             'items' => $items,
+            'emergencies' => $emergencies->map(fn ($t) => [
+                'id' => $t->id,
+                'title' => $t->title,
+                'category' => $t->category_label,
+                'room' => $t->bed?->room?->room_no,
+                'mine' => $t->assignees->isNotEmpty(),
+                'team' => $t->assignees->pluck('name')->values(),
+                'filed' => $t->created_at->diffForHumans(),
+            ]),
         ]);
     }
 }

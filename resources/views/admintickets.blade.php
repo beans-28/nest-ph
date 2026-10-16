@@ -74,6 +74,7 @@
   .delay-fields .fld:last-child{ margin-bottom:0; }
   .modal-body input[type="datetime-local"]{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); width:100%; }
   .mb-report{ display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin:0 0 14px; padding:12px 14px; border:1px solid var(--border); background:#f7f9f7; border-radius:9px; font-size:13px; }
+  .mb-report[hidden]{ display:none; }
   .mb-report dt{ color:var(--text-mid); }
   .mb-report dd{ margin:0; font-weight:600; color:var(--text-dark); }
   .mb-report a{ color:inherit; text-underline-offset:2px; }
@@ -94,6 +95,21 @@
   .modal-body .mb-attachment{ margin-bottom:16px; }
   .modal-body .mb-attachment img{ width:88px; height:88px; object-fit:cover; border-radius:8px; border:1px solid var(--border); cursor:pointer; }
   .modal-body .fld{ display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+  .assign-fld{ border:none; padding:0; margin:0 0 16px; min-width:0; }
+  .assign-fld legend{ padding:0; margin-bottom:6px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
+  .assign-list{ border:1px solid var(--border); border-radius:9px; max-height:188px; overflow-y:auto; }
+  .modal-body .assign-row{ display:flex; align-items:center; gap:10px; padding:9px 12px; min-height:40px; box-sizing:border-box; font-size:13px; color:var(--text-dark); cursor:pointer; border-bottom:1px solid #f0f2f0; text-transform:none; letter-spacing:0; font-weight:400; }
+  .assign-row:last-child{ border-bottom:none; }
+  .assign-row:hover{ background:#f6f9f6; }
+  .assign-row input{ width:16px; height:16px; accent-color:var(--green-btn); margin:0; flex:none; }
+  .assign-name{ flex:1; min-width:0; line-height:1.3; }
+  .assign-name small{ display:block; font-size:11.5px; color:#b42318; }
+  .auto-tag{ font-size:10.5px; font-weight:600; color:#8a5a00; background:#fff3d6; border-radius:4px; padding:1px 5px; }
+  .presence{ display:inline-flex; align-items:center; gap:5px; font-size:11.5px; color:var(--text-light); white-space:nowrap; }
+  .presence::before{ content:""; width:7px; height:7px; border-radius:50%; background:#c4cac4; }
+  .presence.on{ color:#1f7a3a; font-weight:600; }
+  .presence.on::before{ background:#22a04b; box-shadow:0 0 0 3px rgba(34,160,75,.15); }
+  .tk-foot .unassigned{ color:#b42318; }
   .modal-body label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
   .modal-body select, .modal-body textarea{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); width:100%; }
   .modal-body textarea{ min-height:80px; resize:vertical; }
@@ -182,10 +198,10 @@
         <div class="mb-attachment-grid" id="mAttachmentGrid"></div>
       </div>
 
-      <div class="fld">
-        <label for="mAssignSelect">Assign to</label>
-        <select id="mAssignSelect"><option value="">Unassigned</option></select>
-      </div>
+      <fieldset class="fld assign-fld">
+        <legend>Assigned staff</legend>
+        <div class="assign-list" id="mAssignList"></div>
+      </fieldset>
 
       <div class="fld">
         <label for="mStatusSelect">Update Status</label>
@@ -306,6 +322,15 @@
   const COLUMNS = @json($statuses);
   const fmtDate = ts => new Date(ts * 1000).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
 
+  // "Ana", "Ana + Mark", "Ana + 2 others"
+  function assigneeLabel(list){
+    if(!list.length) return 'Unassigned';
+    const first = esc(list[0].name.split(' ')[0]);
+    if(list.length === 1) return first;
+    if(list.length === 2) return `${first} + ${esc(list[1].name.split(' ')[0])}`;
+    return `${first} + ${list.length - 1} others`;
+  }
+
   function cardHtml(t){
     const urgency = t.is_overdue ? 'late' : (t.is_due_soon ? 'soon' : '');
     return `
@@ -319,7 +344,7 @@
         </div>
         <div class="tk-foot">
           <span>${esc(t.category_label)}${t.reported_tenant_name ? ': ' + esc(t.reported_tenant_name) : ''}</span>
-          <span>${t.assigned_to_name ? esc(t.assigned_to_name) : 'Unassigned'}</span>
+          <span class="${t.assignees.length ? '' : 'unassigned'}">${assigneeLabel(t.assignees)}</span>
         </div>
       </div>`;
   }
@@ -378,8 +403,13 @@
       } else {
         $('mAttachment').style.display = 'none';
       }
-      $('mAssignSelect').innerHTML = '<option value="">Unassigned</option>' +
-        detail.assignable_admins.map(a => `<option value="${a.id}" ${a.id === detail.assigned_to ? 'selected' : ''}>${esc(a.name)}</option>`).join('');
+      const picked = new Map(detail.assignees.map(a => [a.id, a]));
+      $('mAssignList').innerHTML = detail.assignable_admins.map(a => `
+        <label class="assign-row">
+          <input type="checkbox" value="${a.id}" ${picked.has(a.id) ? 'checked' : ''}>
+          <span class="assign-name">${esc(a.name)}${picked.get(a.id)?.auto ? ' <span class="auto-tag">auto</span>' : ''}${a.emergencies ? `<small>On ${a.emergencies} open emergenc${a.emergencies === 1 ? 'y' : 'ies'}</small>` : ''}</span>
+          <span class="presence ${a.online ? 'on' : ''}">${a.online ? 'Online' : 'Offline'}</span>
+        </label>`).join('');
 
       $('mStatusSelect').value = detail.status;
 
@@ -421,7 +451,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: $('mStatusSelect').value,
-          assigned_to: $('mAssignSelect').value || null,
+          assignee_ids: [...document.querySelectorAll('#mAssignList input:checked')].map(i => Number(i.value)),
           reply_message: $('mReplyInput').value.trim() || null,
           delayed,
           delay_reason: delayed ? $('mDelayReason').value.trim() : null,
@@ -453,6 +483,8 @@
     setDeadlineFilter(deadlineFilter === b.dataset.deadline ? '' : b.dataset.deadline)));
 
   renderGrid();
+  const deepLink = Number(new URLSearchParams(location.search).get('open'));
+  if(deepLink) openModal(deepLink);
 })();
 </script>
 

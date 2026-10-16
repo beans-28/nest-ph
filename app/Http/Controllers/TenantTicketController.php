@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MaintenanceTicket;
 use App\Models\Tenant;
 use App\Models\TicketReply;
+use App\Services\EmergencyDispatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -34,6 +35,7 @@ class TenantTicketController extends Controller
             'portalRestricted' => (bool) $tenant->portal_restricted,
             'maxAttachments' => MaintenanceTicket::MAX_ATTACHMENTS,
             'reportReasons' => MaintenanceTicket::REPORT_REASONS,
+            'safetyGuidance' => MaintenanceTicket::SAFETY_GUIDANCE,
             // Other tenants with an active lease -- the people who can be
             // reported. Names only: room numbers would tell any tenant
             // where everyone sleeps.
@@ -97,8 +99,17 @@ class TenantTicketController extends Controller
             ...MaintenanceTicket::autoPriorityFor($data['category'], $data['title'], $data['description'], $data['report_reason'] ?? null),
         ]);
 
+        // Emergencies go straight to online staff (see EmergencyDispatcher).
+        $assigned = EmergencyDispatcher::autoAssign($ticket);
+        $emergency = $ticket->priority === 'critical';
+
         return response()->json([
-            'message' => "Ticket #{$ticket->id} submitted successfully. You can track its status here.",
+            'message' => $emergency
+                ? ($assigned
+                    ? "Ticket #{$ticket->id} was marked as an emergency. {$assigned} staff member" . ($assigned === 1 ? ' has' : 's have') . ' been alerted.'
+                    : "Ticket #{$ticket->id} was marked as an emergency. All staff have been alerted.")
+                : "Ticket #{$ticket->id} submitted successfully. You can track its status here.",
+            'emergency' => $emergency,
             'ticket' => $this->transform($ticket->fresh(), $tenant),
         ]);
     }

@@ -156,6 +156,7 @@ class DemoDataSeeder extends Seeder
 
         try {
             $this->seedEverything();
+            $this->seedTicketTeams();
         } finally {
             Carbon::setTestNow();
         }
@@ -202,7 +203,7 @@ class DemoDataSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
         foreach ([
-            'announcement_comments', 'announcements', 'ticket_replies', 'maintenance_tickets',
+            'announcement_comments', 'announcements', 'ticket_replies', 'maintenance_ticket_assignees', 'maintenance_tickets',
             'reviews', 'penalty_audit_logs', 'penalties', 'damages', 'escalation_logs',
             'payments', 'billing_statements', 'lease_contracts', 'applications', 'inquiries',
             'tenants', 'beds', 'admin_access_logs', 'admin_login_sessions', 'sessions',
@@ -1603,6 +1604,32 @@ class DemoDataSeeder extends Seeder
         ]);
     }
 
+    /**
+     * Fills the assignees list from each ticket's single assigned_to, then
+     * adds a second, system-picked staff member to the burst-pipe
+     * emergency so the "several staff on one emergency" view has data.
+     * The sparking-outlet emergency is left with no one, so the bell's
+     * emergency pop-up shows up on the demo.
+     */
+    private function seedTicketTeams(): void
+    {
+        foreach (DB::table('maintenance_tickets')->whereNotNull('assigned_to')->get() as $t) {
+            DB::table('maintenance_ticket_assignees')->insert([
+                'ticket_id' => $t->id, 'user_id' => $t->assigned_to,
+                'auto_assigned' => $t->priority === 'critical',
+                'created_at' => $t->created_at, 'updated_at' => $t->created_at,
+            ]);
+        }
+
+        $burst = DB::table('maintenance_tickets')->where('title', 'Burst pipe flooding the 3F hallway')->first();
+        if ($burst) {
+            DB::table('maintenance_ticket_assignees')->insert([
+                'ticket_id' => $burst->id, 'user_id' => $this->admins['mark'], 'auto_assigned' => true,
+                'created_at' => $burst->created_at, 'updated_at' => $burst->created_at,
+            ]);
+        }
+    }
+
     /* ------------------------------------------------------------------ */
     /*  5. Maintenance tickets & reviews                                   */
     /* ------------------------------------------------------------------ */
@@ -1616,6 +1643,9 @@ class DemoDataSeeder extends Seeder
             2 => ['Sparking outlet near Bed 2', 'electrical_issue', 'The outlet beside my bed sparked when I plugged in my charger. I stopped using it.', 'urgent', 'open', 0, null, []],
             5 => ['Low water pressure in CR', 'plumbing_water_emergency', 'Mahina po ang tulo ng tubig sa shower tuwing 6-7 AM.', 'non_urgent', 'in_progress', 4, 'jerome',
                 [['admin', 'jerome', 'Chine-check na po ng plumber ang main line. Update po kami mamaya.']]],
+            // Emergency handled by two staff at once (multiple assignees).
+            6 => ['Burst pipe flooding the 3F hallway', 'plumbing_water_emergency', 'Pumutok po yung tubo sa tabi ng CR sa 3rd floor, binabaha na yung hallway papunta sa rooms.', 'urgent', 'in_progress', 0, 'jerome',
+                [['admin', 'jerome', 'Papunta na po kami ni Mark. Pakisara po ang main valve sa ilalim ng lababo kung abot ninyo.']]],
             8 => ['Noisy neighbors after quiet hours', 'noise_roommate_concern', 'May maingay po sa kabilang room past 12 midnight, 3 nights na. Quiet hours po ay 10 PM.', 'non_urgent', 'in_progress', 2, null, []],
             11 => ['Request for a bigger study table in the lobby', 'suggestion_feedback', 'Suggestion lang po: sana may mas malaking study table sa lobby for group study.', 'non_urgent', 'closed', 15, 'kristine',
                 [['admin', 'kristine', 'Thank you for the suggestion! Hindi po kasya sa space ng lobby sa ngayon, pero isasama namin sa renovation plan next year.']]],

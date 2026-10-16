@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MaintenanceTicket;
 use App\Models\TicketReply;
 use App\Models\User;
+use App\Services\EmergencyDispatcher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class TicketController extends Controller
      */
     public function page(Request $request)
     {
-        $tickets = MaintenanceTicket::with(['tenant', 'reportedTenant', 'assignedTo', 'bed.room'])
+        $tickets = MaintenanceTicket::with(['tenant', 'reportedTenant', 'assignees', 'bed.room'])
             ->latest('created_at')
             ->get();
 
@@ -59,7 +60,7 @@ class TicketController extends Controller
         $ticket->load([
             'tenant',
             'bed.room',
-            'assignedTo',
+            'assignees',
             'replies' => fn ($q) => $q->with('user.role', 'user.privileges')->oldest('created_at'),
         ]);
 
@@ -79,10 +80,7 @@ class TicketController extends Controller
                     'author_tag' => $r->user?->roleTag() ?? 'admin',
                     'created_at' => $r->created_at->format('M j, Y g:ia'),
                 ]),
-                'assignable_admins' => User::whereHas('role', fn ($q) => $q->where('role_name', 'admin'))
-                    ->where('is_active', true)
-                    ->orderBy('name')
-                    ->get(['id', 'name']),
+                'assignable_admins' => $this->assignableAdmins(),
             ]
         ));
     }
@@ -96,7 +94,8 @@ class TicketController extends Controller
     {
         $data = $request->validate([
             'status' => ['required', Rule::in(array_keys(MaintenanceTicket::STATUSES))],
-            'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
+            'assignee_ids' => ['sometimes', 'array'],
+            'assignee_ids.*' => ['integer', 'distinct', 'exists:users,id'],
             'reply_message' => ['nullable', 'string', 'max:2000'],
             // External delay: both or neither. Sending delayed=false clears it.
             'delayed' => ['sometimes', 'boolean'],
@@ -108,14 +107,15 @@ class TicketController extends Controller
             'revised_due_at.after' => 'The revised resolution date must be in the future.',
         ]);
 
-        if (! empty($data['assigned_to'])) {
-            $isAdmin = User::whereHas('role', fn ($q) => $q->where('role_name', 'admin'))
-                ->whereKey($data['assigned_to'])
-                ->exists();
+        $assigneeIds = array_key_exists('assignee_ids', $data) ? array_values($data['assignee_ids']) : null;
+        if ($assigneeIds) {
+            $adminCount = User::whereHas('role', fn ($q) => $q->where('role_name', 'admin'))
+                ->whereKey($assigneeIds)
+                ->count();
 
-            if (! $isAdmin) {
+            if ($adminCount !== count($assigneeIds)) {
                 return response()->json([
-                    'message' => 'Selected user is not an admin and cannot be assigned a ticket.',
+                    'message' => 'Only admins can be assigned a ticket.',
                 ], 422);
             }
         }
@@ -123,7 +123,7 @@ class TicketController extends Controller
         $oldStatus = $ticket->status;
         $oldRevisedDue = $ticket->revised_due_at;
 
-        DB::transaction(function () use ($ticket, $data, $request) {
+        DB::transaction(function () use ($ticket, $data, $request, $assigneeIds) {
             $wasResolved = $ticket->isClosed();
             $isNowResolved = in_array($data['status'], MaintenanceTicket::CLOSED_STATUSES, true);
 
@@ -139,11 +139,22 @@ class TicketController extends Controller
                 // First staff action counts as the "initial response".
                 'responded_at' => $ticket->responded_at
                     ?? (($data['status'] !== 'open' || ! empty($data['reply_message'])) ? now() : null),
-                'assigned_to' => $request->has('assigned_to') ? $data['assigned_to'] : $ticket->assigned_to,
+                // The lead stays first in the list; null when nobody is on it.
+                'assigned_to' => $assigneeIds === null
+                    ? $ticket->assigned_to
+                    : (in_array($ticket->assigned_to, $assigneeIds, true) ? $ticket->assigned_to : ($assigneeIds[0] ?? null)),
                 'resolved_at' => $isNowResolved
                     ? ($ticket->resolved_at ?? now())
                     : ($wasResolved ? null : $ticket->resolved_at),
             ]);
+
+            if ($assigneeIds !== null) {
+                // Keep the "auto" flag on people the system picked.
+                $auto = $ticket->assignees()->wherePivot('auto_assigned', true)->pluck('users.id')->all();
+                $ticket->assignees()->sync(collect($assigneeIds)->mapWithKeys(fn ($id) => [
+                    $id => ['auto_assigned' => in_array($id, $auto, true)],
+                ])->all());
+            }
 
             if (! empty($data['reply_message'])) {
                 TicketReply::create([
@@ -183,8 +194,29 @@ class TicketController extends Controller
 
         return response()->json([
             'message' => 'Ticket updated successfully.',
-            'ticket' => $this->transformRow($ticket->fresh(['tenant', 'assignedTo', 'bed.room'])),
+            'ticket' => $this->transformRow($ticket->fresh(['tenant', 'assignees', 'bed.room'])),
         ]);
+    }
+
+    /** Active admins for the Assign list, online ones first. */
+    private function assignableAdmins(): array
+    {
+        $online = EmergencyDispatcher::onlineAdminIds()->flip();
+        $load = EmergencyDispatcher::openEmergencyLoad();
+
+        return User::whereHas('role', fn ($q) => $q->where('role_name', 'admin'))
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'online' => $online->has($u->id),
+                'emergencies' => (int) ($load[$u->id] ?? 0),
+            ])
+            ->sortByDesc('online')
+            ->values()
+            ->all();
     }
 
     private function transformRow(MaintenanceTicket $ticket): array
@@ -206,8 +238,11 @@ class TicketController extends Controller
             'status_label' => $ticket->status_label,
             'priority' => $ticket->priority,
             'priority_label' => $ticket->priority_label,
-            'assigned_to' => $ticket->assigned_to,
-            'assigned_to_name' => $ticket->assignedTo?->name,
+            'assignees' => $ticket->assignees->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'auto' => (bool) $u->pivot->auto_assigned,
+            ])->values(),
             'priority_reason' => $ticket->priority_reason,
             'priority_rank' => $ticket->priorityRank(),
             'is_overdue' => $ticket->isOverdue(),

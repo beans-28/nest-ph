@@ -6,6 +6,7 @@ use App\Services\TicketPriorityClassifier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -89,6 +90,64 @@ class MaintenanceTicket extends Model
         'low' => ['response' => 2 * 24 * 60, 'resolve' => 7 * 24 * 60],
     ];
 
+    /**
+     * What to do right now, shown to the tenant in a pop-up as soon as
+     * they pick one of these concern types (and again after a ticket is
+     * marked Critical). 911 is the Philippines' national emergency number.
+     */
+    public const SAFETY_GUIDANCE = [
+        'fire_safety_hazard' => [
+            'title' => 'Fire or smoke? Get out first.',
+            'steps' => [
+                'Leave the room now and warn the people near you.',
+                'Use the stairs, never the elevator. Stay low if there is smoke.',
+                'Call 911. Do not go back for your things.',
+                'Never use water on an electrical fire.',
+            ],
+        ],
+        'electrical_issue' => [
+            'title' => 'Stay away from the wires.',
+            'steps' => [
+                'Do not touch the wire, outlet or appliance.',
+                'Turn off the main breaker only if your hands and the floor are dry.',
+                'Keep others away from the area.',
+                'If you see fire or someone got shocked, call 911.',
+            ],
+        ],
+        'plumbing_water_emergency' => [
+            'title' => 'Water and electricity do not mix.',
+            'steps' => [
+                'Stay away from outlets and plugs near the water.',
+                'Close the water valve under the sink or toilet if you can reach it.',
+                'Move your things off the floor.',
+            ],
+        ],
+        'structural_damage' => [
+            'title' => 'Move away from the damage.',
+            'steps' => [
+                'Leave the area now and keep others out.',
+                'Do not lean on, pull or try to fix the damaged part.',
+                'If someone is hurt or trapped, call 911.',
+            ],
+        ],
+        'security_concern' => [
+            'title' => 'Your safety comes first.',
+            'steps' => [
+                'Go to a locked room or a place with other people.',
+                'Do not confront the person.',
+                'If you are in danger, call 911 now.',
+            ],
+        ],
+        'safety_security' => [
+            'title' => 'Your safety comes first.',
+            'steps' => [
+                'Go to a locked room or a place with other people.',
+                'Do not confront the person.',
+                'If you are in danger, call 911 now.',
+            ],
+        ],
+    ];
+
     /** Submit Ticket form allows up to 5 photos per ticket. */
     public const MAX_ATTACHMENTS = 5;
 
@@ -149,6 +208,20 @@ class MaintenanceTicket extends Model
     public function assignedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    /** Everyone working this ticket (several staff can share an emergency). */
+    public function assignees(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'maintenance_ticket_assignees', 'ticket_id', 'user_id')
+            ->withPivot('auto_assigned')
+            ->withTimestamps()
+            ->orderBy('name');
+    }
+
+    public function isEmergency(): bool
+    {
+        return $this->priority === 'critical' && ! $this->isClosed();
     }
 
     public function replies(): HasMany

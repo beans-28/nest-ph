@@ -67,6 +67,9 @@
      apart without introducing new hues. */
   .avatar{ width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11.5px; color:var(--green-dark); background:var(--status-vacant-bg); border:1px solid #c3e3c6; flex-shrink:0; }
   .admin-name{ font-weight:600; white-space:nowrap; }
+  .avatar{ position:relative; }
+  .avatar.is-online::after{ content:""; position:absolute; right:-1px; bottom:-1px; width:10px; height:10px; border-radius:50%; background:#22a04b; border:2px solid #fff; }
+  .online-tag{ display:inline-flex; align-items:center; margin-left:8px; padding:1px 7px; border-radius:999px; background:#e3f4e8; color:#1f7a3a; font-size:11px; font-weight:600; vertical-align:1px; }
   .you-tag{ font-size:12px; font-weight:500; color:var(--text-mid); margin-left:6px; }
   .status-text{ font-weight:600; font-size:12.5px; }
   .status-text.active{ color:var(--green-accent); }
@@ -428,8 +431,8 @@
         <tr>
           <td>
             <div class="admin-cell">
-              <div class="avatar">${esc(initials(a.name))}</div>
-              <span class="admin-name">${esc(a.name)}${roleTag(a.role_tag)}${isSelf ? '<span class="you-tag">(you)</span>' : ''}</span>
+              <div class="avatar ${a.online ? 'is-online' : ''}">${esc(initials(a.name))}</div>
+              <span class="admin-name">${esc(a.name)}${roleTag(a.role_tag)}${isSelf ? '<span class="you-tag">(you)</span>' : ''}${a.online ? '<span class="online-tag">Online</span>' : ''}</span>
             </div>
           </td>
           <td>${esc(a.email)}</td>

@@ -127,8 +127,21 @@
   .form-msg{ font-size:12.5px; margin:0 0 14px; display:none; }
   .form-msg.ok{ display:block; color:#194e19; }
   .form-msg.err{ display:block; color:#ba2828; }
-  .stat-sub { font-size:12px; color:var(--text-light); margin-top:4px; }
-  .cell-sub { font-size:11px; color:var(--text-light); font-style:normal; }
+  .stat-sub{ font-size:12px; color:var(--text-light); margin-top:6px; line-height:1.35; }
+  .cell-sub{ font-size:11px; color:var(--text-light); font-style:normal; white-space:nowrap; }
+  td.fc{ color:#8a5a12; }
+  .fc-table td{ white-space:nowrap; }
+  @media (max-width:560px){ .stats-row.fc-stats{ grid-template-columns:1fr 1fr; gap:10px; } .stats-row.fc-stats .stat-card:last-child{ grid-column:auto; } .fc-stats .stat-card{ padding:14px; } .fc-stats .stat-value{ font-size:18px; } }
+  .fc-method{ margin:-6px 0 18px; font-size:12.5px; color:var(--text-mid); }
+  .fc-method summary{ cursor:pointer; width:max-content; max-width:100%; color:var(--green-btn); font-weight:600; padding:6px 0; min-height:32px; display:flex; align-items:center; gap:6px; list-style:none; }
+  .fc-method summary::-webkit-details-marker{ display:none; }
+  .fc-method summary::before{ content:""; width:6px; height:6px; border:solid currentColor; border-width:0 1.5px 1.5px 0; transform:rotate(-45deg); transition:transform .15s ease-out; }
+  .fc-method[open] summary::before{ transform:rotate(45deg); }
+  .fc-method summary:focus-visible{ outline:2px solid var(--green-btn); outline-offset:2px; border-radius:4px; }
+  .fc-method ul{ margin:4px 0 0; padding-left:18px; max-width:72ch; line-height:1.55; }
+  .fc-method li{ margin-bottom:3px; }
+  .chart-legend span.dash::before{ height:0; border-top:2px dashed var(--swatch); background:none; width:14px; vertical-align:3px; }
+  .chart-legend span.dot::before{ height:0; border-top:2px dotted var(--swatch); background:none; width:14px; vertical-align:3px; }
 </style>
 </head>
 <body>
@@ -450,35 +463,43 @@
     const kind = r => r.est ? 'Estimate' : (r.partial ? 'So far' : 'Actual');
     const monthLabel = r => r.partial ? `${r.label} (so far)` : r.label;
     const cell = v => v === null ? '<span style="color:var(--text-light)">Not recorded</span>' : money(v);
+    // Estimates are rounded to P100, so centavos would fake precision.
+    const whole = v => '₱' + Math.round(v).toLocaleString('en-PH');
+    const lockedNext = data.forecast[0];
     let html = `
       <div class="results-head"><h2>Forecast: ${data.range}</h2></div>
       <div class="generated-note">Generated ${data.generated_at}. These are estimates, not records.</div>
       ${a.expense_months === 0 ? `<div class="missing-note">No expenses recorded in the last 6 months, so expected expenses and net can't be estimated. <button type="button" class="link-btn" id="goExpenses">Record expenses</button></div>` : ''}
-      <div class="stats-row money">
-        <div class="stat-card"><div class="stat-label">Expected Income (3 mo.)</div><div class="stat-value">≈ ${money(t.income)}</div></div>
-        <div class="stat-card"><div class="stat-label">Expected Expenses (3 mo.)</div><div class="stat-value">${t.expenses === null ? '&mdash;' : '≈ ' + money(t.expenses)}</div>${t.expenses === null || t.expenses_low === t.expenses_high ? '' : `<div class="stat-sub">Could be ${money(t.expenses_low)} to ${money(t.expenses_high)}</div>`}</div>
-        <div class="stat-card ${netClass}"><div class="stat-label">Expected Net</div><div class="stat-value">${t.net === null ? '&mdash;' : '≈ ' + money(t.net)}</div></div>
-        <div class="stat-card"><div class="stat-label">Leases Ending</div><div class="stat-value">${t.ending_leases}</div></div>
+      <div class="stats-row money fc-stats">
+        <div class="stat-card"><div class="stat-label">Expected Income (3 mo.)</div><div class="stat-value">≈ ${whole(t.income)}</div>${a.income_error_pct === null ? '' : `<div class="stat-sub">Past estimates were ${a.income_error_pct}% off</div>`}</div>
+        <div class="stat-card"><div class="stat-label">Expected Expenses (3 mo.)</div><div class="stat-value">${t.expenses === null ? '&mdash;' : '≈ ' + whole(t.expenses)}</div>${t.expenses === null || t.expenses_low === t.expenses_high ? '' : `<div class="stat-sub">Range ${shortPeso(t.expenses_low)}–${shortPeso(t.expenses_high)}</div>`}</div>
+        <div class="stat-card ${netClass}"><div class="stat-label">Expected Net</div><div class="stat-value">${t.net === null ? '&mdash;' : '≈ ' + whole(t.net)}</div></div>
+        <div class="stat-card"><div class="stat-label">Leases Ending</div><div class="stat-value">${t.ending_leases}</div><div class="stat-sub">${lockedNext.locked_beds} of ${lockedNext.occupied} beds locked at signed rent in ${shortMonth(lockedNext.label)}</div></div>
       </div>
-      <p class="occupancy-note" style="margin-top:0;">How it's estimated: about <strong>${a.avg_move_ins}</strong> new move-ins a month and <strong>${money(a.income_per_bed)}</strong> collected per occupied bed (averages of the last 6 months), ${a.expense_months ? `expenses of <strong>${money(a.avg_expenses)}</strong> a month (average of ${a.expense_months} recorded month${a.expense_months === 1 ? '' : 's'})` : 'no expense estimate (none recorded)'}. ${rows.some(r => r.partial) ? "The current month isn't over, so it shows income so far and is left out of the averages. " : ''}Estimates are rounded to the nearest ₱100. The date filters above don't apply here: the forecast always uses the last 6 months. Tenants whose lease ends are counted as moving out, so if some renew, the real numbers will be higher.</p>
-      <p class="occupancy-note" style="margin-top:0;"><strong>Utilities change month to month.</strong> ${a.expense_months ? `Electricity, water and internet averaged ${money(a.avg_utilities)} a month, but ranged from ${money(a.min_utilities)} to ${money(a.max_utilities)}, so expenses are shown with a low-to-high range. ${data.forecast.some(r => r.seasonal) ? 'Months marked * also use the same month last year (for example, higher electricity in summer).' : 'Once a full year of expenses is recorded, the estimate will also use the same month last year (for example, higher electricity in summer).'}` : 'Record expenses to see how much utilities swing.'}</p>
-      <p class="occupancy-note" style="margin-top:0;"><strong>Rent changes are limited by contract.</strong> A tenant's rent can't change during their current term. A new price only applies to new tenants and to renewals (Tenant Agreement, Section 2.2). ${data.forecast.map(r => `${r.label}: ${r.locked_beds} bed${r.locked_beds === 1 ? '' : 's'} locked at signed rates (${money(r.locked_rent)})`).join('; ')}. So if you raise prices now, only the remaining beds would pay the new rate in these months.</p>
-      ${a.income_error_pct === null ? '' : `<p class="occupancy-note" style="margin-top:0;"><strong>How accurate is this?</strong> For the last ${a.compared_months} finished month${a.compared_months === 1 ? '' : 's'}, the same method's income estimate was off by about <strong>${a.income_error_pct}%</strong> on average. The amber line in the charts shows what it estimated; compare it with what actually happened.</p>`}
+      <details class="fc-method">
+        <summary>How this is estimated</summary>
+        <ul>
+          <li>Averages of the last 6 months: ${a.avg_move_ins} move-ins a month, ${whole(a.income_per_bed)} collected per occupied bed${a.expense_months ? `, ${whole(a.avg_expenses)} in expenses` : ''}.</li>
+          <li>Leases ending count as move-outs. Renewals would push the numbers up.</li>
+          ${a.expense_months ? `<li>Utilities swing between ${shortPeso(a.min_utilities)} and ${shortPeso(a.max_utilities)} a month, so expenses are a range.${data.forecast.some(r => r.seasonal) ? ' Months marked * also lean on the same month last year.' : ''}</li>` : ''}
+          <li>Rent is fixed for a tenant's current term (Tenant Agreement §2.2). New prices only reach new tenants and renewals.</li>
+          <li>Rounded to the nearest ₱100. The date filters don't apply here.</li>
+        </ul>
+      </details>
       <div class="chart-card">
         <h3>Occupancy rate</h3>
-        <p class="chart-sub">Solid line is actual. Dashed line is the estimate. Amber line is what the forecast predicted for past months.</p>
-        <div class="chart-legend"><span style="--swatch:${C.green}">Actual / estimate</span><span style="--swatch:${C.amber}">Forecast at the time</span></div>
+        <div class="chart-legend"><span style="--swatch:${C.green}">Actual</span><span class="dash" style="--swatch:${C.green}">Estimate</span><span class="dot" style="--swatch:${C.amber}">What we forecast</span></div>
         <div class="chart-box"><canvas id="fcOccChart" role="img" aria-label="Line chart of actual and estimated occupancy rate"></canvas></div>
       </div>
       <div class="chart-card">
         <h3>Income vs. expenses</h3>
-        <p class="chart-sub">Faded bars are estimates. The current month only shows income so far. The amber and purple lines are the income and expenses the forecast predicted for past months, so you can compare them with the bars (what actually happened).</p>
-        <div class="chart-legend"><span style="--swatch:${C.olive}">Income</span><span style="--swatch:${C.red}">Expenses</span><span style="--swatch:rgba(143,180,143,0.4)">Estimate</span><span style="--swatch:${C.amber}">Forecast income (past months)</span><span style="--swatch:${C.purple}">Forecast expenses (past months)</span></div>
+        <p class="chart-sub">Faded bars are estimates.</p>
+        <div class="chart-legend"><span style="--swatch:${C.olive}">Income</span><span style="--swatch:${C.red}">Expenses</span><span class="dot" style="--swatch:${C.amber}">Forecast income</span><span class="dot" style="--swatch:${C.purple}">Forecast expenses</span></div>
         <div class="chart-box"><canvas id="fcMoneyChart" role="img" aria-label="Bar chart of actual and estimated income and expenses per month"></canvas></div>
       </div>
-      <div class="table-scroll"><table class="report-table">
-        <thead><tr><th>Month</th><th>Kind</th><th class="num">Leases Ending</th><th class="num">Occupied</th><th class="num">Occupancy</th><th class="num">Income</th><th class="num">Forecast Income</th><th class="num">Expenses</th><th class="num">Forecast Expenses</th><th class="num">Net</th><th class="num">Forecast Net</th><th class="num">Beds on Locked Rent</th></tr></thead>
-        <tbody>${rows.map(r => `<tr${r.est || r.partial ? ' style="font-style:italic"' : ''}><td>${monthLabel(r)}</td><td>${kind(r)}</td><td class="num">${r.est ? r.ending_leases : '&mdash;'}</td><td class="num">${r.occupied}</td><td class="num">${r.occupancy_rate}%</td><td class="num">${money(r.income)}</td><td class="num">${r.forecast_income == null ? '&mdash;' : money(r.forecast_income)}</td><td class="num">${r.est && r.expenses === null ? '&mdash;' : cell(r.expenses)}${r.est && r.expenses !== null && r.expenses_low !== r.expenses_high ? `<div class="cell-sub">${money(r.expenses_low)}–${money(r.expenses_high)}${r.seasonal ? ' *' : ''}</div>` : ''}</td><td class="num">${r.forecast_expenses == null ? '&mdash;' : money(r.forecast_expenses)}</td><td class="num ${r.net !== null && r.net < 0 ? 'neg' : ''}">${r.net === null ? '&mdash;' : money(r.net)}</td><td class="num">${r.forecast_income == null || r.forecast_expenses == null ? '&mdash;' : money(r.forecast_income - r.forecast_expenses)}</td><td class="num">${r.est ? `${r.locked_beds} of ${r.occupied}` : '&mdash;'}</td></tr>`).join('')}</tbody>
+      <div class="table-scroll"><table class="report-table fc-table">
+        <thead><tr><th>Month</th><th>Kind</th><th class="num">Leases Ending</th><th class="num">Occupied</th><th class="num">Occupancy</th><th class="num">Income</th><th class="num">Forecast</th><th class="num">Expenses</th><th class="num">Forecast</th><th class="num">Net</th><th class="num">Forecast</th><th class="num">Locked Beds</th></tr></thead>
+        <tbody>${rows.map(r => `<tr${r.est || r.partial ? ' style="font-style:italic"' : ''}><td>${monthLabel(r)}</td><td>${kind(r)}</td><td class="num">${r.est ? r.ending_leases : '&mdash;'}</td><td class="num">${r.occupied}</td><td class="num">${r.occupancy_rate}%</td><td class="num">${money(r.income)}</td><td class="num fc">${r.forecast_income == null ? '&mdash;' : whole(r.forecast_income)}</td><td class="num">${r.est && r.expenses === null ? '&mdash;' : cell(r.expenses)}${r.est && r.expenses !== null && r.expenses_low !== r.expenses_high ? `<div class="cell-sub">${shortPeso(r.expenses_low)}–${shortPeso(r.expenses_high)}${r.seasonal ? ' *' : ''}</div>` : ''}</td><td class="num fc">${r.forecast_expenses == null ? '&mdash;' : whole(r.forecast_expenses)}</td><td class="num ${r.net !== null && r.net < 0 ? 'neg' : ''}">${r.net === null ? '&mdash;' : money(r.net)}</td><td class="num fc">${r.forecast_income == null || r.forecast_expenses == null ? '&mdash;' : whole(r.forecast_income - r.forecast_expenses)}</td><td class="num">${r.est ? `${r.locked_beds} of ${r.occupied}` : '&mdash;'}</td></tr>`).join('')}</tbody>
       </table></div>`;
     $('resultsArea').innerHTML = html;
     const go = $('goExpenses');

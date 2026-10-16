@@ -236,9 +236,11 @@
       <div class="modal-field"><label for="newRoomUtility">Monthly Utilities</label><input type="number" id="newRoomUtility" min="0" step="0.01" placeholder="0.00"></div>
       <div class="modal-field"><label for="newRoomWifi">Monthly WiFi</label><input type="number" id="newRoomWifi" min="0" step="0.01" placeholder="0.00"></div>
     </div>
-    <div class="modal-field"><label for="newRoomArea">Room area (sq. m)</label><input type="number" id="newRoomArea" min="0" step="0.01" placeholder="e.g. 18"></div>
     <p class="modal-hint">Whole-room amounts, split evenly by the number of beds, same as rent. Changes apply from each tenant's next generated bill.</p>
-    <div class="modal-field"><label for="newRoomBedCount">Number of Beds</label><input type="number" id="newRoomBedCount" min="1" max="20" value="2"></div>
+    <div class="modal-row">
+      <div class="modal-field"><label for="newRoomBedCount">Number of Beds</label><input type="number" id="newRoomBedCount" min="1" max="20" value="2"></div>
+      <div class="modal-field"><label for="newRoomArea">Room area (m²)</label><input type="number" id="newRoomArea" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 18"></div>
+    </div>
     <div class="modal-field"><label id="bedStatusLabel">Bed Status</label><div class="bed-status-rows" id="bedStatusRows" role="group" aria-labelledby="bedStatusLabel"></div></div>
 
     <p class="modal-error" id="roomModalError" role="alert"></p>
@@ -405,7 +407,7 @@
             <div class="room-card-head">
               <div>
                 <div class="room-title">Room ${room.room_no}</div>
-                <div class="room-meta">${room.room_type ? room.room_type + ' · ' : ''}₱${Number(room.price_per_bed ?? room.monthly_rate).toLocaleString(undefined, {minimumFractionDigits:2})} per bed${room.pricing_mode === 'per_room' ? ' (whole-room price split)' : ''}${room.area_sqm ? ' · ' + Number(room.area_sqm) + ' sq. m' : ''}</div>
+                <div class="room-meta">${room.room_type ? room.room_type + ' · ' : ''}₱${Number(room.price_per_bed ?? room.monthly_rate).toLocaleString(undefined, {minimumFractionDigits:2})} /bed${room.pricing_mode === 'per_room' ? ' (room split)' : ''}${room.area_sqm ? ' · ' + Number(room.area_sqm) + ' m²' : ''}</div>
                 <div class="room-meta">Utilities ₱${Number(room.monthly_utility_cost || 0).toLocaleString(undefined, {minimumFractionDigits:2})} · WiFi ₱${Number(room.monthly_wifi_cost || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</div>
               </div>
               <div class="room-actions">
