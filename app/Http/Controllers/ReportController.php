@@ -174,7 +174,7 @@ class ReportController extends Controller
             ->setCompany('Generated via NEST.PH');
         $sheet = $book->getActiveSheet();
         $sheet->setTitle(ucfirst($type));
-        $lastCol = ['occupancy' => 'G', 'financial' => 'B', 'forecast' => 'H', 'expenses' => 'I'][$type];
+        $lastCol = ['occupancy' => 'G', 'financial' => 'B', 'forecast' => 'N', 'expenses' => 'I'][$type];
 
         // Title block
         $sheet->setCellValue('A1', $dormName);
@@ -430,7 +430,7 @@ class ReportController extends Controller
      * @param  array|null  $line  [name, hex colour, values[]]
      * @param  callable  $fmt  formats an axis value, e.g. 50 -> "50%"
      */
-    private function svgChart(array $labels, array $bars, ?array $line, callable $fmt, ?float $fixedMax = null): string
+    private function svgChart(array $labels, array $bars, ?array $line, callable $fmt, ?float $fixedMax = null, array $dotted = []): string
     {
         $w = 680;
         $h = 250;
@@ -438,7 +438,8 @@ class ReportController extends Controller
         $plotW = $w - $left - $right;
         $plotH = $h - $top - $bottom;
 
-        $all = array_merge(...array_map(fn ($b) => $b[2], $bars), ...($line ? [$line[2]] : []));
+        $all = array_merge(...array_map(fn ($b) => $b[2], $bars), ...($line ? [$line[2]] : []),
+            ...array_map(fn ($d) => array_values(array_filter($d[2], fn ($v) => $v !== null)), $dotted));
         $max = $fixedMax ?? max(1, max($all ?: [1]));
         $min = min(0, min($all ?: [0]));
         // Round the axis to a "nice" step so gridlines land on clean numbers.
@@ -485,8 +486,28 @@ class ReportController extends Controller
             }
         }
 
+        // Dotted lines skip months with no value (null), e.g. forecasts
+        // that only exist for past months.
+        foreach ($dotted as [, $color, $values]) {
+            $run = [];
+            foreach ($labels as $i => $label) {
+                $v = $values[$i] ?? null;
+                if ($v !== null) {
+                    $run[] = round($left + $slot * ($i + 0.5), 1) . ',' . round($y((float) $v), 1);
+                }
+                if (($v === null || $i === count($labels) - 1) && $run) {
+                    $svg .= "<polyline points=\"" . implode(' ', $run) . "\" fill=\"none\" stroke=\"#{$color}\" stroke-width=\"2\" stroke-dasharray=\"3,3\"/>";
+                    foreach ($run as $pt) {
+                        [$px, $py] = explode(',', $pt);
+                        $svg .= "<circle cx=\"{$px}\" cy=\"{$py}\" r=\"2.5\" fill=\"#{$color}\"/>";
+                    }
+                    $run = [];
+                }
+            }
+        }
+
         // Legend along the bottom
-        $items = array_merge(array_map(fn ($b) => [$b[0], $b[1]], $bars), $line ? [[$line[0], $line[1]]] : []);
+        $items = array_merge(array_map(fn ($b) => [$b[0], $b[1]], $bars), $line ? [[$line[0], $line[1]]] : [], array_map(fn ($d) => [$d[0], $d[1]], $dotted));
         $lx = $left;
         foreach ($items as [$name, $color]) {
             $svg .= "<rect x=\"{$lx}\" y=\"" . ($h - 17) . "\" width=\"10\" height=\"10\" fill=\"#{$color}\"/>";
@@ -523,11 +544,17 @@ class ReportController extends Controller
 
             return [
                 'occupancy' => $this->svgChart($labels, [], ['Occupancy rate', '194E19', $rows->pluck('occupancy_rate')->all()],
-                    fn ($v) => round($v) . '%', 100),
+                    fn ($v) => round($v) . '%', 100, [
+                        ['Forecast at the time', 'B7791F', $rows->map(fn ($r) => isset($r['forecast_occupied']) && $report['total_beds'] > 0
+                            ? round($r['forecast_occupied'] / $report['total_beds'] * 100, 1) : null)->all()],
+                    ]),
                 'money' => $this->svgChart($labels, [
                     ['Income', '8FB48F', $rows->pluck('income')->all()],
                     ['Expenses', 'C0504D', $rows->map(fn ($r) => $r['expenses'] ?? 0)->all()],
-                ], null, $peso),
+                ], null, $peso, null, [
+                    ['Forecast income', 'B7791F', $rows->map(fn ($r) => $r['forecast_income'] ?? null)->all()],
+                    ['Forecast expenses', '7A4FA0', $rows->map(fn ($r) => $r['forecast_expenses'] ?? null)->all()],
+                ]),
             ];
         }
 
@@ -926,14 +953,36 @@ class ReportController extends Controller
             ['Average income per occupied bed', $a['income_per_bed']],
             ['Average monthly expenses', $a['expense_months'] ? $a['avg_expenses'] : 'None recorded'],
             ['Months of expenses recorded (of last 6)', $a['expense_months']],
+            ['Average monthly utilities (electricity, water, internet)', $a['expense_months'] ? $a['avg_utilities'] : 'None recorded'],
+            ['Utilities range (lowest to highest month)', $a['expense_months'] ? '₱' . number_format($a['min_utilities']) . ' to ₱' . number_format($a['max_utilities']) : 'None recorded'],
+            ['Past income estimates were off by (average)', $a['income_error_pct'] === null ? 'Not enough history' : $a['income_error_pct'] . '% over ' . $a['compared_months'] . ' month(s)'],
         ]);
-        $sheet->getStyle('B' . ($row - 4) . ':B' . ($row - 3))->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+        $sheet->getStyle('B' . ($row - 7) . ':B' . ($row - 6))->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+        $sheet->getStyle('B' . ($row - 4))->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+        $sheet->getStyle('B' . ($row - 8) . ':B' . ($row - 2))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
 
-        $headers = ['Month', 'Kind', 'Leases Ending', 'Occupied Beds', 'Occupancy Rate', 'Income', 'Expenses', 'Net'];
-        $toRow = fn ($r, $kind) => [
-            $r['label'], $kind, $r['ending_leases'] ?? '', $r['occupied'], $r['occupancy_rate'] / 100,
-            $r['income'], $r['expenses'] ?? '—', $r['net'] ?? '—',
-        ];
+        $sheet->setCellValue("A{$row}", 'Rent can\'t change during a tenant\'s current term; a new price only applies to new tenants and renewals (Tenant Agreement, Section 2.2). "Beds on Locked Rent" counts the beds whose rent is fixed by signed contracts in that month.');
+        $sheet->mergeCells("A{$row}:N{$row}");
+        $sheet->getStyle("A{$row}")->getAlignment()->setWrapText(true);
+        $sheet->getRowDimension($row)->setRowHeight(32);
+        $row += 2;
+
+        $headers = ['Month', 'Kind', 'Leases Ending', 'Occupied Beds', 'Occupancy Rate', 'Income', 'Forecast Income',
+            'Expenses', 'Forecast Expenses', 'Net', 'Forecast Net', 'Expenses Range', 'Beds on Locked Rent', 'Locked Rent'];
+        $toRow = function ($r, $kind) {
+            $est = $kind === 'Estimate';
+            $fIncome = $r['forecast_income'] ?? null;
+            $fExpenses = $r['forecast_expenses'] ?? null;
+
+            return [
+                $r['label'], $kind, $r['ending_leases'] ?? '', $r['occupied'], $r['occupancy_rate'] / 100,
+                $r['income'], $fIncome, $r['expenses'] ?? '—', $fExpenses,
+                $r['net'] ?? '—', $fIncome !== null && $fExpenses !== null ? $fIncome - $fExpenses : null,
+                $est && $r['expenses'] !== null ? '₱' . number_format($r['expenses_low']) . ' to ₱' . number_format($r['expenses_high']) . ($r['seasonal'] ? ' *' : '') : '',
+                $est ? $r['locked_beds'] . ' of ' . $r['occupied'] : '',
+                $est ? $r['locked_rent'] : null,
+            ];
+        };
         $start = $row;
         $rows = collect($report['history'])->map(fn ($r) => $toRow($r, ! empty($r['partial']) ? 'So far' : 'Actual'))
             ->concat(collect($report['forecast'])->map(fn ($r) => $toRow($r, 'Estimate')))->all();
@@ -941,18 +990,27 @@ class ReportController extends Controller
         $first = $start + 2;
         $last = $row - 2;
         $sheet->getStyle("E{$first}:E{$last}")->getNumberFormat()->setFormatCode('0.0%');
-        $sheet->getStyle("F{$first}:H{$last}")->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+        $sheet->getStyle("F{$first}:K{$last}")->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
+        $sheet->getStyle("N{$first}:N{$last}")->getNumberFormat()->setFormatCode(self::PESO_FORMAT);
         $sheet->getStyle("B{$first}:E{$last}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("L{$first}:M{$last}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
         // Estimated rows in italics so they read as guesses, not records.
-        $sheet->getStyle('A' . ($last - count($report['forecast']) + 1) . ":H{$last}")->getFont()->setItalic(true);
+        $sheet->getStyle('A' . ($last - count($report['forecast']) + 1) . ":N{$last}")->getFont()->setItalic(true);
+        $sheet->setCellValue("A{$row}", 'Forecast columns on past months show what this same method would have estimated at the time, to compare with what actually happened. * = also uses the same month last year (utilities change with the season).');
+        $sheet->mergeCells("A{$row}:N{$row}");
+        $sheet->getStyle("A{$row}")->getAlignment()->setWrapText(true);
+        $sheet->getStyle("A{$row}")->getFont()->setItalic(true)->setSize(9);
+        $sheet->getRowDimension($row)->setRowHeight(28);
+        $row += 2;
 
         $sheet->setBreak('A' . ($row - 1), \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::BREAK_ROW);
 
-        return $this->xlsxChart($sheet, $row, 'Income vs. Expenses (actual, then estimated)', "A{$first}:A{$last}", [
+        return $this->xlsxChart($sheet, $row, 'Income vs. Expenses: actual, estimated, and what was forecast', "A{$first}:A{$last}", [
             [DataSeries::TYPE_BARCHART, 'Income', "F{$first}:F{$last}", '8FB48F'],
-            [DataSeries::TYPE_BARCHART, 'Expenses', "G{$first}:G{$last}", 'C0504D'],
-            [DataSeries::TYPE_LINECHART, 'Net', "H{$first}:H{$last}", self::GREEN],
-        ], '"₱"#,##0', 'H');
+            [DataSeries::TYPE_BARCHART, 'Expenses', "H{$first}:H{$last}", 'C0504D'],
+            [DataSeries::TYPE_LINECHART, 'Forecast Income', "G{$first}:G{$last}", 'B7791F'],
+            [DataSeries::TYPE_LINECHART, 'Forecast Expenses', "I{$first}:I{$last}", '7A4FA0'],
+        ], '"₱"#,##0', 'N');
     }
 
     /**
@@ -970,44 +1028,112 @@ class ReportController extends Controller
      *               months) / (occupied beds summed over those months). This
      *               already includes utilities and late payers, so no
      *               separate collection rate is needed.
-     *   expenses  = average of the months that have expenses recorded.
+     *   expenses  = salaries + other (6-month average) plus utilities.
+     *               Utilities go up and down (e.g. electricity in summer), so
+     *               if the same month last year was recorded, the estimate
+     *               is the average of the 6-month average and last year's
+     *               bill, and a low-high range is shown from past months.
      *   net       = income - expenses.
+     *
+     * Past months also get the estimate this same method would have made
+     * at the time ("forecast" vs "actual"), so admins can see how close
+     * the method usually is.
+     *
+     * Rent: by contract a tenant's rent can't change during their current
+     * term; a new rate only applies on renewal or to new tenants (Tenant
+     * Agreement 2.2, Payments and Fees Schedule). Each future month shows
+     * how much rent is locked by signed contracts.
      */
     private function computeForecast(int $ahead = 3, int $lookBack = 6): array
     {
-        $trend = collect($this->occupancyTrend($lookBack))->values();
-        $totalBeds = Bed::count();
-
-        $history = $trend->map(function ($t, $i) use ($lookBack) {
-            $isCurrent = $i === $lookBack - 1;
-            $month = now()->startOfMonth()->subMonthsNoOverflow($lookBack - 1 - $i);
+        // Twice the look-back, so the oldest shown month still has 6 months
+        // before it to make its "would-have-forecast" from.
+        $all = collect($this->occupancyTrend($lookBack * 2))->values()->map(function ($t, $i) use ($lookBack) {
+            $month = now()->startOfMonth()->subMonthsNoOverflow($lookBack * 2 - 1 - $i);
             $expense = MonthlyExpense::whereDate('month', $month->toDateString())->first();
             $income = $this->collectedIn($month);
 
             return [
+                'month' => $month,
                 'label' => $t['label'],
+                'total_beds' => $t['total_beds'],
                 'occupied' => $t['occupied'],
                 'occupancy_rate' => $t['occupancy_rate'],
                 'moved_in' => $t['moved_in'],
                 'income' => $income,
                 'expenses' => $expense ? $expense->total() : null,
+                'utilities' => $expense ? round($expense->electricity + $expense->water + $expense->internet, 2) : null,
                 'net' => $expense ? round($income - $expense->total(), 2) : null,
-                // This month isn't over yet, so its numbers are "so far".
-                'partial' => $isCurrent,
             ];
         });
+        $totalBeds = Bed::count();
+        // Estimates are rounded to the nearest P100: an exact centavo
+        // figure would look more certain than a guess is.
+        $round100 = fn ($v) => round($v / 100) * 100;
+        $endingIn = fn (Carbon $m) => LeaseContract::whereBetween('end_date', [$m->copy()->startOfMonth()->toDateString(), $m->copy()->endOfMonth()->toDateString()])->count();
 
-        // The current month is only partly over, so it's left out of the
-        // averages (its income so far would drag them down).
-        $complete = $history->slice(0, -1);
-        $bedMonths = $complete->sum('occupied');
-        $incomePerBed = $bedMonths > 0 && $complete->sum('income') > 0
-            ? $complete->sum('income') / $bedMonths
+        // The averages one estimate is built from. $window = the finished
+        // months just before the month being estimated.
+        $basis = function ($window) {
+            $bedMonths = $window->sum('occupied');
+            $recorded = $window->whereNotNull('expenses');
+
+            return [
+                'income_per_bed' => $bedMonths > 0 && $window->sum('income') > 0 ? $window->sum('income') / $bedMonths : null,
+                'avg_move_ins' => round($window->avg('moved_in') ?? 0, 1),
+                'recorded' => $recorded,
+                'avg_expenses' => $recorded->count() ? round($recorded->avg('expenses'), 2) : null,
+            ];
+        };
+
+        // Last 6 months, each with what this method would have estimated
+        // for it at the time. The current month isn't over, so it has none.
+        $history = collect();
+        for ($i = $lookBack; $i < $lookBack * 2; $i++) {
+            $row = $all[$i];
+            $isCurrent = $i === $lookBack * 2 - 1;
+            $past = $basis($all->slice($i - $lookBack, $lookBack));
+            $est = null;
+            if (! $isCurrent && $past['income_per_bed'] !== null) {
+                $occ = (int) round(max(0, min($row['total_beds'], $all[$i - 1]['occupied'] - $endingIn($row['month']) + $past['avg_move_ins'])));
+                $est = [
+                    'occupied' => $occ,
+                    'income' => $round100($occ * $past['income_per_bed']),
+                    'expenses' => $past['avg_expenses'] !== null ? $round100($past['avg_expenses']) : null,
+                ];
+            }
+            unset($row['month'], $row['total_beds'], $row['utilities']);
+            $history->push($row + [
+                'partial' => $isCurrent,
+                'forecast_occupied' => $est['occupied'] ?? null,
+                'forecast_income' => $est['income'] ?? null,
+                'forecast_expenses' => $est['expenses'] ?? null,
+            ]);
+        }
+
+        // On average, how far off the past income estimates were.
+        $compared = $history->filter(fn ($r) => $r['forecast_income'] !== null && $r['income'] > 0);
+        $incomeError = $compared->count()
+            ? round($compared->avg(fn ($r) => abs($r['forecast_income'] - $r['income']) / $r['income'] * 100), 1)
+            : null;
+
+        // The real forecast uses the last 6 finished months (the current
+        // month is left out: its income so far would drag the averages down).
+        $b = $basis($all->slice($lookBack - 1, $lookBack));
+        $incomePerBed = $b['income_per_bed']
             // No history yet: fall back to the average rent on active leases.
-            : (float) LeaseContract::whereIn('status', ['active', 'expiring_soon'])->avg('monthly_rate');
-        $avgMoveIns = round($complete->avg('moved_in') ?? 0, 1);
-        $recorded = $complete->whereNotNull('expenses');
-        $avgExpenses = $recorded->count() ? round($recorded->avg('expenses'), 2) : 0.0;
+            ?? (float) LeaseContract::whereIn('status', ['active', 'expiring_soon'])->avg('monthly_rate');
+        $avgMoveIns = $b['avg_move_ins'];
+        $recorded = $b['recorded'];
+        $avgExpenses = $b['avg_expenses'] ?? 0.0;
+        $hasExpenses = $recorded->count() > 0;
+
+        // Split expenses into steady costs (salaries, other) and utilities,
+        // which swing from month to month.
+        $avgFixed = $hasExpenses ? $recorded->avg(fn ($r) => $r['expenses'] - $r['utilities']) : 0;
+        $avgUtilities = $hasExpenses ? $recorded->avg('utilities') : 0;
+        $minUtilities = $hasExpenses ? $recorded->min('utilities') : 0;
+        $maxUtilities = $hasExpenses ? $recorded->max('utilities') : 0;
 
         // Start from today's occupied beds minus the leases that still end
         // later this month, so next month doesn't count them as staying.
@@ -1016,10 +1142,6 @@ class ReportController extends Controller
                 ->whereNull('terminated_at')
                 ->whereBetween('end_date', [now()->toDateString(), now()->endOfMonth()->toDateString()])
                 ->count();
-        $hasExpenses = $recorded->count() > 0;
-        // Estimates are rounded to the nearest P100: an exact centavo
-        // figure would look more certain than a guess is.
-        $round100 = fn ($v) => round($v / 100) * 100;
         $forecast = [];
         for ($i = 1; $i <= $ahead; $i++) {
             $month = now()->startOfMonth()->addMonthsNoOverflow($i);
@@ -1030,15 +1152,51 @@ class ReportController extends Controller
             $occupied = (int) round(max(0, min($totalBeds, $occupied - $ending + $avgMoveIns)));
             $income = $round100($occupied * $incomePerBed);
 
+            // Leases that cover this whole month: their rent is fixed by
+            // contract, so a price change can't touch it.
+            $locked = LeaseContract::whereIn('status', ['active', 'expiring_soon'])
+                ->whereNull('terminated_at')
+                ->whereDate('end_date', '>=', $month->copy()->endOfMonth()->toDateString());
+            $lockedBeds = (clone $locked)->count();
+
+            $expenses = $low = $high = null;
+            $seasonal = false;
+            if ($hasExpenses) {
+                $utilities = $avgUtilities;
+                $monthMin = $minUtilities;
+                $monthMax = $maxUtilities;
+                // Same month last year recorded? Lean towards it, so summer
+                // electricity spikes etc. show up in the estimate.
+                $lastYear = MonthlyExpense::whereDate('month', $month->copy()->subYear()->toDateString())->first();
+                if ($lastYear) {
+                    $lastYearUtilities = $lastYear->electricity + $lastYear->water + $lastYear->internet;
+                    $utilities = ($avgUtilities + $lastYearUtilities) / 2;
+                    $monthMin = min($monthMin, $lastYearUtilities);
+                    $monthMax = max($monthMax, $lastYearUtilities);
+                    $seasonal = true;
+                }
+                $expenses = $round100($avgFixed + $utilities);
+                $low = $round100($avgFixed + $monthMin);
+                $high = $round100($avgFixed + $monthMax);
+            }
+
             $forecast[] = [
                 'label' => $month->format('M Y'),
                 'ending_leases' => $ending,
                 'occupied' => $occupied,
                 'occupancy_rate' => $totalBeds > 0 ? round($occupied / $totalBeds * 100, 1) : 0,
                 'income' => $income,
-                'expenses' => $hasExpenses ? $round100($avgExpenses) : null,
+                'expenses' => $expenses,
+                'expenses_low' => $low,
+                'expenses_high' => $high,
+                'seasonal' => $seasonal,
                 // No expenses recorded = no honest profit figure.
-                'net' => $hasExpenses ? $income - $round100($avgExpenses) : null,
+                'net' => $hasExpenses ? $income - $expenses : null,
+                'locked_beds' => $lockedBeds,
+                'locked_rent' => round((float) (clone $locked)->sum('monthly_rate'), 2),
+                // Beds whose rent follows the current price list (new
+                // tenants and renewals).
+                'open_beds' => max(0, $occupied - $lockedBeds),
             ];
         }
 
@@ -1051,6 +1209,8 @@ class ReportController extends Controller
             'totals' => [
                 'income' => round(array_sum(array_column($forecast, 'income')), 2),
                 'expenses' => $hasExpenses ? array_sum(array_column($forecast, 'expenses')) : null,
+                'expenses_low' => $hasExpenses ? array_sum(array_column($forecast, 'expenses_low')) : null,
+                'expenses_high' => $hasExpenses ? array_sum(array_column($forecast, 'expenses_high')) : null,
                 'net' => $hasExpenses ? array_sum(array_column($forecast, 'net')) : null,
                 'ending_leases' => array_sum(array_column($forecast, 'ending_leases')),
             ],
@@ -1059,6 +1219,11 @@ class ReportController extends Controller
                 'income_per_bed' => round($incomePerBed, 2),
                 'avg_expenses' => $avgExpenses,
                 'expense_months' => $recorded->count(),
+                'avg_utilities' => round($avgUtilities, 2),
+                'min_utilities' => round($minUtilities, 2),
+                'max_utilities' => round($maxUtilities, 2),
+                'income_error_pct' => $incomeError,
+                'compared_months' => $compared->count(),
             ],
         ];
     }

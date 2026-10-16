@@ -164,7 +164,7 @@
           <td>
             <div class="label">Expected Income (3 months)</div>
             <div class="value">About PHP {{ number_format($report['totals']['income']) }}</div>
-            <div class="note">Expected expenses: {{ $report['totals']['expenses'] === null ? 'none recorded' : 'about PHP ' . number_format($report['totals']['expenses']) }}</div>
+            <div class="note">Expected expenses: {{ $report['totals']['expenses'] === null ? 'none recorded' : 'about PHP ' . number_format($report['totals']['expenses']) . ' (could be PHP ' . number_format($report['totals']['expenses_low']) . ' to ' . number_format($report['totals']['expenses_high']) . ')' }}</div>
           </td>
           <td>
             <div class="label">Expected Net</div>
@@ -188,9 +188,15 @@
         <tr><td>Average income per occupied bed</td><td class="amount">PHP {{ number_format($report['assumptions']['income_per_bed'], 2) }}</td></tr>
         <tr><td>Average monthly expenses</td><td class="amount">{{ $report['assumptions']['expense_months'] ? 'PHP ' . number_format($report['assumptions']['avg_expenses'], 2) : 'None recorded' }}</td></tr>
         <tr><td>Months of expenses recorded (of last 6)</td><td class="amount">{{ $report['assumptions']['expense_months'] }}</td></tr>
+        <tr><td>Average monthly utilities (electricity, water, internet)</td><td class="amount">{{ $report['assumptions']['expense_months'] ? 'PHP ' . number_format($report['assumptions']['avg_utilities'], 2) : 'None recorded' }}</td></tr>
+        <tr><td>Utilities range (lowest to highest month)</td><td class="amount">{{ $report['assumptions']['expense_months'] ? 'PHP ' . number_format($report['assumptions']['min_utilities']) . ' to ' . number_format($report['assumptions']['max_utilities']) : 'None recorded' }}</td></tr>
+        <tr><td>Past income estimates were off by (average)</td><td class="amount">{{ $report['assumptions']['income_error_pct'] === null ? 'Not enough history' : $report['assumptions']['income_error_pct'] . '% over ' . $report['assumptions']['compared_months'] . ' month(s)' }}</td></tr>
       </tbody>
     </table>
     <p class="body-text">Tenants whose lease ends in a month are counted as moving out, so if some renew, actual occupancy will be higher. The current month is not over, so it shows income so far and is left out of the averages. Estimates are rounded to the nearest PHP 100.</p>
+    <p class="body-text"><strong>Utilities change month to month</strong> (for example, electricity during hot months), so expected expenses are given as a range. Months marked with a dagger (&#8224;) also use the same month last year.</p>
+    <p class="body-text"><strong>Rent changes are limited by contract.</strong> A tenant's rent can't change during their current term; a new price only applies to new tenants and renewals (Tenant Agreement, Section 2.2). "Locked" shows how many beds have rent fixed by signed contracts in each estimated month.</p>
+    <p class="body-text"><strong>Forecast vs. actual.</strong> For past months, the dotted lines and the "Fcst." columns show what this same method would have estimated at the time, so it can be compared with what actually happened.</p>
 
     <h2 class="section" style="margin-top:26px;">Actual and Estimated Months</h2>
     <div class="chart-title">Occupancy rate (* = estimate)</div>
@@ -198,7 +204,7 @@
     <div class="chart-title">Income vs. expenses (* = estimate)</div>
     <div class="chart"><img src="{{ $charts['money'] }}" width="660"></div>
     <table class="detail-table">
-      <thead><tr><th class="first">Month</th><th>Kind</th><th>Leases Ending</th><th>Occupied</th><th>Occupancy</th><th>Income</th><th>Expenses</th><th>Net</th></tr></thead>
+      <thead><tr><th class="first">Month</th><th>Kind</th><th>Leases Ending</th><th>Occupied</th><th>Occupancy</th><th>Income</th><th>Fcst. Income</th><th>Expenses</th><th>Fcst. Expenses</th><th>Net</th><th>Locked</th></tr></thead>
       <tbody>
         @foreach(array_merge($report['history'], $report['forecast']) as $r)
           @php $est = isset($r['ending_leases']); $partial = ! empty($r['partial']); @endphp
@@ -208,9 +214,12 @@
             <td>{{ $est ? $r['ending_leases'] : '-' }}</td>
             <td>{{ $r['occupied'] }}</td>
             <td class="rate">{{ $r['occupancy_rate'] }}%</td>
-            <td>PHP {{ number_format($r['income'], 2) }}</td>
-            <td>{{ $r['expenses'] === null ? ($est ? '-' : 'Not recorded') : 'PHP ' . number_format($r['expenses'], 2) }}</td>
-            <td @if(($r['net'] ?? 0) < 0) style="color:#ba2828;" @endif>{{ $r['net'] === null ? '-' : 'PHP ' . number_format($r['net'], 2) }}</td>
+            <td>PHP {{ number_format($r['income']) }}</td>
+            <td>{{ isset($r['forecast_income']) ? 'PHP ' . number_format($r['forecast_income']) : '-' }}</td>
+            <td>{{ $r['expenses'] === null ? ($est ? '-' : 'Not recorded') : 'PHP ' . number_format($r['expenses']) }}@if($est && $r['expenses'] !== null)<br><span style="font-size:7.5px;">{{ number_format($r['expenses_low']) }}&ndash;{{ number_format($r['expenses_high']) }}{!! $r['seasonal'] ? ' &#8224;' : '' !!}</span>@endif</td>
+            <td>{{ isset($r['forecast_expenses']) ? 'PHP ' . number_format($r['forecast_expenses']) : '-' }}</td>
+            <td @if(($r['net'] ?? 0) < 0) style="color:#ba2828;" @endif>{{ $r['net'] === null ? '-' : 'PHP ' . number_format($r['net']) }}</td>
+            <td>{{ $est ? $r['locked_beds'] . ' of ' . $r['occupied'] : '-' }}</td>
           </tr>
         @endforeach
       </tbody>

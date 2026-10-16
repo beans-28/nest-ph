@@ -434,6 +434,14 @@ class DemoDataSeeder extends Seeder
                 'room_no' => $no,
                 'room_type' => $type->name,
                 'amenities' => json_encode($amen),
+                // Dummy floor area: about 9 sq. m for a solo room, then
+                // roughly 3.5-4.5 sq. m per bed (bunk beds in bigger rooms).
+                'area_sqm' => match (true) {
+                    $bedCount === 1 => 9.5,
+                    $bedCount === 4 => 18,
+                    $bedCount === 6 => 24,
+                    default => round($bedCount * 3.5, 1),
+                },
                 'monthly_rate' => $type->wholeRoomRate($bedCount),
                 // Water + electricity and Wi-Fi, split evenly per bed on each bill.
                 'monthly_utility_cost' => $bedCount * ($typeName === 'Solo fan room' ? self::UTILITY_PER_BED_FAN : self::UTILITY_PER_BED_AC),
@@ -1366,7 +1374,8 @@ class DemoDataSeeder extends Seeder
      * Profit (payments collected minus these). Pureza includes water,
      * electricity and Wi-Fi in the rent, so the dorm pays them: Meralco is
      * its biggest cost and goes up in the hot months (March-May) when the
-     * aircons work hardest; December has 13th-month pay.
+     * aircons work hardest (and hardest of all in the El Nino year);
+     * December has 13th-month pay.
      */
     private function seedMonthlyExpenses(): void
     {
@@ -1379,17 +1388,24 @@ class DemoDataSeeder extends Seeder
             11 => [9800, 'Replacement of water pump capacitor'],
         ];
 
-        for ($i = 12; $i >= 1; $i--) { // the last 12 finished months; this month is left for the admin to enter
+        // 18 finished months (this month is left for the admin to enter), so
+        // the forecast always has "the same month last year" to compare
+        // utilities against.
+        for ($i = 18; $i >= 1; $i--) {
             $month = $this->today->copy()->startOfMonth()->subMonthsNoOverflow($i);
             $hot = in_array($month->month, [3, 4, 5], true);
+            // Dummy El Nino year: the most recent hot season ran hotter, so
+            // aircons (and the Meralco bill) worked harder than the year before.
+            $elNino = $hot && $i <= 12 ? 1.15 : 1.0;
             // Caretaker 16k, two cleaners 13k each, night guard 15k; plus 13th month in December.
             $salaries = 57000 + ($month->month === 12 ? 57000 : 0);
             [$other, $note] = $oneOffs[$i] ?? [mt_rand(0, 1) ? mt_rand(1500, 3500) : 0, 'Cleaning supplies and toiletries for common areas'];
 
             DB::table('monthly_expenses')->insert([
                 'month' => $month->toDateString(),
-                'electricity' => round(($hot ? 128000 : 96000) + mt_rand(-6000, 8000), 2),
-                'water' => round(14500 + mt_rand(-1500, 2500), 2),
+                'electricity' => round((($hot ? 128000 : 96000) + mt_rand(-6000, 8000)) * $elNino, 2),
+                // More showers and laundry in the hot months, too.
+                'water' => round(14500 + ($hot ? 2500 : 0) + mt_rand(-1500, 2500), 2),
                 'internet' => 6998, // two 3,499 fiber lines
                 'salaries' => $salaries,
                 'other' => $other,

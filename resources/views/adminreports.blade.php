@@ -127,6 +127,8 @@
   .form-msg{ font-size:12.5px; margin:0 0 14px; display:none; }
   .form-msg.ok{ display:block; color:#194e19; }
   .form-msg.err{ display:block; color:#ba2828; }
+  .stat-sub { font-size:12px; color:var(--text-light); margin-top:4px; }
+  .cell-sub { font-size:11px; color:var(--text-light); font-style:normal; }
 </style>
 </head>
 <body>
@@ -314,7 +316,7 @@
   }
 
   // ---- Charts ----
-  const C = { green:'#194e19', greenSoft:'rgba(25,78,25,0.12)', olive:'#8fb48f', red:'#c0504d', grid:'rgba(0,0,0,0.06)' };
+  const C = { amber:'#b7791f', purple:'#7a4fa0', green:'#194e19', greenSoft:'rgba(25,78,25,0.12)', olive:'#8fb48f', red:'#c0504d', grid:'rgba(0,0,0,0.06)' };
   let charts = [];
   function destroyCharts(){ charts.forEach(c => c.destroy()); charts = []; }
   function chartOrFallback(id, config){
@@ -454,25 +456,29 @@
       ${a.expense_months === 0 ? `<div class="missing-note">No expenses recorded in the last 6 months, so expected expenses and net can't be estimated. <button type="button" class="link-btn" id="goExpenses">Record expenses</button></div>` : ''}
       <div class="stats-row money">
         <div class="stat-card"><div class="stat-label">Expected Income (3 mo.)</div><div class="stat-value">≈ ${money(t.income)}</div></div>
-        <div class="stat-card"><div class="stat-label">Expected Expenses (3 mo.)</div><div class="stat-value">${t.expenses === null ? '&mdash;' : '≈ ' + money(t.expenses)}</div></div>
+        <div class="stat-card"><div class="stat-label">Expected Expenses (3 mo.)</div><div class="stat-value">${t.expenses === null ? '&mdash;' : '≈ ' + money(t.expenses)}</div>${t.expenses === null || t.expenses_low === t.expenses_high ? '' : `<div class="stat-sub">Could be ${money(t.expenses_low)} to ${money(t.expenses_high)}</div>`}</div>
         <div class="stat-card ${netClass}"><div class="stat-label">Expected Net</div><div class="stat-value">${t.net === null ? '&mdash;' : '≈ ' + money(t.net)}</div></div>
         <div class="stat-card"><div class="stat-label">Leases Ending</div><div class="stat-value">${t.ending_leases}</div></div>
       </div>
       <p class="occupancy-note" style="margin-top:0;">How it's estimated: about <strong>${a.avg_move_ins}</strong> new move-ins a month and <strong>${money(a.income_per_bed)}</strong> collected per occupied bed (averages of the last 6 months), ${a.expense_months ? `expenses of <strong>${money(a.avg_expenses)}</strong> a month (average of ${a.expense_months} recorded month${a.expense_months === 1 ? '' : 's'})` : 'no expense estimate (none recorded)'}. ${rows.some(r => r.partial) ? "The current month isn't over, so it shows income so far and is left out of the averages. " : ''}Estimates are rounded to the nearest ₱100. The date filters above don't apply here: the forecast always uses the last 6 months. Tenants whose lease ends are counted as moving out, so if some renew, the real numbers will be higher.</p>
+      <p class="occupancy-note" style="margin-top:0;"><strong>Utilities change month to month.</strong> ${a.expense_months ? `Electricity, water and internet averaged ${money(a.avg_utilities)} a month, but ranged from ${money(a.min_utilities)} to ${money(a.max_utilities)}, so expenses are shown with a low-to-high range. ${data.forecast.some(r => r.seasonal) ? 'Months marked * also use the same month last year (for example, higher electricity in summer).' : 'Once a full year of expenses is recorded, the estimate will also use the same month last year (for example, higher electricity in summer).'}` : 'Record expenses to see how much utilities swing.'}</p>
+      <p class="occupancy-note" style="margin-top:0;"><strong>Rent changes are limited by contract.</strong> A tenant's rent can't change during their current term. A new price only applies to new tenants and to renewals (Tenant Agreement, Section 2.2). ${data.forecast.map(r => `${r.label}: ${r.locked_beds} bed${r.locked_beds === 1 ? '' : 's'} locked at signed rates (${money(r.locked_rent)})`).join('; ')}. So if you raise prices now, only the remaining beds would pay the new rate in these months.</p>
+      ${a.income_error_pct === null ? '' : `<p class="occupancy-note" style="margin-top:0;"><strong>How accurate is this?</strong> For the last ${a.compared_months} finished month${a.compared_months === 1 ? '' : 's'}, the same method's income estimate was off by about <strong>${a.income_error_pct}%</strong> on average. The amber line in the charts shows what it estimated; compare it with what actually happened.</p>`}
       <div class="chart-card">
         <h3>Occupancy rate</h3>
-        <p class="chart-sub">Solid line is actual. Dashed line is the estimate.</p>
+        <p class="chart-sub">Solid line is actual. Dashed line is the estimate. Amber line is what the forecast predicted for past months.</p>
+        <div class="chart-legend"><span style="--swatch:${C.green}">Actual / estimate</span><span style="--swatch:${C.amber}">Forecast at the time</span></div>
         <div class="chart-box"><canvas id="fcOccChart" role="img" aria-label="Line chart of actual and estimated occupancy rate"></canvas></div>
       </div>
       <div class="chart-card">
         <h3>Income vs. expenses</h3>
-        <p class="chart-sub">Faded bars are estimates. The current month only shows income so far.</p>
-        <div class="chart-legend"><span style="--swatch:${C.olive}">Income</span><span style="--swatch:${C.red}">Expenses</span><span style="--swatch:rgba(143,180,143,0.4)">Estimate</span></div>
+        <p class="chart-sub">Faded bars are estimates. The current month only shows income so far. The amber and purple lines are the income and expenses the forecast predicted for past months, so you can compare them with the bars (what actually happened).</p>
+        <div class="chart-legend"><span style="--swatch:${C.olive}">Income</span><span style="--swatch:${C.red}">Expenses</span><span style="--swatch:rgba(143,180,143,0.4)">Estimate</span><span style="--swatch:${C.amber}">Forecast income (past months)</span><span style="--swatch:${C.purple}">Forecast expenses (past months)</span></div>
         <div class="chart-box"><canvas id="fcMoneyChart" role="img" aria-label="Bar chart of actual and estimated income and expenses per month"></canvas></div>
       </div>
       <div class="table-scroll"><table class="report-table">
-        <thead><tr><th>Month</th><th>Kind</th><th class="num">Leases Ending</th><th class="num">Occupied</th><th class="num">Occupancy</th><th class="num">Income</th><th class="num">Expenses</th><th class="num">Net</th></tr></thead>
-        <tbody>${rows.map(r => `<tr${r.est || r.partial ? ' style="font-style:italic"' : ''}><td>${monthLabel(r)}</td><td>${kind(r)}</td><td class="num">${r.est ? r.ending_leases : '&mdash;'}</td><td class="num">${r.occupied}</td><td class="num">${r.occupancy_rate}%</td><td class="num">${money(r.income)}</td><td class="num">${r.est && r.expenses === null ? '&mdash;' : cell(r.expenses)}</td><td class="num ${r.net !== null && r.net < 0 ? 'neg' : ''}">${r.net === null ? '&mdash;' : money(r.net)}</td></tr>`).join('')}</tbody>
+        <thead><tr><th>Month</th><th>Kind</th><th class="num">Leases Ending</th><th class="num">Occupied</th><th class="num">Occupancy</th><th class="num">Income</th><th class="num">Forecast Income</th><th class="num">Expenses</th><th class="num">Forecast Expenses</th><th class="num">Net</th><th class="num">Forecast Net</th><th class="num">Beds on Locked Rent</th></tr></thead>
+        <tbody>${rows.map(r => `<tr${r.est || r.partial ? ' style="font-style:italic"' : ''}><td>${monthLabel(r)}</td><td>${kind(r)}</td><td class="num">${r.est ? r.ending_leases : '&mdash;'}</td><td class="num">${r.occupied}</td><td class="num">${r.occupancy_rate}%</td><td class="num">${money(r.income)}</td><td class="num">${r.forecast_income == null ? '&mdash;' : money(r.forecast_income)}</td><td class="num">${r.est && r.expenses === null ? '&mdash;' : cell(r.expenses)}${r.est && r.expenses !== null && r.expenses_low !== r.expenses_high ? `<div class="cell-sub">${money(r.expenses_low)}–${money(r.expenses_high)}${r.seasonal ? ' *' : ''}</div>` : ''}</td><td class="num">${r.forecast_expenses == null ? '&mdash;' : money(r.forecast_expenses)}</td><td class="num ${r.net !== null && r.net < 0 ? 'neg' : ''}">${r.net === null ? '&mdash;' : money(r.net)}</td><td class="num">${r.forecast_income == null || r.forecast_expenses == null ? '&mdash;' : money(r.forecast_income - r.forecast_expenses)}</td><td class="num">${r.est ? `${r.locked_beds} of ${r.occupied}` : '&mdash;'}</td></tr>`).join('')}</tbody>
       </table></div>`;
     $('resultsArea').innerHTML = html;
     const go = $('goExpenses');
@@ -485,9 +491,11 @@
       data:{ labels, datasets:[{ label:'Occupancy rate', data:rows.map(r => r.occupancy_rate), borderColor:C.green, backgroundColor:C.greenSoft,
         fill:true, tension:0, pointRadius:3, pointBackgroundColor:C.green,
         // Dash the line from the last actual month onwards
-        segment:{ borderDash: ctx => ctx.p1DataIndex >= firstEst ? [6, 4] : undefined } }] },
+        segment:{ borderDash: ctx => ctx.p1DataIndex >= firstEst ? [6, 4] : undefined } },
+        { label:'Forecast at the time', data:rows.map(r => r.forecast_occupied == null ? null : Math.round(r.forecast_occupied / data.total_beds * 1000) / 10),
+          borderColor:C.amber, backgroundColor:C.amber, borderDash:[2, 3], fill:false, tension:0, pointRadius:3, spanGaps:false }] },
       options:{ responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{ label: c => ` ${kind(rows[c.dataIndex])}: ${c.parsed.y}% (${rows[c.dataIndex].occupied}/${data.total_beds} beds)` } } },
+        plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{ label: c => c.datasetIndex === 1 ? ` Forecast at the time: ${c.parsed.y}% (${rows[c.dataIndex].forecast_occupied}/${data.total_beds} beds)` : ` ${kind(rows[c.dataIndex])}: ${c.parsed.y}% (${rows[c.dataIndex].occupied}/${data.total_beds} beds)` } } },
         scales:{ x:xAxis, y:{ min:0, max:100, border:{ display:false }, grid:{ color:C.grid }, ticks:{ stepSize:25, callback:v => v + '%' } } } }
     });
     const fade = (color, soft) => rows.map(r => r.est || r.partial ? soft : color);
@@ -496,6 +504,8 @@
       data:{ labels, datasets:[
         { label:'Income', data:rows.map(r => r.income), backgroundColor:fade(C.olive, 'rgba(143,180,143,0.4)'), borderRadius:4, maxBarThickness:30 },
         { label:'Expenses', data:rows.map(r => r.expenses), backgroundColor:fade(C.red, 'rgba(192,80,77,0.35)'), borderRadius:4, maxBarThickness:30 },
+        { type:'line', label:'Forecast income', data:rows.map(r => r.forecast_income ?? null), borderColor:C.amber, backgroundColor:C.amber, borderDash:[2, 3], pointRadius:3, tension:0, spanGaps:false, order:-1 },
+        { type:'line', label:'Forecast expenses', data:rows.map(r => r.forecast_expenses ?? null), borderColor:C.purple, backgroundColor:C.purple, borderDash:[2, 3], pointRadius:3, tension:0, spanGaps:false, order:-1 },
       ] },
       options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false },
         plugins:{ legend:{ display:false }, tooltip:{ ...tooltip, callbacks:{

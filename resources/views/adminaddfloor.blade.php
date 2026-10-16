@@ -236,6 +236,7 @@
       <div class="modal-field"><label for="newRoomUtility">Monthly Utilities</label><input type="number" id="newRoomUtility" min="0" step="0.01" placeholder="0.00"></div>
       <div class="modal-field"><label for="newRoomWifi">Monthly WiFi</label><input type="number" id="newRoomWifi" min="0" step="0.01" placeholder="0.00"></div>
     </div>
+    <div class="modal-field"><label for="newRoomArea">Room area (sq. m)</label><input type="number" id="newRoomArea" min="0" step="0.01" placeholder="e.g. 18"></div>
     <p class="modal-hint">Whole-room amounts, split evenly by the number of beds, same as rent. Changes apply from each tenant's next generated bill.</p>
     <div class="modal-field"><label for="newRoomBedCount">Number of Beds</label><input type="number" id="newRoomBedCount" min="1" max="20" value="2"></div>
     <div class="modal-field"><label id="bedStatusLabel">Bed Status</label><div class="bed-status-rows" id="bedStatusRows" role="group" aria-labelledby="bedStatusLabel"></div></div>
@@ -404,7 +405,7 @@
             <div class="room-card-head">
               <div>
                 <div class="room-title">Room ${room.room_no}</div>
-                <div class="room-meta">${room.room_type ? room.room_type + ' · ' : ''}₱${Number(room.price_per_bed ?? room.monthly_rate).toLocaleString(undefined, {minimumFractionDigits:2})} per bed</div>
+                <div class="room-meta">${room.room_type ? room.room_type + ' · ' : ''}₱${Number(room.price_per_bed ?? room.monthly_rate).toLocaleString(undefined, {minimumFractionDigits:2})} per bed${room.pricing_mode === 'per_room' ? ' (whole-room price split)' : ''}${room.area_sqm ? ' · ' + Number(room.area_sqm) + ' sq. m' : ''}</div>
                 <div class="room-meta">Utilities ₱${Number(room.monthly_utility_cost || 0).toLocaleString(undefined, {minimumFractionDigits:2})} · WiFi ₱${Number(room.monthly_wifi_cost || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</div>
               </div>
               <div class="room-actions">
@@ -604,6 +605,7 @@
   const newRoomRateInput = document.getElementById('newRoomRate');
   const newRoomUtilityInput = document.getElementById('newRoomUtility');
   const newRoomWifiInput = document.getElementById('newRoomWifi');
+  const newRoomAreaInput = document.getElementById('newRoomArea');
   const newRoomBedCountInput = document.getElementById('newRoomBedCount');
   const bedStatusRows = document.getElementById('bedStatusRows');
   const confirmAddRoomBtn = document.getElementById('confirmAddRoom');
@@ -647,6 +649,7 @@
     buildRoomTypeOptions(null);
     newRoomUtilityInput.value = '';
     newRoomWifiInput.value = '';
+    newRoomAreaInput.value = '';
     buildBedStatusRows();
     addRoomModal.classList.add('open');
     newRoomNoInput.focus();
@@ -669,6 +672,7 @@
     buildRoomTypeOptions(room.room_type_id ?? '');
     newRoomUtilityInput.value = Number(room.monthly_utility_cost) || '';
     newRoomWifiInput.value = Number(room.monthly_wifi_cost) || '';
+    newRoomAreaInput.value = room.area_sqm ?? '';
     buildBedStatusRows(room.beds);
     addRoomModal.classList.add('open');
     newRoomNoInput.focus();
@@ -684,6 +688,7 @@
     const monthly_rate = parseFloat(newRoomRateInput.value) || 0;
     const monthly_utility_cost = parseFloat(newRoomUtilityInput.value) || 0;
     const monthly_wifi_cost = parseFloat(newRoomWifiInput.value) || 0;
+    const area_sqm = newRoomAreaInput.value === '' ? null : parseFloat(newRoomAreaInput.value);
     const bed_statuses = Array.from(bedStatusRows.querySelectorAll('select')).map(sel => sel.value);
 
     if(!room_no || !floor){
@@ -692,7 +697,7 @@
       return;
     }
 
-    const payload = { room_no, floor, room_type_id, room_type, monthly_rate, monthly_utility_cost, monthly_wifi_cost, bed_count: bed_statuses.length, bed_statuses };
+    const payload = { room_no, floor, room_type_id, room_type, monthly_rate, monthly_utility_cost, monthly_wifi_cost, area_sqm, bed_count: bed_statuses.length, bed_statuses };
 
     try {
       if(roomModalMode === 'create'){
@@ -705,7 +710,7 @@
         }
         group.rooms.push({
           id: created.id, room_no: created.room_no, floor: created.floor,
-          room_type_id: created.room_type_id, room_type: created.room_type, monthly_rate: created.monthly_rate, price_per_bed: created.price_per_bed,
+          room_type_id: created.room_type_id, room_type: created.room_type, monthly_rate: created.monthly_rate, price_per_bed: created.price_per_bed, pricing_mode: created.pricing_mode, area_sqm: created.area_sqm,
           monthly_utility_cost: created.monthly_utility_cost, monthly_wifi_cost: created.monthly_wifi_cost, status: created.status,
           beds: created.beds.map(b => ({ id: b.id, bed_label: b.bed_label, status: b.status })),
         });
@@ -725,7 +730,7 @@
         }
         newGroup.rooms.push({
           id: updated.id, room_no: updated.room_no, floor: updated.floor,
-          room_type_id: updated.room_type_id, room_type: updated.room_type, monthly_rate: updated.monthly_rate, price_per_bed: updated.price_per_bed,
+          room_type_id: updated.room_type_id, room_type: updated.room_type, monthly_rate: updated.monthly_rate, price_per_bed: updated.price_per_bed, pricing_mode: updated.pricing_mode, area_sqm: updated.area_sqm,
           monthly_utility_cost: updated.monthly_utility_cost, monthly_wifi_cost: updated.monthly_wifi_cost, status: updated.status,
           beds: updated.beds.map(b => ({ id: b.id, bed_label: b.bed_label, status: b.status })),
         });

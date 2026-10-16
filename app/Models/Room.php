@@ -17,6 +17,7 @@ class Room extends Model
         'room_type_id',
         'room_type',
         'amenities',
+        'area_sqm',
         'monthly_rate',
         'monthly_utility_cost',
         'monthly_wifi_cost',
@@ -27,6 +28,7 @@ class Room extends Model
     ];
 
     protected $casts = [
+        'area_sqm' => 'decimal:2',
         'monthly_rate' => 'decimal:2',
         'monthly_utility_cost' => 'decimal:2',
         'monthly_wifi_cost' => 'decimal:2',
@@ -58,6 +60,36 @@ class Room extends Model
         return $bedCount > 0
             ? round((float) $this->monthly_rate / $bedCount, 2)
             : (float) $this->monthly_rate;
+    }
+
+    /**
+     * How this room is priced: 'per_bed' (each tenant pays a fixed rate) or
+     * 'per_room' (one price for the whole room, split across its beds).
+     * Rooms without a room type use the old rule, which is per_room.
+     */
+    public function pricingMode(): string
+    {
+        return $this->room_type_id && $this->roomType
+            ? $this->roomType->pricing_mode
+            : 'per_room';
+    }
+
+    /**
+     * Pricing + size fields the listing pages need to explain the price
+     * clearly ("P4,200 per bed" vs "P9,000 for the whole room, P4,500
+     * per bed when shared").
+     */
+    public function listingDetails(): array
+    {
+        $bedCount = $this->relationLoaded('beds') ? $this->beds->count() : $this->beds()->count();
+
+        return [
+            'area_sqm' => $this->area_sqm !== null ? (float) $this->area_sqm : null,
+            'pricing_mode' => $this->pricingMode(),
+            'price_per_bed' => $this->perBedRate(),
+            'whole_room_rate' => (float) $this->monthly_rate,
+            'bed_count' => $bedCount,
+        ];
     }
 
     /**

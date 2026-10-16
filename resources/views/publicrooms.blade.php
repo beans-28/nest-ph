@@ -218,7 +218,8 @@
         .listing-favorite svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; }
         .listing-favorite.active svg { fill: #e24149; stroke: #e24149; }
         .listing-body { padding: 14px 16px 16px; }
-        .listing-price { color: #355e3d; font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+        .listing-price { color: #355e3d; font-weight: 700; font-size: 16px; margin-bottom: 2px; }
+        .listing-pricing-note { font-size: 12px; color: #6b6b6b; margin-bottom: 8px; }
         .listing-room-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #6b6b6b; margin-bottom: 2px; }
         .listing-amenities { display: flex; flex-wrap: wrap; gap: 3px 14px; margin-bottom: 13px; }
         .listing-amenities span { font-size: 10px; font-weight: 700; letter-spacing: 0.03em; color: #292420; text-transform: uppercase; }
@@ -467,7 +468,12 @@
                         </button>
                         <div class="listing-body">
                             <div class="listing-room-label">Room ${escapeHtml(room.room_no)}</div>
-                            <div class="listing-price">${typeLabel} - ${formatPrice(room.price_per_bed)}/mo</div>
+                            <div class="listing-price">${typeLabel} - ${formatPrice(room.price_per_bed)} per bed/mo</div>
+                            <div class="listing-pricing-note">${room.pricing_mode === 'per_room'
+                                ? (room.bed_count > 1
+                                    ? `Whole room: ${formatPrice(room.whole_room_rate)}/mo, split among ${room.bed_count} beds`
+                                    : `Whole room: ${formatPrice(room.whole_room_rate)}/mo`)
+                                : 'Each tenant pays this rate for their own bed'}${room.area_sqm ? ` · ${Number(room.area_sqm)} sq. m` : ''}</div>
                             <div class="listing-amenities">${amenitiesHtml}</div>
                             <div class="listing-buttons">
                                 ${tourButton}
