@@ -2,7 +2,7 @@
 
 Changes made after the tool defense, following the panel's comments (Sir Leo). Each item lists what the system does now, where to see it, and where the code lives.
 
-**Before deploying:** run `php artisan migrate`, then the seeders (`PurezaStationSeeder`, then `DemoDataSeeder` for demo data). The server must use `SESSION_DRIVER=database`, or online status and emergency auto-assign won't work.
+**Before deploying:** run `php artisan migrate`, then the seeders (`PurezaStationSeeder`, then `DemoDataSeeder` for demo data). The server must use `SESSION_DRIVER=database`, or online status and emergency auto-assign won't work. Set `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` in the server's environment, and add the live domain to the Turnstile widget's hostnames in Cloudflare (see section 4).
 
 ---
 
@@ -117,6 +117,32 @@ An **emergency** is a ticket the system marks **Critical**, for example sparks, 
 
 ---
 
+## 4. Security and Accounts
+
+### ☑ Add CAPTCHA or equivalent bot protection
+
+- **Tool:** Cloudflare **Turnstile**, a free CAPTCHA alternative. Most visitors don't have to solve a puzzle: Cloudflare checks the browser in the background and shows a checkbox only when something looks suspicious.
+- **Where it's used:** on the public forms that anyone can submit without logging in:
+
+| Form | Page | Why it's protected |
+|---|---|---|
+| Tenant log in | `/tenant/login` | Stops bots from guessing passwords |
+| Admin log in | `/admin/login` | Stops bots from guessing passwords |
+| Forgot Password (Send Code) | `/passwords` | Every request sends an email |
+| Inquiry form | `/inquiry` | Stops spam from reaching the admin's inbox |
+| Apply: "Send code" (cellphone OTP) | `/apply` | Every request sends an SMS, which costs money |
+| Apply: "Approve & Register" | `/apply` | Stops fake applications |
+
+- **Not protected:** pages behind a login, plus the OTP and reset-code verify steps (these come after a Turnstile check and are already rate-limited).
+- **How it works:** the widget gives the browser a one-time token. The form sends it along, and the server asks Cloudflare whether it's real before the form is processed. If the check fails, the visitor sees "Please complete the security check and try again."
+- **Setup:**
+  - Keys come from the Cloudflare dashboard → Turnstile and go in `.env` as `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`.
+  - The secret key must never be committed.
+  - If the keys are empty, the check is turned off (this is how automated tests run).
+- **Code:** `app/Http/Middleware/VerifyTurnstile.php` (the server check, attached to the routes above as `turnstile`), `resources/views/partials/turnstile.blade.php` (the widget), `config/services.php`.
+
+---
+
 ## Demo walkthrough
 
 | To show | Log in as | Steps |
@@ -127,6 +153,7 @@ An **emergency** is a ticket the system marks **Critical**, for example sparks, 
 | Emergency alert | Admin (e.g. kristine.bautista@nestph.test) | Any admin page: the "Sparking outlet near Bed 2" emergency pops up (no one assigned) |
 | Several staff on one emergency | Admin | Tickets → "Burst pipe flooding the 3F hallway" → Assigned staff (Jerome + Mark) |
 | Online tag | Owner | Admin Privileges |
+| Bot protection | (public) | Tenant/Admin log in, Inquiry, Forgot Password or Apply: the Cloudflare box shows above the submit button |
 
 Demo password for every seeded account: **Password123!**
 
