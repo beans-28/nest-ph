@@ -563,6 +563,7 @@
                                 <input type="text" id="otp_code" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code" hidden>
                                 <button type="button" class="otp-btn" id="otpVerifyBtn" onclick="verifyOtp()" hidden>Verify</button>
                             </div>
+                            @include('partials.turnstile', ['id' => 'otpTurnstile'])
                             <span class="field-hint" id="otpStatus">We'll text you a code to confirm this number.</span>
                             <input type="hidden" id="phone_verification_token">
                         </div>
@@ -780,6 +781,8 @@
                         <input type="checkbox" id="dpa_consent" required>
                         <span>By approving, I verify the accuracy of the provided information. I am aware of the rental rates, payment schedule, and associated penalties for late payment. I also understand and agree to abide by all dormitory rules and regulations.</span>
                     </label>
+
+                    @include('partials.turnstile', ['id' => 'submitTurnstile'])
 
                     <div class="step-actions">
                         <button type="button" class="btn-nav secondary" onclick="goBack(4)">BACK</button>
@@ -1000,7 +1003,9 @@
         const btn = document.getElementById('otpSendBtn');
         btn.disabled = true;
         setOtpStatus('Sending code…');
-        const { ok, data } = await postOtp('/api/applications/otp/send', { contact_number: number }).catch(() => ({ ok: false, data: {} }));
+        const captcha = turnstileToken('otpTurnstile');
+        turnstileReset('otpTurnstile');
+        const { ok, data } = await postOtp('/api/applications/otp/send', { contact_number: number, cf_turnstile_response: captcha }).catch(() => ({ ok: false, data: {} }));
 
         if (!ok) {
             btn.disabled = false;
@@ -1269,6 +1274,8 @@
         formData.append('phone_verification_token', val('phone_verification_token'));
         formData.append('dpa_consent', document.getElementById('dpa_consent').checked ? '1' : '0');
         formData.append('contract_acceptance', document.getElementById('contract_acceptance').value === '1' ? '1' : '0');
+        formData.append('cf_turnstile_response', turnstileToken('submitTurnstile'));
+        turnstileReset('submitTurnstile');
 
         fetch('/api/applications', {
             method: 'POST',

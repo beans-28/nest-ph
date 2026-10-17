@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'moveout.check' => \App\Http\Middleware\RestrictMovedOutTenant::class,
             'delinquency.check' => \App\Http\Middleware\RestrictDelinquentTenant::class,
             'privileges' => \App\Http\Middleware\EnsureCanManagePrivileges::class,
+            'turnstile' => \App\Http\Middleware\VerifyTurnstile::class,
         ]);
 
         $middleware->redirectGuestsTo(function ($request) {

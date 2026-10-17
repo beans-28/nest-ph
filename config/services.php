@@ -35,6 +35,12 @@ return [
         ],
     ],
 
+    // Cloudflare Turnstile (bot check on public forms). Leave empty to turn it off.
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
     'textbee' => [
         'api_key' => env('TEXTBEE_API_KEY'),
         'device_id' => env('TEXTBEE_DEVICE_ID'),

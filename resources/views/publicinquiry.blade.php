@@ -291,6 +291,8 @@
                             <span>I consent to {{ $brandDormName }} collecting and using the information above (processed through the NEST.PH platform) to respond to my inquiry, in accordance with the <a href="#">Data Privacy Notice</a> (RA 10173).</span>
                         </label>
 
+                        @include('partials.turnstile', ['id' => 'inquiryTurnstile'])
+
                         <button type="submit" class="btn-login" id="submitBtn" disabled>
                             <span class="spinner"></span>
                             <span class="btn-text">Submit Inquiry</span>
@@ -397,7 +399,9 @@
             preferred_room_type: presetRoomType || document.getElementById('preferred_room_type').value || null,
             room_id: presetRoomId || null,
             dpa_consent: document.getElementById('dpa_consent').checked,
+            cf_turnstile_response: turnstileToken('inquiryTurnstile'),
         };
+        turnstileReset('inquiryTurnstile');
 
         try {
             const response = await fetch('/api/inquiries', {

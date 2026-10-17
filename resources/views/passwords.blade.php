@@ -389,6 +389,7 @@
                             <input id="forgot_email" name="email" type="email" placeholder="you@example.com" required />
                             <div class="field-error" id="emailError" role="alert"></div>
                         </div>
+                        @include('partials.turnstile', ['id' => 'resetTurnstile'])
                         <button type="submit" class="btn-login" id="sendCodeBtn">
                             <span class="spinner"></span>
                             <span class="btn-text">Send Code</span>
@@ -496,7 +497,9 @@
             button.disabled = true;
             button.classList.add('loading');
 
-            postJson("{{ route('password.code.send') }}", { email: email })
+            var captcha = turnstileToken('resetTurnstile');
+            turnstileReset('resetTurnstile');
+            postJson("{{ route('password.code.send') }}", { email: email, cf_turnstile_response: captcha })
                 .then(function (result) {
                     button.disabled = false;
                     button.classList.remove('loading');

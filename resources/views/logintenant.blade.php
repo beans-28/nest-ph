@@ -492,6 +492,7 @@
                             <span class="sub" id="loginErrorSub"></span>
                         </span>
                     </div>
+                    @include('partials.turnstile', ['id' => 'loginTurnstile'])
                     <button type="submit" class="btn-login">
                         <span class="spinner"></span>
                         <span class="btn-text">Login</span>
@@ -550,8 +551,9 @@ document.getElementById('login-form').addEventListener('submit', async function(
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
-            body: JSON.stringify({ email: email, password: password })
+            body: JSON.stringify({ email: email, password: password, cf_turnstile_response: turnstileToken('loginTurnstile') })
         });
+        turnstileReset('loginTurnstile');
 
         if (response.ok) {
             window.location.href = "/dashboard";

@@ -82,14 +82,15 @@ Route::get('/login/admin', function () {
     return view('loginadmin');
 })->name('login.admin');
 
-Route::post('/tenant/login', [AuthController::class, 'login']);
-Route::post('/admin/login', [AuthController::class, 'login']);
+// 'turnstile' = Cloudflare bot check (see App\Http\Middleware\VerifyTurnstile).
+Route::post('/tenant/login', [AuthController::class, 'login'])->middleware('turnstile');
+Route::post('/admin/login', [AuthController::class, 'login'])->middleware('turnstile');
 
 Route::get('/passwords', function () {
     return view('passwords');
 })->name('passwords');
 
-Route::post('/password/send-code', [PasswordResetCodeController::class, 'send'])->middleware('throttle:5,1')->name('password.code.send');
+Route::post('/password/send-code', [PasswordResetCodeController::class, 'send'])->middleware(['throttle:5,1', 'turnstile'])->name('password.code.send');
 Route::post('/password/verify-code', [PasswordResetCodeController::class, 'verify'])->middleware('throttle:5,1')->name('password.code.verify');
 Route::post('/password/reset-code', [PasswordResetCodeController::class, 'reset'])->middleware('throttle:5,1')->name('password.code.reset');
 
