@@ -81,14 +81,9 @@
         .hero-text h1 { font-size: clamp(24px, 3.2vw, 36px); font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
         .hero-text p { font-size: 15px; line-height: 1.6; margin-bottom: 24px; max-width: 540px; }
         .hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
-        .hero-image {
-            width: 100%; max-width: 460px; margin-left: auto; aspect-ratio: 4 / 3; border-radius: 4px; overflow: hidden;
-            box-shadow: inset 0 4px 4px rgba(0,0,0,0.25);
-            background: linear-gradient(135deg, var(--green-darker), var(--green-dark));
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: #fff; text-align: center; padding: 24px;
-        }
-        .hero-image img { width: 38%; height: auto; }
-        .hero-image span { font-size: 15px; font-weight: 500; max-width: 280px; }
+        /* Minimal: just the big green NEST.PH logo, no box */
+        .hero-logo { display: flex; align-items: center; justify-content: center; }
+        .hero-logo img { width: min(100%, 340px); height: auto; }
 
         .eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green-darker); margin-bottom: 8px; }
 
@@ -188,9 +183,9 @@
         @media (max-width: 1024px) {
             .topnav, .hero, .stats-bar, .why-section, .about-section, footer { padding-left: 28px; padding-right: 28px; }
             .hero { grid-template-columns: 1fr; }
-            /* Short banner when stacked, so the dorm list isn't pushed far down */
-            .hero-image { max-width: 100%; margin-left: 0; aspect-ratio: auto; flex-direction: row; padding: 16px 20px; }
-            .hero-image img { width: 56px; }
+            /* Stacked: logo goes above the text and shrinks, so the dorm list isn't pushed far down */
+            .hero-logo { order: -1; justify-content: flex-start; }
+            .hero-logo img { width: 120px; }
             .feature-grid { grid-template-columns: 1fr; }
             .steps { grid-template-columns: repeat(2, 1fr); }
             .footer-grid { grid-template-columns: 1fr 1fr; }
@@ -219,9 +214,8 @@
                 <a href="#for-owners" class="btn btn-outline-green btn-lg">I Own a Dormitory</a>
             </div>
         </div>
-        <div class="hero-image" aria-hidden="true">
-            <img src="{{ asset('images/nestph.png') }}" alt="">
-            <span>Malayo sa bahay, pero at home.</span>
+        <div class="hero-logo">
+            <img src="{{ asset('images/nestphgreen.png') }}" alt="NEST.PH logo">
         </div>
     </section>
 

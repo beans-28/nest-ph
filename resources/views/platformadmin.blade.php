@@ -79,10 +79,6 @@
         <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span>
         <span class="label">Owner Requests</span>
       </li>
-      <li class="nav-item" data-href="{{ route('platform') }}" tabindex="0">
-        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
-        <span class="label">View Landing Page</span>
-      </li>
     </ul>
     <div class="sidebar-footer">
       <form method="POST" action="{{ route('logout') }}" class="logout-form">

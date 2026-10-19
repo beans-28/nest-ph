@@ -157,6 +157,7 @@ class DemoDataSeeder extends Seeder
         try {
             $this->seedEverything();
             $this->seedTicketTeams();
+            $this->call(PartnerRequestDemoSeeder::class);
         } finally {
             Carbon::setTestNow();
         }
@@ -208,13 +209,19 @@ class DemoDataSeeder extends Seeder
             'payments', 'billing_statements', 'lease_contracts', 'applications', 'inquiries',
             'tenants', 'beds', 'admin_access_logs', 'admin_login_sessions', 'sessions',
             'password_reset_codes', 'password_reset_tokens', 'personal_access_tokens',
-            'deposit_refunds', 'tenant_notifications', 'monthly_expenses',
+            'deposit_refunds', 'tenant_notifications', 'monthly_expenses', 'partner_requests',
         ] as $table) {
             DB::table($table)->truncate();
         }
 
+        // NEST.PH platform team accounts aren't part of the dorm's demo data: keep them.
+        $platformRoleId = DB::table('roles')->where('role_name', 'platform_admin')->value('id');
+
         DB::table('admin_privileges')->where('user_id', '!=', $this->ownerId)->delete();
-        DB::table('users')->where('id', '!=', $this->ownerId)->delete();
+        DB::table('users')
+            ->where('id', '!=', $this->ownerId)
+            ->when($platformRoleId, fn ($q) => $q->where(fn ($q) => $q->whereNull('role_id')->orWhere('role_id', '!=', $platformRoleId)))
+            ->delete();
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
     }
