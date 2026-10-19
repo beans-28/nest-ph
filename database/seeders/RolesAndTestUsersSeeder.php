@@ -15,6 +15,7 @@ class RolesAndTestUsersSeeder extends Seeder
         // 1. Roles
         $tenantRole = Role::firstOrCreate(['role_name' => 'tenant']);
         $adminRole = Role::firstOrCreate(['role_name' => 'admin']);
+        $platformRole = Role::firstOrCreate(['role_name' => 'platform_admin']);
 
         // Never create the well-known test logins (password123) on the live
         // site. Roles above are still needed there, so only this part stops.
@@ -52,6 +53,17 @@ class RolesAndTestUsersSeeder extends Seeder
                 'name' => 'Test Owner',
                 'password' => Hash::make('password123'),
                 'role_id' => $adminRole->id,
+                'is_active' => true,
+            ]
+        );
+
+        // NEST.PH team account (reviews dormitory owner requests at /platform)
+        User::updateOrCreate(
+            ['email' => 'platform@nestph.test'],
+            [
+                'name' => 'NEST.PH Team',
+                'password' => Hash::make('password123'),
+                'role_id' => $platformRole->id,
                 'is_active' => true,
             ]
         );

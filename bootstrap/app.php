@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'platform' => \App\Http\Middleware\EnsureUserIsPlatformAdmin::class,
             'tenant' => \App\Http\Middleware\EnsureUserIsTenant::class,
             'movein.check' => \App\Http\Middleware\RedirectPendingMoveInTenant::class,
             'moveout.check' => \App\Http\Middleware\RestrictMovedOutTenant::class,
@@ -25,6 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->redirectGuestsTo(function ($request) {
             $routeMiddleware = $request->route()?->gatherMiddleware() ?? [];
+
+            if (in_array('platform', $routeMiddleware, true)) {
+                return route('login.platform');
+            }
 
             return in_array('admin', $routeMiddleware, true)
                 ? route('login.admin')

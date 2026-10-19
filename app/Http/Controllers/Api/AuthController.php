@@ -63,21 +63,26 @@ public function login(Request $request)
 
     $user = Auth::user();
 
-    // Each login page only accepts its own kind of account: admins must
-    // use /admin/login and tenants must use /tenant/login.
-    $isAdmin = $user->role?->role_name === 'admin';
-    $wrongPortal = ($request->is('admin/login') && ! $isAdmin)
-        || ($request->is('tenant/login') && $isAdmin);
+    // Each login page only accepts its own kind of account: dorm admins use
+    // /admin/login, tenants /tenant/login, and the NEST.PH team /platform/login.
+    $role = $user->role?->role_name;
+    $expectedRole = match (true) {
+        $request->is('admin/login') => 'admin',
+        $request->is('platform/login') => 'platform_admin',
+        default => 'tenant',
+    };
 
-    if ($wrongPortal) {
+    if ($role !== $expectedRole) {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return response()->json([
-            'message' => $isAdmin
-                ? 'This is an admin account. Please use the admin login page.'
-                : 'This is a tenant account. Please use the tenant login page.',
+            'message' => match ($role) {
+                'admin' => 'This is an admin account. Please use the admin login page.',
+                'platform_admin' => 'This is a NEST.PH platform account. Please use the platform login page.',
+                default => 'This is a tenant account. Please use the tenant login page.',
+            },
         ], 403);
     }
 

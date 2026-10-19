@@ -78,6 +78,7 @@
 <nav class="topnav textured" aria-label="Main">
     <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
     <div class="menu" id="publicNavMenu">
+        <a href="{{ route('platform') }}" title="Back to the NEST.PH platform">&larr; NEST.PH</a>
         <a href="{{ route('home') }}" @if(request()->routeIs('home')) aria-current="page" @endif>HOME</a>
         <a href="{{ route('public.rooms') }}" @if(request()->routeIs('public.rooms')) aria-current="page" @endif>ROOMS</a>
         <a href="{{ route('public.vr') }}" @if(request()->routeIs('public.vr')) aria-current="page" @endif>VR TOUR</a>

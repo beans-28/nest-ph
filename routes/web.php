@@ -30,6 +30,7 @@ use App\Http\Controllers\TenantMoveOutController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ReviewModerationController;
+use App\Http\Controllers\PlatformController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,7 +38,21 @@ use App\Http\Controllers\ReviewModerationController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', [PublicController::class, 'home'])->name('home');
+// Generic NEST.PH platform landing: pick a dormitory, or request NEST.PH for your own.
+Route::get('/', [PlatformController::class, 'landing'])->name('platform');
+Route::post('/partner-requests', [PlatformController::class, 'storePartnerRequest'])
+    ->middleware(['throttle:5,10', 'turnstile'])->name('platform.partner-request');
+
+// NEST.PH team (platform_admin role): log in and review owner requests.
+Route::get('/login/platform', fn () => view('loginplatform'))->name('login.platform');
+Route::post('/platform/login', [AuthController::class, 'login'])->middleware('turnstile');
+Route::middleware(['auth', 'platform'])->group(function () {
+    Route::get('/platform', [PlatformController::class, 'dashboard'])->name('platform.dashboard');
+    Route::patch('/platform/requests/{partnerRequest}', [PlatformController::class, 'updatePartnerRequest'])->name('platform.requests.update');
+});
+
+// Pureza Station Dormitory's own homepage (the first dorm running on NEST.PH).
+Route::get('/pureza-station', [PublicController::class, 'home'])->name('home');
 
 Route::get('/rooms', function () {
     return view('publicrooms');
