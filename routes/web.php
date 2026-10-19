@@ -323,17 +323,38 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'moveout.check', 'delinquen
         $nextBill = null;
         if ($contract && $contract->bed?->room) {
             [$utilities, $wifi] = $contract->bed->room->utilityShares();
+            // Same rule as BillingController: included items aren't billed.
+            $utilitiesIncluded = $dormProfile->water_included && $dormProfile->electricity_included;
+            $wifiIncluded = (bool) $dormProfile->wifi_included;
+            $utilities = $utilitiesIncluded ? 0 : $utilities;
+            $wifi = $wifiIncluded ? 0 : $wifi;
             $nextBill = [
                 'rent' => (float) $contract->monthly_rate,
                 'utilities' => $utilities,
                 'wifi' => $wifi,
+                'utilities_included' => $utilitiesIncluded,
+                'wifi_included' => $wifiIncluded,
                 'total' => (float) $contract->monthly_rate + $utilities + $wifi,
             ];
         }
 
+        // Pay rent ahead card: the choices (1 to 3 months), or why not.
+        // An unfinished pay-ahead is read from the bill list by the page.
+        $payAheadOptions = \App\Services\PayAhead::optionsFor($tenant);
+        $payAhead = $payAheadOptions['contract'] ? [
+            'blocked' => $payAheadOptions['blocked'],
+            'unused_credit' => $payAheadOptions['unused_credit'],
+            'options' => collect($payAheadOptions['periods'])->values()->map(fn ($period, $i) => [
+                'months' => $i + 1,
+                'amount' => round($payAheadOptions['rate'] * ($i + 1), 2),
+                'label' => \App\Services\PayAhead::label($payAheadOptions['periods'][0][0], $period[1]),
+            ]),
+        ] : null;
+
         return view('tenantbilling', [
             'tenant' => $tenant,
             'nextBill' => $nextBill,
+            'payAhead' => $payAhead,
             'paymentMethods' => \App\Models\PaymentMethod::ordered()->map->toClientArray()->values(),
             'portalRestricted' => (bool) $tenant->portal_restricted,
             'isBlacklisted' => (bool) $tenant->is_blacklisted,
@@ -383,6 +404,8 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'moveout.check', 'delinquen
         Route::get('/bills', [TenantPortalController::class, 'myBills']);
         Route::get('/bills/{billingStatement}', [TenantPortalController::class, 'showBill']);
         Route::post('/bills/{billingStatement}/payment-proof', [TenantPortalController::class, 'submitProof'])->name('tenant.billing.payment-proof');
+        Route::post('/pay-ahead', [TenantPortalController::class, 'startPayAhead']);
+        Route::delete('/pay-ahead/{billingStatement}', [TenantPortalController::class, 'cancelPayAhead']);
         Route::get('/penalties', [TenantPortalController::class, 'myPenalties']);
         Route::get('/payments/{payment}/receipt', [TenantPortalController::class, 'receiptPdf'])->name('tenant.billing.receipt');
         Route::get('/statement-of-account', [TenantPortalController::class, 'statementOfAccountPdf'])->name('tenant.statement-of-account');

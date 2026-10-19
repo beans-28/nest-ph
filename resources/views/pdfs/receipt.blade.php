@@ -57,8 +57,12 @@
   <table class="summary">
     <tr><td class="k">Payment For</td><td class="v">
       @if($bill)
-        {{ $bill->type === 'move_in' ? 'Move-In Fee' : 'Monthly Rent & Charges' }},
-        {{ \Carbon\Carbon::parse($bill->billing_period_start)->format('F Y') }}
+        @if($bill->type === \App\Models\BillingStatement::PAY_AHEAD)
+          Rent Paid Ahead, {{ \App\Services\PayAhead::label($bill->billing_period_start, $bill->billing_period_end) }}
+        @else
+          {{ $bill->type === 'move_in' ? 'Move-In Fee' : 'Monthly Rent & Charges' }},
+          {{ \Carbon\Carbon::parse($bill->billing_period_start)->format('F Y') }}
+        @endif
       @else
         —
       @endif

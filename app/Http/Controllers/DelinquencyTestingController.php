@@ -105,7 +105,7 @@ class DelinquencyTestingController extends Controller
     private function findOrCreateTestBill(Tenant $tenant): BillingStatement
     {
         $bill = BillingStatement::where('tenant_id', $tenant->id)
-            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->owed()
             ->orderByDesc('due_date')
             ->first();
 

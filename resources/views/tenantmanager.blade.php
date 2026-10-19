@@ -564,6 +564,7 @@
       <div class="kv">
         <div><div class="k">Deposit Held</div><span class="v">${d.held ? peso(d.held) : 'None on record'}</span></div>
         <div><div class="k">Status</div><span class="v">${d.held ? 'Held until move-out' : 'Move-in fee not yet paid'}</span></div>
+        ${d.unused_pay_ahead > 0 ? `<div><div class="k">Unused Rent Paid Ahead</div><span class="v">${peso(d.unused_pay_ahead)}, return it to the tenant at move-out</span></div>` : ''}
       </div>
       <button type="button" class="btn" id="openDepositRefundBtn" style="margin-top:10px;">Record Deposit Refund</button>`;
   }

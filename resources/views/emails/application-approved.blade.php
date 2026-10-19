@@ -24,7 +24,7 @@
 
                 <p style="color:#4b5f4c;font-size:14px;line-height:1.6;margin:0 0 20px;">
                     Please log in and proceed to the <strong>Billing</strong> section to pay your move-in fees
-                    (security deposit + 1 month advance rent). Your account will be fully activated once payment
+                    (advance rent and security deposit). Your account will be fully activated once payment
                     is verified.
                 </p>
 

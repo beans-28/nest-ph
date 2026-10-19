@@ -531,13 +531,17 @@ class ApplicationController extends Controller
             ]);
 
             // Step 11.2: "create billing record" — the move-in fee breakdown
-            // (security deposit + 1 month advance rent) that Table 16's Pay
+            // (advance rent + security deposit, in months of rent as set in
+            // the Dormitory Profile; 1 + 1 by default) that Table 16's Pay
             // Move-In Fees flow requires to exist before the tenant can even
             // see a total due. A brand-new tenant is only ever created with
             // 'pending_move_in_payment' status by createTenantWithLogin();
             // a returning tenant's existing status is left untouched, since
             // they may already be Active from a prior stay.
-            $moveInFeeAmount = $monthlyRate * 2; // 1 month deposit + 1 month advance
+            $profile = \App\Models\DormitoryProfile::current();
+            $advanceAmount = round($monthlyRate * $profile->advance_rent_months, 2);
+            $depositAmount = round($monthlyRate * $profile->security_deposit_months, 2);
+            $moveInFeeAmount = $advanceAmount + $depositAmount;
 
             $billingStatement = \App\Models\BillingStatement::create([
                 'contract_id' => $contract->id,
@@ -547,10 +551,10 @@ class ApplicationController extends Controller
                 'billing_period_end' => $contract->start_date,
                 'due_date' => $contract->start_date,
                 'base_rent' => $moveInFeeAmount,
-                // Kept apart so the deposit is never counted as rent. The
-                // advance covers the tenant's first rental period.
-                'advance_amount' => $monthlyRate,
-                'deposit_amount' => $monthlyRate,
+                // Kept apart so the deposit is never counted as rent. Each
+                // month of advance pays one of the tenant's first rental periods.
+                'advance_amount' => $advanceAmount,
+                'deposit_amount' => $depositAmount,
                 'utilities_amount' => 0,
                 'wifi_amount' => 0,
                 'penalty_amount' => 0,

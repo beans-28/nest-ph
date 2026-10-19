@@ -67,6 +67,23 @@
   .next-bill-items strong{ font-size:15px; color:var(--text-dark); overflow-wrap:anywhere; }
   .next-bill-items .total strong{ color:var(--green-dark); }
   @media (max-width: 640px){ .next-bill-items{ grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+
+  /* Pay rent ahead: one row -- months, what it covers, one button */
+  .pa-row{ display:flex; flex-wrap:wrap; align-items:center; gap:14px 22px; }
+  .pa-choices{ display:inline-flex; border:1px solid var(--border); border-radius:9px; overflow:hidden; }
+  .pa-choice{ position:relative; }
+  .pa-choice input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer; }
+  .pa-choice span{ display:block; padding:9px 16px; font-size:13px; font-weight:600; color:var(--text-mid); background:#fff; }
+  .pa-choice + .pa-choice span{ border-left:1px solid var(--border); }
+  .pa-choice input:checked + span{ background:var(--green-dark); color:#fff; }
+  .pa-choice input:focus-visible + span{ outline:2px solid var(--green-dark); outline-offset:-4px; }
+  .pa-summary{ flex:1; min-width:180px; }
+  .pa-main{ font-size:15px; font-weight:700; color:var(--text-dark); font-variant-numeric:tabular-nums; }
+  .pa-sub{ font-size:12px; color:var(--text-mid); margin-top:2px; line-height:1.5; }
+  .pa-actions{ display:flex; gap:8px; margin-left:auto; }
+  .pa-note{ font-size:12px; color:var(--text-mid); margin-top:12px; }
+  .paid-ahead-note{ display:block; font-size:11px; color:var(--green-dark); font-weight:600; }
+  @media (max-width: 640px){ .pa-actions{ margin-left:0; width:100%; } .pa-actions button{ flex:1; } }
   .breakdown-amount{ font-size:12.5px; color:var(--text-dark); text-align:right; }
 
   .reminder-card{ background:var(--sage-50); border-radius:14px; padding:22px 20px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; }
@@ -356,11 +373,22 @@
           </div>
           <div class="next-bill-items">
             <div><span>Rent</span><strong>₱{{ number_format($nextBill['rent'], 2) }}</strong></div>
-            <div><span>Utilities</span><strong>₱{{ number_format($nextBill['utilities'], 2) }}</strong></div>
-            <div><span>Wi-Fi</span><strong>₱{{ number_format($nextBill['wifi'], 2) }}</strong></div>
+            <div><span>Utilities</span><strong>{{ $nextBill['utilities_included'] ? 'Included in rent' : '₱' . number_format($nextBill['utilities'], 2) }}</strong></div>
+            <div><span>Wi-Fi</span><strong>{{ $nextBill['wifi_included'] ? 'Included in rent' : '₱' . number_format($nextBill['wifi'], 2) }}</strong></div>
             <div class="total"><span>Estimated Total</span><strong>₱{{ number_format($nextBill['total'], 2) }}</strong></div>
           </div>
         </div>
+        @endif
+
+        @if($payAhead)
+        <div class="next-bill-card" id="payAheadCard">
+          <div class="next-bill-head">
+            <h3>PAY RENT AHEAD</h3>
+            <span>Rent only. Utilities and Wi-Fi stay on each month's bill at that month's price.</span>
+          </div>
+          <div id="payAheadBody"></div>
+        </div>
+        <script type="application/json" id="payAheadData">@json($payAhead)</script>
         @endif
 
         <div class="billing-panel">
@@ -409,7 +437,7 @@
             <div class="amount-card-label">Amount to Pay</div>
             <div class="amount-card-value" id="methodAmount">₱0.00</div>
             <div class="amount-card-due" id="methodDue">Due —</div>
-            <div class="amount-card-note">ⓘ&nbsp; Make sure to settle your payments on time to avoid penalties</div>
+            <div class="amount-card-note" id="methodNote">ⓘ&nbsp; Make sure to settle your payments on time to avoid penalties</div>
           </div>
 
           <div class="summary-card">
@@ -708,8 +736,14 @@
     }
   }
 
+  // Bills the tenant owes. An unpaid pay-ahead is optional, so it's paid
+  // from its own card, not counted as a balance due.
+  function owedBills(){
+    return allBills.filter(b => ['unpaid', 'partial', 'overdue'].includes(b.status) && b.type !== 'pay_ahead');
+  }
+
   function renderMainView(){
-    const payable = allBills.filter(b => ['unpaid', 'partial', 'overdue'].includes(b.status));
+    const payable = owedBills();
     const current = payable[0] || null;
     const unbilledPenalties = Number(billingSummary?.unbilled_penalties || 0);
     const totalOwed = Number(billingSummary?.total_owed ?? (current ? current.balance : 0));
@@ -725,7 +759,7 @@
 
       const total = Number(current.total_amount) || 1;
       const rows = [
-        ['Rent', 'rent', current.base_rent],
+        [Number(current.prepaid_rent) > 0 ? 'Rent (rest paid ahead)' : 'Rent', 'rent', current.base_rent],
         ['Utilities', 'utilities', current.utilities_amount],
         ['Wi-Fi', 'wifi', current.wifi_amount],
       ];
@@ -770,6 +804,90 @@
     }
 
     renderBillingTable();
+    renderPayAhead();
+  }
+
+  const payAheadData = document.getElementById('payAheadData') ? JSON.parse(document.getElementById('payAheadData').textContent) : null;
+
+  function payAheadLabel(bill){
+    const from = monthLabel(bill.billing_period_start), to = monthLabel(bill.billing_period_end);
+    return from === to ? from : `${from} – ${to}`;
+  }
+
+  function renderPayAhead(){
+    const body = document.getElementById('payAheadBody');
+    if(!body || !payAheadData) return;
+    const credit = Number(payAheadData.unused_credit || 0);
+    const creditNote = credit > 0 ? `<div class="pa-note">${peso(credit)} of rent you paid ahead will be used on your coming bills.</div>` : '';
+    const open = allBills.find(b => b.type === 'pay_ahead' && ['unpaid', 'partial'].includes(b.status));
+
+    if(open){
+      const pending = (open.payments || []).some(p => p.status === 'pending');
+      const status = pending ? 'Your proof of payment is being reviewed.'
+        : (latestRejectedProof(open) ? 'Your proof was not accepted. Pay again or cancel.' : 'Not paid yet.');
+      body.innerHTML = `
+        <div class="pa-row">
+          <div class="pa-summary">
+            <div class="pa-main">${peso(open.balance)} rent for ${payAheadLabel(open)}</div>
+            <div class="pa-sub">${status}</div>
+          </div>
+          ${pending ? '' : `<div class="pa-actions">
+            <button type="button" class="row-view-btn" id="paCancelBtn">Cancel</button>
+            <button type="button" class="row-pay-btn" id="paPayBtn">Pay now</button>
+          </div>`}
+        </div>${creditNote}`;
+      document.getElementById('paPayBtn')?.addEventListener('click', () => startPaymentFlow(open.id));
+      document.getElementById('paCancelBtn')?.addEventListener('click', async function(){
+        this.disabled = true;
+        try {
+          await api(`/my/billing/pay-ahead/${open.id}`, { method: 'DELETE' });
+          window.location.reload();
+        } catch(e){ toast(e.message, true); this.disabled = false; }
+      });
+      return;
+    }
+
+    if(payAheadData.blocked || !payAheadData.options.length){
+      body.innerHTML = `<div class="pa-sub">${payAheadData.blocked || 'Paying ahead is not available right now.'}</div>${creditNote}`;
+      return;
+    }
+
+    const opts = payAheadData.options;
+    body.innerHTML = `
+      <div class="pa-row">
+        <div class="pa-choices" role="radiogroup" aria-label="Months to pay ahead">
+          ${opts.map(o => `<label class="pa-choice"><input type="radio" name="paMonths" value="${o.months}" ${o.months === 1 ? 'checked' : ''}><span>${o.months} ${o.months === 1 ? 'month' : 'months'}</span></label>`).join('')}
+        </div>
+        <div class="pa-summary">
+          <div class="pa-main" id="paAmount"></div>
+          <div class="pa-sub" id="paCovers"></div>
+        </div>
+        <div class="pa-actions"><button type="button" class="row-pay-btn" id="paStartBtn">Continue</button></div>
+      </div>${creditNote}`;
+
+    const chosen = () => opts.find(o => String(o.months) === body.querySelector('input[name="paMonths"]:checked').value);
+    const update = () => {
+      const o = chosen();
+      document.getElementById('paAmount').textContent = peso(o.amount);
+      document.getElementById('paCovers').textContent = `Covers your rent for ${o.label}`;
+    };
+    body.querySelectorAll('input[name="paMonths"]').forEach(r => r.addEventListener('change', update));
+    update();
+
+    document.getElementById('paStartBtn').addEventListener('click', async function(){
+      this.disabled = true;
+      try {
+        const res = await api('/my/billing/pay-ahead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ months: chosen().months }),
+        });
+        const data = await api('/my/billing/bills');
+        allBills = data.bills;
+        renderMainView();
+        startPaymentFlow(res.bill.id);
+      } catch(e){ toast(e.message, true); this.disabled = false; }
+    });
   }
 
   // Table 20: the newest proof on a bill, if the admin rejected it. Null
@@ -789,18 +907,21 @@
     }
 
     tbody.innerHTML = shown.map(bill => {
-      const payable = ['unpaid', 'partial', 'overdue'].includes(bill.status);
+      const isPayAhead = bill.type === 'pay_ahead';
+      // A pay-ahead with a proof under review waits for the admin, same as its card says.
+      const payable = ['unpaid', 'partial', 'overdue'].includes(bill.status)
+        && !(isPayAhead && (bill.payments || []).some(p => p.status === 'pending'));
       const pillClass = bill.status === 'paid' ? 'paid' : (bill.status === 'overdue' ? 'overdue' : 'pending');
       const pillLabel = bill.status === 'unpaid' ? 'Pending' : bill.status.charAt(0).toUpperCase() + bill.status.slice(1);
       return `
         <tr>
-          <td>${monthLabel(bill.billing_period_start)}</td>
-          <td>${peso(bill.base_rent)}</td>
-          <td>${peso(bill.utilities_amount)}</td>
-          <td>${peso(bill.wifi_amount)}</td>
+          <td>${bill.type === 'pay_ahead' ? `Rent ahead<span class="paid-ahead-note">${payAheadLabel(bill)}</span>` : monthLabel(bill.billing_period_start)}</td>
+          <td>${peso(bill.base_rent)}${Number(bill.prepaid_rent) > 0 ? `<span class="paid-ahead-note">${peso(bill.prepaid_rent)} paid ahead</span>` : ''}</td>
+          <td>${isPayAhead ? '—' : peso(bill.utilities_amount)}</td>
+          <td>${isPayAhead ? '—' : peso(bill.wifi_amount)}</td>
           <td>${peso(bill.total_amount)}</td>
           <td><span class="status-pill ${pillClass}">${pillLabel}</span>${payable && latestRejectedProof(bill) ? '<span class="rejected-note">Proof rejected</span>' : ''}</td>
-          <td>${fullDate(bill.due_date)}</td>
+          <td>${bill.type === 'pay_ahead' ? '—' : fullDate(bill.due_date)}</td>
           <td>${payable
             ? `<button class="row-pay-btn" data-bill-id="${bill.id}">Pay</button>`
             : `<button class="row-view-btn" data-bill-id="${bill.id}">View Proofs</button>`}</td>
@@ -824,7 +945,7 @@
   });
 
   document.getElementById('mainPayNowBtn').addEventListener('click', () => {
-    const payable = allBills.filter(b => ['unpaid', 'partial', 'overdue'].includes(b.status));
+    const payable = owedBills();
     const unbilledPenalties = Number(billingSummary?.unbilled_penalties || 0);
     if(payable[0]){
       startPaymentFlow(payable[0].id);
@@ -844,10 +965,15 @@
       ? `${tenantInfo.tenant.full_name} - Room ${tenantInfo.contract?.bed?.room?.room_no ?? '—'}`
       : '';
     document.getElementById('methodAmount').textContent = peso(activeBill.balance);
-    document.getElementById('methodDue').textContent = `Due ${fullDate(activeBill.due_date)}`;
+    // Paying ahead is optional: no due date and no penalty.
+    const isPayAhead = activeBill.type === 'pay_ahead';
+    document.getElementById('methodDue').textContent = isPayAhead ? `Rent for ${payAheadLabel(activeBill)}` : `Due ${fullDate(activeBill.due_date)}`;
+    document.getElementById('methodNote').innerHTML = isPayAhead
+      ? 'ⓘ&nbsp; Rent only. Utilities and Wi-Fi stay on each month\'s bill.'
+      : 'ⓘ&nbsp; Make sure to settle your payments on time to avoid penalties';
     document.getElementById('sumRent').textContent = peso(activeBill.base_rent);
-    document.getElementById('sumUtilities').textContent = peso(activeBill.utilities_amount);
-    document.getElementById('sumWifi').textContent = peso(activeBill.wifi_amount);
+    document.getElementById('sumUtilities').textContent = activeBill.type === 'pay_ahead' ? '—' : peso(activeBill.utilities_amount);
+    document.getElementById('sumWifi').textContent = activeBill.type === 'pay_ahead' ? '—' : peso(activeBill.wifi_amount);
     document.getElementById('sumTotal').textContent = peso(activeBill.total_amount);
 
     document.querySelectorAll('.method-option').forEach(o => o.classList.remove('selected'));
@@ -928,6 +1054,8 @@
     document.getElementById('pfDate').value = new Date().toISOString().slice(0, 10);
     document.getElementById('pfTime').value = new Date().toTimeString().slice(0, 5);
     document.getElementById('pfAmount').value = activeBill.balance > 0 ? Number(activeBill.balance).toFixed(2) : '';
+    // Advance rent is paid in full, so the amount is fixed.
+    document.getElementById('pfAmount').readOnly = activeBill.type === 'pay_ahead';
     document.getElementById('pfNotes').value = '';
     selectedFile = null;
     document.getElementById('uploadedFileRow').classList.remove('show');

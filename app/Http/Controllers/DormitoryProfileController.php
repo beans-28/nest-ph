@@ -406,6 +406,8 @@ class DormitoryProfileController extends Controller
             'move_out_notice_days' => ['required', 'integer', 'min:0', 'max:180'],
             'extension_notice_days' => ['required', 'integer', 'min:0', 'max:180'],
             'deposit_refund_days' => ['required', 'integer', 'min:0', 'max:180'],
+            'advance_rent_months' => ['required', 'integer', 'min:0', 'max:3'],
+            'security_deposit_months' => ['required', 'integer', 'min:0', 'max:3'],
             'reservation_validity_days' => ['required', 'integer', 'min:1', 'max:180'],
             'mid_month_move_in' => ['required', Rule::in(['full', 'prorated'])],
             'mid_month_move_out' => ['sometimes', Rule::in(['full', 'prorated'])],
@@ -419,6 +421,12 @@ class DormitoryProfileController extends Controller
             'fees_version' => ['nullable', 'string', 'max:20'],
             'documents_effective_date' => ['nullable', 'date'],
         ]);
+
+        // The move-in fee is what turns an approved applicant into a tenant,
+        // so it can't be zero.
+        if ((int) $data['advance_rent_months'] + (int) $data['security_deposit_months'] === 0) {
+            return response()->json(['message' => 'Collect at least one month of advance rent or security deposit at move-in.'], 422);
+        }
 
         $profile = DormitoryProfile::current();
         $profile->fill($data)->save();

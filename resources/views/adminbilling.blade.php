@@ -689,7 +689,7 @@
             <div class="avatar" style="background:${avatarColor(p.id)}">${esc(initials(p.tenant_name))}</div>
             <div>
               <div class="tenant-name">${esc(p.tenant_name)}</div>
-              ${p.billing_type === 'move_in' ? '<div class="move-in-badge">Move-In Fee</div>' : ''}
+              ${p.billing_type === 'move_in' ? '<div class="move-in-badge">Move-In Fee</div>' : (p.billing_type === 'pay_ahead' ? '<div class="move-in-badge">Rent Paid Ahead</div>' : '')}
             </div>
           </div>
         </td>
@@ -755,7 +755,7 @@
           <div><div class="k">Tenant</div>${val(p.tenant_name)}</div>
           <div><div class="k">Room</div>${val(p.room_no)}</div>
           <div><div class="k">Billing Month</div>${val(p.billing_month)}</div>
-          <div><div class="k">Type</div>${val(p.billing_type === 'move_in' ? 'Move-In Fee' : 'Monthly Rent')}</div>
+          <div><div class="k">Type</div>${val({ move_in: 'Move-In Fee', pay_ahead: 'Rent Paid Ahead (rent only)' }[p.billing_type] || 'Monthly Rent')}</div>
           <div><div class="k">Date Paid</div>${val(p.date_paid)}</div>
           <div><div class="k">Payment Method</div>${val(p.payment_method_label || (METHOD_LABEL[p.payment_method] ?? p.payment_method))}</div>
           <div><div class="k">Amount Paid</div><span class="v">${peso(p.amount_paid)}</span></div>

@@ -295,7 +295,7 @@ class PenaltyController extends Controller
     private function computeRunningTotal(int $tenantId): array
     {
         $bills = BillingStatement::where('tenant_id', $tenantId)
-            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->owed()
             ->with('payments')
             ->get();
 

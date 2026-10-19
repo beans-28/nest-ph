@@ -34,7 +34,7 @@ class TenantNotificationService
         $profile = \App\Models\DormitoryProfile::current();
 
         return BillingStatement::where('tenant_id', $tenant->id)
-            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->owed()
             ->whereNotNull('due_date')
             ->where('due_date', '<=', $cutoff)
             ->withApprovedPaid()

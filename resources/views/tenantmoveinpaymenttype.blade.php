@@ -12,6 +12,7 @@
     <style>
         .fee-amount { font-size: 15px; color: var(--muted); margin-bottom: 28px; font-variant-numeric: tabular-nums; }
         .fee-amount strong { display: block; color: var(--green-deep); font-size: clamp(28px, 3.4vw, 36px); font-weight: 900; margin-top: 4px; }
+        .ledger-sub { display: block; font-size: 12px; margin-top: 2px; }
 
         .choice-group { border: none; width: 100%; max-width: 560px; margin: 0 auto 22px; }
         .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -70,7 +71,7 @@
                     @if($halfPaid)
                         @include('partials.movein-ledger', ['billing' => $billing])
                     @elseif($billing)
-                        <p class="fee-amount">Total move-in fee due <strong>₱{{ number_format($billing->total_amount, 2) }}</strong></p>
+                        @include('partials.movein-breakdown', ['billing' => $billing])
                     @endif
                     @error('payment_type')<p class="form-error is-static" role="alert">{{ $message }}</p>@enderror
 

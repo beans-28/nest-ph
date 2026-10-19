@@ -13,6 +13,9 @@ class BillingStatement extends Model
 {
     use HasFactory;
 
+    /** A tenant paying future months of rent early. See App\Services\PayAhead. */
+    public const PAY_AHEAD = 'pay_ahead';
+
     protected $fillable = [
         'contract_id',
         'tenant_id',
@@ -23,6 +26,7 @@ class BillingStatement extends Model
         'grace_period_days',
         'late_penalty_percent',
         'base_rent',
+        'prepaid_rent',
         'advance_amount',
         'deposit_amount',
         'utilities_amount',
@@ -41,6 +45,7 @@ class BillingStatement extends Model
         'grace_period_days' => 'integer',
         'late_penalty_percent' => 'float',
         'base_rent' => 'decimal:2',
+        'prepaid_rent' => 'decimal:2',
         'advance_amount' => 'decimal:2',
         'deposit_amount' => 'decimal:2',
         'utilities_amount' => 'decimal:2',
@@ -54,8 +59,8 @@ class BillingStatement extends Model
      * in effect when it was created. Changing the settings later only
      * affects bills created after the change, never older ones.
      *
-     * A move-in fee is 1 month advance rent + 1 month security deposit; if
-     * the caller didn't split it, split it evenly here.
+     * A move-in fee is advance rent + security deposit; if the caller
+     * didn't split it, split it evenly here (the old 1 + 1 month fee).
      */
     protected static function booted(): void
     {
@@ -124,6 +129,20 @@ class BillingStatement extends Model
     }
 
     /**
+     * How many rental periods this move-in fee's advance rent pays for,
+     * e.g. ₱9,000 advance at ₱4,500 a month = 2. Read from the bill itself,
+     * so changing the dorm's setting later never changes an existing tenant.
+     */
+    public function advanceMonths(): int
+    {
+        $rate = (float) ($this->contract?->monthly_rate ?? 0);
+        // Rows saved without the split are the old 1 + 1 month fee.
+        $advance = $this->advance_amount ?? (float) $this->base_rent / 2;
+
+        return $rate > 0 ? (int) round((float) $advance / $rate) : 0;
+    }
+
+    /**
      * Payments and Fees Schedule 3.2: a reservation is valid for one month
      * from the date of payment. Counted from the first approved payment on
      * a half-paid move-in fee. A move-in fee with nothing paid yet holds the
@@ -150,6 +169,17 @@ class BillingStatement extends Model
     public function canPayMoveInHalf(): bool
     {
         return $this->moveInHalfAmount() < $this->remainingBalance();
+    }
+
+    /**
+     * Query scope: bills the tenant actually owes. An unpaid pay-ahead is
+     * left out: paying ahead is optional, so it's never a balance due,
+     * never overdue, and never counts toward delinquency.
+     */
+    public function scopeOwed($query)
+    {
+        return $query->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->where('type', '!=', self::PAY_AHEAD);
     }
 
     /** Query scope: preload the approved-payments sum used by remainingBalance(). */
@@ -192,11 +222,12 @@ class BillingStatement extends Model
         // Move-in fee bills never go overdue: the tenant hasn't moved in
         // yet, so the delinquency ladder (SMS, portal lock, blacklist) must
         // not start for them. They stay unpaid/partial until settled.
+        // Pay-ahead bills never go overdue either: paying ahead is optional.
         //
         // Each bill uses its OWN grace period (the one in effect when it
         // was created), so this checks bill by bill.
         $overdueIds = static::whereIn('status', ['unpaid', 'partial'])
-            ->where('type', '!=', 'move_in')
+            ->whereNotIn('type', ['move_in', self::PAY_AHEAD])
             ->whereNotNull('due_date')
             ->where('due_date', '<', now()->startOfDay())
             ->get(['id', 'due_date', 'grace_period_days'])

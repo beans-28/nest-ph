@@ -244,7 +244,7 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        $currentBill = $bills->firstWhere(fn ($b) => in_array($b->status, ['unpaid', 'partial', 'overdue']));
+        $currentBill = $bills->firstWhere(fn ($b) => in_array($b->status, ['unpaid', 'partial', 'overdue']) && $b->type !== BillingStatement::PAY_AHEAD);
 
         $balanceDue = 0;
         $nextDueDate = null;
@@ -258,7 +258,11 @@ class DashboardController extends Controller
         }
 
         $recentBills = $bills->take(5)->map(fn ($b) => [
-            'month_label' => $b->billing_period_start->format('M Y'),
+            'month_label' => match ($b->type) {
+                'move_in' => 'Move-in fee',
+                BillingStatement::PAY_AHEAD => 'Rent paid ahead',
+                default => $b->billing_period_start->format('M Y'),
+            },
             'total_amount' => $b->total_amount,
             'status' => $b->status,
         ])->values();
@@ -271,9 +275,11 @@ class DashboardController extends Controller
         $openTicketsCount = MaintenanceTicket::where('tenant_id', $tenant->id)->where('status', 'open')->count();
         $inProgressCount = MaintenanceTicket::where('tenant_id', $tenant->id)->where('status', 'in_progress')->count();
 
+        $moveInFee = \App\Models\DepositRefund::summaryFor($tenant);
+
         return view('tenantdashboard', compact(
             'tenant', 'contract', 'balanceDue', 'nextDueDate', 'daysUntilDue',
-            'recentBills', 'recentTickets', 'openTicketsCount', 'inProgressCount'
+            'recentBills', 'recentTickets', 'openTicketsCount', 'inProgressCount', 'moveInFee'
         ));
     }
 }

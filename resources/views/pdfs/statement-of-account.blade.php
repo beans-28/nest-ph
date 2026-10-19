@@ -71,7 +71,7 @@
           @php($bal = $b->remainingBalance())
           <tr>
             <td>{{ \Carbon\Carbon::parse($b->billing_period_start)->format('M Y') }}</td>
-            <td>{{ $b->type === 'move_in' ? 'Move-in fee' : 'Monthly' }}</td>
+            <td>{{ ['move_in' => 'Move-in fee', 'pay_ahead' => 'Rent paid ahead'][$b->type] ?? 'Monthly' }}</td>
             <td>{{ optional($b->due_date)->format('M j, Y') ?? '—' }}</td>
             <td class="num">{{ number_format((float) $b->total_amount, 2) }}</td>
             <td class="num">{{ number_format((float) ($b->approved_paid ?? 0), 2) }}</td>
@@ -95,7 +95,7 @@
           <tr>
             <td>{{ optional($p->payment_date)->format('M j, Y') }}</td>
             <td>{{ \App\Services\ReceiptPdf::number($p) }}</td>
-            <td>{{ $p->billingStatement ? ($p->billingStatement->type === 'move_in' ? 'Move-in fee' : \Carbon\Carbon::parse($p->billingStatement->billing_period_start)->format('M Y')) : '—' }}</td>
+            <td>{{ $p->billingStatement ? ($p->billingStatement->type === 'move_in' ? 'Move-in fee' : ($p->billingStatement->type === 'pay_ahead' ? 'Rent paid ahead' : null) ?? \Carbon\Carbon::parse($p->billingStatement->billing_period_start)->format('M Y')) : '—' }}</td>
             <td>{{ $p->payment_method_label ?: ucwords(str_replace('_', ' ', $p->payment_method)) }}</td>
             <td>{{ $p->reference_number ?: '—' }}</td>
             <td class="num">{{ number_format((float) $p->amount_paid, 2) }}</td>

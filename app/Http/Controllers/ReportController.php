@@ -870,7 +870,7 @@ class ReportController extends Controller
         // admin page that reads billing_statements.status.
         BillingStatement::syncOverdueStatuses();
 
-        $outstandingBills = BillingStatement::whereIn('status', ['unpaid', 'partial', 'overdue'])
+        $outstandingBills = BillingStatement::owed()
             ->whereBetween('due_date', [$start->toDateString(), $end->toDateString()])
             ->with(['payments' => fn ($q) => $q->where('status', 'approved')])
             ->get();

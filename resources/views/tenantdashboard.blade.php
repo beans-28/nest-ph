@@ -71,6 +71,7 @@
   .status-pill.pending{ background:var(--pending-bg); color:var(--pending-text); }
   .status-pill.paid{ background:var(--paid-bg); color:var(--paid-text); }
   .status-pill.overdue{ background:#f7d9d7; color:#c0463d; }
+  .status-pill.neutral{ background:var(--cream); color:var(--text-mid); }
   .status-pill.open, .status-pill.in_progress{ background:var(--pending-bg); color:var(--pending-text); }
   .status-pill.resolved, .status-pill.closed{ background:var(--paid-bg); color:var(--paid-text); }
 
@@ -78,6 +79,22 @@
   .panel-btn:hover{ background:var(--green-btn-hover); }
   .panel-btn.outline{ background:#fff; border:1px solid var(--border); color:var(--text-dark); }
   .empty-note{ font-size:12px; color:var(--text-light); text-align:center; padding:20px 0; }
+
+  /* Deposit & Advance: two plain halves, stacked on phones */
+  .fee-panel{ margin-bottom:18px; }
+  .fee-grid{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  .fee-grid > div + div{ border-left:1px solid var(--border); padding-left:22px; }
+  .fee-title{ display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12px; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.4px; }
+  .fee-amount{ font-size:22px; font-weight:800; color:var(--text-dark); margin:4px 0 6px; font-variant-numeric:tabular-nums; }
+  .fee-note{ font-size:12px; color:var(--text-mid); line-height:1.5; }
+  .fee-lines{ margin:6px 0 0; font-size:12.5px; }
+  .fee-lines div{ display:flex; justify-content:space-between; gap:12px; padding:4px 0; font-variant-numeric:tabular-nums; }
+  .fee-lines div.total{ border-top:1px solid var(--border); margin-top:2px; padding-top:7px; font-weight:700; }
+  .fee-lines span:first-child{ color:var(--text-mid); }
+  @media (max-width: 700px){
+    .fee-grid{ grid-template-columns:1fr; gap:16px; }
+    .fee-grid > div + div{ border-left:none; padding-left:0; border-top:1px solid var(--border); padding-top:16px; }
+  }
 </style>
 </head>
 <body>
@@ -179,6 +196,10 @@
       </div>
 
       @include('partials.announcements-feed')
+
+      @if($moveInFee)
+        @include('partials.deposit-advance-card', ['fee' => $moveInFee])
+      @endif
 
       <div class="dash-grid">
         <div class="panel">

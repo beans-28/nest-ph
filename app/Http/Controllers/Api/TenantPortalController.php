@@ -8,6 +8,7 @@ use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Penalty;
 use App\Models\Tenant;
+use App\Services\PayAhead;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -182,6 +183,11 @@ class TenantPortalController extends Controller
             return response()->json(['message' => 'For the move-in fee, please pay either half (₱' . number_format($bill->moveInHalfAmount(), 2) . ') or the full remaining balance (₱' . number_format($remaining, 2) . ').'], 422);
         }
 
+        // Pay ahead: the whole amount at once, so it's either paid ahead or not.
+        if ($bill->type === BillingStatement::PAY_AHEAD && $amount !== $remaining) {
+            return response()->json(['message' => 'Please pay the full ₱' . number_format($remaining, 2) . ' for your advance rent.'], 422);
+        }
+
         // The admin-configured method the tenant paid through decides the
         // enum and label, so the client can't claim a method that isn't offered.
         $method = isset($data['payment_method_id']) ? PaymentMethod::find($data['payment_method_id']) : null;
@@ -234,6 +240,75 @@ class TenantPortalController extends Controller
     }
 
     /**
+     * Tenant: start paying rent ahead for the next N months (rent only).
+     * Creates the pay-ahead bill, which the tenant then pays like any other
+     * bill (proof of payment, or cash at the office).
+     */
+    public function startPayAhead(Request $request): JsonResponse
+    {
+        $tenant = $this->tenant($request);
+        $data = $request->validate([
+            'months' => ['required', 'integer', 'min:1', 'max:' . PayAhead::MAX_MONTHS],
+        ]);
+
+        $options = PayAhead::optionsFor($tenant);
+        if ($options['open']) {
+            return response()->json(['message' => 'You already have an advance rent payment waiting. Pay or cancel it first.'], 409);
+        }
+        if ($options['blocked']) {
+            return response()->json(['message' => $options['blocked']], 422);
+        }
+
+        $months = (int) $data['months'];
+        if ($months > count($options['periods'])) {
+            return response()->json(['message' => 'You can pay ahead up to ' . count($options['periods']) . ' month(s) before your contract ends.'], 422);
+        }
+
+        $periods = array_slice($options['periods'], 0, $months);
+        $rent = round($options['rate'] * $months, 2);
+
+        $bill = BillingStatement::create([
+            'contract_id' => $options['contract']->id,
+            'tenant_id' => $tenant->id,
+            'type' => BillingStatement::PAY_AHEAD,
+            'billing_period_start' => $periods[0][0],
+            'billing_period_end' => end($periods)[1],
+            'due_date' => now()->startOfDay(),
+            'base_rent' => $rent,
+            'utilities_amount' => 0,
+            'wifi_amount' => 0,
+            'penalty_amount' => 0,
+            'total_amount' => $rent,
+            'status' => 'unpaid',
+        ]);
+
+        Log::info('[pay-ahead] started', ['tenant_id' => $tenant->id, 'billing_id' => $bill->id, 'months' => $months]);
+
+        return response()->json([
+            'message' => 'Advance rent ready to pay.',
+            'bill' => $this->withBalance($bill->load('payments')),
+        ], 201);
+    }
+
+    /**
+     * Tenant: cancel an advance rent payment that hasn't been paid. Not
+     * allowed once a proof is under review or anything was approved.
+     */
+    public function cancelPayAhead(Request $request, BillingStatement $billingStatement): JsonResponse
+    {
+        $bill = $this->ownedStatement($request, $billingStatement);
+
+        if ($bill->type !== BillingStatement::PAY_AHEAD || $bill->status !== 'unpaid'
+            || $bill->payments()->whereIn('status', ['pending', 'approved'])->exists()) {
+            return response()->json(['message' => 'This advance rent payment can no longer be cancelled.'], 409);
+        }
+
+        $bill->delete();
+
+        return response()->json(['message' => 'Advance rent payment cancelled.']);
+    }
+
+    /**
      * Tenant: receipt data for one of MY approved payments.
      */
     public function receipt(Request $request, Payment $payment): JsonResponse
@@ -272,7 +347,7 @@ class TenantPortalController extends Controller
     private function accountSummary(Tenant $tenant): array
     {
         $bills = BillingStatement::where('tenant_id', $tenant->id)
-            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->owed()
             ->with('payments')
             ->get();
 

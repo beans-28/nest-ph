@@ -30,7 +30,8 @@ use Illuminate\Support\Str;
  *     P4,500 per room), on a ground floor + 2nd to 5th floors,
  *   - rent due on the 1st, a 3-day grace period, a one-time 10% late fee,
  *   - a 3-month minimum stay, move-out at the end of the month,
- *   - one month advance + one month deposit on move-in,
+ *   - one month advance + one month deposit on move-in (two tenants
+ *     paid 2 and 3 months advance, to show the advance rent setting),
  *   - water, electricity and Wi-Fi billed on top of the rent as a fixed
  *     monthly share per bed (the documents leave this unticked -- a dummy
  *     choice; see UTILITY_PER_BED / WIFI_PER_BED, change it in Dormitory
@@ -589,7 +590,7 @@ class DemoDataSeeder extends Seeder
             ['Erika Jane', 'Morales', 'female', '2004-07-07', 'student', 'Far Eastern University', 'Nicanor Reyes St., Sampaloc, Manila',
                 'Brgy. Pantal, Dagupan City, Pangasinan', 'Ronaldo Morales', 'Father', '301-1', 'paid', 'L' => 13, 'k' => 3],
             ['Hannah Grace', 'Soriano', 'female', '2006-02-14', 'student', 'Philippine Normal University', 'Taft Ave., Ermita, Manila',
-                'Brgy. Dolores, Taytay, Rizal', 'Marilou Soriano', 'Mother', '301-2', 'paid', 'L' => 4, 'k' => 1],
+                'Brgy. Dolores, Taytay, Rizal', 'Marilou Soriano', 'Mother', '301-2', 'paid', 'L' => 4, 'k' => 1, 'advance' => 2],
 
             // ---- Former tenants ----
             ['Gabriel Jose', 'Rivera', 'male', '2001-06-01', 'full_time_employee', 'Meralco', 'Ortigas Ave., Pasig City',
@@ -612,7 +613,7 @@ class DemoDataSeeder extends Seeder
             ['Luis Antonio', 'Del Rosario', 'male', '2003-02-27', 'working_student', 'University of the East', 'C.M. Recto Ave., Sampaloc, Manila',
                 'Brgy. Cutcut, Angeles City, Pampanga', 'Rowena Del Rosario', 'Mother', '302-1', 'proof_pending', 'L' => 21, 'k' => 0],
             ['Jerome Anthony', 'Pineda', 'male', '2004-10-30', 'student', 'Mapúa University', 'Muralla St., Intramuros, Manila',
-                'Brgy. Poblacion, Tarlac City, Tarlac', 'Grace Pineda', 'Mother', '303-1', 'paid', 'L' => 14, 'k' => 0],
+                'Brgy. Poblacion, Tarlac City, Tarlac', 'Grace Pineda', 'Mother', '303-1', 'paid', 'L' => 14, 'k' => 0, 'advance' => 3],
             ['Kenneth Bryan', 'Sy', 'male', '2006-01-08', 'student', 'Polytechnic University of the Philippines', 'Anonas St., Sta. Mesa, Manila',
                 'Brgy. Balibago, Sta. Rosa City, Laguna', 'Victor Sy', 'Father', '303-5', 'unpaid', 'L' => 2, 'k' => 0],
             ['Emmanuel Jose', 'Villareal', 'male', '2002-07-21', 'part_time_employee', '7-Eleven (Legarda branch)', 'Legarda St., Sampaloc, Manila',
@@ -682,11 +683,13 @@ class DemoDataSeeder extends Seeder
                 default => $this->currentScenarioMonth(),
             };
 
-            // Move-in: the advance rent covers the move-in month, so the
-            // first monthly bill is the month after. k+1 bills in total.
+            // Move-in: the advance rent covers the move-in month (plus one
+            // more month per extra month of advance), so the first monthly
+            // bill comes after those. k+1 bills in total.
+            $advance = $spec['advance'] ?? 1;
             $start = $scenario === 'pending_movein'
                 ? $this->today->copy()->addDays(3 + $n % 3)
-                : $lastMonth->copy()->subMonthsNoOverflow($k + 1)->addDays(($spec['L'] ?? 0) % 27)->min($this->today->copy()->subDays(2));
+                : $lastMonth->copy()->subMonthsNoOverflow($k + $advance)->addDays(($spec['L'] ?? 0) % 27)->min($this->today->copy()->subDays(2));
 
             $minEnd = DormitoryProfile::current()->minimumEndDate($start);
             $end = match ($lease) {
@@ -747,6 +750,7 @@ class DemoDataSeeder extends Seeder
                     default => 'occupied',
                 },
                 'move_in_paid' => $scenario !== 'pending_movein',
+                'advance' => $advance,
             ]);
             [$tenantId, $contractId, $rate, $moveInBillId] = $ids;
 
@@ -764,7 +768,7 @@ class DemoDataSeeder extends Seeder
             }
 
             // Monthly bills: calendar months, due on the 1st.
-            $month = $start->copy()->addMonthNoOverflow()->startOfMonth();
+            $month = $start->copy()->addMonthsNoOverflow($advance)->startOfMonth();
             $i = 0;
             while ($month->lte($lastMonth)) {
                 $isLast = $month->isSameMonth($lastMonth);
@@ -1191,8 +1195,10 @@ class DemoDataSeeder extends Seeder
             DB::table('beds')->where('id', $bedId)->update(['status' => $t['bed_status']]);
         }
 
-        // Move-in fee: 1 month advance rent (covers the move-in month) + 1 month deposit.
-        $moveIn = $rate * 2;
+        // Move-in fee: advance rent (1 month by default; it covers the move-in
+        // month and any months after it) + 1 month deposit.
+        $advanceMonths = $t['advance'] ?? 1;
+        $moveIn = $rate * ($advanceMonths + 1);
         $moveInBillId = DB::table('billing_statements')->insertGetId([
             'contract_id' => $contractId,
             'tenant_id' => $tenantId,
@@ -1201,6 +1207,8 @@ class DemoDataSeeder extends Seeder
             'billing_period_end' => $start->toDateString(),
             'due_date' => $start->toDateString(),
             'base_rent' => $moveIn,
+            'advance_amount' => $rate * $advanceMonths,
+            'deposit_amount' => $rate,
             'utilities_amount' => 0,
             'wifi_amount' => 0,
             'penalty_amount' => 0,
@@ -1211,7 +1219,7 @@ class DemoDataSeeder extends Seeder
         ]);
         if ($t['move_in_paid']) {
             $this->payment($moveInBillId, $tenantId, $moveIn, 'cash', $start->copy()->subDay(), 'approved',
-                'Move-in fee (1 month advance + 1 month deposit) paid at the admin office.');
+                "Move-in fee ({$advanceMonths} month" . ($advanceMonths > 1 ? 's' : '') . ' advance + 1 month deposit) paid at the admin office.');
         }
 
         return [$tenantId, $contractId, $rate, $moveInBillId];

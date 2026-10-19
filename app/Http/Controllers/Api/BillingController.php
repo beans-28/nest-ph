@@ -140,6 +140,12 @@ class BillingController extends Controller
             ], 409);
         }
 
+        if ($billingStatement->type === BillingStatement::PAY_AHEAD) {
+            return response()->json([
+                'message' => 'A pay-ahead covers rent only. Penalties go onto the next monthly bill instead.',
+            ], 409);
+        }
+
         $attached = DB::transaction(function () use ($billingStatement) {
             return $this->foldPenaltiesInto($billingStatement);
         });
@@ -179,9 +185,11 @@ class BillingController extends Controller
      *     date", on the tenant's start day each month (startDatePeriod()). The grace period and late penalty are handled
      *     later by BillingStatement::syncOverdueStatuses().
      *   - The advance rent paid with the move-in fee covers the month the
-     *     tenant moves in (Agreement 4.3), so the first monthly bill is for
-     *     the NEXT month. If the dorm prorates a mid-month move-in, the
-     *     unused days of that advance are credited on the first bill.
+     *     tenant moves in (Agreement 4.3), plus one more month for each
+     *     extra month of advance, so the first monthly bill comes after
+     *     those. If the dorm prorates a mid-month move-in, the unused days
+     *     of that advance are credited on the first bill. With no advance,
+     *     the first bill starts on the move-in date.
      *   - Utilities/WiFi shares are added unless the dorm marked them as
      *     included in the rent.
      *   - Any unbilled penalties are folded in.
@@ -199,16 +207,20 @@ class BillingController extends Controller
             ->orderByDesc('billing_period_end')
             ->first();
 
-        $hasMoveInBill = BillingStatement::where('contract_id', $contract->id)
+        // Rental periods already paid by the move-in fee's advance rent.
+        // 0 when the dorm collects no advance, or for walk-ins with no fee.
+        $moveInBill = BillingStatement::where('contract_id', $contract->id)
             ->where('type', 'move_in')
-            ->exists();
+            ->latest('id')
+            ->first();
+        $advanceMonths = $moveInBill?->setRelation('contract', $contract)->advanceMonths() ?? 0;
 
         $start = $contract->start_date->copy()->startOfDay();
 
         if ($profile->rent_due_basis === 'start_date') {
             // Due on the same day of the month as the tenant's start date
             // (start Oct 15 -> due Nov 15, Dec 15...). No proration needed.
-            $period = $this->startDatePeriod($contract, $start, $lastBill, $hasMoveInBill);
+            $period = $this->startDatePeriod($contract, $start, $lastBill, $advanceMonths);
             if (! $period) {
                 return null;
             }
@@ -217,11 +229,12 @@ class BillingController extends Controller
         } else {
             if ($lastBill) {
                 $periodStart = $lastBill->billing_period_end->copy()->addDay();
-            } elseif ($hasMoveInBill) {
-                // The advance rent already paid for the move-in month.
-                $periodStart = $start->copy()->addMonthNoOverflow()->startOfMonth();
+            } elseif ($advanceMonths > 0) {
+                // The advance rent already paid for the move-in month (and
+                // the months after it, if more than one month was collected).
+                $periodStart = $start->copy()->addMonthsNoOverflow($advanceMonths)->startOfMonth();
             } else {
-                // Walk-in contracts with no move-in fee: bill from the start date.
+                // No advance (or a walk-in with no move-in fee): bill from the start date.
                 $periodStart = $start->copy();
             }
 
@@ -243,7 +256,7 @@ class BillingController extends Controller
             }
 
             $rate = (float) $contract->monthly_rate;
-            $baseRent = $this->rentForPeriod($rate, $periodStart, $periodEnd, $profile, ! $lastBill && ! $hasMoveInBill);
+            $baseRent = $this->rentForPeriod($rate, $periodStart, $periodEnd, $profile, ! $lastBill && $advanceMonths === 0);
 
             // Mid-month move-out charged in full: the last month is billed
             // as a whole month even though the contract ends partway through.
@@ -254,7 +267,7 @@ class BillingController extends Controller
             // Prorated mid-month move-in: the advance covered a whole month but
             // the tenant only used part of the move-in month, so the unused days
             // come off the first monthly bill.
-            if (! $lastBill && $hasMoveInBill && $profile->mid_month_move_in === 'prorated' && $start->day > 1) {
+            if (! $lastBill && $advanceMonths > 0 && $profile->mid_month_move_in === 'prorated' && $start->day > 1) {
                 $daysInMonth = $start->daysInMonth;
                 $unusedDays = $start->day - 1;
                 $baseRent = max(0, round($baseRent - $rate * $unusedDays / $daysInMonth, 2));
@@ -266,6 +279,11 @@ class BillingController extends Controller
             }
         }
 
+        // Rent the tenant already paid ahead for this month (rent only;
+        // utilities are still billed at this month's prices).
+        $prepaidRent = \App\Services\PayAhead::coverFor($contract, $periodStart, (float) $baseRent);
+        $baseRent = round($baseRent - $prepaidRent, 2);
+
         [$utilitiesShare, $wifiShare] = $this->splitUtilityCost($contract);
         if ($profile->water_included && $profile->electricity_included) {
             $utilitiesShare = 0;
@@ -274,7 +292,7 @@ class BillingController extends Controller
             $wifiShare = 0;
         }
 
-        $bill = DB::transaction(function () use ($contract, $periodStart, $periodEnd, $dueDate, $baseRent, $utilitiesShare, $wifiShare) {
+        $bill = DB::transaction(function () use ($contract, $periodStart, $periodEnd, $dueDate, $baseRent, $prepaidRent, $utilitiesShare, $wifiShare) {
             $bill = BillingStatement::create([
                 'contract_id' => $contract->id,
                 'tenant_id' => $contract->tenant_id,
@@ -283,6 +301,7 @@ class BillingController extends Controller
                 'billing_period_end' => $periodEnd,
                 'due_date' => $dueDate,
                 'base_rent' => $baseRent,
+                'prepaid_rent' => $prepaidRent,
                 'utilities_amount' => $utilitiesShare,
                 'wifi_amount' => $wifiShare,
                 'penalty_amount' => 0,
@@ -291,6 +310,11 @@ class BillingController extends Controller
             ]);
 
             $this->foldPenaltiesInto($bill);
+
+            // Fully covered (rent paid ahead, utilities included): nothing to pay.
+            if ((float) $bill->fresh()->total_amount <= 0) {
+                $bill->update(['status' => 'paid']);
+            }
 
             return $bill->fresh();
         });
@@ -321,18 +345,18 @@ class BillingController extends Controller
     /**
      * "Based on tenant start date" billing: each period runs from the start
      * day of one month to the day before it in the next (start Oct 16 ->
-     * Oct 16-Nov 15, then Nov 16-Dec 15). The advance rent in the move-in
-     * fee covers the first full period, so the first monthly bill starts
-     * one month after the start date. A period cut short (contract ending
+     * Oct 16-Nov 15, then Nov 16-Dec 15). Each month of advance rent in
+     * the move-in fee covers one full period, so with 1 month of advance
+     * the first monthly bill starts one month after the start date. A period cut short (contract ending
      * early, or switching over from calendar-month bills) is charged by
      * the day. Returns [start, end, rent], or null if nothing is due yet.
      */
-    private function startDatePeriod(LeaseContract $contract, Carbon $start, ?BillingStatement $lastBill, bool $hasMoveInBill): ?array
+    private function startDatePeriod(LeaseContract $contract, Carbon $start, ?BillingStatement $lastBill, int $advanceMonths): ?array
     {
         if ($lastBill) {
             $from = $lastBill->billing_period_end->copy()->addDay()->startOfDay();
-        } elseif ($hasMoveInBill) {
-            $from = $start->copy()->addMonthNoOverflow();
+        } elseif ($advanceMonths > 0) {
+            $from = $start->copy()->addMonthsNoOverflow($advanceMonths);
         } else {
             $from = $start->copy();
         }

@@ -83,6 +83,9 @@ class TenantController extends Controller
         return [
             'held' => \App\Models\DepositRefund::depositHeldFor($tenant),
             'suggested_deductions' => round($outstanding + $unbilled, 2),
+            // Rent paid ahead but never used (e.g. moving out early): returned to the tenant at move-out.
+            'unused_pay_ahead' => ($contract = $tenant->contracts()->latest('id')->first())
+                ? \App\Services\PayAhead::unusedCredit($contract) : 0.0,
             'refund' => $refund ? [
                 'deposit_amount' => (float) $refund->deposit_amount,
                 'deductions_amount' => (float) $refund->deductions_amount,
@@ -139,7 +142,7 @@ class TenantController extends Controller
         return response()->json([
             'message' => 'Deposit refund recorded.',
             'deposit' => $this->depositSummary($tenant, (float) BillingStatement::where('tenant_id', $tenant->id)
-                ->whereIn('status', ['unpaid', 'partial', 'overdue'])->withApprovedPaid()->get()->sum(fn ($b) => $b->remainingBalance())),
+                ->owed()->withApprovedPaid()->get()->sum(fn ($b) => $b->remainingBalance())),
         ], 201);
     }
 
@@ -154,7 +157,7 @@ class TenantController extends Controller
         $tenant->load(['activeContract.bed.room']);
 
         $outstanding = $tenant->billingStatements()
-            ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+            ->owed()
             ->sum('total_amount');
 
         $contract = $tenant->activeContract;
@@ -394,7 +397,7 @@ class TenantController extends Controller
             }
 
             $outstanding = $tenant->billingStatements()
-                ->whereIn('status', ['unpaid', 'partial', 'overdue'])
+                ->owed()
                 ->sum('total_amount');
 
             if ($outstanding > 0) {

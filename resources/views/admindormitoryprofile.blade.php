@@ -540,12 +540,11 @@
               </div>
               <fieldset class="field policy-checks">
                 <legend>Included in the rent</legend>
-                <label><input type="checkbox" id="polWater" @checked($profile->water_included)> Water</label>
-                <label><input type="checkbox" id="polElectricity" @checked($profile->electricity_included)> Electricity</label>
+                <label><input type="checkbox" id="polUtilities" @checked($profile->water_included && $profile->electricity_included)> Water &amp; electricity</label>
                 <label><input type="checkbox" id="polWifi" @checked($profile->wifi_included)> Wi-Fi</label>
               </fieldset>
             </div>
-            <p class="policy-hint">When water and electricity are both included, the room's utilities charge is not billed. When Wi-Fi is included, the room's Wi-Fi charge is not billed.</p>
+            <p class="policy-hint">Checked items are not added to the monthly bill. Unchecked items are billed from the room's utility and Wi-Fi costs, split across its beds.</p>
 
             <h3 class="policy-sub">Stay, notice and deposit</h3>
             <div class="field-row three">
@@ -562,6 +561,25 @@
                 <input type="number" id="polExtend" min="0" max="180" value="{{ $profile->extension_notice_days }}">
               </div>
             </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="polAdvance">Advance rent at move-in</label>
+                <select id="polAdvance">
+                  @foreach([0, 1, 2, 3] as $m)
+                    <option value="{{ $m }}" @selected($profile->advance_rent_months === $m)>{{ $m === 0 ? 'None' : $m . ' ' . Str::plural('month', $m) }}</option>
+                  @endforeach
+                </select>
+              </div>
+              <div class="field">
+                <label for="polDeposit">Security deposit at move-in</label>
+                <select id="polDeposit">
+                  @foreach([0, 1, 2, 3] as $m)
+                    <option value="{{ $m }}" @selected($profile->security_deposit_months === $m)>{{ $m === 0 ? 'None' : $m . ' ' . Str::plural('month', $m) }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+            <p class="policy-hint" id="polMoveInHint"></p>
             <div class="field-row">
               <div class="field">
                 <label for="polRefund">Deposit refunded within (days)</label>
@@ -1932,7 +1950,7 @@
     $('polDueDayField').hidden = byStart;
     $('polMidMonthField').hidden = byStart;
     if (byStart) {
-      $('polRentHint').textContent = `Rent is due every month on the tenant's start day (start Oct 16 → due Nov 16). The advance rent covers the first month, so there is no proration. `
+      $('polRentHint').textContent = `Rent is due every month on the tenant's start day (start Oct 16 → due Nov 16). The advance rent pays the first period(s), so there is no proration. `
         + (pct > 0 ? `After ${grace} day(s) of grace, a one-time ${pct}% of the unpaid rent is added.` : 'No late penalty is charged.');
       return;
     }
@@ -1943,6 +1961,17 @@
   ['polDueDay', 'polGrace', 'polPenalty'].forEach(id => $(id).addEventListener('input', updateRentHint));
   $('polDueBasis').addEventListener('change', updateRentHint);
   updateRentHint();
+
+  function updateMoveInHint(){
+    const adv = Number($('polAdvance').value), dep = Number($('polDeposit').value);
+    const months = (n) => n + ' month' + (n === 1 ? '' : 's');
+    $('polMoveInHint').textContent = adv + dep === 0
+      ? 'Choose at least one: a move-in fee is needed before a tenant can move in.'
+      : `New tenants pay ${months(adv + dep)} of rent at move-in. `
+        + (adv > 0 ? `The advance pays their first ${adv === 1 ? 'month' : months(adv)}, so their first bill comes after that.` : 'With no advance, their first month is billed normally.');
+  }
+  ['polAdvance', 'polDeposit'].forEach(id => $(id).addEventListener('change', updateMoveInHint));
+  updateMoveInHint();
 
   $('savePolicyBtn').addEventListener('click', async function(){
     const payload = {
@@ -1962,8 +1991,10 @@
       reservation_validity_days: $('polReservation').value,
       mid_month_move_in: $('polMidMonth').value,
       mid_month_move_out: $('polMidMonthOut').value,
-      water_included: $('polWater').checked,
-      electricity_included: $('polElectricity').checked,
+      water_included: $('polUtilities').checked,
+      electricity_included: $('polUtilities').checked,
+      advance_rent_months: $('polAdvance').value,
+      security_deposit_months: $('polDeposit').value,
       wifi_included: $('polWifi').checked,
       short_term_rate: numOrNull($('polShortTerm').value),
       transient_rate: numOrNull($('polTransient').value),

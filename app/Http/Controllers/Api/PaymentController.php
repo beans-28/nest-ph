@@ -34,7 +34,7 @@ class PaymentController extends Controller
 
         $pending = Payment::with([
             'tenant:id,first_name,last_name,id_document_path,signed_contract_path',
-            'billingStatement:id,contract_id,type,billing_period_start,total_amount',
+            'billingStatement:id,contract_id,type,billing_period_start,billing_period_end,total_amount',
             'billingStatement.contract:id,bed_id',
             'billingStatement.contract.bed:id,room_id',
             'billingStatement.contract.bed.room:id,room_no,room_type',
@@ -77,7 +77,7 @@ class PaymentController extends Controller
 
         $stats = [
             'total_outstanding' => round(
-                BillingStatement::whereIn('status', ['unpaid', 'partial', 'overdue'])
+                BillingStatement::owed()
                     ->get()
                     ->sum(fn ($b) => (float) $b->total_amount - Payment::where('billing_id', $b->id)->where('status', 'approved')->sum('amount_paid')),
                 2
@@ -130,7 +130,7 @@ class PaymentController extends Controller
             'room_no' => $room?->room_no,
             'room_type' => $room?->room_type,
             'billing_type' => $bill->type,
-            'billing_month' => $this->formatDate($bill->billing_period_start, 'F Y'),
+            'billing_month' => $this->billingMonth($bill),
             'due_date' => $this->formatDate($bill->due_date, 'M j, Y'),
             'days_overdue' => $daysOverdue,
             'total_amount' => $bill->total_amount,
@@ -205,7 +205,7 @@ class PaymentController extends Controller
             'room_no' => $room?->room_no,
             'room_type' => $room?->room_type,
             'billing_type' => $bill?->type, // 'move_in' or 'monthly' — shown as a badge so the move-in fee rows are easy to spot while testing
-            'billing_month' => $this->formatDate($bill?->billing_period_start, 'F Y'),
+            'billing_month' => $bill ? $this->billingMonth($bill) : $this->formatDate(null, 'F Y'),
             'date_paid' => $this->formatDate($payment->payment_date, 'M j, Y'),
             'payment_method' => $payment->payment_method,
             'payment_method_label' => $payment->payment_method_label,
@@ -260,7 +260,7 @@ class PaymentController extends Controller
 
                 return [
                     'id' => $bill->id,
-                    'billing_month' => $this->formatDate($bill->billing_period_start, 'F Y'),
+                    'billing_month' => $this->billingMonth($bill),
                     'due_date' => $this->formatDate($bill->due_date, 'M j, Y'),
                     'total_amount' => $bill->total_amount,
                     'balance' => round((float) $bill->total_amount - $approvedPaid, 2),
@@ -667,8 +667,8 @@ class PaymentController extends Controller
         $total = (float) $statement->total_amount;
 
         if ($paid <= 0) {
-            // Move-in bills never go overdue (see BillingStatement::syncOverdueStatuses()).
-            $status = $statement->isPastGrace() && $statement->type !== 'move_in' ? 'overdue' : 'unpaid';
+            // Move-in and pay-ahead bills never go overdue (see BillingStatement::syncOverdueStatuses()).
+            $status = $statement->isPastGrace() && ! in_array($statement->type, ['move_in', BillingStatement::PAY_AHEAD], true) ? 'overdue' : 'unpaid';
         } elseif ($paid < $total) {
             $status = 'partial';
         } else {
@@ -676,6 +676,9 @@ class PaymentController extends Controller
         }
 
         $statement->update(['status' => $status]);
+
+        // A paid pay-ahead covers the rent of any bill already issued for its months.
+        \App\Services\PayAhead::applyToIssuedBills($statement);
     }
 
     /**
@@ -771,6 +774,16 @@ class PaymentController extends Controller
             : null;
 
         return $payment;
+    }
+
+    /** "November 2026", or the months a pay-ahead covers ("Rent ahead: Nov 2026 – Dec 2026"). */
+    private function billingMonth(BillingStatement $bill): ?string
+    {
+        if ($bill->type === BillingStatement::PAY_AHEAD) {
+            return 'Rent ahead: ' . \App\Services\PayAhead::label($bill->billing_period_start, $bill->billing_period_end);
+        }
+
+        return $this->formatDate($bill->billing_period_start, 'F Y');
     }
 
     private function notify(string $event, array $payload): void

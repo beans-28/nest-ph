@@ -487,6 +487,7 @@ class DormitoryDocumentsAlignmentTest extends TestCase
             'move_out_notice_days' => 14, 'extension_notice_days' => 30, 'deposit_refund_days' => 21,
             'reservation_validity_days' => 30, 'mid_month_move_in' => 'full',
             'water_included' => true, 'electricity_included' => true, 'wifi_included' => false,
+            'advance_rent_months' => 1, 'security_deposit_months' => 1,
         ])->assertOk();
         $this->assertSame(5, DormitoryProfile::current()->grace_period_days);
     }

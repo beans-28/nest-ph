@@ -2,7 +2,7 @@
 
 Changes made after the tool defense, following the panel's comments (Sir Leo). Each item lists what the system does now, where to see it, and where the code lives.
 
-**Before deploying:** run `php artisan migrate`, then the seeders (`PurezaStationSeeder`, then `DemoDataSeeder` for demo data). The server must use `SESSION_DRIVER=database`, or online status and emergency auto-assign won't work. Set `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` in the server's environment, and add the live domain to the Turnstile widget's hostnames in Cloudflare (see section 4).
+**Before deploying:** run `php artisan migrate`, then the seeders (`PurezaStationSeeder`, then `DemoDataSeeder` for demo data). The server must use `SESSION_DRIVER=database`, or online status and emergency auto-assign won't work. Set `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` in the server's environment, and add the live domain to the Turnstile widget's hostnames in Cloudflare (see section 4). On the live site, create the NEST.PH team account with `php artisan nestph:create-platform-admin` (see section 5).
 
 ---
 
@@ -143,6 +143,120 @@ An **emergency** is a ticket the system marks **Critical**, for example sparks, 
 
 ---
 
+## 5. Generic NEST.PH Platform
+
+The panel noted that the system opened straight to Pureza Station Dormitory, even though NEST.PH is meant to serve other dormitories too.
+
+| Comment | Revision |
+|---|---|
+| The system immediately presents Pureza Station instead of a generic NEST.PH application. | A new NEST.PH landing page at `/` introduces the platform first. Pureza's homepage moved to `/pureza-station`. |
+| The generic application process for other dorm owners isn't visible. | The landing page has a **For Dorm Owners** section with a 4-step "how it works" and a **Request NEST.PH** form. |
+| No navigation separates the platform from the specific dormitory. | The landing page has a **Choose a Dormitory** section that links to Pureza Station. Every Pureza page has a **← NEST.PH** link back to the platform. |
+
+### ☑ Create a generic NEST.PH landing page
+
+- **Address:** `/` (the main address). Pureza Station's own homepage is now at `/pureza-station`. All of Pureza's "Back to home" buttons still go to Pureza's homepage.
+- **Look:** the same design as Pureza's homepage: the same green nav bar with leaf texture, cream hero, green bands, buttons and dark footer.
+- **Sections:**
+  - **Hero:** "Welcome to NEST.PH!", a short explanation, a large green NEST.PH logo, and **Find a Dormitory** / **I Own a Dormitory** buttons.
+  - **Choose a Dormitory:** a card for each dormitory on NEST.PH (currently Pureza Station) with its photo, address, description and a **Visit Dormitory** button. A dorm with no photos shows a green "Photos coming soon" placeholder.
+  - **About NEST.PH:** the four main features (VR room viewing, automatic payment reminders, online applications and tenant portal, maintenance requests).
+  - **For Dorm Owners:** the request form (see below).
+- **Navigation:** the top bar has Home, Dormitories, About NEST.PH, For Dorm Owners and a **Request NEST.PH** button. On phones it collapses into the same Menu button as Pureza's pages.
+- **Code:** `PlatformController::landing()`, `resources/views/platform.blade.php`. The top bar is the shared `partials/public-nav.blade.php`, called with `['platformNav' => true]`.
+
+### ☑ GUI for other dormitory owners to request NEST.PH
+
+- **How it works** (shown on the page): 1. Send a request → 2. We contact you → 3. Setup (rooms, rates, house rules, admin accounts) → 4. Go live.
+- **Form fields:** owner's name, dormitory name, email and contact number (required); city, approximate number of beds and a message (optional); Data Privacy Act consent (required).
+- **Protection:** Cloudflare Turnstile (see section 4), and at most 5 requests per person every 10 minutes.
+- **Feedback:** the button says "Sending…" while sending. Errors appear under the field they belong to. On success: "Thank you! The NEST.PH team will contact you within 2–3 business days."
+- **Code:** `PlatformController::storePartnerRequest()`, table `partner_requests` (migration `2026_10_19_000001_…`), model `PartnerRequest`.
+
+### ☑ NEST.PH team (platform admin) account and dashboard
+
+The existing admins are the **dormitory's** admins, so there was no one to receive the owner requests. A third role now covers the NEST.PH team itself.
+
+- **New role:** `platform_admin` (migration `2026_10_19_000002_…`).
+- **Login:** `/login/platform`, linked as **NEST.PH Team Login** in the landing page footer. It looks like the existing Admin login, with a single **NEST.PH TEAM** tab.
+- **Dashboard:** `/platform` → **Owner Requests**, built the same way as the dorm admin pages (sidebar, top bar, filter chips):
+  - Filter by status, with counts: New, Contacted, Demo scheduled, Onboarded, Declined.
+  - Click a request to see the owner's details and message, change its status, and write **team notes** (e.g. "Demo set for Saturday 10 AM").
+- **Kept separate:**
+  - Each login page only accepts its own kind of account. A platform account can't log in at the tenant or admin login, and a dorm admin or tenant can't log in at the platform login.
+  - Dorm admins and tenants get "Forbidden" at `/platform`.
+  - A platform account can't open the dorm's admin pages.
+- **Creating the account on the live site** (the demo account below is never created in production):
+  ```
+  php artisan nestph:create-platform-admin --name="NEST.PH Team" --email=... --password="..."
+  ```
+  Running it without the options asks each question instead.
+- **Demo data:** 6 fictional owner requests covering every status. They're part of `DemoDataSeeder`. To add only them on the live site (this never deletes anything): `php artisan db:seed --class=PartnerRequestDemoSeeder --force`.
+- **Demo reset:** resetting the demo data keeps platform team accounts. Before this fix it would have deleted them.
+- **Code:** `PlatformController::dashboard()` / `updatePartnerRequest()`, `app/Http/Middleware/EnsureUserIsPlatformAdmin.php` (registered as `platform`), `app/Http/Controllers/Api/AuthController.php` (login rule for each page), `resources/views/loginplatform.blade.php`, `resources/views/platformadmin.blade.php`, `app/Console/Commands/CreatePlatformAdmin.php`.
+
+---
+
+## 6. Billing and Delinquency
+
+### ☑ Verify configurable utility charge calculations
+
+- **The rule:** each room has a monthly utilities cost (water and electricity together) and a Wi-Fi cost, split evenly across its beds. Items the dorm marks as **included in the rent** are not added to the bill.
+- **What changed:** the setting used to have separate Water and Electricity checkboxes, but the room stores them as one cost, so checking only one did nothing. It is now one **"Water & electricity"** checkbox plus **"Wi-Fi"**.
+- **Example** (₱4,000 rent, 4-bed room with ₱2,000 utilities and ₱400 Wi-Fi):
+
+| Included in rent | Monthly bill |
+|---|---|
+| Nothing | ₱4,000 + ₱500 + ₱100 = **₱4,600** |
+| Water & electricity | ₱4,000 + ₱100 = **₱4,100** |
+| Everything | **₱4,000** |
+
+- **Tenant view:** the "Next bill estimate" on the Billing page now follows the same setting and says **"Included in rent"** instead of showing a charge. Before, it showed utilities even when the dorm had marked them as included.
+- **Where:** Dormitory Profile → Rental Policy → "Included in the rent".
+
+### ☑ Display advance rent and security deposit breakdowns (and add advance rent to the system)
+
+- **Advance rent setting:** Dormitory Profile → Rental Policy now has **Advance rent at move-in** and **Security deposit at move-in**, each None or 1–3 months. The default is 1 + 1, which matches the signed documents. At least one month must be collected.
+- **How the advance is used:** each month of advance pays one of the tenant's first months, so the first monthly bill comes after them. Example: moving in Oct 1 with 2 months advance covers October and November, and the first bill is for December. With no advance, the first month is billed from the move-in date.
+- **Existing tenants are not affected** by a later change: each tenant's move-in fee keeps the advance and deposit it was created with.
+- **Before paying:** the move-in payment page lists Advance rent (with the dates it pays for), Security deposit, and the Total move-in fee.
+- **Tenant Dashboard → "Deposit & Advance" card:**
+  - **Advance rent:** amount, number of months, dates covered, payment date and reference.
+  - **Security deposit:** amount and status: **Not yet paid**, **Held**, **Refunded**, or **Fully deducted**.
+  - **After move-out:** deposit, deductions (with the reason), and the amount refunded. If deductions use the whole deposit, it shows ₱0.00 refunded and "Your whole deposit was used for the deductions above". If the tenant still owes more than the deposit covered, it shows **"Still owed: ₱X"**.
+- **Code:** migration `2026_10_19_000001_add_advance_and_deposit_months_to_dormitory_profile.php`, `ApplicationController::approve()` (move-in fee), `BillingController::generateForContract()`, `BillingStatement::advanceMonths()`, `DepositRefund::summaryFor()`, `partials/deposit-advance-card.blade.php`, `partials/movein-breakdown.blade.php`.
+
+### ☑ Initial payment for mid-month move-ins
+
+- **Charged in full** (default): the advance pays the move-in month as a whole month.
+- **Prorated:** the days before the move-in date come off the first monthly bill. Example: moving in Oct 20 at ₱3,100 credits 19 of 31 days, so November's bill is ₱1,200. The move-in payment page and the dashboard card both explain this credit.
+- **With no advance:** the first bill covers only the days from the move-in date if prorated, or the whole month if not.
+
+### ☑ Tenant paying rent ahead (beyond the move-in)
+
+The panel asked about a tenant who wants to pay in advance after moving in.
+
+- **Where:** Billing and Payments → **Pay rent ahead**. The tenant picks 1, 2 or 3 months, sees the amount and the months it covers, then pays like any other bill: GCash/bank proof for the admin to approve, or cash at the office.
+- **Rent only.** Utilities and Wi-Fi are **not** prepaid, because they change month to month. Each paid-ahead month still gets a bill for that month's utilities, at that month's price. Example (₱4,000 rent, ₱600 utilities and Wi-Fi):
+
+| Month | Rent | Utilities + Wi-Fi | Due |
+|---|---|---|---|
+| Nov (paid ahead) | ₱0 (₱4,000 paid ahead) | ₱600 | **₱600** |
+| Dec (paid ahead, electricity went up) | ₱0 (₱4,000 paid ahead) | ₱800 | **₱800** |
+| Jan | ₱4,000 | ₱600 | ₱4,600 |
+
+- **Rules:**
+  - Allowed only when nothing is currently due ("Please settle your current bill first").
+  - Up to 3 months, and never past the end of the contract.
+  - Only one waiting at a time. It can be cancelled until a proof is submitted.
+  - It must be paid in full.
+  - It covers the exact months shown. If a month's bill was already issued when the payment is approved, that bill's rent is covered at that point.
+- **What an unpaid pay-ahead never does:** count as "Balance due" or "Total Outstanding", go overdue, get a late penalty, send reminders, or start delinquency. Paying ahead is optional.
+- **Admin:** it appears in Pending Payment with a **Rent Paid Ahead** badge and the months it covers ("Rent ahead: Nov 2026 – Dec 2026"). Receipts and the Statement of Account label it "Rent paid ahead". If a tenant moves out before using it, Tenant Manager shows **Unused Rent Paid Ahead** so it can be returned.
+- **Code:** migration `2026_10_20_000001_add_pay_ahead_to_billing_statements.php`, `app/Services/PayAhead.php`, `TenantPortalController::startPayAhead()` / `cancelPayAhead()`, `BillingStatement::scopeOwed()`, `BillingController::generateForContract()`, `tenantbilling.blade.php`.
+
+---
+
 ## Demo walkthrough
 
 | To show | Log in as | Steps |
@@ -154,9 +268,16 @@ An **emergency** is a ticket the system marks **Critical**, for example sparks, 
 | Several staff on one emergency | Admin | Tickets → "Burst pipe flooding the 3F hallway" → Assigned staff (Jerome + Mark) |
 | Online tag | Owner | Admin Privileges |
 | Bot protection | (public) | Tenant/Admin log in, Inquiry, Forgot Password or Apply: the Cloudflare box shows above the submit button |
+| Generic NEST.PH landing and dorm selection | (public) | Open `/` → Choose a Dormitory → Visit Dormitory; on Pureza's pages, "← NEST.PH" goes back |
+| Owner request form | (public) | `/` → For Dorm Owners → fill in and Send Request |
+| Advance rent and deposit settings | Owner | Dormitory Profile → Rental Policy → "Advance rent at move-in" / "Security deposit at move-in" and "Included in the rent" |
+| Deposit & Advance card | Tenant (e.g. maria.santos@gmail.com) | Dashboard → "Deposit & Advance" (1 month advance) |
+| 2 or 3 months advance | hannah.soriano@gmail.com (2 months) or jerome.pineda@gmail.com (3 months) | Dashboard → "Deposit & Advance" shows the months covered; Billing shows the first bill only after them |
+| Pay rent ahead | maria.santos@gmail.com (nothing due) | Billing and Payments → Pay rent ahead → pick months → Continue → pay. As admin: Billing and Payments → Pending Payment → "Rent Paid Ahead" → Approve |
+| Owner requests dashboard | NEST.PH team (platform@nestph.test locally; your team account on the live site) | `/login/platform` → Owner Requests → filter by status, open a request, change status, add notes |
 
 Demo password for every seeded account: **Password123!**
 
 ## Tests
 
-The new automated tests are in `tests/Feature/EmergencyTicketsTest.php` and `tests/Feature/RoomListingAndForecastExtrasTest.php`. Run `php artisan test`: all 74 tests pass.
+The new automated tests are in `tests/Feature/EmergencyTicketsTest.php`, `tests/Feature/RoomListingAndForecastExtrasTest.php`, `tests/Feature/PlatformLandingTest.php`, `tests/Feature/PlatformAdminTest.php` and `tests/Feature/AdvanceRentAndDepositTest.php` and `tests/Feature/PayAheadTest.php`. Run `php artisan test`: all 101 tests pass.
