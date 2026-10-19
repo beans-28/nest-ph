@@ -199,61 +199,229 @@ The existing admins are the **dormitory's** admins, so there was no one to recei
 
 ## 6. Billing and Delinquency
 
+The panel raised four billing points:
+
+1. **Utilities:** some dorms include utilities in the rent and some don't. Check that turning this on or off really changes the monthly total, and show the result clearly.
+2. **Advance rent and security deposit:** where do they appear in the application and payment process? Show the upfront payment breakdown on the tenant dashboard, following the dorm's own policy.
+3. **Mid-month move-ins:** how much does a tenant pay when they move in partway through a month?
+4. **Paying in advance:** what happens when a tenant wants to pay rent ahead, after they have already moved in?
+
+All four are now handled. The sections below explain each one. Every peso example uses the system's real calculations, and each one is covered by an automated test.
+
+### The three kinds of upfront money
+
+These are easy to mix up, so the system keeps them strictly separate:
+
+| | **Advance rent** | **Security deposit** | **Rent paid ahead** |
+|---|---|---|---|
+| **What it is** | Rent paid at move-in for the first month(s) | Money the dorm holds in case of unpaid bills or damage | Rent a current tenant chooses to pay early |
+| **When it's paid** | With the move-in fee | With the move-in fee | Any time after moving in, if nothing is due |
+| **Who decides the amount** | The dorm (Rental Policy) | The dorm (Rental Policy) | The tenant (1 to 3 months) |
+| **What it pays for** | Rent for the first month(s) only | Nothing. It is held, not spent. | Rent for the months the tenant chose |
+| **Returned to the tenant?** | No, it's used as rent | Yes, after move-out, minus approved deductions | Only if some of it is never used (e.g. moving out early) |
+| **Covers utilities?** | No | No | No |
+
+**Utilities are never paid in advance.** Water, electricity and Wi-Fi change from month to month, so they always appear on that month's bill, at that month's price. This keeps the dorm from losing money when prices go up and avoids "adjustment" charges later.
+
+---
+
 ### ☑ Verify configurable utility charge calculations
 
-- **The rule:** each room has a monthly utilities cost (water and electricity together) and a Wi-Fi cost, split evenly across its beds. Items the dorm marks as **included in the rent** are not added to the bill.
-- **What changed:** the setting used to have separate Water and Electricity checkboxes, but the room stores them as one cost, so checking only one did nothing. It is now one **"Water & electricity"** checkbox plus **"Wi-Fi"**.
-- **Example** (₱4,000 rent, 4-bed room with ₱2,000 utilities and ₱400 Wi-Fi):
+**How utilities are billed.** Each room has a monthly **utilities cost** (water and electricity together) and a **Wi-Fi cost**, set by the admin in Vacancy Monitor. These are split evenly across the room's beds and added to each tenant's monthly bill. The dorm can mark either one as **included in the rent**, and then it isn't added.
 
-| Included in rent | Monthly bill |
+**What was wrong, and what we changed.**
+- **One checkbox for water and electricity.** The settings page had separate "Water" and "Electricity" checkboxes, but the room stores both as one combined cost. Checking only one of them did nothing, so the total didn't change. There is now one **"Water & electricity"** checkbox and one **"Wi-Fi"** checkbox, and each one changes the total.
+- **The tenant's estimate follows the setting.** The **Next bill estimate** on the tenant's Billing page used to show utility charges even when the dorm had marked them as included. It now follows the setting and says **"Included in rent"** instead of a peso amount.
+
+**Example:** ₱4,000 rent, in a 4-bed room with ₱2,000 utilities and ₱400 Wi-Fi. That's ₱500 utilities and ₱100 Wi-Fi per bed.
+
+| Included in the rent | Monthly bill |
 |---|---|
 | Nothing | ₱4,000 + ₱500 + ₱100 = **₱4,600** |
 | Water & electricity | ₱4,000 + ₱100 = **₱4,100** |
-| Everything | **₱4,000** |
+| Water & electricity, and Wi-Fi | **₱4,000** |
 
-- **Tenant view:** the "Next bill estimate" on the Billing page now follows the same setting and says **"Included in rent"** instead of showing a charge. Before, it showed utilities even when the dorm had marked them as included.
-- **Where:** Dormitory Profile → Rental Policy → "Included in the rent".
+**How we verified it:** an automated test creates a bill under each of the three settings and checks these exact totals (`AdvanceRentAndDepositTest`).
+
+**Note:** a change applies to bills created from then on. Bills that were already issued keep their amounts, so a tenant's existing bill never changes behind their back.
+
+**Where to see it:**
+- **Admin:** Dormitory Profile → Rental Policy → "Included in the rent".
+- **Tenant:** Billing and Payments → "Next bill estimate".
+
+---
 
 ### ☑ Display advance rent and security deposit breakdowns (and add advance rent to the system)
 
-- **Advance rent setting:** Dormitory Profile → Rental Policy now has **Advance rent at move-in** and **Security deposit at move-in**, each None or 1–3 months. The default is 1 + 1, which matches the signed documents. At least one month must be collected.
-- **How the advance is used:** each month of advance pays one of the tenant's first months, so the first monthly bill comes after them. Example: moving in Oct 1 with 2 months advance covers October and November, and the first bill is for December. With no advance, the first month is billed from the move-in date.
-- **Existing tenants are not affected** by a later change: each tenant's move-in fee keeps the advance and deposit it was created with.
-- **Before paying:** the move-in payment page lists Advance rent (with the dates it pays for), Security deposit, and the Total move-in fee.
-- **Tenant Dashboard → "Deposit & Advance" card:**
-  - **Advance rent:** amount, number of months, dates covered, payment date and reference.
-  - **Security deposit:** amount and status: **Not yet paid**, **Held**, **Refunded**, or **Fully deducted**.
-  - **After move-out:** deposit, deductions (with the reason), and the amount refunded. If deductions use the whole deposit, it shows ₱0.00 refunded and "Your whole deposit was used for the deductions above". If the tenant still owes more than the deposit covered, it shows **"Still owed: ₱X"**.
-- **Code:** migration `2026_10_19_000001_add_advance_and_deposit_months_to_dormitory_profile.php`, `ApplicationController::approve()` (move-in fee), `BillingController::generateForContract()`, `BillingStatement::advanceMonths()`, `DepositRefund::summaryFor()`, `partials/deposit-advance-card.blade.php`, `partials/movein-breakdown.blade.php`.
+#### 1. The dorm sets its own advance and deposit
+
+Before, every dorm was forced to collect exactly 1 month advance and 1 month deposit, because the numbers were written into the code. Now each dorm chooses:
+
+- **Advance rent at move-in:** None, 1, 2 or 3 months.
+- **Security deposit at move-in:** None, 1, 2 or 3 months.
+
+The default is **1 + 1**, which matches Pureza Station's signed documents. A dorm can't set both to None, because a new tenant only becomes active after paying a move-in fee. Below the two dropdowns, a sentence explains the result in plain words, for example: "New tenants pay 3 months of rent at move-in. The advance pays their first 2 months, so their first bill comes after that."
+
+**Move-in fee** = monthly rent × (advance months + deposit months). Example: ₱4,000 rent with 2 months advance and 1 month deposit = ₱8,000 advance + ₱4,000 deposit = **₱12,000**.
+
+**Changing the setting never affects current tenants.** Each tenant's move-in bill stores its own advance and deposit amounts, and billing reads those, not the current setting.
+
+#### 2. How the advance is used
+
+Each month of advance pays one of the tenant's first rental months, so the first monthly bill comes **after** those months:
+
+| Move-in | Advance | Covered by the advance | First monthly bill |
+|---|---|---|---|
+| Oct 1 | 1 month | October | November |
+| Oct 1 | 2 months | October and November | December |
+| Jul 15 | 3 months | July 15 to September 30 | October |
+| Oct 17 | None | Nothing | Starts Oct 17 (see mid-month move-ins below) |
+
+**The advance is never treated as a deposit, and the deposit is never treated as rent.** They are stored as separate amounts on the move-in bill.
+
+#### 3. Where the tenant sees the breakdown
+
+**Before paying: the move-in payment page.** Before choosing full or half payment, the new tenant sees:
+
+```
+Advance rent (1 month)          ₱4,000.00
+  Pays for Oct 10 – Oct 31, 2026
+Security deposit (1 month)      ₱4,000.00
+  Returned when you move out
+Total move-in fee               ₱8,000.00
+```
+
+**After moving in: Tenant Dashboard → "Deposit & Advance" card.** It has two halves.
+
+**Advance rent:**
+- The amount, the number of months, and the exact dates it paid for.
+- The payment date and reference number.
+- A note if they moved in mid-month and part of it is credited on the first bill.
+- A note if they have also paid rent ahead (see the last section).
+
+**Security deposit:** the amount, plus one of four statuses.
+
+| Status | Meaning |
+|---|---|
+| **Not yet paid** | The move-in fee hasn't been paid yet |
+| **Held** | The dorm is holding it until move-out. It is not used as rent. |
+| **Refunded** | After move-out, the remaining deposit was returned. The card shows the deposit, the deductions with the reason, and the amount refunded (with method and date). |
+| **Fully deducted** | After move-out, the deductions used up the whole deposit |
+
+**When the deposit is used up by unpaid rent or penalties:** the card shows the deposit, the deductions and the reason (for example "Unpaid October rent"), and **₱0.00 refunded**, with the sentence "Your whole deposit was used for the deductions above, so there is nothing to refund." If the tenant owed more than the deposit could cover, the card also shows **"Still owed: ₱X"**. The leftover stays on their unpaid bills, so the same charge is never collected twice.
+
+**Also clarified:** the dashboard's "Recent Billing" list used to label the move-in fee with its month (e.g. "Jul 2026 ₱12,000"), which looked like a very large rent bill. It now says **"Move-in fee"**.
+
+**Where to see it:**
+- **Admin:** Dormitory Profile → Rental Policy → "Advance rent at move-in" and "Security deposit at move-in".
+- **Tenant (before paying):** the move-in payment page (Payment type step).
+- **Tenant (after moving in):** Tenant Dashboard → "Deposit & Advance".
+
+---
 
 ### ☑ Initial payment for mid-month move-ins
 
-- **Charged in full** (default): the advance pays the move-in month as a whole month.
-- **Prorated:** the days before the move-in date come off the first monthly bill. Example: moving in Oct 20 at ₱3,100 credits 19 of 31 days, so November's bill is ₱1,200. The move-in payment page and the dashboard card both explain this credit.
-- **With no advance:** the first bill covers only the days from the move-in date if prorated, or the whole month if not.
+The dorm chooses how a mid-month move-in is charged (Rental Policy → "Mid-month move-in: first month is"):
+
+- **Charged in full** (Pureza's setting): the advance pays the move-in month as a whole month, even if the tenant arrives on the 20th.
+- **Prorated:** the tenant only pays for the days they actually stay. The unused days of the advance are taken off the **first monthly bill**.
+
+**Example (prorated):** moving in October 20 at ₱3,100 a month. October has 31 days, and the tenant doesn't stay October 1–19, which is 19 days. ₱3,100 × 19 ÷ 31 = ₱1,900 credit, so November's bill is ₱3,100 − ₱1,900 = **₱1,200**.
+
+**With no advance:** the first bill starts on the move-in date. If prorated, it covers only the days from that date (e.g. moving in Oct 17 at ₱3,100: 15 of 31 days = **₱1,500**). If charged in full, it's the whole month.
+
+**Where the tenant sees it:** the move-in payment page and the dashboard card both say in words how much comes off the first bill and why.
+
+---
 
 ### ☑ Tenant paying rent ahead (beyond the move-in)
 
-The panel asked about a tenant who wants to pay in advance after moving in.
+The panel described a tenant who wants to pay in advance after already moving in. For example, a parent who wants to pay two months at once.
 
-- **Where:** Billing and Payments → **Pay rent ahead**. The tenant picks 1, 2 or 3 months, sees the amount and the months it covers, then pays like any other bill: GCash/bank proof for the admin to approve, or cash at the office.
-- **Rent only.** Utilities and Wi-Fi are **not** prepaid, because they change month to month. Each paid-ahead month still gets a bill for that month's utilities, at that month's price. Example (₱4,000 rent, ₱600 utilities and Wi-Fi):
+#### How it works for the tenant
 
-| Month | Rent | Utilities + Wi-Fi | Due |
+1. Go to **Billing and Payments → Pay rent ahead**.
+2. Pick **1, 2 or 3 months**. The card shows the amount and the months covered, for example "₱8,000.00, Covers your rent for Nov 2026 – Dec 2026".
+3. Click **Continue** and pay the usual way: upload a GCash/bank proof for the admin to approve, or pay cash at the office.
+4. Until the admin approves, the card says "Your proof of payment is being reviewed."
+5. After approval, each covered month still gets a bill, but its rent shows as **paid ahead**, so only that month's utilities and Wi-Fi are due.
+
+#### Example
+
+₱4,000 rent and ₱600 utilities + Wi-Fi a month. The tenant pays ahead for November and December (₱8,000). In December, electricity goes up.
+
+| Month | Rent | Utilities + Wi-Fi | Tenant pays |
 |---|---|---|---|
-| Nov (paid ahead) | ₱0 (₱4,000 paid ahead) | ₱600 | **₱600** |
-| Dec (paid ahead, electricity went up) | ₱0 (₱4,000 paid ahead) | ₱800 | **₱800** |
-| Jan | ₱4,000 | ₱600 | ₱4,600 |
+| November | ₱0 (₱4,000 paid ahead) | ₱600 | **₱600** |
+| December (electricity went up) | ₱0 (₱4,000 paid ahead) | ₱800 | **₱800** |
+| January | ₱4,000 | ₱600 | **₱4,600** |
 
-- **Rules:**
-  - Allowed only when nothing is currently due ("Please settle your current bill first").
-  - Up to 3 months, and never past the end of the contract.
-  - Only one waiting at a time. It can be cancelled until a proof is submitted.
-  - It must be paid in full.
-  - It covers the exact months shown. If a month's bill was already issued when the payment is approved, that bill's rent is covered at that point.
-- **What an unpaid pay-ahead never does:** count as "Balance due" or "Total Outstanding", go overdue, get a late penalty, send reminders, or start delinquency. Paying ahead is optional.
-- **Admin:** it appears in Pending Payment with a **Rent Paid Ahead** badge and the months it covers ("Rent ahead: Nov 2026 – Dec 2026"). Receipts and the Statement of Account label it "Rent paid ahead". If a tenant moves out before using it, Tenant Manager shows **Unused Rent Paid Ahead** so it can be returned.
-- **Code:** migration `2026_10_20_000001_add_pay_ahead_to_billing_statements.php`, `app/Services/PayAhead.php`, `TenantPortalController::startPayAhead()` / `cancelPayAhead()`, `BillingStatement::scopeOwed()`, `BillingController::generateForContract()`, `tenantbilling.blade.php`.
+If the dorm includes utilities in the rent and a month is fully paid ahead, that month's bill is ₱0 and is **marked paid automatically**, so it never sits as "unpaid".
+
+#### The rules
+
+- **Only when nothing is due.** A tenant with an unpaid bill sees "Please settle your current bill first. You can pay ahead once nothing is due."
+- **1 to 3 months, never past the end of the contract.** Only full months are offered.
+- **The months are fixed and come after what's already covered:** after the last bill, the move-in advance, and any earlier pay-ahead.
+- **One at a time.** A tenant can't start a second pay-ahead while one is waiting.
+- **Paid in full.** The amount on the payment form is locked, so it's either paid ahead or not.
+- **It can be cancelled** until a proof is submitted. After that, it waits for the admin.
+- **A bill that was already issued is still covered.** Bills come out 10 days before they're due. If November's bill was already issued when the admin approves the pay-ahead, November's rent is covered at the moment of approval.
+
+#### Safety: an unpaid pay-ahead is never treated as money owed
+
+Paying ahead is optional. If a tenant starts one and doesn't finish, nothing bad happens to them. An unpaid pay-ahead:
+
+- does **not** count in the tenant's **Balance Due**, or in the admin's **Total Outstanding** and reports
+- never becomes **overdue** and never gets a **late penalty**
+- never triggers **payment reminders**
+- never starts the **delinquency process** (SMS, portal restriction, demand letters)
+- can't have penalties attached to it, because penalties go on the next monthly bill instead
+
+#### What the admin sees
+
+- **Pending Payment:** the proof appears with a **Rent Paid Ahead** badge and "Rent ahead: Nov 2026 – Dec 2026". The admin approves or rejects it like any other proof.
+- **Cash:** if the tenant pays cash at the office, the admin records it against the pay-ahead in "Record Payment Entry".
+- **Receipts and Statement of Account** label it "Rent paid ahead", not "Monthly".
+- **Moving out early:** if a tenant leaves before their paid-ahead months are used, Tenant Manager → Security Deposit shows **Unused Rent Paid Ahead: ₱X, return it to the tenant at move-out**.
+
+**One limit:** the tenant starts a pay-ahead from their portal. The admin can't start one from the admin side.
+
+---
+
+### Answers to the panel's questions
+
+| Question | Answer |
+|---|---|
+| Can utilities be included in or excluded from the rent? | Yes, per dorm: "Water & electricity" and "Wi-Fi" in Rental Policy. Each one changes the monthly total (₱4,600 → ₱4,100 → ₱4,000 in the example above). |
+| How do you know the calculation is right? | Automated tests check the exact totals for each setting, and the tenant's estimate uses the same rule as the real bill. |
+| Where do advance rent and security deposit appear? | On the move-in payment page before paying (with the total), and afterwards on the Tenant Dashboard's "Deposit & Advance" card. |
+| Can a dorm require a different advance or deposit? | Yes: 0 to 3 months each, in Rental Policy. Default 1 + 1. |
+| What if the whole deposit goes to unpaid rent or penalties? | The card shows each deduction with its reason, ₱0.00 refunded, "Fully deducted", and any amount still owed beyond the deposit. |
+| What does a mid-month move-in pay? | It depends on the dorm's setting: the whole month, or only the days stayed, credited on the first bill (e.g. ₱1,200 for an Oct 20 move-in at ₱3,100). |
+| Can a tenant pay in advance after moving in? | Yes, 1 to 3 months of rent, from Billing and Payments → Pay rent ahead. |
+| What if utilities go up after a tenant paid ahead? | Only rent is prepaid. Utilities stay on each month's bill at that month's price, so the tenant pays the new amount and the dorm loses nothing. |
+| What if a tenant moves out before using what they paid ahead? | Tenant Manager shows the unused amount so the admin returns it at move-out. |
+
+**Code (for the team):**
+- **Migrations:**
+  - `2026_10_19_000001_add_advance_and_deposit_months_to_dormitory_profile.php`
+  - `2026_10_20_000001_add_pay_ahead_to_billing_statements.php`
+- **Main logic:**
+  - `app/Services/PayAhead.php` (pay-ahead rules)
+  - `BillingController::generateForContract()` (monthly bills: advance months, proration, pay-ahead, utilities)
+  - `ApplicationController` (move-in fee)
+  - `BillingStatement::advanceMonths()` / `scopeOwed()`
+  - `DepositRefund::summaryFor()` (dashboard card data)
+  - `TenantPortalController::startPayAhead()` / `cancelPayAhead()`
+- **Views:**
+  - `partials/deposit-advance-card.blade.php`
+  - `partials/movein-breakdown.blade.php`
+  - `tenantbilling.blade.php`
+  - `admindormitoryprofile.blade.php`
+- **Tests:**
+  - `tests/Feature/AdvanceRentAndDepositTest.php`
+  - `tests/Feature/PayAheadTest.php`
 
 ---
 

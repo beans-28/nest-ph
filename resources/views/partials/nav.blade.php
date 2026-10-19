@@ -86,7 +86,7 @@ document.getElementById('logout-btn')?.addEventListener('click', async function(
         });
 
         if (response.ok) {
-            window.location.href = '/login/tenant';
+            window.location.href = (await response.json().catch(() => ({}))).redirect || '/';
         } else {
             alert('Something went wrong logging out. Please try again.');
         }

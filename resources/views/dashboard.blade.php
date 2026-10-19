@@ -59,8 +59,8 @@
 (function(){
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
   document.getElementById('logoutBtn').addEventListener('click', async () => {
-    await fetch('/logout', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken } });
-    window.location.href = '/';
+    const logoutRes = await fetch('/logout', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } });
+    window.location.href = (await logoutRes.json().catch(() => ({}))).redirect || '/';
   });
 })();
 </script>

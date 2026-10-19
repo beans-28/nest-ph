@@ -133,6 +133,7 @@ public function login(Request $request)
     public function logout(Request $request)
     {
         \App\Models\AdminLoginSession::recordLogout($request->user(), $request);
+        $redirect = $request->user()?->logoutRedirectUrl() ?? route('home');
 
         Auth::logout();
 
@@ -141,6 +142,7 @@ public function login(Request $request)
 
         return response()->json([
             'message' => 'Logged out successfully.',
+            'redirect' => $redirect,
         ], 200);
     }
 

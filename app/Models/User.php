@@ -97,4 +97,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(Tenant::class);
     }
+
+    /**
+     * Where to send this user after they log out: the NEST.PH team goes
+     * back to the platform landing page, everyone else (dorm admins and
+     * tenants) goes back to their dormitory's own homepage.
+     */
+    public function logoutRedirectUrl(): string
+    {
+        return $this->role?->role_name === 'platform_admin' ? url('/') : route('home');
+    }
 }

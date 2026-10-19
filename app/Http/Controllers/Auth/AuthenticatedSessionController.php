@@ -37,8 +37,11 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
     {
+        // Decide where to land before the user is logged out.
+        $redirect = $request->user()?->logoutRedirectUrl() ?? route('home');
+
         // Login Tracker (Admin Privileges page) -- admins only.
         \App\Models\AdminLoginSession::recordLogout($request->user(), $request);
 
@@ -48,6 +51,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // Pages that log out via fetch() ask for JSON and navigate themselves.
+        if ($request->expectsJson()) {
+            return response()->json(['redirect' => $redirect]);
+        }
+
+        return redirect($redirect);
     }
 }

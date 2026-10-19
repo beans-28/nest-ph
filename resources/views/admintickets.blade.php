@@ -264,8 +264,8 @@
   });
 
   $('logoutBtn').addEventListener('click', async () => {
-    await fetch('/logout', { method:'POST', headers:{ 'X-CSRF-TOKEN': csrf } });
-    window.location.href = '/';
+    const logoutRes = await fetch('/logout', { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' } });
+    window.location.href = (await logoutRes.json().catch(() => ({}))).redirect || '/';
   });
 
   $('lightbox').addEventListener('click', () => $('lightbox').classList.remove('open'));
