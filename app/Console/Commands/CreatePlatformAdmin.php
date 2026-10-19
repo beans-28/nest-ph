@@ -15,10 +15,18 @@ use Illuminate\Validation\Rules\Password;
  * server's terminal:
  *
  *     php artisan nestph:create-platform-admin
+ *
+ * Hosts whose command box can't answer questions (e.g. Laravel Cloud) can
+ * pass everything at once:
+ *
+ *     php artisan nestph:create-platform-admin --name="NEST.PH Team" --email=team@example.com --password="..."
  */
 class CreatePlatformAdmin extends Command
 {
-    protected $signature = 'nestph:create-platform-admin';
+    protected $signature = 'nestph:create-platform-admin
+        {--name= : Full name (skips the question)}
+        {--email= : Login email (skips the question)}
+        {--password= : Password (skips the question)}';
 
     protected $description = 'Create a NEST.PH platform team account (reviews dormitory owner requests).';
 
@@ -28,8 +36,33 @@ class CreatePlatformAdmin extends Command
         $this->line('This account can log in at /login/platform. It cannot open any dormitory\'s admin pages.');
         $this->newLine();
 
-        $name = $this->askValid('Full name', 'name', ['required', 'string', 'max:255']);
-        $email = $this->askValid('Email (used to log in)', 'email', ['required', 'email', 'max:255', 'unique:users,email']);
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', Password::defaults()],
+        ];
+
+        // Non-interactive: all three given as options.
+        if ($this->option('name') && $this->option('email') && $this->option('password')) {
+            $input = [
+                'name' => trim($this->option('name')),
+                'email' => trim($this->option('email')),
+                'password' => $this->option('password'),
+            ];
+            $validator = Validator::make($input, $rules);
+            if ($validator->fails()) {
+                foreach ($validator->errors()->all() as $message) {
+                    $this->error($message);
+                }
+
+                return self::FAILURE;
+            }
+
+            return $this->createAccount($input['name'], $input['email'], $input['password']);
+        }
+
+        $name = $this->askValid('Full name', 'name', $rules['name']);
+        $email = $this->askValid('Email (used to log in)', 'email', $rules['email']);
 
         while (true) {
             $password = (string) $this->secret('Password (8+ characters with an uppercase letter, a number and a symbol; typing is hidden)');
@@ -50,6 +83,11 @@ class CreatePlatformAdmin extends Command
             break;
         }
 
+        return $this->createAccount($name, $email, $password);
+    }
+
+    private function createAccount(string $name, string $email, string $password): int
+    {
         $role = Role::firstOrCreate(['role_name' => 'platform_admin']);
 
         User::forceCreate([

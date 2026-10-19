@@ -7,6 +7,9 @@
     own .topnav desktop styles in its <style> block; this partial only adds
     the compact phone layout below, which loads later and so wins.
 
+    The NEST.PH platform landing page passes ['platformNav' => true] to get
+    the same bar with platform links instead of the dormitory's.
+
     Phones (860px and below): one slim row with the logo, an Apply button
     and a Menu button. Menu opens the page links and Log In / Admin
     underneath, inside the same sticky bar.
@@ -77,6 +80,16 @@
 
 <nav class="topnav textured" aria-label="Main">
     <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
+    @if(!empty($platformNav))
+    <div class="menu" id="publicNavMenu">
+        <a href="{{ route('platform') }}" aria-current="page">HOME</a>
+        <a href="#dormitories">DORMITORIES</a>
+        <a href="#about">ABOUT NEST.PH</a>
+        <a href="#for-owners" class="pill">FOR DORM OWNERS</a>
+    </div>
+    <a href="{{ route('platform') }}" class="logo" title="NEST.PH"><img src="{{ asset('images/nestph.png') }}" alt="" class="logo-img"> <span class="logo-name">NEST.PH</span></a>
+    <a href="#for-owners" class="btn btn-white nav-apply">Request NEST.PH</a>
+    @else
     <div class="menu" id="publicNavMenu">
         <a href="{{ route('platform') }}" title="Back to the NEST.PH platform">&larr; NEST.PH</a>
         <a href="{{ route('home') }}" @if(request()->routeIs('home')) aria-current="page" @endif>HOME</a>
@@ -94,12 +107,17 @@
     @else
     <a href="{{ route('public.apply') }}" class="btn btn-white nav-apply">Apply</a>
     @endif
+    @endif
     <button type="button" class="nav-toggle" id="publicNavToggle" aria-expanded="false" aria-controls="publicNavMenu">
         <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
         <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
         Menu
     </button>
-    @if(!empty($tenantSession))
+    @if(!empty($platformNav))
+    <div class="buttons">
+        <a href="#for-owners" class="btn btn-white nav-apply-full">Request NEST.PH</a>
+    </div>
+    @elseif(!empty($tenantSession))
     <div class="buttons">
         <form method="POST" action="{{ route('logout') }}" class="nav-apply-full">
             @csrf
@@ -125,6 +143,7 @@
         nav.classList.toggle('menu-open', open);
         toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
+    nav.querySelectorAll('a[href^="#"]').forEach(function (a) { a.addEventListener('click', function () { setOpen(false); }); });
     toggle.addEventListener('click', function () { setOpen(!nav.classList.contains('menu-open')); });
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && nav.classList.contains('menu-open')) { setOpen(false); toggle.focus(); }

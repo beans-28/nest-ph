@@ -4,88 +4,641 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>NEST.PH Platform Login</title>
-    <link rel="icon" href="{{ asset('images/nestphgreen.png') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Team Login · NEST.PH</title>
+    <link rel="icon" href="{{ $brandFaviconUrl }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --green-light: #a2d9a4;
+            --green-dark: #567357;
+            --green-darker: #197335;
+            --ink: #292420;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Roboto', system-ui, sans-serif; min-height: 100vh; display: grid; place-items: center; padding: 16px;
-               background: linear-gradient(135deg, #197335, #567357); color: #292420; }
-        .card { background: #fff; width: min(400px, 100%); border-radius: 14px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,.2); }
-        .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px; color: #197335; margin-bottom: 4px; }
-        .brand img { height: 32px; }
-        .sub { color: #5b6168; font-size: 14px; margin-bottom: 24px; }
-        label { display: block; font-weight: 500; font-size: 14px; margin: 14px 0 6px; }
-        input { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid #c1c7cd; border-radius: 8px; }
-        input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid #197335; outline-offset: 2px; }
-        button { width: 100%; margin-top: 18px; padding: 12px; border: 0; border-radius: 8px; background: #197335; color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
-        button[disabled] { opacity: .6; cursor: wait; }
-        .msg { margin-top: 14px; font-size: 14px; color: #b42318; min-height: 1em; }
-        .links { margin-top: 18px; font-size: 13px; color: #5b6168; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-        .links a { color: #197335; }
+
+        .page-wrap { overflow-x: hidden; }
+
+        body {
+            font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+            color: var(--ink);
+            background: linear-gradient(180deg, #567357 0%, #59473f 100%);
+            min-height: 100vh;
+        }
+
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid var(--green-darker);
+            outline-offset: 2px;
+        }
+        .topnav a:focus-visible, .topnav .buttons a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px;
+        }
+        .btn-white:focus-visible { outline-color: var(--ink); }
+
+        /* Decorative leaf textures — same technique as homepage */
+        .textured { position: relative; overflow: hidden; }
+        .textured .bg-texture {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            z-index: 0;
+            mix-blend-mode: multiply;
+            opacity: 0.5;
+        }
+        .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
+
+        .topnav {
+            background: linear-gradient(90deg, var(--green-darker), var(--green-dark));
+            padding: 14px clamp(20px, 5vw, 64px);
+            display: flex;
+            align-items: center;
+            gap: clamp(16px, 3vw, 40px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: box-shadow 0.25s ease;
+        }
+        .topnav.scrolled {
+            box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+        }
+        .topnav .menu { flex: 1; display: flex; align-items: center; gap: 10px; }
+        .topnav .menu a, .topnav .menu span {
+            color: #fff; font-weight: 500; font-size: 14px;
+            padding: 10px 6px; display: inline-flex; align-items: center; gap: 4px;
+            text-decoration: none;
+        }
+        .topnav .menu a.pill {
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 999px;
+            padding: 7px 16px;
+        }
+        .topnav .menu a.pill:hover { background: rgba(255,255,255,0.12); }
+        .topnav .logo {
+            display: flex; align-items: center; gap: 6px;
+            color: #fff; font-weight: 700; font-size: 19px;
+            letter-spacing: 0.02em; white-space: nowrap; text-decoration: none;
+        }
+        .topnav .logo .logo-img { height: 32px; width: auto; }
+        .topnav .buttons { flex: 1; display: flex; justify-content: flex-end; gap: 12px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            height: 44px; padding: 0 18px; border: 2px solid #fff;
+            font-weight: 500; font-size: 13.5px; letter-spacing: 0.02em; cursor: pointer;
+            white-space: nowrap; text-decoration: none;
+        }
+        .btn-white { background: #fff; color: var(--ink); }
+        .btn-outline-white { background: transparent; color: #fff; }
+
+        /* ===== LOGIN AREA ===== */
+        .login-grid {
+            display: grid;
+            grid-template-columns: 37% 63%;
+            align-items: stretch;
+            min-height: calc(100vh - 70px);
+            padding: clamp(16px, 3vw, 20px) clamp(24px, 5vw, 60px) clamp(24px, 5vw, 60px) 0;
+        }
+
+        .login-left {
+            position: relative;
+            padding: 16px clamp(20px, 4vw, 40px) clamp(24px, 4vw, 40px) clamp(28px, 6vw, 80px);
+            display: flex;
+            flex-direction: column;
+        }
+        .back-button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 22px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            margin-bottom: 32px;
+            align-self: flex-start;
+        }
+        .login-left-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .login-left h1 {
+            color: #fff;
+            font-weight: 700;
+            font-size: clamp(24px, 3vw, 34px);
+            line-height: 1.2;
+            max-width: 340px;
+        }
+        .login-left h1 .accent {
+            display: block;
+            color: #44ad65;
+            font-weight: 900;
+            font-size: clamp(28px, 3.6vw, 40px);
+            margin-top: 4px;
+        }
+        /* The real NEST.PH logo (white version, for this dark background) */
+        .brand-mark {
+            display: block;
+            width: 72px;
+            height: auto;
+            margin-bottom: 28px;
+        }
+
+        .login-right-wrap {
+            position: relative;
+            padding-top: 32px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-right {
+            background: #eeeded;
+            border-radius: 32px;
+            padding: clamp(36px, 5vw, 52px) clamp(24px, 5vw, 56px) clamp(36px, 5vw, 52px);
+            flex: 1;
+        }
+
+        .tab-header {
+            position: absolute;
+            top: 0;
+            left: 32px;
+            display: inline-flex;
+            border-radius: 999px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .tab-header a {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 13px 26px;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.02em;
+            text-decoration: none;
+            color: #425542;
+            background: #d8dcd8;
+        }
+        .tab-header a.active { background: #eeeded; color: #194e19; }
+        .tab-header a svg { width: 16px; height: 16px; }
+
+        .login-right h2 {
+            color: #567357;
+            font-weight: 700;
+            font-size: clamp(20px, 2.4vw, 26px);
+            margin-bottom: 24px;
+            margin-top: 20px;
+        }
+
+        .form-group { margin-bottom: 22px; max-width: 560px; }
+        .form-group label {
+            display: block;
+            color: #567357;
+            font-weight: 500;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .form-group input {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #a6b69f;
+            padding: 7px 4px;
+            font-size: 14px;
+            background: transparent;
+            color: #292420;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .btn-login {
+            display: block;
+            width: 100%;
+            max-width: 560px;
+            margin: 10px auto 0;
+            padding: 17px 0;
+            border: none;
+            border-radius: 8px;
+            background: #567357;
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+        }
+        .btn-login:hover:not(:disabled) { background: #197335; }
+        .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        .spinner {
+            display: none;
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+        }
+        .btn-login.loading .spinner { display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .help-text {
+            text-align: center;
+            margin: 20px auto 0;
+            max-width: 560px;
+            font-weight: 700;
+            font-size: 13px;
+            color: #292420;
+        }
+        .help-text a { color: #567357; text-decoration: none; }
+        .help-text.secondary { font-weight: 400; color: #4b5f4c; margin-top: 8px; }
+
+        @media (max-width: 1024px) {
+            .login-grid { grid-template-columns: 1fr; padding: 20px 28px 32px; }
+            .login-left { padding: 0 0 24px; }
+            .login-right { padding: 40px 28px 32px; }
+            .tab-header { left: 16px; }
+            .topnav { padding: 14px 28px; flex-wrap: wrap; }
+        }
+        @media (max-width: 640px) {
+            .login-left h1 { font-size: 22px; }
+            .login-left h1 .accent { font-size: 26px; }
+            .brand-mark { width: 56px; margin-bottom: 20px; }
+            .tab-header a { padding: 13px 16px; font-size: 12.5px; min-height: 44px; }
+
+            /* Topnav: the flex-wrap layout at wider breakpoints packs the
+               menu, logo and button groups unpredictably at phone widths,
+               so stack them into clear rows instead. Matches welcome.blade.php. */
+            .topnav { flex-direction: column; align-items: stretch; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+            .topnav .logo { order: -1; justify-content: center; }
+            .topnav .menu { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 8px; }
+            .topnav .menu a, .topnav .menu span { padding: 10px 8px; }
+            .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
+
+            /* Form fields: 16px avoids the iOS Safari auto-zoom-on-focus. */
+            .form-group input { font-size: 16px; }
+        }
+
+        /* ===== Account locked modal ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .modal-overlay.visible { display: flex; }
+
+        .lockout-modal {
+            background: #fff;
+            border-radius: 20px;
+            max-width: 360px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 32px 28px 28px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        .lockout-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 18px;
+            background: #f9dede;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lockout-icon svg { width: 26px; height: 26px; color: #cc3333; }
+        .lockout-modal h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: #292420;
+            margin-bottom: 14px;
+        }
+        .lockout-modal p {
+            font-size: 13px;
+            color: #4b4b4b;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .lockout-modal p strong { color: #cc3333; }
+        .lockout-box {
+            background: #fdf0f0;
+            border: 1px solid #f3cccc;
+            border-radius: 10px;
+            padding: 14px;
+            margin: 16px 0 18px;
+        }
+        .lockout-box .label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12.5px;
+            color: #292420;
+            margin-bottom: 6px;
+        }
+        .lockout-box .label svg { width: 14px; height: 14px; }
+        .lockout-timer {
+            font-size: 25px;
+            font-weight: 700;
+            color: #cc3333;
+            letter-spacing: 0.02em;
+        }
+        .lockout-note {
+            font-size: 12px;
+            color: #6b6b6b;
+            margin-bottom: 20px;
+        }
+        .lockout-modal .btn-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+        .lockout-modal .btn-login svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+        /* ===== Inline login error (replaces browser alert) ===== */
+        .login-error {
+            display: none;
+            align-items: flex-start;
+            gap: 8px;
+            margin: -8px 0 18px;
+            max-width: 560px;
+        }
+        .login-error.visible { display: flex; }
+        .login-error svg { width: 16px; height: 16px; color: #cc3333; flex-shrink: 0; margin-top: 2px; }
+        .login-error-text { display: flex; flex-direction: column; gap: 2px; }
+        .login-error-text .main { color: #cc3333; font-weight: 700; font-size: 13px; }
+        .login-error-text .sub { color: #6b6b6b; font-weight: 400; font-size: 12px; }
+        /* Phones: get visitors to the form fast. The full-height grid split its
+           leftover space between the tagline and the form, leaving a big gap,
+           and the decorative N mark pushed the form down further. Placed last
+           so it wins over the base rules above. */
+        @media (max-width: 640px) {
+            .login-grid { min-height: 0; padding-top: 12px; }
+            .login-left { padding-bottom: 16px; }
+            .login-left-content { justify-content: flex-start; }
+            .brand-mark { display: none; }
+            .back-button { margin-bottom: 14px; }
+        }
+        /* Dual branding: the dorm owns the login, NEST.PH is the platform */
+        .login-dorm-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+        .login-dorm-brand img { width: 52px; height: 52px; flex-shrink: 0; object-fit: contain; border-radius: 12px; background: #fff; padding: 4px; box-shadow: 0 1px 3px rgba(41,36,32,0.12); }
+        .login-dorm-brand span { min-width: 0; font-size: 20px; font-weight: 700; color: #292420; line-height: 1.2; overflow-wrap: anywhere; text-wrap: balance; }
+        .login-powered-by { display: flex; align-items: center; justify-content: center; gap: 5px; margin: 24px 0 0; font-size: 12px; color: #5f5a57; }
+        .login-powered-by img { height: 14px; width: auto; }
+        .login-powered-by strong { color: #197335; letter-spacing: 0.02em; }
+        @media (max-width: 640px) { .login-dorm-brand img { width: 44px; height: 44px; } .login-dorm-brand span { font-size: 18px; } }
+        /* ===== Fit the whole login screen in one window (no scrolling) =====
+           The page used to assume the top bar is 70px tall; when it is taller
+           (browser scaling, wrapped nav) the page overflowed a little. Now the
+           login area simply fills whatever height is left under the bar, and
+           spacing shrinks on shorter screens so everything still fits. */
+        body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+        .page-wrap { flex: 1; display: flex; flex-direction: column; }
+        .login-grid { flex: 1; min-height: 0; padding-top: clamp(10px, 2.2vh, 20px); padding-bottom: clamp(14px, 3.5vh, 44px); }
+        .login-right { padding-top: clamp(22px, 4.5vh, 52px); padding-bottom: clamp(20px, 4vh, 52px); }
+        @media (max-height: 820px) {
+            .login-dorm-brand { margin-bottom: 12px; }
+            .login-dorm-brand img { width: 44px; height: 44px; }
+            .login-right h2 { margin-top: 8px; margin-bottom: 14px; }
+            .form-group { margin-bottom: 14px; }
+            .form-group label { margin-bottom: 4px; }
+            .btn-login { padding: 14px 0; }
+            .help-text { margin-top: 12px; }
+            .login-powered-by { margin-top: 12px; }
+            .brand-mark { margin-bottom: 18px; }
+        }
+        @media (max-height: 680px) {
+            .login-dorm-brand img { width: 36px; height: 36px; }
+            .login-dorm-brand span { font-size: 17px; }
+            .login-right h2 { font-size: 20px; }
+            .btn-login { padding: 12px 0; }
+        }
+        /* Tablets in landscape: tagline sits above the form, so drop the
+           decorative logo (NEST.PH still shows under the form) to fit. */
+        @media (max-width: 1024px) and (max-height: 820px) {
+            .brand-mark { display: none; }
+            .back-button { margin-bottom: 10px; }
+            .login-left { padding-bottom: 12px; }
+        }
+        /* The card fills the leftover height, so center the form inside it
+           instead of leaving an empty band at the bottom. */
+        .login-right { display: flex; flex-direction: column; justify-content: center; }
+        .login-right > * { width: 100%; }
+        /* Stacked layout: the tagline takes only its own height, the card the rest. */
+        @media (max-width: 1024px) {
+            .login-grid { grid-template-rows: auto auto; align-content: start; }
+        }
     </style>
 </head>
 <body>
-    <main class="card">
-        <div class="brand"><img src="{{ asset('images/nestphgreen.png') }}" alt=""> NEST.PH</div>
-        <p class="sub">Platform team login. Dormitory staff should use their dormitory's admin login.</p>
-        <form id="loginForm" novalidate>
-            <label for="email">Email</label>
-            <input id="email" type="email" autocomplete="username" required>
-            <label for="password">Password</label>
-            <input id="password" type="password" autocomplete="current-password" required>
-            @include('partials.turnstile', ['id' => 'platformTurnstile'])
-            <button type="submit" id="loginBtn">Log in</button>
-            <p class="msg" id="msg" role="alert"></p>
-        </form>
-        <div class="links">
-            <a href="{{ route('platform') }}">&larr; Back to NEST.PH</a>
-            <a href="{{ route('passwords', ['from' => 'admin']) }}">Forgot password?</a>
+
+    @include('partials.public-nav', ['platformNav' => true])
+
+    <div class="page-wrap">
+    <div class="login-grid">
+        <div class="login-left">
+            <button class="back-button" type="button" aria-label="Go back" onclick="window.location.href='{{ route('platform') }}'">←</button>
+            <div class="login-left-content">
+                <img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="brand-mark" width="72" height="68">
+                <h1>Malayo sa bahay,<span class="accent">pero at home.</span></h1>
+            </div>
         </div>
-    </main>
-    <script>
-        const form = document.getElementById('loginForm');
-        const msg = document.getElementById('msg');
-        const btn = document.getElementById('loginBtn');
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            msg.textContent = '';
-            btn.disabled = true;
-            try {
-                const response = await fetch('/platform/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    },
-                    body: JSON.stringify({
-                        email: document.getElementById('email').value,
-                        password: document.getElementById('password').value,
-                        cf_turnstile_response: turnstileToken('platformTurnstile'),
-                    }),
-                });
-                turnstileReset('platformTurnstile');
-                const data = await response.json().catch(() => ({}));
+        <div class="login-right-wrap">
+            <div class="tab-header">
+                <a href="{{ route('login.platform') }}" class="active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5M16 14.5c3 0 5.5 1.8 5.5 5"/></svg>
+                    NEST.PH TEAM
+                </a>
+            </div>
 
-                if (response.ok) {
-                    window.location.href = '{{ route('platform.dashboard') }}';
-                    return;
-                }
-                if (data.locked) {
-                    msg.textContent = `Too many attempts. Try again in ${Math.ceil(data.retry_after / 60)} minutes.`;
-                } else if (data.attempts) {
-                    msg.textContent = `Incorrect email or password. ${data.attempts} of ${data.max_attempts} attempts used.`;
-                } else {
-                    msg.textContent = data.message || 'Login failed. Please try again.';
-                }
-            } catch (err) {
-                msg.textContent = 'Could not reach the server. Please check your connection.';
-            } finally {
-                btn.disabled = false;
-            }
+            <div class="login-right">
+                <div class="login-dorm-brand">
+                    <img src="{{ asset('images/nestphgreen.png') }}" alt="" width="48" height="48">
+                    <span>NEST.PH</span>
+                </div>
+                <h2>Team Log In</h2>
+
+                <form id="login-form" action="/platform/login" method="POST">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input id="email" type="email" placeholder="you@example.com" />
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input id="password" type="password" placeholder="Enter password" />
+                    </div>
+                    <div class="login-error" id="loginError" role="alert">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.29 3.86l-8.4 14.55A1.5 1.5 0 003.19 21h17.62a1.5 1.5 0 001.3-2.59l-8.4-14.55a1.5 1.5 0 00-2.62 0z"/></svg>
+                        <span class="login-error-text">
+                            <span class="main" id="loginErrorMain"></span>
+                            <span class="sub" id="loginErrorSub"></span>
+                        </span>
+                    </div>
+                    @include('partials.turnstile', ['id' => 'loginTurnstile'])
+                    <button type="submit" class="btn-login">
+                        <span class="spinner"></span>
+                        <span class="btn-text">Login</span>
+                    </button>
+                </form>
+
+                <p class="help-text">Did you forget your password? <a href="{{ route('passwords', ['from' => 'admin']) }}">Forgot Password</a></p>
+                
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="modal-overlay" id="lockoutModal">
+        <div class="lockout-modal" role="alertdialog" aria-modal="true" aria-labelledby="lockoutModalTitle" tabindex="-1">
+            <div class="lockout-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+            </div>
+            <h3 id="lockoutModalTitle">Account Locked</h3>
+            <p>You have exceeded the maximum number of allowed password attempts.</p>
+            <p>For your security, your account has been locked for <strong>15 minutes</strong>.</p>
+            <div class="lockout-box">
+                <div class="label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                    Try again in
+                </div>
+                <div class="lockout-timer" id="lockoutTimer">15:00</div>
+            </div>
+            <p class="lockout-note">If you didn't try to log in, please reset your password or contact the administrator.</p>
+            <a href="{{ route('passwords', ['from' => 'admin']) }}" class="btn-login">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+                Go to Forgot Password
+            </a>
+        </div>
+    </div>
+
+<script>
+document.getElementById('login-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const button = this.querySelector('.btn-login');
+    if (button.disabled) return;
+
+    button.disabled = true;
+    button.classList.add('loading');
+    document.getElementById('loginError').classList.remove('visible');
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch("/platform/login", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ email: email, password: password, cf_turnstile_response: turnstileToken('loginTurnstile') })
         });
-    </script>
+        turnstileReset('loginTurnstile');
+
+        if (response.ok) {
+            window.location.href = "{{ route('platform.dashboard') }}";
+            return;
+        }
+
+        const data = await response.json();
+
+        if (response.status === 429) {
+            showLockoutModal(data.retry_after || 900);
+        } else {
+            showInlineError(data);
+        }
+
+        button.disabled = false;
+        button.classList.remove('loading');
+    } catch (error) {
+        console.error("Error:", error);
+        button.disabled = false;
+        button.classList.remove('loading');
+    }
+});
+
+function showInlineError(data) {
+    const mainText = data.attempts
+        ? `Incorrect password. ${data.attempts} of ${data.max_attempts} attempts used.`
+        : (data.message || 'Invalid credentials.');
+    const subText = data.attempts
+        ? `For your security, your account will be locked after ${data.max_attempts} failed attempts.`
+        : '';
+
+    document.getElementById('loginErrorMain').textContent = mainText;
+    document.getElementById('loginErrorSub').textContent = subText;
+    document.getElementById('loginError').classList.add('visible');
+}
+
+let lockoutInterval = null;
+const LOCKOUT_KEY = 'nest_lockout_until_platform';
+
+// The countdown uses a fixed end time (saved in localStorage) instead of
+// counting down one tick at a time, so it stays correct while the tab is in
+// the background and after the page is closed and reopened.
+function showLockoutModal(seconds) {
+    const until = Date.now() + seconds * 1000;
+    try { localStorage.setItem(LOCKOUT_KEY, String(until)); } catch (e) {}
+    startLockoutCountdown(until);
+}
+
+function startLockoutCountdown(until) {
+    document.getElementById('lockoutModal').classList.add('visible');
+    document.querySelector('.lockout-modal').focus();
+
+    clearInterval(lockoutInterval);
+    const tick = function () {
+        const seconds = Math.ceil((until - Date.now()) / 1000);
+        if (seconds <= 0) {
+            clearInterval(lockoutInterval);
+            try { localStorage.removeItem(LOCKOUT_KEY); } catch (e) {}
+            document.getElementById('lockoutModal').classList.remove('visible');
+            return;
+        }
+        updateLockoutTimer(seconds);
+    };
+    tick();
+    lockoutInterval = setInterval(tick, 1000);
+}
+
+function updateLockoutTimer(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    document.getElementById('lockoutTimer').textContent = minutes + ':' + String(secs).padStart(2, '0');
+}
+
+// Resume an unfinished lockout when the page is reopened.
+(function () {
+    let until = 0;
+    try { until = Number(localStorage.getItem(LOCKOUT_KEY)) || 0; } catch (e) {}
+    if (until > Date.now()) startLockoutCountdown(until);
+})();
+
+window.addEventListener('scroll', function () {
+    const nav = document.querySelector('.topnav');
+    if (window.scrollY > 10) {
+        nav.classList.add('scrolled');
+    } else {
+        nav.classList.remove('scrolled');
+    }
+});
+</script>
+
 </body>
 </html>

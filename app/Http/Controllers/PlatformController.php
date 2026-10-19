@@ -20,6 +20,8 @@ class PlatformController extends Controller
             'dormName' => $profile->dorm_name ?: 'Pureza Station Dormitory',
             'dormAddress' => $profile->address,
             'dormLogoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
+            'dormPhotoUrl' => $profile->heroPhotoUrls()[0] ?? null,
+            'dormDescription' => $profile->description,
         ]);
     }
 

@@ -14,8 +14,8 @@ class PlatformLandingTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Choose a dormitory')
-            ->assertSee('Request NEST.PH for your dormitory')
+            ->assertSee('Choose a Dormitory')
+            ->assertSee('Request NEST.PH for Your Dormitory')
             ->assertSee(route('home'));
     }
 

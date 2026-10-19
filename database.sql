@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 16, 2026 at 08:36 AM
+-- Generation Time: Oct 19, 2026 at 07:48 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -128,7 +128,11 @@ INSERT INTO `admin_privileges` (`id`, `user_id`, `granted_by`, `privilege_name`,
 (252, 3677, 3, 'manage_billing', '2026-04-23 16:00:00'),
 (253, 3677, 3, 'view_reports', '2026-04-23 16:00:00'),
 (254, 3678, 3, 'manage_tenants', '2026-05-02 16:00:00'),
-(255, 3678, 3, 'manage_rooms', '2026-05-02 16:00:00');
+(255, 3678, 3, 'manage_rooms', '2026-05-02 16:00:00'),
+(256, 3871, NULL, 'manage_tenants', '2026-10-19 05:19:57'),
+(257, 3871, NULL, 'manage_rooms', '2026-10-19 05:19:57'),
+(258, 3871, NULL, 'manage_billing', '2026-10-19 05:19:57'),
+(259, 3871, NULL, 'view_reports', '2026-10-19 05:19:57');
 
 -- --------------------------------------------------------
 
@@ -2649,7 +2653,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (93, '2026_10_05_000004_add_emergency_contact_id_document', 65),
 (94, '2026_10_06_000001_add_mid_month_move_out_to_dormitory_profile', 66),
 (95, '2026_10_16_000001_add_area_sqm_to_rooms_table', 67),
-(96, '2026_10_16_000002_create_maintenance_ticket_assignees_table', 68);
+(96, '2026_10_16_000002_create_maintenance_ticket_assignees_table', 68),
+(97, '2026_10_19_000001_create_partner_requests_table', 69),
+(98, '2026_10_19_000002_add_platform_admin_role_and_request_notes', 70);
 
 -- --------------------------------------------------------
 
@@ -2694,6 +2700,28 @@ INSERT INTO `monthly_expenses` (`id`, `month`, `electricity`, `water`, `internet
 (16, '2026-07-01', 102456.00, 13145.00, 6998.00, 57000.00, 0.00, NULL, 3677, '2026-07-31 15:59:59', '2026-07-31 15:59:59'),
 (17, '2026-08-01', 100269.00, 16906.00, 6998.00, 57000.00, 18500.00, 'Aircon cleaning and freon recharge (all AC rooms)', 3677, '2026-08-31 15:59:59', '2026-08-31 15:59:59'),
 (18, '2026-09-01', 101015.00, 16767.00, 6998.00, 57000.00, 0.00, NULL, 3677, '2026-09-30 15:59:59', '2026-09-30 15:59:59');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `partner_requests`
+--
+
+CREATE TABLE `partner_requests` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `owner_name` varchar(255) NOT NULL,
+  `dorm_name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `contact_number` varchar(30) NOT NULL,
+  `city` varchar(255) DEFAULT NULL,
+  `bed_count` int(10) UNSIGNED DEFAULT NULL,
+  `message` text DEFAULT NULL,
+  `dpa_consent` tinyint(1) NOT NULL DEFAULT 0,
+  `status` varchar(255) NOT NULL DEFAULT 'new',
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -4199,6 +4227,7 @@ CREATE TABLE `roles` (
 
 INSERT INTO `roles` (`id`, `role_name`) VALUES
 (2, 'admin'),
+(3, 'platform_admin'),
 (1, 'tenant');
 
 -- --------------------------------------------------------
@@ -4331,14 +4360,19 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('3rmQ0hgVhqNYL6C9a02605f2CyCNvwIMLMS16NDQ', 3680, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoid3luT0NzY2s5SnNROXprbGg0VnJUaTNkVVFMVGJhMGhBREdRaEJFTiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9teS9ub3RpZmljYXRpb25zIjtzOjU6InJvdXRlIjtzOjIwOiJ0ZW5hbnQubm90aWZpY2F0aW9ucyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM2ODA7fQ==', 1792131589),
-('7Kb56KxtBQb2PEVzRIyJ34LsGBy9vvHlbCwTekHt', 3680, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiYklMU1BvdTJVNUxpTVlqdVpla0lYeURYbWdKeXV6aGtNZGtFVjBvMiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9teS9ub3RpZmljYXRpb25zIjtzOjU6InJvdXRlIjtzOjIwOiJ0ZW5hbnQubm90aWZpY2F0aW9ucyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM2ODA7fQ==', 1792131657),
-('aTvZoIY8DOBGYLdE7w9sbqSePXQ32pHX4OcAZwDK', 3676, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMUxwTlQ1alJ2VWpZQk1yc3dsSjQ0SmlIYUZNbjNWY2hLSVFrMWVZQyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy90aWNrZXRzLzQiO3M6NToicm91dGUiO047fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM2NzY7fQ==', 1792131575),
-('dbJ3Cqb2v07XbirOke6IQzKYRf7XfsFpgefYtboH', 3676, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiWnpUMlBtQUtGQ3pkdFpQN3dTSlJyTm1FeEVtYnhSVUJaRVdrQUVqWSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy90aWNrZXRzLzQiO3M6NToicm91dGUiO047fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM2NzY7fQ==', 1792131644),
-('lFOlCeq7oRsuaAYR8VxuGPGItrlQbS4MZy4DSCEZ', 3676, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiVUNxMU9hbklGM2hRRGNFenFJUjZlZFdwRVIxaXMyM3I4T084M2JxTyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy90aWNrZXRzLzQiO3M6NToicm91dGUiO047fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM2NzY7fQ==', 1792131699),
-('NJvCcDIKIDNaO0TtjRstao2dZdnK6Xq59eeWtY2m', 3676, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiSE9rYkZGbVR3dGhWN1psMHA3QlFEd0VNVVdPVFVjZkxPdXFJNnRoTSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9hZG1pbi9ub3RpZmljYXRpb25zIjtzOjU6InJvdXRlIjtzOjE5OiJhZG1pbi5ub3RpZmljYXRpb25zIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MzY3Njt9', 1792132435),
-('TWdcz8oHiKUUa8TozbfullDU0hUrv8u8Ni1ZSgxI', 3680, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiT3VZTUYya2lkOThXbVl4VlZCbVZ3akJ4V3VpS0dvQzRjQjBYTDdLYSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9teS9ub3RpZmljYXRpb25zIjtzOjU6InJvdXRlIjtzOjIwOiJ0ZW5hbnQubm90aWZpY2F0aW9ucyI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjM2ODA7fQ==', 1792131712),
-('y53FrUBpj2b8bZY0GY81jjxLeeTCKQwDiyPQpuQZ', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiQ0ZIeGl2RG5GQXhyTDdBb0pLUlNHZ0ZMcmROMUwzUm1hV2c3ZmxyViI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6NDE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9wdWJsaWMtYXBpL3ZyLXRvdXJzIjtzOjU6InJvdXRlIjtOO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1792132449);
+('0cl3XLjIr6NSXYGl5F0yhejh4g8sA49deUwoF2Uk', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoid2RITDZzT0R3OThmOUxZTkxJOWpwdTFRbVFKRjZRYnFwUGI1bEZkNiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMyI7czo1OiJyb3V0ZSI7czo4OiJwbGF0Zm9ybSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1792388563),
+('1EfQfHJyxutaREA6fieEsw4xuJfitAQP4zcTA8YY', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWmp1WnVaUGN3VnJGYlk1V0hlNkRYM1ZHUllwN2pibjJvc1M3ZkxVeCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMyI7czo1OiJyb3V0ZSI7czo4OiJwbGF0Zm9ybSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1792388568),
+('7w6tWpoXnLY9ab2UrmnAWW3GWiwqm0Em0L6qmHml', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiZkl2V2JNaUZQWW02aE5DdzU2SWdPcHBwcW1yeWRSR2FPQVZKTUZZQiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9wdXJlemEtc3RhdGlvbiI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1792388132),
+('bSBb4WRE65oedO972APGXrVGq0z0EHQckhamIwjr', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiNVJnWXpDSWVxcmEyQ29LWHBPMTJiWWFjUDE1d3RjQUU2MzBuYkRMdCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMyI7czo1OiJyb3V0ZSI7czo4OiJwbGF0Zm9ybSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1792388089),
+('DhDRHre6wCJJpevyUETqrxIbagJUTp5Z1jK3Vnyn', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiOE5zQ284SmhlS2U5cWlqeFlvdkZGMXJNcXNuS25pcTkzMGxScWVHdiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9wdXJlemEtc3RhdGlvbiI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1792388107),
+('jlkSRQ8Odae1BFUxbTUEtwiiavGaxLT7gOQ8n2Dk', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRWxxVUNaUXdRQnNqZmNuQWwyRlFUdmFlY0NaOTE5VFhOOGV4aVQ2byI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMyI7czo1OiJyb3V0ZSI7czo4OiJwbGF0Zm9ybSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1792388303),
+('M7bNbKfXmjFw8utaqEGBMUf1prxba7CoCqXFXlYq', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiczhnNUN3ZHJBRVNEZnZOd3ducm94b0xycFBNOXFGRHVmVDdNQlZZaSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMyI7czo1OiJyb3V0ZSI7czo4OiJwbGF0Zm9ybSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1792388098),
+('mVRAm3x8fiDAwYgiBisAGAJsCf5C6kxRI1NunAos', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiS2k3SjlodGJrcVBwVlBpQnFXdVQzS2F6RXRTcFRZQ1BnNGdxQklSeCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9sb2dpbi9wbGF0Zm9ybSI7czo1OiJyb3V0ZSI7czoxNDoibG9naW4ucGxhdGZvcm0iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1792388089),
+('Sz4boJHghZhK8rMCtAmWpL2IswBbedvQAhQ1Tunl', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRks1dzhNZ28wdFJFcWI1emdCa3dhZXM3NFhIczNIcFpzQWZUVkRVOSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMyI7czo1OiJyb3V0ZSI7czo4OiJwbGF0Zm9ybSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1792388111),
+('VO6fMCIeFUxjXNQI6DusPecA57oFIyvXVfGl2Prc', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRnBJTVlQcndzRWhxSmh5dVh1T2E1OHAzclVxRG9RTUtNbUVEY29kTyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMyI7czo1OiJyb3V0ZSI7czo4OiJwbGF0Zm9ybSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1792388586),
+('w5zoZPlcYRtRx92dIOZ7rMUrJSYphcUIC5qoie8C', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWDVQUE1rb2pPQ25qVGVIbFVjUndCT2pObFJacWVERHVFeUFqRWpGcSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9wdXJlemEtc3RhdGlvbiI7czo1OiJyb3V0ZSI7czo0OiJob21lIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1792388090),
+('ZIgVXLjWa6rcOHZIy5Ryh5UkftH3pi3fwSrAMMie', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTDVodkxNOWdYMWtWMnFpdnI2WGh4RHRobW1TQlVqOHJrWjA0aW1sMCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9sb2dpbi9wbGF0Zm9ybSI7czo1OiJyb3V0ZSI7czoxNDoibG9naW4ucGxhdGZvcm0iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX19', 1792388103),
+('Zjq1EOTLGpTIDeqxpbZ22Hf02yugSJwAwZ8WCQvL', NULL, '127.0.0.1', 'curl/8.14.1', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiWHREckFCMzd0bFdCRHBDdEZSTnNOdHU0YWo5b1hkT05nUEIyNjdkUSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODEyMy9yb29tcyI7czo1OiJyb3V0ZSI7czoxMjoicHVibGljLnJvb21zIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1792388090);
 
 -- --------------------------------------------------------
 
@@ -4771,7 +4805,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role_id`, `is_active`, `remember_token`, `created_at`, `updated_at`) VALUES
-(3, 'Teresita Mendoza', 'owner@nestph.test', NULL, '$2y$12$jVDvIWEC6pMG5EpIOKibne6kNIen8g/WgVZ6SvdvFoRqzi8uQ8TkS', 2, 1, NULL, '2026-07-24 22:12:00', '2026-10-06 00:00:00'),
+(3, 'Test Owner', 'owner@nestph.test', NULL, '$2y$12$u/qJZUNlUUrJOOKbCJbICOa4ym.TOJF9JH4.0QDEkG4cyFC4al2EO', 2, 1, NULL, '2026-07-24 22:12:00', '2026-10-19 05:19:57'),
 (3676, 'Kristine Joy Bautista', 'kristine.bautista@nestph.test', NULL, '$2y$12$jVDvIWEC6pMG5EpIOKibne6kNIen8g/WgVZ6SvdvFoRqzi8uQ8TkS', 2, 1, NULL, '2026-04-14 16:00:00', '2026-04-14 16:00:00'),
 (3677, 'Mark Anthony Villanueva', 'mark.villanueva@nestph.test', NULL, '$2y$12$jVDvIWEC6pMG5EpIOKibne6kNIen8g/WgVZ6SvdvFoRqzi8uQ8TkS', 2, 1, NULL, '2026-04-23 16:00:00', '2026-04-23 16:00:00'),
 (3678, 'Jerome Castillo', 'jerome.castillo@nestph.test', NULL, '$2y$12$jVDvIWEC6pMG5EpIOKibne6kNIen8g/WgVZ6SvdvFoRqzi8uQ8TkS', 2, 1, NULL, '2026-05-02 16:00:00', '2026-05-02 16:00:00'),
@@ -4965,7 +4999,11 @@ INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `ro
 (3866, 'Ysabel Valdez', 'ysabel.valdez@gmail.com', NULL, '$2y$12$DbmjJvq0ip1ITddSlnsbOOA63PA02NN3fNRHdLEISzgnKHhf1LUpi', 1, 0, NULL, '2025-10-05 01:30:00', '2025-10-05 01:30:00'),
 (3867, 'Gian Fernandez', 'gian.fernandez@gmail.com', NULL, '$2y$12$DbmjJvq0ip1ITddSlnsbOOA63PA02NN3fNRHdLEISzgnKHhf1LUpi', 1, 0, NULL, '2025-09-20 02:30:00', '2025-09-20 02:30:00'),
 (3868, 'Nathan Hernandez', 'nathan.hernandez@gmail.com', NULL, '$2y$12$DbmjJvq0ip1ITddSlnsbOOA63PA02NN3fNRHdLEISzgnKHhf1LUpi', 1, 0, NULL, '2025-09-04 03:30:00', '2025-09-04 03:30:00'),
-(3869, 'Danica Javier', 'danica.javier@gmail.com', NULL, '$2y$12$DbmjJvq0ip1ITddSlnsbOOA63PA02NN3fNRHdLEISzgnKHhf1LUpi', 1, 0, NULL, '2025-09-02 04:30:00', '2025-09-02 04:30:00');
+(3869, 'Danica Javier', 'danica.javier@gmail.com', NULL, '$2y$12$DbmjJvq0ip1ITddSlnsbOOA63PA02NN3fNRHdLEISzgnKHhf1LUpi', 1, 0, NULL, '2025-09-02 04:30:00', '2025-09-02 04:30:00'),
+(3870, 'Test Tenant', 'tenant@nestph.test', NULL, '$2y$12$k8VQ2OTL4yS0Fr02amvAruNbygA7MSivncZDPR2pus0W3RN5yU9sm', 1, 1, NULL, '2026-10-19 05:19:56', '2026-10-19 05:19:56'),
+(3871, 'Test Admin', 'admin@nestph.test', NULL, '$2y$12$ZBFwXHuCHLvQs.271bMisOp8FX5Z/uuw2WJQZo343bIE6rjyatEde', 2, 1, NULL, '2026-10-19 05:19:57', '2026-10-19 05:19:57'),
+(3872, 'NEST.PH Team', 'platform@nestph.test', NULL, '$2y$12$fj6STAWmDpo6brfMkD5c9uP5wViS4t7bpchQWyLHASlKzo5odgRO6', 3, 1, NULL, '2026-10-19 05:19:57', '2026-10-19 05:19:57'),
+(3873, 'NEST.PH Team', 'thenestphils@gmail.com', NULL, '$2y$12$A4jqgs3BEAHy04DwdKLzd.cj0YezHWnB6ou8.kOBrVgxk6UmPjI86', 3, 1, NULL, '2026-10-19 05:45:36', '2026-10-19 05:45:36');
 
 -- --------------------------------------------------------
 
@@ -5243,6 +5281,12 @@ ALTER TABLE `monthly_expenses`
   ADD KEY `monthly_expenses_recorded_by_foreign` (`recorded_by`);
 
 --
+-- Indexes for table `partner_requests`
+--
+ALTER TABLE `partner_requests`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `password_reset_codes`
 --
 ALTER TABLE `password_reset_codes`
@@ -5411,7 +5455,7 @@ ALTER TABLE `admin_login_sessions`
 -- AUTO_INCREMENT for table `admin_privileges`
 --
 ALTER TABLE `admin_privileges`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=256;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=260;
 
 --
 -- AUTO_INCREMENT for table `announcements`
@@ -5531,13 +5575,19 @@ ALTER TABLE `maintenance_ticket_assignees`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
 
 --
 -- AUTO_INCREMENT for table `monthly_expenses`
 --
 ALTER TABLE `monthly_expenses`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+
+--
+-- AUTO_INCREMENT for table `partner_requests`
+--
+ALTER TABLE `partner_requests`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -5579,7 +5629,7 @@ ALTER TABLE `reviews`
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `rooms`
@@ -5621,7 +5671,7 @@ ALTER TABLE `ticket_replies`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3870;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3874;
 
 --
 -- AUTO_INCREMENT for table `vr_hotspots`
