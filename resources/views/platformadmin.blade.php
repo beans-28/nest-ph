@@ -52,6 +52,15 @@
   .update label{ display:block; font-size:12px; font-weight:600; color:var(--text-mid); margin:10px 0 6px; }
   .update select, .update textarea{ width:100%; border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:13px; font-family:var(--font-body); background:#fff; }
   .update textarea{ min-height:84px; resize:vertical; }
+  .update .hint{ font-size:12px; color:var(--text-mid); margin:6px 0 0; }
+  .update .msg.sent{ margin:6px 0 8px; font-size:12.5px; }
+  .notes-head{ font-size:12px; font-weight:600; color:var(--text-mid); margin:16px 0 6px; }
+  .note-list{ list-style:none; margin:0; padding:0; max-height:240px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; background:#fff; }
+  .note-list li{ padding:10px 12px; }
+  .note-list li + li{ border-top:1px solid var(--border); }
+  .note-meta{ font-size:11.5px; color:var(--text-mid); margin-bottom:3px; }
+  .note-meta strong{ color:var(--text-dark, #292420); font-weight:600; }
+  .note-list p{ margin:0; font-size:13px; line-height:1.5; white-space:pre-line; }
   .btn{ font-size:12px; font-weight:600; padding:10px 18px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); margin-top:12px; }
   .btn.primary{ background:var(--green-btn); border-color:var(--green-btn); color:#fff; }
   .btn.primary:hover{ background:var(--green-btn-hover); }
@@ -151,8 +160,31 @@
                     <option value="{{ $key }}" @selected($req->status === $key)>{{ $label }}</option>
                   @endforeach
                 </select>
-                <label for="notes-{{ $req->id }}">Team notes</label>
-                <textarea id="notes-{{ $req->id }}" name="notes" maxlength="2000" placeholder="e.g. Called on Oct 20, demo set for Oct 25">{{ $req->notes }}</textarea>
+                <label for="notes-{{ $req->id }}">Add a team note</label>
+                <textarea id="notes-{{ $req->id }}" name="notes" maxlength="2000" placeholder="e.g. Called on Oct 20, demo set for Oct 25" aria-describedby="notes-hint-{{ $req->id }}"></textarea>
+                <p class="hint" id="notes-hint-{{ $req->id }}">Only the NEST.PH team sees these.</p>
+
+                <h4 class="notes-head">Team notes ({{ $req->teamNotes->count() }})</h4>
+                @if ($req->teamNotes->isEmpty())
+                  <p class="hint">No notes yet.</p>
+                @else
+                  <ol class="note-list">
+                    @foreach ($req->teamNotes as $n)
+                      <li>
+                        <div class="note-meta"><strong>{{ $n->author?->name ?? 'NEST.PH team' }}</strong> · <time datetime="{{ $n->created_at->toIso8601String() }}">{{ $n->created_at->format('M j, Y g:i A') }}</time></div>
+                        <p>{{ $n->body }}</p>
+                      </li>
+                    @endforeach
+                  </ol>
+                @endif
+
+                <label for="reply-{{ $req->id }}">Email the owner</label>
+                @if ($req->replied_at)
+                  <p class="hint">Last emailed {{ $req->replied_at->format('M j, Y g:i A') }}:</p>
+                  <p class="msg sent">{{ $req->reply_message }}</p>
+                @endif
+                <textarea id="reply-{{ $req->id }}" name="reply_message" maxlength="2000" placeholder="Sent to {{ $req->email }} when you save" aria-describedby="reply-hint-{{ $req->id }}"></textarea>
+                <p class="hint" id="reply-hint-{{ $req->id }}">Leave blank to save without emailing.</p>
                 <button type="submit" class="btn primary">Save</button>
               </form>
             </div>

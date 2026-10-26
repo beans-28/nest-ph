@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 19, 2026 at 09:45 AM
+-- Generation Time: Oct 26, 2026 at 03:33 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -2660,7 +2660,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (97, '2026_10_19_000001_create_partner_requests_table', 69),
 (98, '2026_10_19_000002_add_platform_admin_role_and_request_notes', 70),
 (99, '2026_10_19_000001_add_advance_and_deposit_months_to_dormitory_profile', 71),
-(100, '2026_10_20_000001_add_pay_ahead_to_billing_statements', 72);
+(100, '2026_10_20_000001_add_pay_ahead_to_billing_statements', 72),
+(101, '2026_10_26_000001_add_reply_to_partner_requests_table', 73),
+(102, '2026_10_26_000002_create_partner_request_notes_table', 73);
 
 -- --------------------------------------------------------
 
@@ -2724,6 +2726,8 @@ CREATE TABLE `partner_requests` (
   `dpa_consent` tinyint(1) NOT NULL DEFAULT 0,
   `status` varchar(255) NOT NULL DEFAULT 'new',
   `notes` text DEFAULT NULL,
+  `reply_message` text DEFAULT NULL,
+  `replied_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -2732,13 +2736,38 @@ CREATE TABLE `partner_requests` (
 -- Dumping data for table `partner_requests`
 --
 
-INSERT INTO `partner_requests` (`id`, `owner_name`, `dorm_name`, `email`, `contact_number`, `city`, `bed_count`, `message`, `dpa_consent`, `status`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 'Maricel Santos', 'Casa Lorenzo Ladies Dormitory', 'maricel.santos@example.com', '09171234501', 'Sampaloc, Manila', 48, 'We currently track rent in a notebook and Excel. Interested in the online billing and the tenant portal. Can we see a demo on a weekend?', 1, 'new', NULL, '2026-10-18 04:47:00', '2026-10-18 04:47:00'),
-(2, 'Ramon dela Cruz', 'Kalye Uno Student Residences', 'ramon.delacruz@example.com', '09281234502', 'Sta. Mesa, Manila', 72, 'Near PUP like Pureza Station. Mostly interested in the VR tours since many of our applicants are from the provinces.', 1, 'new', NULL, '2026-10-17 04:33:00', '2026-10-17 04:33:00'),
-(3, 'Josephine Villanueva', 'JV Boarding House', 'jv.boardinghouse@example.com', '09391234503', 'Diliman, Quezon City', 24, 'Small boarding house, 6 rooms. Is this okay for a small place?', 1, 'contacted', 'Called on the 14th. Owner manages alone; mainly needs billing reminders. Sending pricing by email.', '2026-10-13 01:33:00', '2026-10-13 01:33:00'),
-(4, 'Antonio Reyes', 'Espana Heights Dormitory', 'areyes.espanaheights@example.com', '09451234504', 'Sampaloc, Manila', 120, 'We have 3 floors and a caretaker per floor. Need separate admin accounts with different access.', 1, 'demo_scheduled', 'Demo set for Saturday 10 AM via Google Meet. Show Admin Privileges and the ticket assignment feature.', '2026-10-10 01:35:00', '2026-10-10 01:35:00'),
-(5, 'Grace Mendoza', 'Taft Commons Dorm', 'grace.mendoza@example.com', '09561234505', 'Malate, Manila', 60, 'Looking for a system before the next semester intake.', 1, 'onboarded', 'Rooms, rates and house rules set up. Admin accounts created. Waiting for their room photos before going live.', '2026-09-28 09:36:00', '2026-09-28 09:36:00'),
-(6, 'Edgar Bautista', 'Bautista Bedspace', 'edgar.bautista@example.com', '09671234506', 'Pasig City', 8, 'Just checking the price.', 1, 'declined', 'Only 8 beds and the owner prefers to keep using GCash chat. Not a fit for now; follow up next year.', '2026-10-04 07:00:00', '2026-10-04 07:00:00');
+INSERT INTO `partner_requests` (`id`, `owner_name`, `dorm_name`, `email`, `contact_number`, `city`, `bed_count`, `message`, `dpa_consent`, `status`, `notes`, `reply_message`, `replied_at`, `created_at`, `updated_at`) VALUES
+(1, 'Maricel Santos', 'Casa Lorenzo Ladies Dormitory', 'maricel.santos@example.com', '09171234501', 'Sampaloc, Manila', 48, 'We currently track rent in a notebook and Excel. Interested in the online billing and the tenant portal. Can we see a demo on a weekend?', 1, 'new', NULL, NULL, NULL, '2026-10-18 04:47:00', '2026-10-18 04:47:00'),
+(2, 'Ramon dela Cruz', 'Kalye Uno Student Residences', 'ramon.delacruz@example.com', '09281234502', 'Sta. Mesa, Manila', 72, 'Near PUP like Pureza Station. Mostly interested in the VR tours since many of our applicants are from the provinces.', 1, 'new', NULL, NULL, NULL, '2026-10-17 04:33:00', '2026-10-17 04:33:00'),
+(3, 'Josephine Villanueva', 'JV Boarding House', 'jv.boardinghouse@example.com', '09391234503', 'Diliman, Quezon City', 24, 'Small boarding house, 6 rooms. Is this okay for a small place?', 1, 'contacted', 'Called on the 14th. Owner manages alone; mainly needs billing reminders. Sending pricing by email.', NULL, NULL, '2026-10-13 01:33:00', '2026-10-13 01:33:00'),
+(4, 'Antonio Reyes', 'Espana Heights Dormitory', 'areyes.espanaheights@example.com', '09451234504', 'Sampaloc, Manila', 120, 'We have 3 floors and a caretaker per floor. Need separate admin accounts with different access.', 1, 'demo_scheduled', 'Demo set for Saturday 10 AM via Google Meet. Show Admin Privileges and the ticket assignment feature.', NULL, NULL, '2026-10-10 01:35:00', '2026-10-10 01:35:00'),
+(5, 'Grace Mendoza', 'Taft Commons Dorm', 'grace.mendoza@example.com', '09561234505', 'Malate, Manila', 60, 'Looking for a system before the next semester intake.', 1, 'onboarded', 'Rooms, rates and house rules set up. Admin accounts created. Waiting for their room photos before going live.', NULL, NULL, '2026-09-28 09:36:00', '2026-09-28 09:36:00'),
+(6, 'Edgar Bautista', 'Bautista Bedspace', 'edgar.bautista@example.com', '09671234506', 'Pasig City', 8, 'Just checking the price.', 1, 'declined', 'Only 8 beds and the owner prefers to keep using GCash chat. Not a fit for now; follow up next year.', NULL, NULL, '2026-10-04 07:00:00', '2026-10-04 07:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `partner_request_notes`
+--
+
+CREATE TABLE `partner_request_notes` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `partner_request_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `body` text NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `partner_request_notes`
+--
+
+INSERT INTO `partner_request_notes` (`id`, `partner_request_id`, `user_id`, `body`, `created_at`, `updated_at`) VALUES
+(1, 3, NULL, 'Called on the 14th. Owner manages alone; mainly needs billing reminders. Sending pricing by email.', '2026-10-13 01:33:00', '2026-10-13 01:33:00'),
+(2, 4, NULL, 'Demo set for Saturday 10 AM via Google Meet. Show Admin Privileges and the ticket assignment feature.', '2026-10-10 01:35:00', '2026-10-10 01:35:00'),
+(3, 5, NULL, 'Rooms, rates and house rules set up. Admin accounts created. Waiting for their room photos before going live.', '2026-09-28 09:36:00', '2026-09-28 09:36:00'),
+(4, 6, NULL, 'Only 8 beds and the owner prefers to keep using GCash chat. Not a fit for now; follow up next year.', '2026-10-04 07:00:00', '2026-10-04 07:00:00');
 
 -- --------------------------------------------------------
 
@@ -5306,6 +5335,14 @@ ALTER TABLE `partner_requests`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `partner_request_notes`
+--
+ALTER TABLE `partner_request_notes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `partner_request_notes_partner_request_id_foreign` (`partner_request_id`),
+  ADD KEY `partner_request_notes_user_id_foreign` (`user_id`);
+
+--
 -- Indexes for table `password_reset_codes`
 --
 ALTER TABLE `password_reset_codes`
@@ -5594,7 +5631,7 @@ ALTER TABLE `maintenance_ticket_assignees`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
 
 --
 -- AUTO_INCREMENT for table `monthly_expenses`
@@ -5607,6 +5644,12 @@ ALTER TABLE `monthly_expenses`
 --
 ALTER TABLE `partner_requests`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `partner_request_notes`
+--
+ALTER TABLE `partner_request_notes`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -5829,6 +5872,13 @@ ALTER TABLE `maintenance_ticket_assignees`
 --
 ALTER TABLE `monthly_expenses`
   ADD CONSTRAINT `monthly_expenses_recorded_by_foreign` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `partner_request_notes`
+--
+ALTER TABLE `partner_request_notes`
+  ADD CONSTRAINT `partner_request_notes_partner_request_id_foreign` FOREIGN KEY (`partner_request_id`) REFERENCES `partner_requests` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `partner_request_notes_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `payments`

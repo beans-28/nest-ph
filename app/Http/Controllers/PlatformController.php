@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PartnerRequestReplyMail;
 use App\Models\DormitoryProfile;
 use App\Models\PartnerRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -54,7 +57,7 @@ class PlatformController extends Controller
         $counts = PartnerRequest::selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
 
         return view('platformadmin', [
-            'requests' => PartnerRequest::when($status, fn ($q) => $q->where('status', $status))->latest()->paginate(15)->withQueryString(),
+            'requests' => PartnerRequest::with('teamNotes.author')->when($status, fn ($q) => $q->where('status', $status))->latest()->paginate(15)->withQueryString(),
             'counts' => $counts,
             'total' => $counts->sum(),
             'activeStatus' => $status,
@@ -67,10 +70,41 @@ class PlatformController extends Controller
         $data = $request->validate([
             'status' => ['required', 'in:' . implode(',', array_keys(PartnerRequest::STATUSES))],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'reply_message' => ['nullable', 'string', 'max:2000'],
         ]);
 
+        $reply = trim((string) ($data['reply_message'] ?? ''));
+        $note = trim((string) ($data['notes'] ?? ''));
+        unset($data['reply_message'], $data['notes']);
         $partnerRequest->update($data);
 
-        return back()->with('status', "Updated {$partnerRequest->dorm_name}.");
+        // Each save with text adds a new note to the history.
+        if ($note !== '') {
+            $partnerRequest->teamNotes()->create(['user_id' => $request->user()?->id, 'body' => $note]);
+        }
+
+        if ($reply === '') {
+            return back()->with('status', "Updated {$partnerRequest->dorm_name}.");
+        }
+
+        // Team notes stay internal; only the reply goes to the owner.
+        $partnerRequest->update([
+            'reply_message' => $reply,
+            'replied_at' => now(),
+            'status' => $partnerRequest->status === 'new' ? 'contacted' : $partnerRequest->status,
+        ]);
+
+        try {
+            Mail::to($partnerRequest->email)->send(new PartnerRequestReplyMail($partnerRequest->fresh()));
+        } catch (\Throwable $e) {
+            Log::warning('Partner request reply email failed to send.', [
+                'partner_request_id' => $partnerRequest->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('status', "Saved, but the email to {$partnerRequest->email} could not be sent. Check the mail settings.");
+        }
+
+        return back()->with('status', "Reply emailed to {$partnerRequest->email}.");
     }
 }

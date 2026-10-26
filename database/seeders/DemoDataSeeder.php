@@ -210,7 +210,7 @@ class DemoDataSeeder extends Seeder
             'payments', 'billing_statements', 'lease_contracts', 'applications', 'inquiries',
             'tenants', 'beds', 'admin_access_logs', 'admin_login_sessions', 'sessions',
             'password_reset_codes', 'password_reset_tokens', 'personal_access_tokens',
-            'deposit_refunds', 'tenant_notifications', 'monthly_expenses', 'partner_requests',
+            'deposit_refunds', 'tenant_notifications', 'monthly_expenses', 'partner_requests', 'partner_request_notes',
         ] as $table) {
             DB::table($table)->truncate();
         }
