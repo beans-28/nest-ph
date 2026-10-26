@@ -131,7 +131,7 @@
   .cell-sub{ font-size:11px; color:var(--text-light); font-style:normal; white-space:nowrap; }
   td.fc{ color:#8a5a12; }
   .fc-table td{ white-space:nowrap; }
-  @media (max-width:560px){ .stats-row.fc-stats{ grid-template-columns:1fr 1fr; gap:10px; } .stats-row.fc-stats .stat-card:last-child{ grid-column:auto; } .fc-stats .stat-card{ padding:14px; } .fc-stats .stat-value{ font-size:18px; } }
+  @media (max-width:560px){ .stats-row.fc-stats{ grid-template-columns:1fr 1fr; gap:10px; } .stats-row.fc-stats .stat-card:last-child{ grid-column:auto; } .stats-row.fc-stats .stat-card:nth-child(odd):last-child{ grid-column:1 / -1; } .fc-stats .stat-card{ padding:14px; } .fc-stats .stat-value{ font-size:18px; } }
   .fc-method{ margin:-6px 0 18px; font-size:12.5px; color:var(--text-mid); }
   .fc-method summary{ cursor:pointer; width:max-content; max-width:100%; color:var(--green-btn); font-weight:600; padding:6px 0; min-height:32px; display:flex; align-items:center; gap:6px; list-style:none; }
   .fc-method summary::-webkit-details-marker{ display:none; }
@@ -468,11 +468,12 @@
     const lockedNext = data.forecast[0];
     let html = `
       <div class="results-head"><h2>Forecast: ${data.range}</h2></div>
-      <div class="generated-note">Generated ${data.generated_at}. These are estimates, not records.</div>
+      <div class="generated-note">Generated ${data.generated_at}</div>
       ${a.expense_months === 0 ? `<div class="missing-note">No expenses recorded in the last 6 months, so expected expenses and net can't be estimated. <button type="button" class="link-btn" id="goExpenses">Record expenses</button></div>` : ''}
       <div class="stats-row money fc-stats">
         <div class="stat-card"><div class="stat-label">Expected Income (3 mo.)</div><div class="stat-value">≈ ${whole(t.income)}</div>${a.income_error_pct === null ? '' : `<div class="stat-sub">Past estimates were ${a.income_error_pct}% off</div>`}</div>
         <div class="stat-card"><div class="stat-label">Expected Expenses (3 mo.)</div><div class="stat-value">${t.expenses === null ? '&mdash;' : '≈ ' + whole(t.expenses)}</div>${t.expenses === null || t.expenses_low === t.expenses_high ? '' : `<div class="stat-sub">Range ${shortPeso(t.expenses_low)}–${shortPeso(t.expenses_high)}</div>`}</div>
+        ${a.expense_months ? `<div class="stat-card"><div class="stat-label">Monthly Utilities</div><div class="stat-value">${a.min_utilities === a.max_utilities ? shortPeso(a.min_utilities) : `${shortPeso(a.min_utilities)}–${shortPeso(a.max_utilities)}`}</div><div class="stat-sub">Lowest to highest bill, last 6 months</div></div>` : ''}
         <div class="stat-card ${netClass}"><div class="stat-label">Expected Net</div><div class="stat-value">${t.net === null ? '&mdash;' : '≈ ' + whole(t.net)}</div></div>
         <div class="stat-card"><div class="stat-label">Leases Ending</div><div class="stat-value">${t.ending_leases}</div><div class="stat-sub">${lockedNext.locked_beds} of ${lockedNext.occupied} beds locked at signed rent in ${shortMonth(lockedNext.label)}</div></div>
       </div>
@@ -481,7 +482,7 @@
         <ul>
           <li>Averages of the last 6 months: ${a.avg_move_ins} move-ins a month, ${whole(a.income_per_bed)} collected per occupied bed${a.expense_months ? `, ${whole(a.avg_expenses)} in expenses` : ''}.</li>
           <li>Leases ending count as move-outs. Renewals would push the numbers up.</li>
-          ${a.expense_months ? `<li>Utilities swing between ${shortPeso(a.min_utilities)} and ${shortPeso(a.max_utilities)} a month, so expenses are a range.${data.forecast.some(r => r.seasonal) ? ' Months marked * also lean on the same month last year.' : ''}</li>` : ''}
+          ${a.expense_months ? `<li>Expected expenses use the lowest and highest utility bills above, so they are a range.${data.forecast.some(r => r.seasonal) ? ' Months marked * also lean on the same month last year.' : ''}</li>` : ''}
           <li>Rent is fixed for a tenant's current term (Tenant Agreement §2.2). New prices only reach new tenants and renewals.</li>
           <li>Rounded to the nearest ₱100. The date filters don't apply here.</li>
         </ul>
@@ -493,8 +494,7 @@
       </div>
       <div class="chart-card">
         <h3>Income vs. expenses</h3>
-        <p class="chart-sub">Faded bars are estimates.</p>
-        <div class="chart-legend"><span style="--swatch:${C.olive}">Income</span><span style="--swatch:${C.red}">Expenses</span><span class="dot" style="--swatch:${C.amber}">Forecast income</span><span class="dot" style="--swatch:${C.purple}">Forecast expenses</span></div>
+        <div class="chart-legend"><span style="--swatch:${C.olive}">Income</span><span style="--swatch:${C.red}">Expenses</span><span style="--swatch:rgba(143,180,143,0.4)">Estimated income</span><span style="--swatch:rgba(192,80,77,0.35)">Estimated expenses</span><span class="dot" style="--swatch:${C.amber}">Forecast income</span><span class="dot" style="--swatch:${C.purple}">Forecast expenses</span></div>
         <div class="chart-box"><canvas id="fcMoneyChart" role="img" aria-label="Bar chart of actual and estimated income and expenses per month"></canvas></div>
       </div>
       <div class="table-scroll"><table class="report-table fc-table">

@@ -25,10 +25,10 @@
     .topnav .logo .logo-name { max-width: 16em; line-height: 1.15; overflow-wrap: anywhere; text-wrap: balance; }
     .topnav .logo .logo-img { flex-shrink: 0; }
     .topnav .logo .logo-img-dorm { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: #fff; padding: 2px; }
-    .topnav .menu a[aria-current="page"] { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
+    .topnav .menu a[aria-current="page"], .topnav .menu a[aria-current="location"] { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
     /* Current page on the pill link: filled white instead of underlined (desktop; the phone menu has no pill shape) */
     @media (min-width: 861px) {
-        .topnav .menu a.pill[aria-current="page"] {
+        .topnav .menu a.pill[aria-current="page"], .topnav .menu a.pill[aria-current="location"] {
             text-decoration: none; background: #fff; border-color: #fff; color: var(--green-darker, #197335);
         }
     }
@@ -154,3 +154,34 @@
     window.matchMedia('(min-width: 861px)').addEventListener('change', function (e) { if (e.matches) setOpen(false); });
 })();
 </script>
+@if(!empty($platformNav))
+<script>
+// The platform page is one long page, so the underline follows the section being read.
+(function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('#publicNavMenu a'));
+    var sections = links.map(function (a) {
+        var hash = a.getAttribute('href');
+        return hash.charAt(0) === '#' ? document.querySelector(hash) : null;
+    });
+    var nav = document.querySelector('.topnav');
+    var ticking = false;
+
+    function update() {
+        ticking = false;
+        var line = nav.offsetHeight + window.innerHeight * 0.3;
+        var active = 0; // HOME until a section reaches the line
+        sections.forEach(function (s, i) { if (s && s.getBoundingClientRect().top <= line) active = i; });
+        // The last section is short, so count reaching the bottom of the page as being on it.
+        if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) active = links.length - 1;
+        links.forEach(function (a, i) {
+            // HOME is the page itself; the others are places on it.
+            if (i === active) a.setAttribute('aria-current', i === 0 ? 'page' : 'location'); else a.removeAttribute('aria-current');
+        });
+    }
+    function schedule() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    update();
+})();
+</script>
+@endif

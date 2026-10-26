@@ -57,7 +57,7 @@
   .tip-strip-text{ font-size:12.5px; color:var(--text-mid); }
   .tip-strip-text strong{ color:var(--text-dark); font-weight:700; }
 
-  .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+  .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; margin-bottom:20px; }
   /* Must come after the base rule above, or the 2-column layout wins on phones */
   @media (max-width: 900px){ .dash-grid{ grid-template-columns:1fr; } }
   .panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
@@ -190,16 +190,16 @@
         </div>
       </div>
 
+      @if($moveInFee)
+        @include('partials.deposit-advance-card', ['fee' => $moveInFee])
+      @endif
+
       <div class="tip-strip">
         <div class="tip-strip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg></div>
         <div class="tip-strip-text"><strong>Stay updated:</strong> make sure your payments are on time to avoid penalties.</div>
       </div>
 
       @include('partials.announcements-feed')
-
-      @if($moveInFee)
-        @include('partials.deposit-advance-card', ['fee' => $moveInFee])
-      @endif
 
       <div class="dash-grid">
         <div class="panel">

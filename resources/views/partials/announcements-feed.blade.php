@@ -19,6 +19,7 @@
   @endif
 
   <div class="announce-feed" id="announceFeed"></div>
+  <button type="button" class="announce-btn secondary announce-more" id="announceMoreBtn" aria-controls="announceFeed" aria-expanded="false" style="display:none;"></button>
   <div class="announce-empty" id="announceEmptyNote" style="display:none;">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l18-5v12L3 13v-2z"/><path d="M11.6 16.3L13 21h-3l-1-4"/></svg>
     <span>No announcements yet.</span>
@@ -49,6 +50,8 @@
   .announce-btn.secondary:hover{ background:#f3f6f3; }
   .announce-btn.danger-text{ background:transparent; color:var(--status-occupied, #d9564f); border:none; padding:4px 8px; font-size:11.5px; }
 
+  .announce-more{ display:block; width:100%; margin-top:12px; }
+  .announce-feed.collapsed .announce-post:nth-child(n+3){ display:none; }
   .announce-empty{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:28px 0; color:var(--text-light, #8a9690); font-size:12.5px; }
   .announce-empty svg{ width:26px; height:26px; opacity:0.5; }
 
@@ -214,12 +217,32 @@
     `;
   }
 
+  // Only the 2 newest posts show until the tenant asks for the rest.
+  const moreBtn = document.getElementById('announceMoreBtn');
+  let feedExpanded = false;
+  function setExpanded(open){
+    feedExpanded = open;
+    feedEl.classList.toggle('collapsed', !open);
+    moreBtn.textContent = open ? 'Show less' : `Show all announcements (${moreBtn.dataset.total})`;
+    moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  moreBtn.addEventListener('click', () => {
+    setExpanded(!feedExpanded);
+    // After hiding a long list the button jumps up; bring it back into view.
+    if (!feedExpanded && moreBtn.getBoundingClientRect().top < 0) {
+      moreBtn.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }
+  });
+
   async function loadFeed(){
     try {
       const data = await apiFetch('/announcements');
       const items = data.announcements || [];
       emptyNote.style.display = items.length ? 'none' : 'flex';
       feedEl.innerHTML = items.map(postCard).join('');
+      moreBtn.style.display = items.length > 2 ? 'block' : 'none';
+      moreBtn.dataset.total = items.length;
+      setExpanded(feedExpanded);
     } catch (e) {
       showToast(e.message, true);
     }
