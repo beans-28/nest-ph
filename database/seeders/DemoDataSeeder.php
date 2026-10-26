@@ -403,6 +403,14 @@ class DemoDataSeeder extends Seeder
         // room_no, floor, [room type name, location], beds, amenities, vr caption
         $g = 'Ground floor';
         $up = '2nd to 5th floor';
+
+        // Demo-only: a shared room rented as a whole (one price for the room,
+        // split by its beds), so listings show a per-room price next to the
+        // per-bed ones. Not one of Pureza Station's own room types.
+        RoomType::updateOrCreate(
+            ['name' => 'Private room with AC, 2 persons', 'location' => $up],
+            ['pricing_mode' => 'per_room', 'monthly_rate' => 9000, 'min_capacity' => 2, 'max_capacity' => 2, 'has_aircon' => true, 'sort_order' => 6]
+        );
         $roomSpecs = [
             ['101', 1, ['Room with AC, 4 persons', $g], 4, $fourAc, 'Bright 4-person room beside the study hall'],
             ['102', 1, ['Room with AC, 4 persons', $g], 4, $fourAc, 'Quiet 4-person room with a computer corner'],
@@ -413,10 +421,12 @@ class DemoDataSeeder extends Seeder
             ['202', 2, ['Room with AC, 4 persons', $up], 4, $fourAc, null],
             ['203', 2, ['Room with AC, 4 persons', $up], 4, $fourAc, null],
             ['204', 2, ['Room with AC, 6 persons', $up], 6, $bigAc, null],
+            ['205', 2, ['Private room with AC, 2 persons', $up], 2, $fourAc, null],
             ['301', 3, ['Room with AC, 6 persons', $up], 6, $bigAc, null],
             ['302', 3, ['Room with AC, 4 persons', $up], 4, $fourAc, null],
             ['303', 3, ['Room with AC, 10–16 persons', $up], 12, $bigAc, null],
             ['304', 3, ['Room with AC, 4 persons', $up], 4, $fourAc, null],
+            ['305', 3, ['Private room with AC, 2 persons', $up], 2, $fourAc, null],
             ['401', 4, ['Room with AC, 6 persons', $up], 6, $bigAc, null],
             ['402', 4, ['Room with AC, 10–16 persons', $up], 16, $bigAc, null],
             ['501', 5, ['Room with AC, 10–16 persons', $up], 14, $bigAc, null],
@@ -447,6 +457,7 @@ class DemoDataSeeder extends Seeder
                 // roughly 3.5-4.5 sq. m per bed (bunk beds in bigger rooms).
                 'area_sqm' => match (true) {
                     $bedCount === 1 => 9.5,
+                    $bedCount === 2 => 14,
                     $bedCount === 4 => 18,
                     $bedCount === 6 => 24,
                     default => round($bedCount * 3.5, 1),

@@ -120,6 +120,14 @@
         .info-title { font-size: 26px; font-weight: 900; line-height: 1.1; letter-spacing: -0.01em; }
         .info-meta { margin-top: 6px; font-size: 14px; color: rgba(243,241,236,0.82); }
         .info-meta strong { color: #fff; font-weight: 700; }
+        .info-price { margin-top: 8px; font-size: 14px; color: rgba(243,241,236,0.82); display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+        .info-price strong { color: #fff; font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+        .info-price-sub { flex-basis: 100%; font-size: 12.5px; }
+        .info-size { margin-top: 4px; font-size: 14px; color: rgba(243,241,236,0.82); }
+        .info-size strong { color: #fff; font-weight: 600; }
+        .pricing-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; line-height: 1.3; }
+        .pricing-tag.per-bed { background: rgba(162,217,164,0.18); color: #a2d9a4; border: 1px solid rgba(162,217,164,0.45); }
+        .pricing-tag.per-room { background: #a2d9a4; color: #1b3a1f; }
         .info-caption {
             margin-top: 10px; font-size: 13px; line-height: 1.5; color: rgba(243,241,236,0.75);
             display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
@@ -293,6 +301,8 @@
             <div class="info-eyebrow" id="infoEyebrow"></div>
             <h1 class="info-title" id="infoTitle">Virtual Tour</h1>
             <p class="info-meta" id="infoMeta"></p>
+            <p class="info-price" id="infoPrice"></p>
+            <p class="info-size" id="infoSize"></p>
             <p class="info-caption" id="infoCaption"></p>
             <p class="info-updated" id="infoUpdated"></p>
             <div class="info-actions">
@@ -379,10 +389,20 @@
         const meta = [];
         if (room.room_type) meta.push(escapeHtml(room.room_type));
         if (room.capacity) meta.push('Good for ' + room.capacity + ' pax');
-        if (room.price_per_bed) meta.push('<strong>' + peso(room.price_per_bed) + '</strong> / bed / month');
-        if (room.pricing_mode === 'per_room' && room.bed_count > 1) meta.push('room ' + peso(room.whole_room_rate) + ' split ' + room.bed_count + ' ways');
-        if (room.area_sqm) meta.push(Number(room.area_sqm) + ' m²');
         $('infoMeta').innerHTML = meta.join(' · ');
+
+        const perRoom = room.pricing_mode === 'per_room';
+        let price = '';
+        if (perRoom && room.whole_room_rate) {
+            price = '<strong>' + peso(room.whole_room_rate) + '</strong> / room / month <span class="pricing-tag per-room">Whole room</span>';
+            if (room.bed_count > 1) price += '<span class="info-price-sub">' + peso(room.price_per_bed) + ' each when shared by ' + room.bed_count + '</span>';
+        } else if (room.price_per_bed) {
+            price = '<strong>' + peso(room.price_per_bed) + '</strong> / bed / month <span class="pricing-tag per-bed">Per bed</span>';
+        }
+        $('infoPrice').innerHTML = price;
+        $('infoPrice').style.display = price ? '' : 'none';
+        $('infoSize').innerHTML = room.area_sqm ? 'Room size: <strong>' + Number(room.area_sqm) + ' m²</strong>' : '';
+        $('infoSize').style.display = room.area_sqm ? '' : 'none';
 
         $('infoCaption').textContent = room.vr_caption || '';
         $('infoCaption').style.display = room.vr_caption ? '' : 'none';
@@ -497,7 +517,7 @@
         roomsScroll.innerHTML = tours.map((room, i) => `
             <button type="button" class="room-thumb" data-room="${room.id}" style="animation-delay:${i * 55}ms" aria-label="View Room ${escapeHtml(room.room_no)} tour">
                 ${room.thumbnail_url ? `<img src="${room.thumbnail_url}" alt="" loading="lazy" decoding="async">` : ''}
-                <span class="label">Room ${escapeHtml(room.room_no)}<small>${[room.capacity ? room.capacity + ' pax' : '', room.price_per_bed ? peso(room.price_per_bed) + '/bed/mo' : ''].filter(Boolean).join(' · ')}</small></span>
+                <span class="label">Room ${escapeHtml(room.room_no)}<small>${[room.capacity ? room.capacity + ' pax' : '', room.pricing_mode === 'per_room' && room.whole_room_rate ? peso(room.whole_room_rate) + '/room/mo' : (room.price_per_bed ? peso(room.price_per_bed) + '/bed/mo' : '')].filter(Boolean).join(' · ')}</small></span>
             </button>
         `).join('');
 

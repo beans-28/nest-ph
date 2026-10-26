@@ -221,7 +221,14 @@
         .listing-type { color: #292420; font-weight: 500; font-size: 14px; margin-bottom: 2px; }
         .listing-price { color: #355e3d; font-weight: 700; font-size: 18px; margin-bottom: 2px; font-variant-numeric: tabular-nums; }
         .listing-unit { font-size: 12px; font-weight: 500; color: #567357; }
-        .listing-pricing-note { font-size: 12px; color: #5c5c5c; margin-bottom: 8px; }
+        .listing-pricing-note { font-size: 12px; color: #5c5c5c; margin-bottom: 4px; }
+        .listing-price-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
+        .listing-price-row .listing-price { margin-bottom: 0; }
+        .pricing-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; line-height: 1.3; }
+        .pricing-tag.per-bed { background: #e3efe3; color: #2d5a35; }
+        .pricing-tag.per-room { background: #355e3d; color: #fff; }
+        .listing-size { font-size: 13px; color: #292420; margin-bottom: 8px; }
+        .listing-size strong { font-weight: 600; }
         .listing-room-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #6b6b6b; margin-bottom: 2px; }
         .listing-amenities { display: flex; flex-wrap: wrap; gap: 3px 14px; margin-bottom: 13px; }
         .listing-amenities span { font-size: 10px; font-weight: 700; letter-spacing: 0.03em; color: #292420; text-transform: uppercase; }
@@ -471,11 +478,13 @@
                         <div class="listing-body">
                             <div class="listing-room-label">Room ${escapeHtml(room.room_no)}</div>
                             <div class="listing-type">${typeLabel}</div>
-                            <div class="listing-price">${formatPrice(room.price_per_bed)}<span class="listing-unit">/bed/mo</span></div>
-                            <div class="listing-pricing-note">${[
-                                room.pricing_mode === 'per_room' && room.bed_count > 1 ? `Room ${formatPrice(room.whole_room_rate)} split ${room.bed_count} ways` : (room.pricing_mode === 'per_room' ? 'Whole room' : 'Priced per bed'),
-                                room.area_sqm ? `${Number(room.area_sqm)} m²` : '',
-                            ].filter(Boolean).join(' · ')}</div>
+                            <div class="listing-price-row">
+                                ${room.pricing_mode === 'per_room'
+                                    ? `<div class="listing-price">${formatPrice(room.whole_room_rate)}<span class="listing-unit">/room/mo</span></div><span class="pricing-tag per-room">Whole room</span>`
+                                    : `<div class="listing-price">${formatPrice(room.price_per_bed)}<span class="listing-unit">/bed/mo</span></div><span class="pricing-tag per-bed">Per bed</span>`}
+                            </div>
+                            ${room.pricing_mode === 'per_room' && room.bed_count > 1 ? `<div class="listing-pricing-note">${formatPrice(room.price_per_bed)} each when shared by ${room.bed_count}</div>` : ''}
+                            ${room.area_sqm ? `<div class="listing-size">Room size: <strong>${Number(room.area_sqm)} m²</strong></div>` : ''}
                             <div class="listing-amenities">${amenitiesHtml}</div>
                             <div class="listing-buttons">
                                 ${tourButton}
