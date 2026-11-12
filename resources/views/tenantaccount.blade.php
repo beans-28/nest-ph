@@ -69,6 +69,22 @@
   }
   .btn-outline-sm:hover{ background:var(--green-dark); color:#fff; }
   .muted-note{ font-size:12px; color:var(--text-light); margin:0; line-height:1.5; }
+  .ok-note, .review-note{ flex-basis:100%; font-size:12px; border-radius:8px; padding:10px 12px; margin:0; line-height:1.5; }
+  .ok-note{ color:#1f5a2c; background:#d9f2dd; border:1px solid #a9dcb1; }
+  .review-note{ color:#7a5a12; background:#f6ecd6; border:1px solid #ead7a8; }
+  .notarize-box{ flex-basis:100%; display:flex; flex-direction:column; gap:10px; }
+  .notarize-form label{ display:block; font-size:12px; font-weight:700; color:var(--text-dark); margin-bottom:6px; }
+  .notarize-form label span{ font-weight:400; color:var(--text-light); }
+  .notarize-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .notarize-row input[type=file]{ flex:1 1 220px; min-width:0; font-size:12.5px; border:1px solid #d5dbd5; border-radius:8px; padding:7px 10px; background:#fff; }
+  .notarize-row .btn-outline-sm{ min-height:40px; }
+  .btn-outline-sm:disabled{ opacity:.55; cursor:not-allowed; }
+  .notarize-msg{ font-size:12px; margin:6px 0 0; min-height:1em; }
+  .notarize-msg.error{ color:#a8403a; }
+  .btn-outline-sm.solid{ background:var(--green-dark); color:#fff; }
+  .btn-outline-sm.solid:hover:not(:disabled){ background:#45604a; }
+  .btn-outline-sm:focus-visible, .notarize-row input[type=file]:focus-visible{ outline:2px solid var(--green-dark); outline-offset:2px; }
+  .required-note.is-rejected{ color:#8f3530; background:#fbeceb; border-color:#f2cfcc; }
   .required-note{ flex-basis:100%; font-size:12px; color:#7a5a12; background:#f6ecd6; border:1px solid #ead7a8; border-radius:8px; padding:10px 12px; margin:0; line-height:1.5; }
 
   /* ===== Change Password tab ===== */
@@ -259,14 +275,35 @@
                 <p class="muted-note">Your signed lease contract hasn't been uploaded to your account yet. If you believe this is a mistake, submit a ticket to ask the admin about it.</p>
               @endif
 
-              @if($notarizationRequired || $contract?->notarized_document_path)
-                @if($contract?->notarized_document_path)
-                  <a href="{{ route('tenant.notarized-contract') }}" target="_blank" rel="noopener" class="btn-outline-sm">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
-                    View Notarized Contract
-                  </a>
-                @elseif($contract)
-                  <p class="required-note" role="status"><strong>Notarized copy needed.</strong> This dorm requires your lease contract to be notarized. Have it notarized, then hand the notarized copy to the admin so it can be added to your account.</p>
+              @php($nStatus = $contract?->notarized_status ?? 'none')
+              @if($contract && $nStatus !== 'none' && $contract->notarized_document_path)
+                <a href="{{ route('tenant.notarized-contract') }}" target="_blank" rel="noopener" class="btn-outline-sm">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  {{ $nStatus === 'approved' ? 'View Notarized Contract' : 'View My Uploaded Copy' }}
+                </a>
+              @endif
+
+              @if($notarizationRequired && $contract)
+                @if($nStatus === 'approved')
+                  <p class="ok-note" role="status"><strong>Notarized copy approved.</strong> Nothing else to do.</p>
+                @elseif($nStatus === 'submitted')
+                  <p class="review-note" role="status"><strong>Notarized copy submitted.</strong> The admin is reviewing it. You'll see the result here.</p>
+                @else
+                  <div class="notarize-box" id="notarizeBox">
+                    @if($nStatus === 'rejected')
+                      <p class="required-note is-rejected" role="status"><strong>Your notarized copy was sent back.</strong><br>Admin's reason: &ldquo;{{ $contract->notarized_rejection_reason }}&rdquo;<br>Please upload a new, clear copy below.</p>
+                    @else
+                      <p class="required-note" role="status"><strong>Notarized copy needed.</strong> This dorm requires your lease contract to be notarized. {{ $contractDocumentUrl ? 'Print your signed contract using View Lease Contract above' : 'Get a printed copy of your signed contract from the admin' }}, have it notarized, then upload a clear scan or photo here.</p>
+                    @endif
+                    <form id="notarizedForm" class="notarize-form" enctype="multipart/form-data">
+                      <label for="notarizedFile">Notarized contract <span>(PDF, JPG or PNG, up to 10 MB)</span></label>
+                      <div class="notarize-row">
+                        <input type="file" id="notarizedFile" name="notarized_document" accept=".pdf,.jpg,.jpeg,.png" aria-describedby="notarizedMsg">
+                        <button type="submit" class="btn-outline-sm solid" id="notarizedSubmit">Submit for Review</button>
+                      </div>
+                      <p class="notarize-msg" id="notarizedMsg" role="status" aria-live="polite"></p>
+                    </form>
+                  </div>
                 @endif
               @endif
             </div>
@@ -351,6 +388,42 @@
   </div>
 </div>
 
+<script>
+  (function(){
+    const form = document.getElementById('notarizedForm');
+    if(!form) return;
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const input = document.getElementById('notarizedFile');
+      const btn = document.getElementById('notarizedSubmit');
+      const msg = document.getElementById('notarizedMsg');
+      const file = input.files[0];
+      msg.className = 'notarize-msg';
+      if(!file){ msg.textContent = 'Choose the scan or photo of your notarized contract.'; msg.classList.add('error'); return; }
+      if(file.size > 10 * 1024 * 1024){ msg.textContent = 'That file is over 10 MB. Upload a smaller scan.'; msg.classList.add('error'); return; }
+      const data = new FormData();
+      data.append('notarized_document', file);
+      btn.disabled = true;
+      btn.textContent = 'Uploading…';
+      try{
+        const res = await fetch(@json(route('tenant.notarized-contract.upload')), {
+          method:'POST',
+          headers:{ 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept':'application/json' },
+          body: data,
+        });
+        const body = await res.json().catch(() => ({}));
+        if(!res.ok) throw new Error(body.message || (body.errors ? Object.values(body.errors)[0][0] : 'Upload failed. Please try again.'));
+        msg.textContent = body.message;
+        setTimeout(() => window.location.reload(), 900);
+      }catch(err){
+        msg.textContent = err.message;
+        msg.classList.add('error');
+        btn.disabled = false;
+        btn.textContent = 'Submit for Review';
+      }
+    });
+  })();
+</script>
 <script>
 (function(){
   const csrfToken = document.querySelector('meta[name="csrf-token"]').content;

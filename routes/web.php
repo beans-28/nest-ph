@@ -191,6 +191,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::patch('/lease-contracts/{leaseContract}/terminate', [LeaseContractController::class, 'terminate']);
     Route::post('/lease-contracts/{leaseContract}/notarized', [LeaseContractController::class, 'uploadNotarized']);
     Route::get('/lease-contracts/{leaseContract}/notarized', [LeaseContractController::class, 'viewNotarized'])->name('contracts.notarized');
+    Route::patch('/lease-contracts/{leaseContract}/notarized/approve', [LeaseContractController::class, 'approveNotarized']);
+    Route::patch('/lease-contracts/{leaseContract}/notarized/reject', [LeaseContractController::class, 'rejectNotarized']);
     Route::get('/tenants/{tenant}/active-lease', [LeaseContractController::class, 'activeLeaseForTenant']);
 
     // --- Penalties & Damages (Week 5, Wed + Thu) ---
@@ -405,6 +407,41 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'moveout.check', 'delinquen
 
         return LeaseContractController::streamNotarized($contract);
     })->name('tenant.notarized-contract');
+
+    // Tenant submits their own notarized copy. It waits for admin review
+    // (like a proof of payment); an approved copy can't be replaced here.
+    Route::post('/account/notarized-contract', function (Illuminate\Http\Request $request) {
+        $tenant = $request->attributes->get('tenant') ?? $request->user()->tenant;
+
+        if (! \App\Models\DormitoryProfile::current()->notarization_required) {
+            return response()->json(['message' => 'This dorm does not require a notarized contract.'], 409);
+        }
+
+        $contract = $tenant?->contracts()
+            ->whereIn('status', ['active', 'expiring_soon'])
+            ->latest()
+            ->first();
+
+        if (! $contract) {
+            return response()->json(['message' => 'You have no active lease contract to attach this to.'], 409);
+        }
+
+        if ($contract->notarized_status === 'approved') {
+            return response()->json(['message' => 'Your notarized copy is already approved. Ask the admin if it needs to be replaced.'], 409);
+        }
+
+        $request->validate([
+            'notarized_document' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+        ], [
+            'notarized_document.required' => 'Choose the scan or photo of your notarized contract.',
+            'notarized_document.mimes' => 'Upload a PDF, JPG or PNG file.',
+            'notarized_document.max' => 'That file is over 10 MB. Upload a smaller scan.',
+        ]);
+
+        LeaseContractController::storeNotarized($contract, $request->file('notarized_document'), 'submitted');
+
+        return response()->json(['message' => 'Notarized copy submitted. The admin will review it.']);
+    })->name('tenant.notarized-contract.upload');
 
     // Use Case Report — Pay Move-In Fees (welcome + payment-type +
     // payment-method + payment/proof-upload screens; the admin review queue

@@ -104,6 +104,9 @@
 
   .signed-note{ background:var(--status-vacant-bg); border:1px solid var(--status-vacant); border-radius:10px; padding:14px 16px; font-size:12.5px; color:var(--green-accent); line-height:1.6; }
   .signed-note a{ color:var(--green-accent); font-weight:700; }
+  .signed-note.review{ background:var(--status-maintenance-bg); border-color:#ead7a8; color:#7a5a12; }
+  .signed-note.review a{ color:#7a5a12; }
+  .table-flag.review{ color:#7a5a12; }
   .signed-note.missing{ background:var(--status-occupied-bg); border-color:var(--status-occupied-line); color:#a8403a; }
   .table-flag{ display:block; margin-top:3px; font-size:11px; font-weight:700; color:#a8403a; }
   .action-hint{ font-size:11.5px; color:#a8403a; margin:8px 0 0; line-height:1.5; }
@@ -396,7 +399,7 @@
           <td>${esc(c.start_date ?? '—')}</td>
           <td>${esc(c.end_date ?? '—')}</td>
           <td>${remainingDaysLabel(c)}</td>
-          <td><span class="status-text ${c.status}">${STATUS_LABEL[c.status] ?? c.status}</span>${c.notarization_missing ? '<span class="table-flag">Notarized copy missing</span>' : ''}</td>
+          <td><span class="status-text ${c.status}">${STATUS_LABEL[c.status] ?? c.status}</span>${c.notarized_status === 'submitted' ? '<span class="table-flag review">Notarized copy to review</span>' : (c.notarization_missing ? '<span class="table-flag">Notarized copy missing</span>' : '')}</td>
           <td>
             <button class="eye-btn" data-open="${c.id}" title="View details">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -475,16 +478,43 @@
   const NOTARIZATION_REQUIRED = @json($notarizationRequired ?? false);
 
   function notarizedSectionHtml(c){
-    if(!NOTARIZATION_REQUIRED && !c.notarized_url) return '';
-    const uploaded = c.notarized_url
-      ? `<div class="signed-note"><strong>Notarized copy uploaded${c.notarized_at ? ' on ' + esc(c.notarized_at) : ''}.</strong><br><a href="${c.notarized_url}" target="_blank" rel="noopener">View the notarized contract</a></div>`
-      : `<div class="signed-note missing" role="status"><strong>Notarized copy required.</strong><br>Upload the tenant's notarized contract below. This lease can't be renewed until it's on file.</div>`;
-    const form = NOTARIZATION_REQUIRED && !['terminated','expired'].includes(c.status) ? `
+    const st = c.notarized_status || 'none';
+    if(!NOTARIZATION_REQUIRED && st === 'none') return '';
+    const ended = ['terminated','expired'].includes(c.status);
+    const viewLink = c.notarized_url ? `<br><a href="${c.notarized_url}" target="_blank" rel="noopener">Open the uploaded copy</a>` : '';
+    const when = c.notarized_at ? ` Uploaded ${esc(c.notarized_at)}.` : '';
+    let note = '';
+    let review = '';
+
+    if(st === 'approved'){
+      note = `<div class="signed-note"><strong>Notarized copy approved.</strong>${when}${viewLink}</div>`;
+    } else if(st === 'submitted'){
+      note = `<div class="signed-note review" role="status"><strong>Submitted by the tenant. Needs your review.</strong>${when} Check that the notary's seal, signature and document number are visible and that it is this contract.${viewLink}</div>`;
+      review = `
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button class="btn sm primary" id="approveNotarizedBtn">Approve Copy</button>
+          <button class="btn sm warn" id="showRejectNotarizedBtn">Send Back</button>
+        </div>
+        <div class="action-box" id="rejectNotarizedBox">
+          <div class="fld"><label for="rejectNotarizedReason">Reason the tenant will see</label><textarea id="rejectNotarizedReason" maxlength="255" placeholder="e.g. The notary seal is cut off. Please upload a full, clear scan."></textarea></div>
+          <div class="action-actions">
+            <button class="btn warn" id="confirmRejectNotarizedBtn">Send Back to Tenant</button>
+            <button class="btn" id="cancelRejectNotarizedBtn">Cancel</button>
+          </div>
+        </div>`;
+    } else if(st === 'rejected'){
+      note = `<div class="signed-note missing" role="status"><strong>Sent back to the tenant.</strong> Reason: ${esc(c.notarized_rejection_reason ?? '')}<br>Waiting for the tenant to upload a new copy.${viewLink}</div>`;
+    } else {
+      note = `<div class="signed-note missing" role="status"><strong>Notarized copy required.</strong><br>The tenant can upload it from My Account, or you can upload it below. This lease can't be renewed until a copy is approved.</div>`;
+    }
+
+    const label = st === 'approved' ? 'Replace with a new scan' : 'Upload the copy yourself (approved right away)';
+    const form = NOTARIZATION_REQUIRED && !ended && st !== 'submitted' ? `
       <div class="sign-box stacked">
-        <div class="fld"><label for="notarizedFile">${c.notarized_url ? 'Replace with a new scan' : 'Scan of the notarized contract'}</label><input type="file" id="notarizedFile" accept=".pdf,.jpg,.jpeg,.png" aria-describedby="notarizedFileHint"><span id="notarizedFileHint" style="font-size:11px;color:var(--text-light);">PDF, JPG or PNG, up to 10 MB.</span></div>
-        <button class="btn ${c.notarized_url ? '' : 'primary'}" id="uploadNotarizedBtn" style="width:100%;">${c.notarized_url ? 'Replace Notarized Copy' : 'Upload Notarized Contract'}</button>
+        <div class="fld"><label for="notarizedFile">${label}</label><input type="file" id="notarizedFile" accept=".pdf,.jpg,.jpeg,.png" aria-describedby="notarizedFileHint"><span id="notarizedFileHint" style="font-size:11px;color:var(--text-light);">PDF, JPG or PNG, up to 10 MB.</span></div>
+        <button class="btn ${st === 'approved' ? '' : 'primary'}" id="uploadNotarizedBtn" style="width:100%;">${st === 'approved' ? 'Replace Notarized Copy' : 'Upload Notarized Contract'}</button>
       </div>` : '';
-    return `<div class="sec"><h3>Notarized Contract</h3>${uploaded}${form}</div>`;
+    return `<div class="sec"><h3>Notarized Contract</h3>${note}${review}${form}</div>`;
   }
 
   function outcomeHtml(c){
@@ -537,7 +567,7 @@
           ${canRenew ? `<button class="btn sm primary" id="showRenewBtn" ${c.notarization_missing ? 'disabled aria-describedby="renewBlockedHint"' : ''}>Renew Lease</button>` : ''}
           <button class="btn sm warn" id="showTerminateBtn">Terminate Lease</button>
         </div>
-        ${canRenew && c.notarization_missing ? `<p class="action-hint" id="renewBlockedHint">Renewal is locked until the notarized copy is uploaded.</p>` : ''}
+        ${canRenew && c.notarization_missing ? `<p class="action-hint" id="renewBlockedHint">Renewal is locked until a notarized copy is approved.</p>` : ''}
 
         <div class="action-box" id="renewBox">
           <div class="fld"><label for="renewEndDate">New End Date</label><input type="date" id="renewEndDate"></div>
@@ -579,6 +609,39 @@
           toast(res.message);
           openDrawer(c.id);
         }catch(e){ toast(e.message, true); this.disabled = false; this.textContent = c.notarized_url ? 'Replace Notarized Copy' : 'Upload Notarized Contract'; }
+      });
+    }
+
+    const approveNBtn = $('approveNotarizedBtn');
+    if(approveNBtn){
+      approveNBtn.addEventListener('click', async function(){
+        this.disabled = true;
+        try{
+          const res = await api(`/lease-contracts/${c.id}/notarized/approve`, { method:'PATCH' });
+          applyUpdate(c.id, res.contract);
+          toast(res.message);
+          openDrawer(c.id);
+        }catch(e){ toast(e.message, true); this.disabled = false; }
+      });
+      $('showRejectNotarizedBtn').addEventListener('click', () => {
+        $('rejectNotarizedBox').classList.add('open');
+        $('rejectNotarizedReason').focus();
+      });
+      $('cancelRejectNotarizedBtn').addEventListener('click', () => { $('rejectNotarizedBox').classList.remove('open'); $('showRejectNotarizedBtn').focus(); });
+      $('confirmRejectNotarizedBtn').addEventListener('click', async function(){
+        const reason = $('rejectNotarizedReason').value.trim();
+        if(reason.length < 5) return toast('Tell the tenant why the copy was not accepted.', true);
+        this.disabled = true;
+        try{
+          const res = await api(`/lease-contracts/${c.id}/notarized/reject`, {
+            method:'PATCH',
+            headers:{ 'Content-Type':'application/json' },
+            body: JSON.stringify({ reason }),
+          });
+          applyUpdate(c.id, res.contract);
+          toast(res.message);
+          openDrawer(c.id);
+        }catch(e){ toast(e.message, true); this.disabled = false; }
       });
     }
 

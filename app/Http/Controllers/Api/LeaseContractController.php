@@ -294,21 +294,87 @@ class LeaseContractController extends Controller
             'notarized_document.required' => 'Attach the scan of the notarized contract.',
         ]);
 
-        // Private disk ("local"): only reachable through viewNotarized().
-        $old = $leaseContract->notarized_document_path;
-        $path = $request->file('notarized_document')->store('notarized-contracts', 'local');
-
-        $leaseContract->update([
-            'notarized_document_path' => $path,
-            'notarized_at' => now(),
-        ]);
-
-        if ($old && Storage::disk('local')->exists($old)) {
-            Storage::disk('local')->delete($old);
-        }
+        // The admin checked the paper copy themselves, so it is approved
+        // straight away.
+        self::storeNotarized($leaseContract, $request->file('notarized_document'), 'approved', $request->user()?->id);
 
         return response()->json([
-            'message' => 'Notarized contract uploaded.',
+            'message' => 'Notarized contract uploaded and approved.',
+            'contract' => $this->transformRow($leaseContract->fresh(['tenant', 'bed.room'])),
+        ]);
+    }
+
+    /**
+     * Save a notarized copy on the PRIVATE disk ("local"), replacing any
+     * older file. Shared by the admin upload and the tenant upload.
+     */
+    public static function storeNotarized(LeaseContract $contract, \Illuminate\Http\UploadedFile $file, string $status, ?int $reviewerId = null): void
+    {
+        $old = $contract->notarized_document_path;
+        $path = $file->store('notarized-contracts', 'local');
+
+        $contract->update([
+            'notarized_document_path' => $path,
+            'notarized_at' => now(),
+            'notarized_status' => $status,
+            'notarized_rejection_reason' => null,
+            'notarized_reviewed_at' => $status === 'approved' ? now() : null,
+            'notarized_reviewed_by' => $status === 'approved' ? $reviewerId : null,
+        ]);
+
+        if ($old && $old !== $path && Storage::disk('local')->exists($old)) {
+            Storage::disk('local')->delete($old);
+        }
+    }
+
+    /**
+     * Admin: approve the notarized copy a tenant submitted.
+     */
+    public function approveNotarized(Request $request, LeaseContract $leaseContract): JsonResponse
+    {
+        if ($leaseContract->notarized_status !== 'submitted') {
+            return response()->json(['message' => 'There is no submitted notarized copy waiting for review.'], 409);
+        }
+
+        $leaseContract->update([
+            'notarized_status' => 'approved',
+            'notarized_rejection_reason' => null,
+            'notarized_reviewed_at' => now(),
+            'notarized_reviewed_by' => $request->user()?->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Notarized copy approved.',
+            'contract' => $this->transformRow($leaseContract->fresh(['tenant', 'bed.room'])),
+        ]);
+    }
+
+    /**
+     * Admin: send a submitted notarized copy back to the tenant with a
+     * reason. The file is kept so the admin can still see what was sent.
+     */
+    public function rejectNotarized(Request $request, LeaseContract $leaseContract): JsonResponse
+    {
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'min:5', 'max:255'],
+        ], [
+            'reason.required' => 'Tell the tenant why the copy was not accepted.',
+            'reason.min' => 'Give the tenant a clearer reason (at least 5 characters).',
+        ]);
+
+        if ($leaseContract->notarized_status !== 'submitted') {
+            return response()->json(['message' => 'There is no submitted notarized copy waiting for review.'], 409);
+        }
+
+        $leaseContract->update([
+            'notarized_status' => 'rejected',
+            'notarized_rejection_reason' => $data['reason'],
+            'notarized_reviewed_at' => now(),
+            'notarized_reviewed_by' => $request->user()?->id,
+        ]);
+
+        return response()->json([
+            'message' => 'Notarized copy sent back to the tenant.',
             'contract' => $this->transformRow($leaseContract->fresh(['tenant', 'bed.room'])),
         ]);
     }
@@ -350,9 +416,9 @@ class LeaseContractController extends Controller
 
         // When the dorm requires notarization, a contract without its
         // notarized copy can't be renewed (the requirement must be met first).
-        if (DormitoryProfile::current()->notarization_required && ! $leaseContract->notarized_document_path) {
+        if (DormitoryProfile::current()->notarization_required && $leaseContract->notarized_status !== 'approved') {
             return response()->json([
-                'message' => 'Upload the notarized copy of this contract before renewing it.',
+                'message' => 'This contract needs an approved notarized copy before it can be renewed.',
             ], 409);
         }
 
@@ -514,6 +580,8 @@ class LeaseContractController extends Controller
                 ? url('/lease-contracts/' . $contract->id . '/notarized')
                 : null,
             'notarized_at' => $contract->notarized_at?->format('M j, Y g:ia'),
+            'notarized_status' => $contract->notarized_status ?? 'none',
+            'notarized_rejection_reason' => $contract->notarized_rejection_reason,
             'notarization_missing' => $contract->isMissingNotarizedCopy($this->profile()),
             'termination_reason' => $contract->termination_reason,
             'terminated_at' => $contract->terminated_at?->format('M j, Y g:ia'),

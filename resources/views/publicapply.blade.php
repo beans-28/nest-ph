@@ -210,6 +210,7 @@
         }
         .contract-review-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
         .contract-review-head svg { width: 26px; height: 26px; color: #567357; flex-shrink: 0; margin-top: 2px; }
+        .crc-notarize-note { margin: 10px 0 0; font-size: 12px; line-height: 1.5; color: #7a5a12; background: #f6ecd6; border: 1px solid #ead7a8; border-radius: 8px; padding: 10px 12px; }
         .crc-title { font-size: 14px; font-weight: 700; color: #194e19; }
         .crc-sub { font-size: 12px; color: #5b6b60; margin-top: 3px; line-height: 1.5; }
         .contract-review-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
@@ -691,6 +692,9 @@
                                 </div>
                             </div>
 
+                            @if($notarizationRequired ?? false)
+                                <p class="crc-notarize-note"><strong>This dorm requires a notarized contract.</strong> After your application is approved, print your signed contract, have it notarized, and upload the notarized copy from your tenant account.</p>
+                            @endif
                             <p class="contract-resign-note" id="contractResignNote" role="status" style="display:none;"></p>
                             <input type="hidden" id="contract_acceptance" value="0">
                             <input type="hidden" id="signed_contract_path" value="">

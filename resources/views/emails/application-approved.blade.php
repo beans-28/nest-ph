@@ -28,6 +28,14 @@
                     is verified.
                 </p>
 
+                @if(\App\Models\DormitoryProfile::current()->notarization_required)
+                    <p style="color:#4b5f4c;font-size:14px;line-height:1.6;margin:0 0 20px;">
+                        <strong>Notarized contract required:</strong> this dorm requires your lease contract to be
+                        notarized. Print your signed contract from <strong>My Account</strong>, have it notarized,
+                        then upload the notarized copy there for the admin to review.
+                    </p>
+                @endif
+
                 <p style="color:#8a9690;font-size:12px;margin:0;">
                     For your security, please change your password after logging in for the first time.
                 </p>

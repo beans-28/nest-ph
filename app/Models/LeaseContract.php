@@ -25,6 +25,10 @@ class LeaseContract extends Model
         'signed_at',
         'notarized_document_path',
         'notarized_at',
+        'notarized_status',
+        'notarized_rejection_reason',
+        'notarized_reviewed_at',
+        'notarized_reviewed_by',
         'status',
         'termination_reason',
         'terminated_at',
@@ -41,6 +45,7 @@ class LeaseContract extends Model
         'discount_amount' => 'decimal:2',
         'signed_at' => 'datetime',
         'notarized_at' => 'datetime',
+        'notarized_reviewed_at' => 'datetime',
         'terminated_at' => 'datetime',
         'last_renewed_at' => 'datetime',
     ];
@@ -81,15 +86,16 @@ class LeaseContract extends Model
     }
 
     /**
-     * True when the dorm requires a notarized copy and this contract
-     * still doesn't have one. Ended contracts are not chased.
+     * True when the dorm requires a notarized copy and this contract has
+     * no APPROVED one yet (a tenant's upload waiting for review doesn't
+     * count). Ended contracts are not chased.
      */
     public function isMissingNotarizedCopy(?DormitoryProfile $profile = null): bool
     {
         $profile ??= DormitoryProfile::current();
 
         return $profile->notarization_required
-            && ! $this->notarized_document_path
+            && $this->notarized_status !== 'approved'
             && ! in_array($this->status, ['terminated', 'expired'], true);
     }
 }

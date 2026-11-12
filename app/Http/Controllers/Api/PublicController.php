@@ -524,6 +524,7 @@ class PublicController extends Controller
     {
         return view('publicapply', [
             'minimumStayMonths' => DormitoryProfile::current()->minimum_stay_months,
+            'notarizationRequired' => DormitoryProfile::current()->notarization_required,
         ]);
     }
 
