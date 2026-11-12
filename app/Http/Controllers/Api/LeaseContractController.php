@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bed;
+use App\Models\DormitoryProfile;
 use App\Models\LeaseContract;
 use App\Models\Tenant;
 use Illuminate\Http\JsonResponse;
@@ -53,6 +54,7 @@ class LeaseContractController extends Controller
         return view('admincontracts', [
             'contracts' => $rows,
             'stats' => $stats,
+            'notarizationRequired' => $this->profile()->notarization_required,
         ]);
     }
 
@@ -275,6 +277,61 @@ class LeaseContractController extends Controller
     }
 
     /**
+     * Admin: upload (or replace) the notarized copy of a contract. Only
+     * allowed while the dorm's "Require notarized contract" setting is on.
+     */
+    public function uploadNotarized(Request $request, LeaseContract $leaseContract): JsonResponse
+    {
+        if (! DormitoryProfile::current()->notarization_required) {
+            return response()->json([
+                'message' => 'Notarized contracts are turned off in the Rental Policy settings.',
+            ], 409);
+        }
+
+        $request->validate([
+            'notarized_document' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+        ], [
+            'notarized_document.required' => 'Attach the scan of the notarized contract.',
+        ]);
+
+        // Private disk ("local"): only reachable through viewNotarized().
+        $old = $leaseContract->notarized_document_path;
+        $path = $request->file('notarized_document')->store('notarized-contracts', 'local');
+
+        $leaseContract->update([
+            'notarized_document_path' => $path,
+            'notarized_at' => now(),
+        ]);
+
+        if ($old && Storage::disk('local')->exists($old)) {
+            Storage::disk('local')->delete($old);
+        }
+
+        return response()->json([
+            'message' => 'Notarized contract uploaded.',
+            'contract' => $this->transformRow($leaseContract->fresh(['tenant', 'bed.room'])),
+        ]);
+    }
+
+    /**
+     * Stream the notarized copy. Admins may view any contract's copy; a
+     * tenant may view only their own (checked by the tenant route).
+     */
+    public static function streamNotarized(LeaseContract $leaseContract)
+    {
+        $path = $leaseContract->notarized_document_path;
+
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->response($path);
+    }
+
+    public function viewNotarized(LeaseContract $leaseContract)
+    {
+        return self::streamNotarized($leaseContract);
+    }
+
+    /**
      * Admin: renew a lease. Use Case Report steps 10–11: the new end date
      * must be a valid future date AND later than the current end date, and
      * an Expiring Soon / Expired contract returns to Active.
@@ -288,6 +345,14 @@ class LeaseContractController extends Controller
         if (! in_array($leaseContract->status, ['active', 'expiring_soon', 'expired'], true)) {
             return response()->json([
                 'message' => 'Only active, expiring, or expired contracts can be renewed.',
+            ], 409);
+        }
+
+        // When the dorm requires notarization, a contract without its
+        // notarized copy can't be renewed (the requirement must be met first).
+        if (DormitoryProfile::current()->notarization_required && ! $leaseContract->notarized_document_path) {
+            return response()->json([
+                'message' => 'Upload the notarized copy of this contract before renewing it.',
             ], 409);
         }
 
@@ -445,11 +510,23 @@ class LeaseContractController extends Controller
             'esign_status' => $contract->esign_status,
             'signed_document_url' => $this->publicUrlFor($contract->signed_document_url),
             'signed_at' => $contract->signed_at?->format('M j, Y g:ia'),
+            'notarized_url' => $contract->notarized_document_path
+                ? url('/lease-contracts/' . $contract->id . '/notarized')
+                : null,
+            'notarized_at' => $contract->notarized_at?->format('M j, Y g:ia'),
+            'notarization_missing' => $contract->isMissingNotarizedCopy($this->profile()),
             'termination_reason' => $contract->termination_reason,
             'terminated_at' => $contract->terminated_at?->format('M j, Y g:ia'),
             'last_renewed_at' => $contract->last_renewed_at?->format('M j, Y g:ia'),
             'created_at' => $contract->created_at?->format('M j, Y'),
         ];
+    }
+
+    private ?DormitoryProfile $profileCache = null;
+
+    private function profile(): DormitoryProfile
+    {
+        return $this->profileCache ??= DormitoryProfile::current();
     }
 
     private function publicUrlFor(?string $path): ?string

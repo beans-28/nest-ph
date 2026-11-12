@@ -546,6 +546,10 @@
             </div>
             <p class="policy-hint">Checked items are not added to the monthly bill. Unchecked items are billed from the room's utility and Wi-Fi costs, split across its beds.</p>
 
+            <h3 class="policy-sub">Lease contracts</h3>
+            <label class="inline-check" style="margin-bottom:12px;"><input type="checkbox" id="polNotarization" aria-describedby="polNotarizationHint" @checked($profile->notarization_required)> Require a notarized copy of every lease contract</label>
+            <p class="policy-hint" id="polNotarizationHint" style="margin-top:0;">Optional. Notarization is not needed for a lease to be valid (Civil Code Arts. 1318 and 1356). Turn this on only if your dorm asks tenants to have their contract notarized. When on, admins must upload the notarized copy on each contract, a contract can't be renewed without it, and tenants can view their copy from My Account.</p>
+
             <h3 class="policy-sub">Stay, notice and deposit</h3>
             <div class="field-row three">
               <div class="field">
@@ -1996,6 +2000,7 @@
       advance_rent_months: $('polAdvance').value,
       security_deposit_months: $('polDeposit').value,
       wifi_included: $('polWifi').checked,
+      notarization_required: $('polNotarization').checked,
       short_term_rate: numOrNull($('polShortTerm').value),
       transient_rate: numOrNull($('polTransient').value),
       rules_version: $('polRulesVersion').value.trim() || null,

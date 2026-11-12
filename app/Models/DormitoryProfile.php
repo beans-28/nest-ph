@@ -52,6 +52,7 @@ class DormitoryProfile extends Model
         'water_included',
         'electricity_included',
         'wifi_included',
+        'notarization_required',
         'short_term_rate',
         'transient_rate',
         'rules_version',
@@ -95,6 +96,7 @@ class DormitoryProfile extends Model
         'water_included' => false,
         'electricity_included' => false,
         'wifi_included' => false,
+        'notarization_required' => false,
     ];
 
     protected $casts = [
@@ -112,6 +114,7 @@ class DormitoryProfile extends Model
         'water_included' => 'boolean',
         'electricity_included' => 'boolean',
         'wifi_included' => 'boolean',
+        'notarization_required' => 'boolean',
         'short_term_rate' => 'decimal:2',
         'transient_rate' => 'decimal:2',
         'documents_effective_date' => 'date',

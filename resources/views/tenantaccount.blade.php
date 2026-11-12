@@ -69,6 +69,7 @@
   }
   .btn-outline-sm:hover{ background:var(--green-dark); color:#fff; }
   .muted-note{ font-size:12px; color:var(--text-light); margin:0; line-height:1.5; }
+  .required-note{ flex-basis:100%; font-size:12px; color:#7a5a12; background:#f6ecd6; border:1px solid #ead7a8; border-radius:8px; padding:10px 12px; margin:0; line-height:1.5; }
 
   /* ===== Change Password tab ===== */
   .pw-form-group{ margin-bottom:20px; }
@@ -256,6 +257,17 @@
                 </a>
               @else
                 <p class="muted-note">Your signed lease contract hasn't been uploaded to your account yet. If you believe this is a mistake, submit a ticket to ask the admin about it.</p>
+              @endif
+
+              @if($notarizationRequired || $contract?->notarized_document_path)
+                @if($contract?->notarized_document_path)
+                  <a href="{{ route('tenant.notarized-contract') }}" target="_blank" rel="noopener" class="btn-outline-sm">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                    View Notarized Contract
+                  </a>
+                @elseif($contract)
+                  <p class="required-note" role="status"><strong>Notarized copy needed.</strong> This dorm requires your lease contract to be notarized. Have it notarized, then hand the notarized copy to the admin so it can be added to your account.</p>
+                @endif
               @endif
             </div>
           </div>

@@ -414,6 +414,7 @@ class DormitoryProfileController extends Controller
             'water_included' => ['required', 'boolean'],
             'electricity_included' => ['required', 'boolean'],
             'wifi_included' => ['required', 'boolean'],
+            'notarization_required' => ['sometimes', 'boolean'],
             'short_term_rate' => ['nullable', 'numeric', 'min:0'],
             'transient_rate' => ['nullable', 'numeric', 'min:0'],
 

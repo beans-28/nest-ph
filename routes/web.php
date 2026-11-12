@@ -189,6 +189,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/lease-contracts/{leaseContract}/sign', [LeaseContractController::class, 'submitSigned']);
     Route::patch('/lease-contracts/{leaseContract}/not-applicable', [LeaseContractController::class, 'markNotApplicable']);
     Route::patch('/lease-contracts/{leaseContract}/terminate', [LeaseContractController::class, 'terminate']);
+    Route::post('/lease-contracts/{leaseContract}/notarized', [LeaseContractController::class, 'uploadNotarized']);
+    Route::get('/lease-contracts/{leaseContract}/notarized', [LeaseContractController::class, 'viewNotarized'])->name('contracts.notarized');
     Route::get('/tenants/{tenant}/active-lease', [LeaseContractController::class, 'activeLeaseForTenant']);
 
     // --- Penalties & Damages (Week 5, Wed + Thu) ---
@@ -382,11 +384,27 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'moveout.check', 'delinquen
         return view('tenantaccount', [
             'tenant' => $tenant,
             'contract' => $contract,
+            'notarizationRequired' => \App\Models\DormitoryProfile::current()->notarization_required,
             'contractDocumentUrl' => $contractDocumentPath
                 ? \Illuminate\Support\Facades\Storage::disk('public')->url($contractDocumentPath)
                 : null,
         ]);
     })->name('tenant.account');
+
+    // The tenant's own notarized contract (private file). Only the lease
+    // that belongs to this tenant can be opened.
+    Route::get('/account/notarized-contract', function (Illuminate\Http\Request $request) {
+        $tenant = $request->attributes->get('tenant') ?? $request->user()->tenant;
+        $contract = $tenant?->contracts()
+            ->whereIn('status', ['active', 'expiring_soon'])
+            ->whereNotNull('notarized_document_path')
+            ->latest()
+            ->first();
+
+        abort_unless($contract, 404);
+
+        return LeaseContractController::streamNotarized($contract);
+    })->name('tenant.notarized-contract');
 
     // Use Case Report — Pay Move-In Fees (welcome + payment-type +
     // payment-method + payment/proof-upload screens; the admin review queue

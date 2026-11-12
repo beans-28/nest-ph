@@ -23,6 +23,8 @@ class LeaseContract extends Model
         'esign_status',
         'signed_document_url',
         'signed_at',
+        'notarized_document_path',
+        'notarized_at',
         'status',
         'termination_reason',
         'terminated_at',
@@ -38,6 +40,7 @@ class LeaseContract extends Model
         'monthly_rate' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'signed_at' => 'datetime',
+        'notarized_at' => 'datetime',
         'terminated_at' => 'datetime',
         'last_renewed_at' => 'datetime',
     ];
@@ -75,5 +78,18 @@ class LeaseContract extends Model
     public function billingStatements(): HasMany
     {
         return $this->hasMany(BillingStatement::class, 'contract_id');
+    }
+
+    /**
+     * True when the dorm requires a notarized copy and this contract
+     * still doesn't have one. Ended contracts are not chased.
+     */
+    public function isMissingNotarizedCopy(?DormitoryProfile $profile = null): bool
+    {
+        $profile ??= DormitoryProfile::current();
+
+        return $profile->notarization_required
+            && ! $this->notarized_document_path
+            && ! in_array($this->status, ['terminated', 'expired'], true);
     }
 }

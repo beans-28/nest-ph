@@ -15,7 +15,7 @@
     --green-dark:#3f6b4a; --green-mid:#4f7c57;
     --green-sidebar-top:#5b8a63; --green-sidebar-bottom:#2c4a35;
     --green-accent:#2f6f3c; --green-btn:#2f6b3a; --green-btn-hover:#255a2f;
-    --status-occupied:#d9564f; --status-vacant:#7fc98a; --status-vacant-bg:#d9f2dd;
+    --status-occupied:#d9564f; --status-occupied-bg:#fbeceb; --status-occupied-line:#f2cfcc; --status-vacant:#7fc98a; --status-vacant-bg:#d9f2dd;
     --status-maintenance:#c9962f; --status-maintenance-bg:#f6ecd6;
     --purple:#7a4fc9; --purple-bg:#e9defa;
     --blue:#33629e; --blue-bg:#e3ecf7;
@@ -104,6 +104,10 @@
 
   .signed-note{ background:var(--status-vacant-bg); border:1px solid var(--status-vacant); border-radius:10px; padding:14px 16px; font-size:12.5px; color:var(--green-accent); line-height:1.6; }
   .signed-note a{ color:var(--green-accent); font-weight:700; }
+  .signed-note.missing{ background:var(--status-occupied-bg); border-color:var(--status-occupied-line); color:#a8403a; }
+  .table-flag{ display:block; margin-top:3px; font-size:11px; font-weight:700; color:#a8403a; }
+  .action-hint{ font-size:11.5px; color:#a8403a; margin:8px 0 0; line-height:1.5; }
+  .sign-box.stacked{ margin-top:10px; }
   .sign-box{ border:1px solid var(--border); border-radius:10px; padding:16px 18px; background:#fbfcfb; }
   .sign-box .fld{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
   .sign-box label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
@@ -392,7 +396,7 @@
           <td>${esc(c.start_date ?? '—')}</td>
           <td>${esc(c.end_date ?? '—')}</td>
           <td>${remainingDaysLabel(c)}</td>
-          <td><span class="status-text ${c.status}">${STATUS_LABEL[c.status] ?? c.status}</span></td>
+          <td><span class="status-text ${c.status}">${STATUS_LABEL[c.status] ?? c.status}</span>${c.notarization_missing ? '<span class="table-flag">Notarized copy missing</span>' : ''}</td>
           <td>
             <button class="eye-btn" data-open="${c.id}" title="View details">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -468,6 +472,21 @@
       </div>`;
   }
 
+  const NOTARIZATION_REQUIRED = @json($notarizationRequired ?? false);
+
+  function notarizedSectionHtml(c){
+    if(!NOTARIZATION_REQUIRED && !c.notarized_url) return '';
+    const uploaded = c.notarized_url
+      ? `<div class="signed-note"><strong>Notarized copy uploaded${c.notarized_at ? ' on ' + esc(c.notarized_at) : ''}.</strong><br><a href="${c.notarized_url}" target="_blank" rel="noopener">View the notarized contract</a></div>`
+      : `<div class="signed-note missing" role="status"><strong>Notarized copy required.</strong><br>Upload the tenant's notarized contract below. This lease can't be renewed until it's on file.</div>`;
+    const form = NOTARIZATION_REQUIRED && !['terminated','expired'].includes(c.status) ? `
+      <div class="sign-box stacked">
+        <div class="fld"><label for="notarizedFile">${c.notarized_url ? 'Replace with a new scan' : 'Scan of the notarized contract'}</label><input type="file" id="notarizedFile" accept=".pdf,.jpg,.jpeg,.png" aria-describedby="notarizedFileHint"><span id="notarizedFileHint" style="font-size:11px;color:var(--text-light);">PDF, JPG or PNG, up to 10 MB.</span></div>
+        <button class="btn ${c.notarized_url ? '' : 'primary'}" id="uploadNotarizedBtn" style="width:100%;">${c.notarized_url ? 'Replace Notarized Copy' : 'Upload Notarized Contract'}</button>
+      </div>` : '';
+    return `<div class="sec"><h3>Notarized Contract</h3>${uploaded}${form}</div>`;
+  }
+
   function outcomeHtml(c){
     if(c.status === 'terminated' && c.termination_reason){
       return `<div class="sec"><h3>Termination Reason</h3><div class="outcome-note" style="color:var(--status-occupied);">${esc(c.termination_reason)}${c.terminated_at ? '<br><span style="color:var(--text-light);">' + esc(c.terminated_at) + '</span>' : ''}</div></div>`;
@@ -506,6 +525,8 @@
         ${signSectionHtml(c)}
       </div>
 
+      ${notarizedSectionHtml(c)}
+
       ${outcomeHtml(c)}
 
       ${canAct ? `
@@ -513,9 +534,10 @@
         <h3>Actions</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           ${c.esign_status === 'pending' ? `<button class="btn sm" id="markNaBtn">Mark not required</button>` : ''}
-          ${canRenew ? `<button class="btn sm primary" id="showRenewBtn">Renew Lease</button>` : ''}
+          ${canRenew ? `<button class="btn sm primary" id="showRenewBtn" ${c.notarization_missing ? 'disabled aria-describedby="renewBlockedHint"' : ''}>Renew Lease</button>` : ''}
           <button class="btn sm warn" id="showTerminateBtn">Terminate Lease</button>
         </div>
+        ${canRenew && c.notarization_missing ? `<p class="action-hint" id="renewBlockedHint">Renewal is locked until the notarized copy is uploaded.</p>` : ''}
 
         <div class="action-box" id="renewBox">
           <div class="fld"><label for="renewEndDate">New End Date</label><input type="date" id="renewEndDate"></div>
@@ -541,6 +563,25 @@
   }
 
   function wireDrawer(c){
+    const notarizedBtn = $('uploadNotarizedBtn');
+    if(notarizedBtn){
+      notarizedBtn.addEventListener('click', async function(){
+        const file = $('notarizedFile').files[0];
+        if(!file) return toast('Attach the scan of the notarized contract.', true);
+        const form = new FormData();
+        if(file.size > 10 * 1024 * 1024) return toast('That file is over 10 MB. Upload a smaller scan.', true);
+        form.append('notarized_document', file);
+        this.disabled = true;
+        this.textContent = 'Uploading…';
+        try{
+          const res = await api(`/lease-contracts/${c.id}/notarized`, { method:'POST', body: form });
+          applyUpdate(c.id, res.contract);
+          toast(res.message);
+          openDrawer(c.id);
+        }catch(e){ toast(e.message, true); this.disabled = false; this.textContent = c.notarized_url ? 'Replace Notarized Copy' : 'Upload Notarized Contract'; }
+      });
+    }
+
     const signBtn = $('submitSignBtn');
     if(signBtn){
       signBtn.addEventListener('click', async function(){
