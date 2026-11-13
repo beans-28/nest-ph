@@ -24,3 +24,6 @@ Homestead.yaml
 Thumbs.db
 # Office lock files
 ~$*
+
+# Promo videos and scripts (kept locally, not in git)
+/docs/promo/
