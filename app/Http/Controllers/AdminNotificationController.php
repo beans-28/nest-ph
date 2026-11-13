@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Console\Commands\NotifyOverdueApplications;
+use App\Http\Middleware\EnsureAdminHasPrivilege;
 use App\Models\Application;
 use App\Models\BillingStatement;
 use App\Models\Inquiry;
@@ -26,7 +27,8 @@ class AdminNotificationController extends Controller
         // Open emergencies (Critical tickets) that are this admin's job:
         // assigned to them, or assigned to nobody yet. The bell pops these
         // up on screen until someone responds.
-        $me = $request->user()->id;
+        $user = $request->user()->loadMissing('privileges');
+        $me = $user->id;
         $emergencies = MaintenanceTicket::with('bed.room', 'assignees:id,name')
             ->where('priority', 'critical')
             ->whereNotIn('status', MaintenanceTicket::CLOSED_STATUSES)
@@ -35,6 +37,10 @@ class AdminNotificationController extends Controller
             ->get()
             ->filter(fn ($t) => $t->assignees->isEmpty() || $t->assignees->contains('id', $me))
             ->values();
+        // Emergency pop-ups open Tickets, so only admins who can manage tenants get them.
+        if (! $user->hasPrivilege('manage_tenants')) {
+            $emergencies = collect();
+        }
 
         $overdueTickets = MaintenanceTicket::overdueSummary();
         $overdueSince = now()->subDays(NotifyOverdueApplications::DAYS);
@@ -70,7 +76,7 @@ class AdminNotificationController extends Controller
                 'one' => 'application ' . $overdueLabel, 'many' => 'applications ' . $overdueLabel,
             ],
             [
-                'key' => 'reservations_expired', 'urgent' => true, 'link' => '/tenants',
+                'key' => 'reservations_expired', 'urgent' => true, 'link' => '/tenant-manager',
                 // Shown for a week after the bed was released (reservations:expire).
                 'count' => BillingStatement::where('reservation_expired_at', '>=', now()->subDays(7))->count(),
                 'one' => 'reservation expired and its bed was released',
@@ -126,6 +132,8 @@ class AdminNotificationController extends Controller
 
         $items = collect($items)
             ->filter(fn ($i) => $i['count'] > 0)
+            // Hide items for sections this admin has no privilege for.
+            ->filter(fn ($i) => EnsureAdminHasPrivilege::canOpen($user, $i['link']))
             ->sortByDesc('urgent') // overdue work at the top
             ->map(fn ($i) => [
                 'key' => $i['key'],

@@ -22,6 +22,9 @@
   .panel-beds{ grid-area:beds; } .panel-tenants{ grid-area:ten; } .panel-bills{ grid-area:bills; }
   .panel-bills .bills-body{ display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:28px; }
   .panel-bills .stack{ margin:0; }
+  /* Fewer cards (limited admin): let them flow instead of fixed slots. */
+  .overview.overview-partial{ grid-template-areas:none; grid-template-columns:repeat(auto-fit, minmax(min(280px, 100%), 1fr)); }
+  .overview.overview-partial > .panel{ grid-area:auto; }
   .panel-bills .stack-keys{ display:flex; gap:28px; }
   .panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:18px 20px 20px; min-width:0; }
   .panel-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px; }
@@ -89,6 +92,8 @@
   .alert-review-btn:hover{ background:#a8382f; }
 
   .dash-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+  .dash-grid.dash-grid-single{ grid-template-columns:1fr; }
+  .no-access-note{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; margin:0 0 20px; }
   @media (max-width: 1080px){
     .dash-grid{ grid-template-columns:1fr; }
   }
@@ -143,6 +148,14 @@
       </div>
 
       @php
+        // Only show cards for areas this admin has a privilege for
+        // (same rules as the sidebar / EnsureAdminHasPrivilege).
+        $me = auth()->user()->loadMissing('privileges');
+        $seeBilling = $me->hasPrivilege('manage_billing');
+        $seeRooms = $me->hasPrivilege('manage_rooms');
+        $seeTenants = $me->hasPrivilege('manage_tenants');
+        $seeReports = $me->hasPrivilege('view_reports');
+        $overviewCards = (int) $seeBilling * 2 + (int) $seeRooms + (int) $seeTenants;
         $rev = $cardCharts['revenue'];
         $revPrev = $rev[count($rev) - 2] ?? 0;
         $revDelta = $revPrev > 0 ? round((($revenueThisMonth - $revPrev) / $revPrev) * 100) : null;
@@ -152,7 +165,12 @@
         $maintBeds = $cardCharts['beds']['maintenance'];
         $reservedBeds = $cardCharts['beds']['reserved'];
       @endphp
-      <div class="overview">
+      @if(! $seeBilling && ! $seeRooms && ! $seeTenants && ! $seeReports && ! $me->hasPrivilege('manage_contracts'))
+        <p class="empty-note no-access-note">Your account has no sections assigned yet. Ask the Dormitory Owner to grant you access on the Admin Privileges page.</p>
+      @endif
+      @if($overviewCards > 0)
+      <div class="overview{{ $overviewCards < 4 ? ' overview-partial' : '' }}">
+        @if($seeBilling)
         <section class="panel panel-revenue" aria-labelledby="revHead">
           <header class="panel-head">
             <h2 id="revHead">Collections</h2>
@@ -168,6 +186,9 @@
           <div class="chart-box"><canvas id="revenueChart" role="img" aria-label="Approved payments per month, last six months"></canvas></div>
         </section>
 
+        @endif
+
+        @if($seeRooms)
         <section class="panel panel-beds" aria-labelledby="bedsHead">
           <header class="panel-head">
             <h2 id="bedsHead">Beds</h2>
@@ -205,6 +226,9 @@
           @endif
         </section>
 
+        @endif
+
+        @if($seeBilling)
         <section class="panel panel-bills" aria-labelledby="billsHead">
           <header class="panel-head">
             <h2 id="billsHead">Bills</h2>
@@ -228,6 +252,9 @@
           @endif
         </section>
 
+        @endif
+
+        @if($seeTenants)
         <section class="panel panel-tenants" aria-labelledby="tenHead">
           <header class="panel-head">
             <h2 id="tenHead">Tenants</h2>
@@ -239,9 +266,11 @@
           </div>
           <div class="chart-box chart-sm"><canvas id="tenantsChart" role="img" aria-label="New tenants per month, last six months"></canvas></div>
         </section>
+        @endif
       </div>
+      @endif
 
-      @if($ticketOverdueSummary['total'] > 0)
+      @if($seeTenants && $ticketOverdueSummary['total'] > 0)
         <div class="alert-banner">
           <div class="alert-banner-text">
             <strong>{{ $ticketOverdueSummary['total'] }} {{ $ticketOverdueSummary['total'] === 1 ? 'ticket is' : 'tickets are' }} overdue{{ $ticketOverdueSummary['critical'] > 0 ? ' (' . $ticketOverdueSummary['critical'] . ' critical or high)' : '' }}.</strong>
@@ -251,7 +280,7 @@
         </div>
       @endif
 
-      @if($topDelinquent)
+      @if($seeBilling && $topDelinquent)
         <div class="alert-banner">
           <div class="alert-banner-text">
             <strong>{{ $delinquentCount }} {{ $delinquentCount === 1 ? 'delinquent account needs' : 'delinquent accounts need' }} attention</strong>
@@ -262,7 +291,9 @@
       @endif
 
       @include('partials.announcements-feed')
-      <div class="dash-grid">
+      @if($seeTenants || $seeReports)
+      <div class="dash-grid{{ $seeTenants && $seeReports ? '' : ' dash-grid-single' }}">
+        @if($seeTenants)
         <div>
           <div class="dash-card">
             <div class="dash-card-head"><h2>Tickets</h2><a href="{{ route('tickets.index') }}" class="view-all" style="text-decoration:none;">View All</a></div>
@@ -291,7 +322,9 @@
             @endif
           </div>
         </div>
+        @endif
 
+        @if($seeReports)
         <div>
           <div class="dash-card">
             <div class="dash-card-head"><h2>Recent Activities</h2><a href="{{ route('activity-log.index') }}" class="view-all" style="text-decoration:none;">View All</a></div>
@@ -316,7 +349,9 @@
             @endif
           </div>
         </div>
+        @endif
       </div>
+      @endif
 
     </div>
   </div>
@@ -380,7 +415,11 @@
     });
     return;
   }
-  const d = @json($cardCharts);
+  const d = @json([
+    'labels' => $cardCharts['labels'],
+    'revenue' => $seeBilling ? $cardCharts['revenue'] : [],
+    'tenants' => $seeTenants ? $cardCharts['tenants'] : [],
+  ]);
   // Colours come from admin.css so the charts follow any palette change.
   const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const C = { muted:css('--chart-muted'), mutedHover:css('--chart-muted-hover'), accent:css('--green-accent'),
@@ -395,7 +434,7 @@
   // Past months muted, current month in full green so it ties to the headline figure.
   const shade = (past, now) => d.labels.map((_, i) => i === last ? now : past);
 
-  new Chart(document.getElementById('revenueChart'), {
+  if (document.getElementById('revenueChart')) new Chart(document.getElementById('revenueChart'), {
     type:'bar',
     data:{ labels:d.labels, datasets:[{ data:d.revenue, backgroundColor:shade(C.muted, C.accent),
       hoverBackgroundColor:shade(C.mutedHover, C.accentHover), borderRadius:5, maxBarThickness:44 }] },
@@ -407,7 +446,7 @@
       } }
   });
 
-  new Chart(document.getElementById('tenantsChart'), {
+  if (document.getElementById('tenantsChart')) new Chart(document.getElementById('tenantsChart'), {
     type:'bar',
     data:{ labels:d.labels, datasets:[{ data:d.tenants, backgroundColor:shade(C.muted, C.accent), borderRadius:4, maxBarThickness:26 }] },
     options:{ responsive:true, maintainAspectRatio:false,

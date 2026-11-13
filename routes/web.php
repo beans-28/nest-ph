@@ -130,7 +130,7 @@ Route::middleware(['auth', 'movein.check', 'moveout.check', 'delinquency.check']
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin', 'admin.access'])->group(function () {
     Route::get('/admin/add-floor', [VacancyController::class, 'index'])->name('admin.addfloor');
     Route::get('/vacancy-monitoring', [VacancyController::class, 'index'])->name('vacancy.index');
 

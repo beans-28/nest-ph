@@ -77,6 +77,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Can this admin use the area guarded by $privilege (e.g. 'manage_billing')?
+     * The Owner (manage_users) can use everything. Tenants never pass.
+     * Used by the 'admin.access' middleware and to hide sidebar links.
+     */
+    public function hasPrivilege(string $privilege): bool
+    {
+        if ($this->role?->role_name !== 'admin') {
+            return false;
+        }
+
+        $names = $this->privileges->pluck('privilege_name');
+
+        return $names->contains('manage_users') || $names->contains($privilege);
+    }
+
+    /**
      * 'owner', 'admin', or null (tenants). Drives the Owner / Admin tag
      * shown next to staff names across the app (see partials/role-tag).
      */

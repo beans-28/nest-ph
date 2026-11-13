@@ -73,7 +73,7 @@ Route::middleware(['auth:sanctum', 'tenant'])->prefix('my')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'admin.access'])->group(function () {
 
 
     // NOTE: VR image upload/delete/info moved to routes/web.php under
