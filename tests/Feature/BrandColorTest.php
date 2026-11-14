@@ -1,0 +1,101 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\AdminPrivilege;
+use App\Models\DormitoryProfile;
+use App\Models\Role;
+use App\Models\User;
+use App\Support\BrandTheme;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+/** Dormitory Profile > Site Color: one picked color re-themes every page. */
+class BrandColorTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private function owner(): User
+    {
+        $owner = User::factory()->create();
+        $owner->forceFill(['role_id' => Role::firstOrCreate(['role_name' => 'admin'])->id])->save();
+        AdminPrivilege::create(['user_id' => $owner->id, 'privilege_name' => 'manage_users']);
+
+        return $owner;
+    }
+
+    public function test_owner_can_save_a_color_and_pages_use_it(): void
+    {
+        $owner = $this->owner();
+
+        $this->actingAs($owner)
+            ->postJson('/dormitory-profile/brand-color', ['brand_color' => '#C98A2B'])
+            ->assertOk();
+
+        $this->assertSame('#c98a2b', DormitoryProfile::current()->brand_color);
+
+        $html = $this->actingAs($owner)->get('/dashboard')->assertOk()->getContent();
+        $this->assertStringContainsString('<style id="brand-theme">', $html);
+        $this->assertStringContainsString('--green-accent:', $html);
+        // Lands inside <head>, after the page's own styles.
+        $this->assertLessThan(strpos($html, '</head>'), strpos($html, 'brand-theme'));
+    }
+
+    public function test_default_green_adds_nothing(): void
+    {
+        $owner = $this->owner();
+
+        $this->actingAs($owner)
+            ->postJson('/dormitory-profile/brand-color', ['brand_color' => BrandTheme::DEFAULT])
+            ->assertOk();
+
+        $this->assertNull(DormitoryProfile::current()->brand_color);
+        $this->assertStringNotContainsString('brand-theme', $this->actingAs($owner)->get('/dashboard')->getContent());
+    }
+
+    public function test_rejects_anything_that_is_not_a_hex_color(): void
+    {
+        $this->actingAs($this->owner())
+            ->postJson('/dormitory-profile/brand-color', ['brand_color' => 'red;}body{display:none'])
+            ->assertStatus(422);
+    }
+
+    public function test_limited_admin_cannot_change_it(): void
+    {
+        $admin = User::factory()->create();
+        $admin->forceFill(['role_id' => Role::firstOrCreate(['role_name' => 'admin'])->id])->save();
+
+        $this->actingAs($admin)
+            ->postJson('/dormitory-profile/brand-color', ['brand_color' => '#c98a2b'])
+            ->assertForbidden();
+    }
+
+    public function test_white_text_stays_readable_on_dark_shades_for_every_preset(): void
+    {
+        $lum = function (string $hex) {
+            $lin = fn ($c) => $c <= 0.03928 ? $c / 12.92 : (($c + 0.055) / 1.055) ** 2.4;
+            [$r, $g, $b] = array_map(fn ($c) => $lin(hexdec($c) / 255), str_split(substr($hex, 1), 2));
+
+            return 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
+        };
+        foreach ([...BrandTheme::PRESETS, 'Yellow' => '#f2d21b'] as $hex) {
+            $css = BrandTheme::styleTag($hex);
+            foreach (['--green-sidebar-top', '--green-accent', '--green-btn', '--sage-700'] as $var) {
+                if (! preg_match('/'.$var.':(#[0-9a-f]{6})/', $css, $m)) {
+                    continue; // default green: no override
+                }
+                $this->assertGreaterThanOrEqual(4.5, 1.05 / ($lum($m[1]) + 0.05), "$var for $hex");
+            }
+        }
+    }
+
+    public function test_shades_keep_the_hue(): void
+    {
+        $css = BrandTheme::styleTag('#c98a2b');
+        preg_match('/--green-accent:(#[0-9a-f]{6})/', $css, $m);
+        // Gold at a darker lightness: red > green > blue, readable on white.
+        [$r, $g, $b] = array_map('hexdec', str_split(substr($m[1], 1), 2));
+        $this->assertTrue($r > $g && $g > $b);
+        $this->assertLessThan(140, $r);
+    }
+}

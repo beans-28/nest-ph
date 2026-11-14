@@ -36,7 +36,7 @@
     box-shadow:0 1px 2px rgba(20,30,20,0.03);
   }
   .announce-header{ display:flex; align-items:center; gap:10px; margin-bottom:18px; }
-  .announce-header-icon{ width:30px; height:30px; border-radius:50%; background:var(--status-vacant-bg, #d9f2dd); color:var(--green-accent, #2f6f3c); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .announce-header-icon{ width:30px; height:30px; border-radius:50%; background:var(--brand-tint, #d9f2dd); color:var(--green-accent, #2f6f3c); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .announce-header-icon svg{ width:15px; height:15px; }
   .announce-header h2{ font-size:15px; font-weight:700; margin:0; color:var(--text-dark, #243026); }
 

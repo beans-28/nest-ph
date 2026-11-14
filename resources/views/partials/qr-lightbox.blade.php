@@ -15,8 +15,8 @@
   .qr-lightbox-btn{ display:inline-flex; align-items:center; justify-content:center; gap:7px; min-width:40px; height:40px; padding:0 12px; border-radius:9px; border:1px solid rgba(255,255,255,.25); background:rgba(255,255,255,.1); color:#fff; font:inherit; font-size:13px; font-weight:700; cursor:pointer; text-decoration:none; flex-shrink:0; }
   .qr-lightbox-btn:hover{ background:rgba(255,255,255,.2); }
   .qr-lightbox-btn:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
-  .qr-lightbox-btn.primary{ background:#2f6b3a; border-color:#2f6b3a; }
-  .qr-lightbox-btn.primary:hover{ background:#255a2f; }
+  .qr-lightbox-btn.primary{ background:var(--green-btn, #2f6b3a); border-color:var(--green-btn, #2f6b3a); }
+  .qr-lightbox-btn.primary:hover{ background:var(--green-btn-hover, #255a2f); }
   .qr-lightbox-btn svg{ width:18px; height:18px; }
   .qr-lightbox-zoom-level{ font-size:12.5px; font-variant-numeric:tabular-nums; min-width:46px; text-align:center; opacity:.85; }
   .qr-lightbox-stage{ flex:1; position:relative; overflow:hidden; touch-action:none; cursor:grab; }

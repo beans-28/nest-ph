@@ -175,8 +175,24 @@ class DashboardController extends Controller
 
         $newTenantsThisMonth = $cardCharts['tenants']->last();
 
+        // --- "Needs your attention" list at the top of the dashboard ---
+        // Same rules as the notification bell (AdminNotificationController),
+        // so the two never disagree. The view hides rows this admin has no
+        // privilege for.
+        $attention = [
+            'applications' => \App\Models\Application::where('status', 'pending')->count(),
+            'proofs' => Payment::where('status', 'pending')->count(),
+            'overdue' => $overdueTenantIds->unique()->count(),
+            // Tenants with a bill not fully paid yet but not overdue.
+            'unpaid' => BillingStatement::whereIn('status', ['unpaid', 'partial'])
+                ->distinct('tenant_id')->count('tenant_id'),
+            'tickets' => $openTicketsCount,
+            'inquiries' => \App\Models\Inquiry::where('status', 'new')->count(),
+        ];
+
         return view('admindashboard', compact(
             'cardCharts',
+            'attention',
             'bedMap',
             'newTenantsThisMonth',
             'occupancy',

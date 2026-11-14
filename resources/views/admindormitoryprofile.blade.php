@@ -62,6 +62,18 @@
   .brand-logo-preview-bar img{ width:24px; height:24px; object-fit:contain; flex-shrink:0; }
   .brand-logo-preview-bar img.is-dorm{ background:#fff; border-radius:5px; padding:2px; }
   .brand-logo-preview-bar span{ min-width:0; overflow-wrap:anywhere; text-wrap:balance; }
+  .site-color{ margin-top:22px; padding-top:18px; border-top:1px solid var(--border); }
+  .site-color h3{ font-size:13.5px; font-weight:700; color:var(--text-dark); margin:0 0 4px; }
+  .swatches{ display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 10px; }
+  .swatch{ display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:6px 12px 6px 8px; border:1px solid var(--border); border-radius:20px; background:var(--card-bg); font:inherit; font-size:12.5px; color:var(--text-dark); cursor:pointer; }
+  .swatch:hover{ border-color:var(--text-light); }
+  .swatch:focus-visible, .swatch:focus-within{ outline:2px solid var(--green-accent); outline-offset:2px; }
+  .swatch.selected{ border-color:var(--text-dark); box-shadow:inset 0 0 0 1px var(--text-dark); font-weight:600; }
+  .swatch-dot{ width:22px; height:22px; border-radius:50%; background:var(--sw); flex-shrink:0; }
+  .swatch-custom{ position:relative; }
+  /* The real color input covers the whole pill (invisible) so a click anywhere opens the picker. */
+  .swatch-custom input[type=color]{ position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; border:none; padding:0; }
+  .swatch-rainbow{ background:conic-gradient(#d9534f, #e8a33d, #e6d34a, #5cb85c, #3fa7c9, #5b6fd6, #a05bc8, #d9534f); }
   @media (max-width:900px){ .brand-logo-row{ grid-template-columns:auto 1fr; } .brand-logo-preview{ grid-column:1 / -1; width:auto; max-width:240px; } }
   @media (max-width:420px){ .brand-logo-tile{ width:76px; height:76px; } .brand-logo-tile img{ width:56px; height:56px; } .brand-logo-row{ gap:14px; } }
   /* Cover photo */
@@ -374,6 +386,28 @@
               </div>
             </div>
             <input type="file" id="brandLogoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
+
+            {{-- Site Color: the whole site's palette is built from this one color (App\Support\BrandTheme). --}}
+            @php $currentColor = $profile->brand_color ?: \App\Support\BrandTheme::DEFAULT; @endphp
+            <div class="site-color">
+              <h3 id="siteColorHead">Site Color</h3>
+              <p class="brand-logo-hint">Pick a color that matches your logo. Buttons, links, the sidebar and highlights across the admin, tenant and public pages will follow it.</p>
+              <div class="swatches" role="radiogroup" aria-labelledby="siteColorHead">
+                @foreach(\App\Support\BrandTheme::PRESETS as $name => $hex)
+                  <button type="button" class="swatch{{ $currentColor === $hex ? ' selected' : '' }}" role="radio" aria-checked="{{ $currentColor === $hex ? 'true' : 'false' }}" data-color="{{ $hex }}" style="--sw:{{ $hex }}" title="{{ $name }}">
+                    <span class="swatch-dot" aria-hidden="true"></span><span class="swatch-name">{{ $name }}</span>
+                  </button>
+                @endforeach
+                @php $isCustom = ! in_array($currentColor, \App\Support\BrandTheme::PRESETS, true); @endphp
+                <label class="swatch swatch-custom{{ $isCustom ? ' selected' : '' }}" title="Pick any color">
+                  {{-- Rainbow until a custom color is in use, so it never looks like a second copy of a preset. --}}
+                  <span class="swatch-dot{{ $isCustom ? '' : ' swatch-rainbow' }}" aria-hidden="true" style="--sw:{{ $currentColor }}"></span>
+                  <input type="color" id="customColorInput" value="{{ $currentColor }}" aria-label="Pick a custom color">
+                  <span class="swatch-name">Custom…</span>
+                </label>
+              </div>
+              <p class="brand-logo-hint" id="siteColorStatus" aria-live="polite">The page reloads after you pick, so you can see the new colors right away.</p>
+            </div>
           </div>
 
           {{-- Dormitory Information --}}
@@ -1078,6 +1112,30 @@
     btn.textContent = $('brandLogoPreviewImg').classList.contains('is-dorm') ? 'Replace Logo' : 'Upload Logo';
     this.value = '';
   });
+
+  // ===== Site Color =====
+  // Saves the color, then reloads so every color on the page (sidebar,
+  // buttons, links) switches over at once.
+  async function saveSiteColor(color){
+    $('siteColorStatus').textContent = 'Saving…';
+    try {
+      await api('{{ route('dormitory-profile.brand-color') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brand_color: color }),
+      });
+      $('siteColorStatus').textContent = 'Saved. Applying your new colors…';
+      location.reload();
+    } catch(e){
+      $('siteColorStatus').textContent = '';
+      toast(e.message, true);
+    }
+  }
+  document.querySelectorAll('.swatch[data-color]').forEach(btn => {
+    btn.addEventListener('click', () => saveSiteColor(btn.dataset.color));
+  });
+  // 'change' fires once when the color window closes, not on every drag.
+  $('customColorInput').addEventListener('change', e => saveSiteColor(e.target.value));
 
   // ===== Own tenancy documents (replace the generated ones) =====
   document.querySelectorAll('.doc-row[data-doc]').forEach(row => {

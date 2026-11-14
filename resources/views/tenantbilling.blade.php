@@ -82,7 +82,7 @@
   .pa-sub{ font-size:12px; color:var(--text-mid); margin-top:2px; line-height:1.5; }
   .pa-actions{ display:flex; gap:8px; margin-left:auto; }
   .pa-note{ font-size:12px; color:var(--text-mid); margin-top:12px; }
-  .paid-ahead-note{ display:block; font-size:11px; color:var(--green-dark); font-weight:600; }
+  .paid-ahead-note{ display:block; font-size:11px; color:var(--status-good, #2f6f3c); font-weight:600; }
   @media (max-width: 640px){ .pa-actions{ margin-left:0; width:100%; } .pa-actions button{ flex:1; } }
   .breakdown-amount{ font-size:12.5px; color:var(--text-dark); text-align:right; }
 

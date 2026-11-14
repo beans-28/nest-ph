@@ -38,7 +38,7 @@
   .figure-of{ font-size:18px; font-weight:500; color:var(--text-light); }
   .figure-label{ font-size:12.5px; color:var(--text-mid); }
   .delta{ font-size:11.5px; font-weight:600; padding:2px 8px; border-radius:20px; font-variant-numeric:tabular-nums; }
-  .delta.up{ background:var(--status-vacant-bg); color:var(--green-accent); }
+  .delta.up{ background:var(--brand-tint); color:var(--green-accent); }
   .delta.down{ background:var(--status-occupied-bg); color:var(--danger-text); }
   .chart-box{ position:relative; height:190px; }
   .chart-fallback{ position:absolute; inset:0; margin:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:12px; font-size:12.5px; color:var(--text-mid); background:#f7f9f7; border-radius:8px; }
@@ -49,7 +49,7 @@
   .bed-floor-label{ flex:0 0 56px; font-size:12px; color:var(--text-mid); }
   .bed-cells{ display:flex; flex-wrap:wrap; gap:5px; }
   .bed{ width:18px; height:18px; border-radius:4px; display:inline-block; flex-shrink:0; }
-  .bed-occupied{ background:var(--green-accent); }
+  .bed-occupied{ background:var(--status-good, #2f6f3c); }
   .bed-vacant{ background:var(--card-bg); box-shadow:inset 0 0 0 1.5px var(--bed-open-ring); }
   /* Not colour alone: maintenance is striped, reserved has a centre dot,
      open is an outline, so colour-blind admins can still tell them apart. */
@@ -63,7 +63,7 @@
 
   .stack{ display:flex; gap:3px; height:14px; border-radius:7px; overflow:hidden; margin:6px 0 16px; }
   .stack-seg{ flex-basis:0; min-width:6px; }
-  .seg-paid{ background:var(--green-accent); }
+  .seg-paid{ background:var(--status-good, #2f6f3c); }
   .seg-partial{ background:var(--status-maintenance); }
   .seg-unpaid{ background:var(--bar-neutral); }
   .seg-overdue{ background:var(--danger); }
@@ -84,6 +84,37 @@
     .panel-bills .stack-keys{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
     .figure-value{ font-size:26px; }
   }
+
+  /* ---- Greeting + Quick Actions + Needs Your Attention ---- */
+  .welcome{ margin-bottom:18px; }
+  .welcome h1{ font-size:22px; font-weight:700; color:var(--text-dark); margin:0 0 4px; }
+  .welcome p{ font-size:13px; color:var(--text-mid); margin:0; }
+  .today{ display:flex; flex-direction:column; gap:16px; margin-bottom:16px; }
+  .actions{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
+  /* Wide screens: all six in one row, icon above the text so labels never wrap. */
+  @media (min-width: 1280px){ .actions{ grid-template-columns:repeat(6, minmax(0,1fr)); } .action{ flex-direction:column; align-items:center; text-align:center; gap:10px; } .action-text{ align-items:center; } }
+  .action{ display:flex; align-items:center; gap:12px; padding:14px; min-height:64px; border:1px solid var(--border); border-radius:10px; text-decoration:none; color:var(--text-dark); background:var(--card-bg); transition:border-color .15s, background .15s; }
+  .action:hover{ border-color:var(--green-accent); background:var(--brand-tint); }
+  .action:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; }
+  .action-icon{ flex:0 0 38px; width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; background:var(--brand-tint); color:var(--green-accent); }
+  .action-icon svg{ width:20px; height:20px; }
+  .action-text{ display:flex; flex-direction:column; min-width:0; }
+  .action-text strong{ font-size:13.5px; font-weight:600; }
+  .action-text span{ font-size:11.5px; color:var(--text-mid); }
+  .attn{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:6px 10px; }
+  .attn > li{ min-width:0; } .attn-row{ height:100%; }
+  .attn-row{ display:flex; align-items:center; gap:12px; padding:10px 12px; min-height:48px; border-radius:9px; text-decoration:none; color:var(--text-dark); background:#f7f9f7; }
+  .attn-row:hover{ background:var(--brand-tint); }
+  .attn-row:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; }
+  .attn-count{ flex:0 0 auto; min-width:32px; height:28px; padding:0 8px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; background:var(--card-bg); border:1px solid var(--border); }
+  .attn-row.urgent{ background:#fbeceb; }
+  .attn-row.urgent .attn-count{ background:#c0463d; border-color:#c0463d; color:#fff; }
+  .attn-text{ flex:1; font-size:13px; display:flex; flex-direction:column; }
+  .attn-text small{ font-size:11.5px; color:var(--text-mid); margin-top:2px; }
+  .attn-go{ font-size:20px; color:var(--text-light); }
+  .all-clear{ font-size:13px; color:var(--green-accent); background:var(--brand-tint); border-radius:9px; padding:14px; margin:0; }
+  @media (max-width: 900px){ .attn{ grid-template-columns:1fr; } }
+  @media (max-width: 560px){ .actions{ grid-template-columns:repeat(2, minmax(0,1fr)); } .action-text span{ display:none; } }
 
   .alert-banner{ background:#fbeceb; border:1px solid #f2c3bf; border-radius:12px; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
   .alert-banner-text strong{ display:block; font-size:13.5px; color:#a8382f; }
@@ -143,8 +174,14 @@
     </div>
 
     <div class="content">
-      <div class="page-head">
-        <h1>Admin Dashboard</h1>
+      @php
+        $hour = (int) now()->format('G');
+        $greeting = $hour < 12 ? 'Good morning' : ($hour < 18 ? 'Good afternoon' : 'Good evening');
+        $firstName = \Illuminate\Support\Str::of(auth()->user()->name ?? 'Admin')->before(' ');
+      @endphp
+      <div class="welcome">
+        <h1>{{ $greeting }}, {{ $firstName }}</h1>
+        <p>{{ now()->format('l, F j') }} · Here is what needs your attention today.</p>
       </div>
 
       @php
@@ -168,6 +205,79 @@
       @if(! $seeBilling && ! $seeRooms && ! $seeTenants && ! $seeReports && ! $me->hasPrivilege('manage_contracts'))
         <p class="empty-note no-access-note">Your account has no sections assigned yet. Ask the Dormitory Owner to grant you access on the Admin Privileges page.</p>
       @endif
+
+      @php
+        // Shortcuts to the jobs admins do most. Each one only shows if this
+        // admin has the privilege for it (same rules as the sidebar).
+        $actions = collect([
+          ['show' => $seeBilling, 'href' => route('payments.index') . '?tab=pending', 'title' => 'Verify Payments', 'hint' => 'Check uploaded proofs',
+           'icon' => '<path d="M9 12l2 2 4-4"/><rect x="3" y="4" width="18" height="16" rx="2"/>'],
+          ['show' => $seeBilling, 'href' => route('payments.index'), 'title' => 'Billing', 'hint' => 'Bills and cash payments',
+           'icon' => '<rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20M6 15h4"/>'],
+          ['show' => $seeTenants, 'href' => route('applications.index'), 'title' => 'Applications', 'hint' => 'Approve new tenants',
+           'icon' => '<path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>'],
+          ['show' => $seeTenants, 'href' => route('tenant-manager.index'), 'title' => 'Tenants', 'hint' => 'Find a tenant\'s profile',
+           'icon' => '<path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>'],
+          ['show' => $seeRooms, 'href' => route('vacancy.index'), 'title' => 'Vacant Beds', 'hint' => 'See open rooms',
+           'icon' => '<path d="M2 18V6M2 14h20v4M22 14v-3a3 3 0 00-3-3h-7v6"/><circle cx="7" cy="10.5" r="2"/>'],
+          ['show' => $seeTenants, 'href' => route('tickets.index'), 'title' => 'Maintenance', 'hint' => 'Repair requests',
+           'icon' => '<path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94z"/>'],
+        ])->where('show', true)->take(6);
+
+        // Each row: [show, count, label, link, urgent]
+        $attn = collect([
+          [$seeBilling, $attention['overdue'], $attention['overdue'] === 1 ? 'tenant with an overdue bill' : 'tenants with overdue bills', route('delinquency.index'), true,
+            $topDelinquent ? 'Longest: ' . $topDelinquent['name'] . ($topDelinquent['room_no'] ? ' (Room ' . $topDelinquent['room_no'] . ')' : '') . ', ' . $topDelinquent['days_overdue'] . ' days' : null],
+          [$seeTenants, $overdueTicketsCount, $overdueTicketsCount === 1 ? 'maintenance ticket is overdue' : 'maintenance tickets are overdue', route('tickets.index'), true,
+            $ticketOverdueSummary['critical'] > 0 ? $ticketOverdueSummary['critical'] . ' critical or high priority' : null],
+          [$seeBilling, $attention['proofs'], $attention['proofs'] === 1 ? 'payment proof to verify' : 'payment proofs to verify', route('payments.index') . '?tab=pending', false, null],
+          [$seeTenants, $attention['applications'], $attention['applications'] === 1 ? 'application to review' : 'applications to review', route('applications.index'), false, null],
+          [$seeBilling, $attention['unpaid'], $attention['unpaid'] === 1 ? 'tenant with an unpaid bill (not yet due)' : 'tenants with unpaid bills (not yet due)', route('payments.index'), false, null],
+          [$seeTenants, $attention['tickets'], $attention['tickets'] === 1 ? 'new maintenance request' : 'new maintenance requests', route('tickets.index'), false, null],
+          [$seeTenants, $attention['inquiries'], $attention['inquiries'] === 1 ? 'inquiry waiting for a reply' : 'inquiries waiting for a reply', route('inquiries.index'), false, null],
+        ])->filter(fn ($r) => $r[0]);
+        $attnOpen = $attn->filter(fn ($r) => $r[1] > 0);
+      @endphp
+
+      @if($actions->isNotEmpty() || $attn->isNotEmpty())
+      <div class="today">
+        @if($actions->isNotEmpty())
+        <section class="panel" aria-labelledby="qaHead">
+          <header class="panel-head"><h2 id="qaHead">Quick Actions</h2></header>
+          <div class="actions">
+            @foreach($actions as $a)
+              <a href="{{ $a['href'] }}" class="action">
+                <span class="action-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">{!! $a['icon'] !!}</svg></span>
+                <span class="action-text"><strong>{{ $a['title'] }}</strong><span>{{ $a['hint'] }}</span></span>
+              </a>
+            @endforeach
+          </div>
+        </section>
+        @endif
+
+        @if($attn->isNotEmpty())
+        <section class="panel" aria-labelledby="attnHead">
+          <header class="panel-head"><h2 id="attnHead">Needs Your Attention</h2></header>
+          @if($attnOpen->isEmpty())
+            <p class="all-clear">All caught up. Nothing is waiting on you right now.</p>
+          @else
+            <ul class="attn">
+              @foreach($attnOpen as [$show, $count, $label, $href, $urgent, $sub])
+                <li>
+                  <a href="{{ $href }}" class="attn-row{{ $urgent ? ' urgent' : '' }}">
+                    <span class="attn-count">{{ $count }}</span>
+                    <span class="attn-text">{{ $label }}@if($sub)<small>{{ $sub }}</small>@endif</span>
+                    <span class="attn-go" aria-hidden="true">›</span>
+                  </a>
+                </li>
+              @endforeach
+            </ul>
+          @endif
+        </section>
+        @endif
+      </div>
+      @endif
+
       @if($overviewCards > 0)
       <div class="overview{{ $overviewCards < 4 ? ' overview-partial' : '' }}">
         @if($seeBilling)
@@ -268,26 +378,6 @@
         </section>
         @endif
       </div>
-      @endif
-
-      @if($seeTenants && $ticketOverdueSummary['total'] > 0)
-        <div class="alert-banner">
-          <div class="alert-banner-text">
-            <strong>{{ $ticketOverdueSummary['total'] }} {{ $ticketOverdueSummary['total'] === 1 ? 'ticket is' : 'tickets are' }} overdue{{ $ticketOverdueSummary['critical'] > 0 ? ' (' . $ticketOverdueSummary['critical'] . ' critical or high)' : '' }}.</strong>
-            <span>Overdue tickets are listed first on the Tickets page.</span>
-          </div>
-          <a href="{{ route('tickets.index') }}" class="alert-review-btn" style="text-decoration:none;">View Tickets</a>
-        </div>
-      @endif
-
-      @if($seeBilling && $topDelinquent)
-        <div class="alert-banner">
-          <div class="alert-banner-text">
-            <strong>{{ $delinquentCount }} {{ $delinquentCount === 1 ? 'delinquent account needs' : 'delinquent accounts need' }} attention</strong>
-            <span>{{ $topDelinquent['name'] }}{{ $topDelinquent['room_no'] ? ' (Room ' . $topDelinquent['room_no'] . ')' : '' }} is {{ $topDelinquent['days_overdue'] }} days overdue. Immediate escalation recommended.</span>
-          </div>
-          <a href="{{ route('delinquency.index') }}" class="alert-review-btn" style="text-decoration:none;">Review</a>
-        </div>
       @endif
 
       @include('partials.announcements-feed')

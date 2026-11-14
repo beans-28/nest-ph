@@ -45,6 +45,8 @@ class PurezaStationSeeder extends Seeder
 
         $profile->fill([
             'dorm_name' => 'Pureza Station Dormitory',
+            // Gold, to match their logo (Dormitory Profile > Site Color).
+            'brand_color' => '#c98a2b',
             'address' => '329 C De Dios, Brgy. 632, Sta. Mesa, Manila',
             'contact_email' => 'dormitorypurezastation@gmail.com',
             'facebook_page_name' => 'Pureza Station Dormitory',

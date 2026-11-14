@@ -223,6 +223,24 @@ class DormitoryProfileController extends Controller
     }
 
     /**
+     * Site color: one hex code the whole site's palette is built from
+     * (see App\Support\BrandTheme). Empty = back to the default green.
+     */
+    public function updateBrandColor(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'brand_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+        ]);
+
+        $profile = DormitoryProfile::current();
+        $color = $data['brand_color'] ? strtolower($data['brand_color']) : null;
+        $profile->brand_color = $color === \App\Support\BrandTheme::DEFAULT ? null : $color;
+        $profile->save();
+
+        return response()->json(['message' => 'Site color updated.']);
+    }
+
+    /**
      * Blank copy of one of the dorm's documents (agreement / rules / fees),
      * for the admin to check. The old "policies file" upload was replaced:
      * the public Dorm Info page now always shows the Rules and Regulations.

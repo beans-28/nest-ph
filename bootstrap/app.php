@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        // Dorm's own color palette on every page (Dormitory Profile > Site Color).
+        $middleware->web(append: [\App\Http\Middleware\InjectBrandTheme::class]);
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'platform' => \App\Http\Middleware\EnsureUserIsPlatformAdmin::class,

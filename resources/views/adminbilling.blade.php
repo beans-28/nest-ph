@@ -92,7 +92,7 @@
   .coming-soon p{ font-size:13px; max-width:420px; margin:0 auto; line-height:1.6; }
 
   .status-pill{ font-weight:700; font-size:11.5px; }
-  .status-pill.paid{ color:var(--green-accent); }
+  .status-pill.paid{ color:var(--status-good, #2f6f3c); }
   .status-pill.overdue{ color:var(--status-occupied); }
   .status-pill.unpaid{ color:var(--orange); }
   .status-pill.partial{ color:var(--blue); }
@@ -663,6 +663,9 @@
       if(t.dataset.tab === 'penalties') loadPenalties();
     });
   });
+  // Dashboard shortcuts link here as /payments?tab=pending, so open that tab.
+  const startTab = new URLSearchParams(location.search).get('tab');
+  if (startTab) $('tabsRow').querySelector('[data-tab="' + CSS.escape(startTab) + '"]')?.click();
 
   // ===== List =====
   function visible(){

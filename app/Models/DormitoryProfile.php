@@ -17,6 +17,7 @@ class DormitoryProfile extends Model
         'logo_path',
         'hero_photo_paths',
         'brand_logo_path',
+        'brand_color',
         'policies_file_path',
         'contract_template_path',
         'business_permit_path',
