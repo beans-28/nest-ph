@@ -51,7 +51,9 @@ class ExpireMoveInReservations extends Command
 
                 if ($contract?->bed_id) {
                     $bed = Bed::with('room')->find($contract->bed_id);
-                    if ($bed && $bed->status === 'reserved') {
+                    // Only a half-paid bill holds the bed; an unpaid one never
+                    // reserved it (the bed may belong to someone else now).
+                    if ($bed && $bed->status === 'reserved' && $bill->status === 'partial') {
                         $bed->update(['status' => 'vacant']);
                         $bed->room?->syncStatusFromBeds();
                     }

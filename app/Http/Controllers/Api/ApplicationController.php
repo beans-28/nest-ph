@@ -171,15 +171,9 @@ class ApplicationController extends Controller
             ], 409);
         }
 
-        $alreadyPending = Application::where('bed_id', $bed->id)
-            ->where('status', 'pending')
-            ->exists();
-
-        if ($alreadyPending) {
-            return response()->json([
-                'message' => 'There is already a pending application for that bedspace.',
-            ], 409);
-        }
+        // Client revision (Nov 2026): several people may apply for the same
+        // vacant bed. Applying does NOT reserve it: the first applicant whose
+        // move-in payment is verified gets it (PaymentController::claimBedForMoveIn).
 
         $idDocumentPath = $request->hasFile('id_document')
             ? $request->file('id_document')->store('application-documents', 'public')
@@ -264,11 +258,6 @@ class ApplicationController extends Controller
                 'dpa_consent' => true,
                 'status' => 'pending',
             ]);
-
-            // Step 7.3: tag the bedspace Reserved so it stops appearing
-            // available to other prospective tenants immediately.
-            $bed->update(['status' => 'reserved']);
-            $bed->room?->syncStatusFromBeds();
 
             return $application;
         });
@@ -452,9 +441,11 @@ class ApplicationController extends Controller
         // it in at submission time. If it isn't, something else has already
         // claimed or changed it — approving now would silently double-assign
         // a bed.
-        if ($bed->status !== 'reserved') {
+        // Applications no longer reserve beds, so the bed must still be
+        // vacant. If it's reserved/occupied, another tenant already paid first.
+        if ($bed->status !== 'vacant') {
             return response()->json([
-                'message' => 'That bedspace is no longer reserved for this application and cannot be assigned.',
+                'message' => 'That bedspace is no longer vacant: another tenant has already paid for it. Reject this application or ask the applicant to choose another bed.',
             ], 409);
         }
 
@@ -527,7 +518,10 @@ class ApplicationController extends Controller
                 'approved_by' => $request->user()?->id,
             ]);
 
-            // NOTE: the bed is deliberately left as 'reserved' here — it was
+            // NOTE (Nov 2026): the bed now stays 'vacant' at approval and is
+            // only reserved by the first verified move-in payment
+            // (PaymentController::claimBedForMoveIn). Older note:
+            // the bed is deliberately left as 'reserved' here — it was
             // already reserved at application submission time (store()), and
             // approving the application doesn't mean the tenant has actually
             // paid anything yet. It only becomes 'occupied' once the move-in

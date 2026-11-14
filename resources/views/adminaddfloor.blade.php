@@ -57,7 +57,7 @@
   .floor-block.open .floor-header .chev{ transform:rotate(90deg); }
   .floor-block.open .floor-header{ border-bottom-left-radius:0; border-bottom-right-radius:0; border-bottom:none; }
 
-  .floor-rooms{ display:none; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:14px; border:1px solid var(--border); border-top:none; border-bottom-left-radius:8px; border-bottom-right-radius:8px; padding:18px 16px 20px 16px; }
+  .floor-rooms{ display:none; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:14px; border:1px solid var(--border); border-top:none; border-bottom-left-radius:8px; border-bottom-right-radius:8px; padding:18px 16px 20px 16px; }
   .floor-block.open .floor-rooms{ display:grid; }
   .floor-empty{ display:none; border:1px solid var(--border); border-top:none; border-bottom-left-radius:8px; border-bottom-right-radius:8px; padding:22px 16px; text-align:center; color:var(--text-light); font-size:12.5px; }
   .floor-block.open .floor-empty{ display:block; }
@@ -71,16 +71,6 @@
   .room-status-badge.full{ background:var(--status-occupied-bg); color:var(--status-occupied); }
   .room-status-badge.maintenance{ background:var(--status-maintenance-bg); color:var(--status-maintenance); }
 
-  .bed-row{ display:flex; align-items:center; gap:9px; margin-bottom:7px; cursor:pointer; }
-  .bed-row:last-child{ margin-bottom:0; }
-  .bed-row:hover .bed-label{ color:var(--text-dark); }
-  .bed-swatch{ width:16px; height:16px; border-radius:4px; flex-shrink:0; cursor:pointer; transition:transform 0.1s ease; }
-  .bed-swatch:hover{ transform:scale(1.15); }
-  .bed-swatch.occupied{ background:var(--status-occupied); }
-  .bed-swatch.vacant{ background:var(--status-vacant); }
-  .bed-swatch.reserved{ background:var(--status-reserved); }
-  .bed-swatch.maintenance{ background:var(--status-maintenance); }
-  .bed-label{ font-size:12.5px; color:var(--text-mid); }
 
   .floor-header-left{ display:flex; align-items:center; gap:10px; }
   .floor-header-right{ display:flex; align-items:center; gap:10px; }
@@ -124,6 +114,53 @@
 
   @media (max-width: 1280px){ .stats-row{ grid-template-columns:repeat(3, 1fr); } }
   @media (max-width: 900px){ .stats-row{ grid-template-columns:repeat(2, 1fr); } }
+  /* Nov 2026 client revision: vacancy overview + bed tiles.
+     Vacant is the state the admin is hunting for, so it gets the strongest
+     treatment; occupied/reserved/maintenance stay readable but quieter. */
+  .overview-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:20px 24px 14px; margin-bottom:20px; }
+  .overview-top{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .overview-top h2{ font-size:15px; font-weight:700; margin:0; }
+  .overview-headline{ font-size:13px; color:var(--text-mid); font-variant-numeric:tabular-nums; }
+  .overview-headline strong{ font-size:22px; color:#2f7a3d; margin-right:3px; }
+  .occ-bar{ display:flex; gap:2px; height:12px; border-radius:6px; overflow:hidden; background:#eef1ee; }
+  .occ-bar span{ display:block; height:100%; min-width:3px; }
+  .occ-bar .occupied{ background:var(--status-occupied); }
+  .occ-bar .reserved{ background:var(--status-reserved); }
+  .occ-bar .vacant{ background:var(--status-vacant); }
+  .occ-bar .maintenance{ background:var(--status-maintenance); }
+  .floor-summary{ list-style:none; margin:14px 0 0; padding:0; }
+  .floor-sum-item{ display:grid; grid-template-columns:72px minmax(120px, 1fr) 130px 150px; align-items:center; gap:16px; width:100%; padding:10px 8px; border:0; border-top:1px solid var(--border); background:none; text-align:left; font:inherit; font-size:12.5px; color:var(--text-mid); cursor:pointer; border-radius:0; font-variant-numeric:tabular-nums; }
+  .floor-sum-item:hover{ background:#f7f9f7; }
+  .floor-sum-item:focus-visible{ outline:2px solid var(--green-accent); outline-offset:-2px; }
+  .floor-sum-item .fs-name{ font-weight:700; color:var(--text-dark); font-size:13px; }
+  .floor-sum-item .occ-bar{ height:8px; }
+  .floor-sum-item .fs-vac{ font-weight:600; color:#2f7a3d; }
+  .floor-sum-item .fs-vac.none{ color:#b23b34; }
+  .floor-sum-item .fs-rooms{ color:var(--text-light); text-align:right; }
+  @media (max-width: 760px){
+    .floor-sum-item{ grid-template-columns:1fr auto; row-gap:6px; }
+    .floor-sum-item .occ-bar{ grid-column:1 / -1; grid-row:2; }
+    .floor-sum-item .fs-rooms{ grid-column:1 / -1; text-align:left; }
+  }
+
+  .bed-avail-head{ display:flex; justify-content:space-between; align-items:baseline; border-top:1px solid var(--border); padding-top:11px; margin:2px 0 9px; font-variant-numeric:tabular-nums; }
+  .bed-avail-head .ba-title{ font-size:12px; font-weight:700; color:var(--text-dark); }
+  .bed-avail-head .ratio{ font-size:12px; color:var(--text-light); }
+  .bed-avail-head .ratio b{ font-size:16px; color:#2f7a3d; }
+  .bed-avail-head .ratio.none b{ color:#b23b34; }
+  .bed-tiles{ display:grid; grid-template-columns:repeat(auto-fill, minmax(70px, 1fr)); gap:6px; }
+  .bed-tile{ display:flex; flex-direction:column; align-items:center; gap:2px; border-radius:7px; padding:8px 4px 7px; cursor:pointer; border:1px solid transparent; line-height:1.2; transition:transform 0.12s cubic-bezier(0.16,1,0.3,1), box-shadow 0.12s ease; }
+  .bed-tile:hover{ transform:translateY(-1px); box-shadow:0 2px 6px rgba(20,30,20,0.10); }
+  .bed-tile:focus-visible{ outline:2px solid var(--text-dark); outline-offset:2px; }
+  .bed-tile svg{ width:15px; height:15px; margin-bottom:2px; }
+  .bed-tile .bt-name{ font-size:11.5px; font-weight:600; white-space:nowrap; }
+  .bed-tile .bt-status{ font-size:10.5px; text-transform:capitalize; white-space:nowrap; }
+  .bed-tile.occupied{ background:var(--status-occupied-bg); color:#9b2f29; border-color:#efc4c0; }
+  .bed-tile.vacant{ background:var(--status-vacant-bg); color:#256b33; border-color:#8fd09a; }
+  .bed-tile.reserved{ background:var(--status-reserved-bg); color:#553a9c; border-color:#d6caf0; }
+  .bed-tile.maintenance{ background:var(--status-maintenance-bg); color:#7a5712; border-color:#ead6a8; }
+  .vacant-note{ font-size:12px; font-weight:600; color:#2f7a3d; margin-top:10px; }
+  .vacant-note.none{ color:#b23b34; }
 </style>
 </head>
 <body>
@@ -173,6 +210,15 @@
         </div>
       </div>
 
+      <div class="overview-card" aria-labelledby="overviewTitle">
+        <div class="overview-top">
+          <h2 id="overviewTitle">Vacancy Overview</h2>
+          <div class="overview-headline" id="overviewHeadline"></div>
+        </div>
+        <div class="occ-bar" id="overviewBar" role="img"></div>
+        <ul class="floor-summary" id="floorSummary" aria-label="Vacancy by floor"></ul>
+      </div>
+
       <div class="filter-card">
         <div class="filter-group"><label>Floor</label><div class="filter-select"><span>All Floors</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div></div>
         <div class="filter-group"><label>Room Type</label><div class="filter-select"><span>All Types</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg></div></div>
@@ -185,7 +231,7 @@
 
       <div class="map-card">
         <div class="map-head">
-          <div><h2>Room / Bed Map</h2><p>Click a room to view bedspace details.</p></div>
+          <div><h2>Room / Bed Map</h2><p>Click a bed to change its status. Green beds are open for new tenants.</p></div>
           <div class="legend">
             <div class="legend-item"><span class="legend-dot occupied"></span>Occupied</div>
             <div class="legend-item"><span class="legend-dot vacant"></span>Vacant</div>
@@ -324,6 +370,60 @@
     document.getElementById('statVacant').textContent = vacant;
     document.getElementById('statReserved').textContent = reserved;
     document.getElementById('statMaintenance').textContent = maintenance;
+    renderOverview({ total, occupied, reserved, vacant, maintenance });
+  }
+
+  function countBeds(beds){
+    const c = { total: beds.length, occupied: 0, reserved: 0, vacant: 0, maintenance: 0 };
+    beds.forEach(b => { if(c[b.status] !== undefined) c[b.status]++; });
+    return c;
+  }
+
+  function barHtml(c){
+    if(!c.total) return '';
+    return ['occupied', 'reserved', 'vacant', 'maintenance']
+      .filter(k => c[k] > 0)
+      .map(k => `<span class="${k}" style="width:${(c[k] / c.total * 100).toFixed(2)}%" title="${c[k]} ${k}"></span>`)
+      .join('');
+  }
+
+  // Overall bar + one tile per floor, so the admin sees at a glance where
+  // the vacant beds are. Clicking a floor tile opens that floor below.
+  function renderOverview(c){
+    const headline = document.getElementById('overviewHeadline');
+    headline.innerHTML = c.total
+      ? `<strong>${c.vacant}</strong> of ${c.total} beds vacant (${Math.round(c.vacant / c.total * 100)}%)`
+      : 'No beds added yet';
+    const bar = document.getElementById('overviewBar');
+    bar.innerHTML = barHtml(c);
+    bar.style.display = c.total ? '' : 'none';
+    bar.setAttribute('aria-label', `${c.occupied} occupied, ${c.reserved} reserved, ${c.vacant} vacant, ${c.maintenance} under maintenance`);
+
+    const wrap = document.getElementById('floorSummary');
+    wrap.innerHTML = '';
+    floorGroups.forEach(group => {
+      const beds = group.rooms.flatMap(r => r.beds);
+      const fc = countBeds(beds);
+      const roomsWithSpace = group.rooms.filter(r => r.beds.some(b => b.status === 'vacant')).length;
+      const li = document.createElement('li');
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'floor-sum-item';
+      item.title = `Show Floor ${group.label} rooms`;
+      item.innerHTML = `
+        <span class="fs-name">Floor ${group.label}</span>
+        <span class="occ-bar" role="img" aria-label="${fc.occupied} occupied, ${fc.reserved} reserved, ${fc.vacant} vacant, ${fc.maintenance} maintenance">${barHtml(fc)}</span>
+        <span class="fs-vac ${fc.vacant === 0 ? 'none' : ''}">${fc.vacant === 0 ? 'Full' : `${fc.vacant} of ${fc.total} beds vacant`}</span>
+        <span class="fs-rooms">${roomsWithSpace} of ${group.rooms.length} room${group.rooms.length === 1 ? '' : 's'} with space</span>
+      `;
+      li.appendChild(item);
+      item.addEventListener('click', () => {
+        openFloorLabel = normalizeFloorLabel(group.label);
+        renderFloors();
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      wrap.appendChild(li);
+    });
   }
 
   function findRoom(floorLabel, roomId){
@@ -393,15 +493,20 @@
           const card = document.createElement('div');
           card.className = 'room-card';
 
+          const vacantCount = room.beds.filter(b => b.status === 'vacant').length;
           let bedsHtml = '';
           room.beds.forEach(bed => {
             bedsHtml += `
-              <div class="bed-row" data-bed-id="${bed.id}" tabindex="0" role="button" aria-label="Bed ${bed.bed_label}, ${bed.status}. Activate to cycle status.">
-                <span class="bed-swatch ${bed.status}"></span>
-                <span class="bed-label">${bed.bed_label}</span>
+              <div class="bed-tile ${bed.status}" data-bed-id="${bed.id}" tabindex="0" role="button" aria-label="${bed.bed_label}, ${bed.status}. Activate to cycle status." title="Click to change status">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 18v-6a2 2 0 012-2h16a2 2 0 012 2v6"/><path d="M2 18h20M4 10V6a2 2 0 012-2h4a2 2 0 012 2v4"/></svg>
+                <span class="bt-name">${bed.bed_label}</span>
+                <span class="bt-status">${bed.status}</span>
               </div>
             `;
           });
+          const vacantNote = vacantCount === 0
+            ? '<div class="vacant-note none">No vacant beds</div>'
+            : `<div class="vacant-note">${vacantCount} vacant bed${vacantCount === 1 ? '' : 's'} remaining</div>`;
 
           card.innerHTML = `
             <div class="room-card-head">
@@ -420,7 +525,9 @@
               </div>
             </div>
             <span class="room-status-badge ${room.status}">${room.status}</span>
-            ${bedsHtml}
+            <div class="bed-avail-head"><span class="ba-title">Bed Availability</span><span class="ratio ${vacantCount === 0 ? 'none' : ''}" aria-label="${vacantCount} of ${room.beds.length} beds vacant"><b>${vacantCount}</b> / ${room.beds.length} vacant</span></div>
+            <div class="bed-tiles">${bedsHtml}</div>
+            ${vacantNote}
           `;
           roomsGrid.appendChild(card);
         });
@@ -482,7 +589,7 @@
       });
     });
 
-    container.querySelectorAll('.bed-row').forEach(row => {
+    container.querySelectorAll('.bed-tile').forEach(row => {
       row.addEventListener('keydown', (e) => {
         if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); row.click(); }
       });
@@ -495,7 +602,7 @@
         // cancel that, so cycling skips it; changing it on purpose is
         // still possible from the room's Edit screen.
         if(bed.status === 'reserved'){
-          alert('This bed is reserved for an applicant, so clicking won\'t change it. To change it on purpose, use Edit on this room.');
+          alert('This bed is reserved by a tenant who has already paid, so clicking won\'t change it. To change it on purpose, use Edit on this room.');
           return;
         }
 

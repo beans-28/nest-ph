@@ -415,11 +415,11 @@
     });
     return;
   }
-  const d = @json([
+  const d = {!! json_encode([
     'labels' => $cardCharts['labels'],
     'revenue' => $seeBilling ? $cardCharts['revenue'] : [],
     'tenants' => $seeTenants ? $cardCharts['tenants'] : [],
-  ]);
+  ]) !!};
   // Colours come from admin.css so the charts follow any palette change.
   const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const C = { muted:css('--chart-muted'), mutedHover:css('--chart-muted-hover'), accent:css('--green-accent'),

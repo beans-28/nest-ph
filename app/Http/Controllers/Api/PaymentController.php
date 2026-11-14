@@ -349,6 +349,10 @@ class PaymentController extends Controller
             ], 422);
         }
 
+        if ($message = $this->bedTakenMessage($billingStatement)) {
+            return response()->json(['message' => $message], 409);
+        }
+
         $payment = DB::transaction(function () use ($billingStatement, $data, $request) {
             $payment = Payment::create([
                 'billing_id' => $billingStatement->id,
@@ -365,6 +369,7 @@ class PaymentController extends Controller
             ]);
 
             $this->resyncStatementStatus($billingStatement);
+            $this->claimBedForMoveIn($billingStatement);
 
             return $payment;
         });
@@ -435,6 +440,10 @@ class PaymentController extends Controller
             ], 422);
         }
 
+        if ($message = $this->bedTakenMessage($billingStatement)) {
+            return response()->json(['message' => $message], 409);
+        }
+
         // Don't let a tenant stack multiple pending submissions on one bill.
         $hasPending = Payment::where('billing_id', $billingStatement->id)
             ->where('status', 'pending')
@@ -498,6 +507,10 @@ class PaymentController extends Controller
             ], 422);
         }
 
+        if ($message = $this->bedTakenMessage($statement)) {
+            return response()->json(['message' => $message . ' Reject this proof so the tenant can be refunded.'], 409);
+        }
+
         DB::transaction(function () use ($payment, $statement, $data, $request) {
             $payment->update([
                 'status' => 'approved',
@@ -507,6 +520,7 @@ class PaymentController extends Controller
             ]);
 
             $this->resyncStatementStatus($statement);
+            $this->claimBedForMoveIn($statement);
 
             if ($statement->status === 'paid') {
                 app(\App\Services\EscalationService::class)->resolveSettledEscalations();
@@ -682,6 +696,68 @@ class PaymentController extends Controller
     }
 
     /**
+     * Client revision (Nov 2026): a bed is only reserved once someone PAYS
+     * for it. Several approved applicants can be waiting on the same bed;
+     * whoever's move-in payment is verified first gets it. Returns an error
+     * message when the bed on this move-in bill was already won by someone
+     * else, or null when the payment may go through.
+     *
+     * A bill that already has an approved payment is the one holding the
+     * bed, so its later payments (e.g. the second half) are always allowed.
+     */
+    private function bedTakenMessage(BillingStatement $statement): ?string
+    {
+        if ($statement->type !== 'move_in') {
+            return null;
+        }
+
+        $statement->loadMissing('contract');
+        $bed = $statement->contract?->bed_id ? Bed::find($statement->contract->bed_id) : null;
+
+        if (! $bed || $bed->status === 'vacant') {
+            return null;
+        }
+
+        $alreadyHolds = Payment::where('billing_id', $statement->id)->where('status', 'approved')->exists();
+
+        return $alreadyHolds ? null : 'This bedspace was already taken by another tenant who paid first.';
+    }
+
+    /**
+     * Runs inside the payment transaction, right after the payment is
+     * approved. Locks the bed row so two payments verified at the same
+     * moment can't both claim it; the loser's whole transaction is undone.
+     * A partly-paid move-in fee reserves the bed; a fully-paid one is then
+     * marked occupied by activateTenantIfMoveInSettled().
+     */
+    private function claimBedForMoveIn(BillingStatement $statement): void
+    {
+        if ($statement->type !== 'move_in') {
+            return;
+        }
+
+        $statement->loadMissing('contract');
+        $bedId = $statement->contract?->bed_id;
+        $bed = $bedId ? Bed::with('room')->lockForUpdate()->find($bedId) : null;
+
+        if (! $bed) {
+            return;
+        }
+
+        $approvedCount = Payment::where('billing_id', $statement->id)->where('status', 'approved')->count();
+
+        // This is the bill's first approved payment, but the bed is gone.
+        if ($bed->status !== 'vacant' && $approvedCount <= 1) {
+            abort(409, 'This bedspace was already taken by another tenant who paid first.');
+        }
+
+        if ($bed->status === 'vacant') {
+            $bed->update(['status' => 'reserved']);
+            $bed->room?->syncStatusFromBeds();
+        }
+    }
+
+    /**
      * Use Case Report — Pay Move-In Fees, step 6.1: once a move-in fee
      * statement is fully settled, occupy the bed and — for a brand-new
      * onboarding tenant — activate the account and send the move-in permit.
@@ -711,7 +787,7 @@ class PaymentController extends Controller
             if ($contract && $contract->bed_id) {
                 $bed = Bed::with('room')->find($contract->bed_id);
 
-                if ($bed && $bed->status === 'reserved') {
+                if ($bed && in_array($bed->status, ['reserved', 'vacant'], true)) {
                     $bed->update(['status' => 'occupied']);
                     $bed->room?->syncStatusFromBeds();
                 }
