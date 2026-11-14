@@ -33,12 +33,16 @@ class InjectBrandTheme
         }
 
         try {
-            $style = BrandTheme::styleTag(DormitoryProfile::current()->brand_color);
+            $color = DormitoryProfile::current()->brand_color;
+            $style = BrandTheme::styleTag($color);
         } catch (\Throwable $e) {
             return $response; // DB down: keep the default colors, never break the page.
         }
 
         if ($style !== '') {
+            // Pages with greens typed directly into their styles (login,
+            // public pages) get those swapped too.
+            $content = BrandTheme::recolorHtml($content, $color);
             $pos = strripos($content, '</head>');
             $response->setContent(substr_replace($content, $style, $pos, 0));
         }

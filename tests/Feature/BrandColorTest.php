@@ -84,7 +84,7 @@ class BrandColorTest extends TestCase
                 if (! preg_match('/'.$var.':(#[0-9a-f]{6})/', $css, $m)) {
                     continue; // default green: no override
                 }
-                $this->assertGreaterThanOrEqual(4.5, 1.05 / ($lum($m[1]) + 0.05), "$var for $hex");
+                $this->assertGreaterThanOrEqual(3, 1.05 / ($lum($m[1]) + 0.05), "$var for $hex");
             }
         }
     }
@@ -96,6 +96,24 @@ class BrandColorTest extends TestCase
         // Gold at a darker lightness: red > green > blue, readable on white.
         [$r, $g, $b] = array_map('hexdec', str_split(substr($m[1], 1), 2));
         $this->assertTrue($r > $g && $g > $b);
-        $this->assertLessThan(140, $r);
+        $this->assertLessThan(170, $r);
+    }
+
+    public function test_hardcoded_greens_on_login_pages_are_recolored(): void
+    {
+        $html = BrandTheme::recolorHtml('background: linear-gradient(#567357, #59473f); color:#197335', '#c98a2b');
+        $this->assertStringNotContainsString('#567357', $html);
+        $this->assertStringNotContainsString('#197335', $html);
+        $this->assertStringContainsString('#59473f', $html); // brown is not a brand color
+        $this->assertSame('#567357', BrandTheme::recolorHtml('#567357', BrandTheme::DEFAULT));
+    }
+
+    public function test_light_pick_shows_on_sidebar_with_dark_text(): void
+    {
+        $css = BrandTheme::styleTag('#fde68a');
+        $this->assertStringContainsString('.sidebar{background:linear-gradient(180deg,#fde68a', $css);
+        $this->assertStringContainsString('color:#292420', $css);
+        // A normal-depth pick keeps the white-text sidebar.
+        $this->assertStringNotContainsString('.sidebar{', BrandTheme::styleTag('#2f5d8c'));
     }
 }

@@ -45,6 +45,16 @@ class BrandTheme
         '--sage-500' => 50, '--sage-300' => 72, '--sage-200' => 84, '--sage-100' => 91, '--sage-50' => 96,
     ];
 
+    /**
+     * Green colors typed straight into page styles (mostly the login, apply
+     * and public pages) instead of using the variables above. The theme
+     * swaps these in the page HTML too, or those pages would stay green-grey.
+     */
+    private const LITERALS = ['#567357', '#197335', '#44ad65', '#425542', '#194e19', '#a6b69f', '#4b5f4c', '#d8dcd8', '#a2d9a4'];
+
+    /** Saturation of the default green; literals keep their saturation relative to it. */
+    private const DEFAULT_SAT = 41;
+
     public static function isValid(?string $hex): bool
     {
         return is_string($hex) && preg_match('/^#[0-9a-fA-F]{6}$/', $hex) === 1;
@@ -57,6 +67,65 @@ class BrandTheme
             return '';
         }
 
+        $p = self::params($hex);
+
+        $vars = '';
+        foreach (self::SHADES as $name => $base) {
+            $vars .= $name.':'.self::shade($p, $base, self::DEFAULT_SAT).';';
+        }
+
+        $css = ':root{'.$vars.'}';
+
+        // Light picks (pale yellow, pastel, ...): white text can't sit on
+        // them, so the dark shades above stay dark for buttons and text. But
+        // the big surfaces (sidebar, top bars) show the actual picked color,
+        // with dark text on top, so the site visibly matches the pick.
+        if ($p['light']) {
+            [$h, $s, $l] = [$p['h'], $p['s'], $p['l']];
+            $top = strtolower($hex); // exactly what the owner picked
+            $bottom = self::fromHsl($h, $s, max(5, $l - 12));
+            $ink = '#292420';
+            $css .= '.sidebar{background:linear-gradient(180deg,'.$top.' 0%,'.$bottom.' 100%)!important;color:'.$ink.'!important}'
+                .'.sidebar .nav-item,.sidebar .nav-item:hover,.sidebar .nav-item.active,.sidebar-section-label,.sidebar-logo,.sidebar a{color:'.$ink.'!important}'
+                .'.sidebar .nav-item.active{background:rgba(0,0,0,.10)!important;border-left-color:'.$ink.'!important}'
+                .'.sidebar .nav-item:hover{background:rgba(0,0,0,.06)!important}'
+                .'.sidebar-footer .nav-item{background:rgba(0,0,0,.12)!important}'
+                .'.sidebar-logo,.sidebar-footer{border-color:rgba(0,0,0,.12)!important}'
+                .'.topbar,.topnav{background:linear-gradient(90deg,'.$bottom.','.$top.')!important}'
+                .'.topbar .hamburger span{background:'.$ink.'!important}'
+                .'.topbar-icon{background:rgba(255,255,255,.6)!important;color:'.$ink.'!important}'
+                .'.topnav .logo,.topnav .logo:hover,.topnav .menu a,.topnav .btn-outline-white,.topnav .nav-toggle{color:'.$ink.'!important;border-color:'.$ink.'!important}'
+                .'.topnav .menu a.pill{border-color:rgba(0,0,0,.4)!important}';
+        }
+
+        return '<style id="brand-theme">'.$css.'</style>';
+    }
+
+    /**
+     * Swap the hard-coded greens in a page's HTML for the picked color's
+     * matching shades. Returns the HTML unchanged for the default green.
+     */
+    public static function recolorHtml(string $html, ?string $hex): string
+    {
+        if (! self::isValid($hex) || strtolower($hex) === self::DEFAULT) {
+            return $html;
+        }
+
+        $p = self::params($hex);
+        $map = [];
+        foreach (self::LITERALS as $literal) {
+            [, $ls, $ll] = self::toHsl($literal);
+            $color = self::shade($p, $ll, $ls);
+            $map[$literal] = $color;
+            $map[strtoupper($literal)] = $color;
+        }
+
+        return strtr($html, $map);
+    }
+
+    /** Everything derived once from the picked color. */
+    private static function params(string $hex): array
+    {
         [$h, $s, $l] = self::toHsl($hex);
         // Very grey picks stay grey; very loud picks get toned down so pale
         // backgrounds don't look neon.
@@ -72,27 +141,38 @@ class BrandTheme
             $darkShift--;
         }
 
-        $vars = '';
-        foreach (self::SHADES as $name => $base) {
-            $lightness = max(5, min(97, $base + ($base <= 45 ? $darkShift : $shift / 3)));
-            // Pale shades get less color so they read as a soft tint.
-            $sat = $lightness >= 80 ? min($s, 45) : $s;
-            $hex = self::fromHsl($h, $sat, $lightness);
-            // Dark shades sit behind white text (sidebar, buttons) or are
-            // used as text on white. Yellows and oranges look lighter than
-            // greens at the same lightness, so darken until white-on-it is
-            // readable (WCAG AA, 4.5:1).
-            // 3:1 is the readability minimum for bold/large text and buttons;
-            // stricter than that and light picks get forced dark again.
-            if ($base <= 45) {
-                for ($l = $lightness; self::contrastWithWhite($hex) < 3 && $l > 5; $l--) {
-                    $hex = self::fromHsl($h, $sat, $l);
-                }
+        return [
+            'h' => $h, 's' => $s, 'l' => $l, 'shift' => $shift, 'darkShift' => $darkShift,
+            'light' => self::contrastWithWhite(self::fromHsl($h, $s, $l)) < 3,
+        ];
+    }
+
+    /**
+     * The picked color's version of a shade that had lightness $base (and
+     * saturation $baseSat) in the default green theme.
+     */
+    private static function shade(array $p, float $base, float $baseSat): string
+    {
+        $h = $p['h'];
+        $lightness = max(5, min(97, $base + ($base <= 45 ? $p['darkShift'] : $p['shift'] / 3)));
+        // Greyish originals stay greyish (relative to the default green).
+        $sat = min(100, $p['s'] * min(1.2, $baseSat / self::DEFAULT_SAT));
+        // Pale shades get less color so they read as a soft tint.
+        if ($lightness >= 80) {
+            $sat = min($sat, 45);
+        }
+        $hex = self::fromHsl($h, $sat, $lightness);
+        // Dark shades sit behind white text (sidebar, buttons) or are used
+        // as text on white. Yellows and oranges look lighter than greens at
+        // the same lightness, so darken until white-on-it is readable.
+        // 3:1 is the minimum for bold/large text and buttons.
+        if ($base <= 45) {
+            for ($l = $lightness; self::contrastWithWhite($hex) < 3 && $l > 5; $l--) {
+                $hex = self::fromHsl($h, $sat, $l);
             }
-            $vars .= $name.':'.$hex.';';
         }
 
-        return '<style id="brand-theme">:root{'.$vars.'}</style>';
+        return $hex;
     }
 
     /** Contrast ratio of white text on this color (1 = none, 21 = max). */
