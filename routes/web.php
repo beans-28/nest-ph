@@ -209,6 +209,7 @@ Route::middleware(['auth', 'admin', 'admin.access'])->group(function () {
     // Dashboard/tenant-list page plus Table 28's admin override action
     // (Pause / Unpause / Reset to Stage 1 / Clear).
     Route::get('/delinquency', [DelinquencyController::class, 'page'])->name('delinquency.index');
+    Route::get('/delinquency/report.pdf', [DelinquencyController::class, 'downloadReport'])->name('delinquency.report');
     Route::post('/delinquency/{tenant}/override', [DelinquencyController::class, 'override']);
     Route::get('/delinquency/{tenant}/history', [DelinquencyController::class, 'history']);
     // --- Delinquency Escalation Testing Tools (dev/demo only, not a manuscript use case) ---
@@ -252,8 +253,14 @@ Route::middleware(['auth', 'admin', 'admin.access'])->group(function () {
     Route::get('/reports/financial', [ReportController::class, 'financial']);
     Route::get('/reports/forecast', [ReportController::class, 'forecast']);
     Route::get('/reports/export', [ReportController::class, 'export']);
+    Route::get('/reports/daily', [ReportController::class, 'daily']);
+    // Itemized expenses with receipts, and recurring schedules (Pureza revision 2026-11-14)
     Route::get('/reports/expenses', [ReportController::class, 'showExpenses']);
-    Route::post('/reports/expenses', [ReportController::class, 'saveExpenses']);
+    Route::post('/reports/expenses', [ReportController::class, 'storeExpense']);
+    Route::post('/reports/expenses/{expense}', [ReportController::class, 'updateExpense']);
+    Route::delete('/reports/expenses/{expense}', [ReportController::class, 'destroyExpense']);
+    Route::patch('/reports/recurring-expenses/{recurring}', [ReportController::class, 'toggleRecurring']);
+    Route::delete('/reports/recurring-expenses/{recurring}', [ReportController::class, 'destroyRecurring']);
 
     // --- Dormitory Profile (Manage Dormitory Profile, Table 38) ---
     Route::get('/dormitory-profile', [DormitoryProfileController::class, 'page'])->name('dormitory-profile.index');

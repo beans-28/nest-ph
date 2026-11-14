@@ -32,8 +32,15 @@
      .page-head h1 (this page colors the title var(--green-accent) instead
      of the default var(--text-dark)). */
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); color:var(--green-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-  .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .page-head{ display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
   .page-head h1{ font-size:20px; font-weight:700; margin:0; color:var(--green-accent); }
+  .pdf-download{ margin-left:auto; display:inline-flex; align-items:center; gap:7px; padding:9px 16px; min-height:40px; box-sizing:border-box; border-radius:8px; background:var(--green-btn); color:#fff; font-size:13px; font-weight:600; text-decoration:none; }
+  .pdf-download:hover{ background:var(--green-btn-hover); }
+  .pdf-download:focus-visible{ outline:2px solid var(--green-btn); outline-offset:2px; }
+  .pdf-download{ white-space:nowrap; border:none; cursor:pointer; font-family:inherit; }
+  .pdf-download[aria-busy="true"]{ opacity:.7; cursor:progress; }
+  .pdf-error{ flex-basis:100%; margin:0; font-size:12.5px; color:#ba2828; }
+  @media (max-width:480px){ .pdf-download{ margin-left:0; width:100%; justify-content:center; min-height:44px; } }
 
   .stats-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin-bottom:22px; }
   .stat-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 18px; display:flex; align-items:center; gap:14px; }
@@ -193,6 +200,11 @@
       <div class="page-head">
         <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Delinquency</h1>
+        <a class="pdf-download" id="delinquentPdfBtn" href="{{ route('delinquency.report') }}" download aria-label="Download delinquent tenants report (PDF)">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+          <span>Delinquent Tenants PDF</span>
+        </a>
+        <p class="pdf-error" id="delinquentPdfError" role="alert" hidden>The PDF could not be downloaded. Please try again.</p>
       </div>
 
       <div class="stats-row">
@@ -856,5 +868,38 @@
 })();
 </script>
 
+<script>
+// Delinquent Tenants PDF: download through fetch so the button can show
+// "Preparing PDF..." (and block double clicks) while the file builds, and
+// show a message instead of an error page if it fails.
+(function(){
+  const btn = document.getElementById('delinquentPdfBtn');
+  const err = document.getElementById('delinquentPdfError');
+  if (!btn) return;
+  btn.addEventListener('click', async function(e){
+    e.preventDefault();
+    if (btn.getAttribute('aria-busy') === 'true') return;
+    const label = btn.querySelector('span');
+    btn.setAttribute('aria-busy', 'true');
+    label.textContent = 'Preparing PDF...';
+    err.hidden = true;
+    try {
+      const res = await fetch(btn.href);
+      if (!res.ok) throw new Error();
+      const match = /filename="?([^";]+)"?/.exec(res.headers.get('Content-Disposition') || '');
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = match ? match[1] : 'delinquent-tenants.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch (_) {
+      err.hidden = false;
+    }
+    btn.removeAttribute('aria-busy');
+    label.textContent = 'Delinquent Tenants PDF';
+  });
+})();
+</script>
 </body>
 </html>

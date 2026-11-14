@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AdminPrivilege;
-use App\Models\MonthlyExpense;
+use App\Models\Expense;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,10 +26,20 @@ class ForecastReportTest extends TestCase
         return $admin;
     }
 
+    /** Records one expense per category for the month (date = the 1st). */
+    private function monthExpenses(string $month, array $amounts): void
+    {
+        foreach ($amounts as $category => $amount) {
+            if ($amount > 0) {
+                Expense::create(['category' => $category, 'description' => ucfirst($category), 'amount' => $amount,
+                    'date_paid' => $month, 'payment_method' => 'cash']);
+            }
+        }
+    }
+
     public function test_forecast_returns_six_actual_and_three_estimated_months(): void
     {
-        MonthlyExpense::create(['month' => now()->startOfMonth()->subMonth()->toDateString(),
-            'electricity' => 1000, 'water' => 500, 'internet' => 0, 'salaries' => 0, 'other' => 0]);
+        $this->monthExpenses(now()->startOfMonth()->subMonth()->toDateString(), ['electricity' => 1000, 'water' => 500, 'internet' => 0, 'salaries' => 0, 'other' => 0]);
 
         $res = $this->actingAs($this->admin())->getJson('/reports/forecast')->assertOk();
 
@@ -54,10 +64,8 @@ class ForecastReportTest extends TestCase
 
     public function test_current_month_expenses_are_left_out_of_the_average(): void
     {
-        MonthlyExpense::create(['month' => now()->startOfMonth()->subMonth()->toDateString(),
-            'electricity' => 1000, 'water' => 0, 'internet' => 0, 'salaries' => 0, 'other' => 0]);
-        MonthlyExpense::create(['month' => now()->startOfMonth()->toDateString(),
-            'electricity' => 9000, 'water' => 0, 'internet' => 0, 'salaries' => 0, 'other' => 0]);
+        $this->monthExpenses(now()->startOfMonth()->subMonth()->toDateString(), ['electricity' => 1000, 'water' => 0, 'internet' => 0, 'salaries' => 0, 'other' => 0]);
+        $this->monthExpenses(now()->startOfMonth()->toDateString(), ['electricity' => 9000, 'water' => 0, 'internet' => 0, 'salaries' => 0, 'other' => 0]);
 
         $res = $this->actingAs($this->admin())->getJson('/reports/forecast')->assertOk();
 

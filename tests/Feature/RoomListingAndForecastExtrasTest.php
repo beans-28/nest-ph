@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AdminPrivilege;
-use App\Models\MonthlyExpense;
+use App\Models\Expense;
 use App\Models\Role;
 use App\Models\RoomType;
 use App\Models\User;
@@ -27,6 +27,17 @@ class RoomListingAndForecastExtrasTest extends TestCase
         AdminPrivilege::create(['user_id' => $admin->id, 'privilege_name' => 'view_reports']);
 
         return $admin;
+    }
+
+    /** Records one expense per category for the month (date = the 1st). */
+    private function monthExpenses(string $month, array $amounts): void
+    {
+        foreach ($amounts as $category => $amount) {
+            if ($amount > 0) {
+                Expense::create(['category' => $category, 'description' => ucfirst($category), 'amount' => $amount,
+                    'date_paid' => $month, 'payment_method' => 'cash']);
+            }
+        }
     }
 
     public function test_room_area_and_pricing_mode_reach_the_public_listing(): void
@@ -79,12 +90,10 @@ class RoomListingAndForecastExtrasTest extends TestCase
     public function test_forecast_shows_utility_range_and_uses_same_month_last_year(): void
     {
         foreach ([1 => 10000, 2 => 20000, 3 => 15000] as $back => $electricity) {
-            MonthlyExpense::create(['month' => now()->startOfMonth()->subMonthsNoOverflow($back)->toDateString(),
-                'electricity' => $electricity, 'water' => 0, 'internet' => 0, 'salaries' => 5000, 'other' => 0]);
+            $this->monthExpenses(now()->startOfMonth()->subMonthsNoOverflow($back)->toDateString(), ['electricity' => $electricity, 'water' => 0, 'internet' => 0, 'salaries' => 5000, 'other' => 0]);
         }
         // Next month, a year ago: a hot month with a big bill.
-        MonthlyExpense::create(['month' => now()->startOfMonth()->addMonthNoOverflow()->subYear()->toDateString(),
-            'electricity' => 40000, 'water' => 0, 'internet' => 0, 'salaries' => 5000, 'other' => 0]);
+        $this->monthExpenses(now()->startOfMonth()->addMonthNoOverflow()->subYear()->toDateString(), ['electricity' => 40000, 'water' => 0, 'internet' => 0, 'salaries' => 5000, 'other' => 0]);
 
         $res = $this->actingAs($this->admin())->getJson('/reports/forecast')->assertOk();
 

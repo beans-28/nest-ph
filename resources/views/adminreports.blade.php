@@ -55,6 +55,7 @@
   table.report-table{ width:100%; border-collapse:collapse; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
   table.report-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:10px 14px; border-bottom:1px solid var(--border); background:#f7f9f7; }
   table.report-table td{ font-size:13px; color:var(--text-dark); padding:10px 14px; border-bottom:1px solid #f0f2f0; }
+  table.report-table tr.total-row td{ font-weight:700; background:#f2f7f2; color:#194e19; }
 
   .empty-note{ font-size:13px; color:var(--text-light); text-align:center; padding:40px 10px; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; }
   .results-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
@@ -73,14 +74,11 @@
     .stat-value{ font-size:19px; }
     .chart-card{ padding:14px; }
     .chart-box{ height:220px; }
-    .expense-grid{ grid-template-columns:1fr 1fr; padding:14px; }
-    .expense-grid .field input{ min-height:44px; }
-    .expense-footer .btn{ width:100%; min-height:44px; }
+    .expense-grid .field input, .expense-grid .field select{ min-height:44px; }
+    .expense-footer .btn{ flex:1; min-height:44px; }
     .profit-sum .part strong{ font-size:17px; }
   }
   .stat-value, .num, .report-table td{ font-variant-numeric:tabular-nums; }
-  .report-table tr[data-month]:hover td{ background:#f4f7f4; }
-  .report-table tr[data-month]:focus-visible{ outline:2px solid var(--green-btn); outline-offset:-2px; }
   .link-btn{ background:none; border:none; padding:0; font:inherit; color:inherit; font-weight:600; text-decoration:underline; cursor:pointer; }
   .link-btn:focus-visible{ outline:2px solid var(--green-btn); outline-offset:2px; border-radius:2px; }
 
@@ -101,12 +99,79 @@
   .num{ text-align:right !important; }
   .neg{ color:#ba2828 !important; }
 
-  /* Monthly Expenses form */
-  .expense-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:14px; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:14px; }
-  .expense-grid .field input{ width:100%; box-sizing:border-box; }
-  .expense-grid .field.wide{ grid-column:1 / -1; }
-  .field .hint{ font-size:11px; color:var(--text-light); }
-  .expense-footer{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:24px; }
+  /* Expenses form and lists */
+  .card-form{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:18px; margin-bottom:24px; }
+  .card-form-head h2{ font-size:15px; margin:0; }
+  .card-form-head p{ font-size:12.5px; color:var(--text-mid); margin:3px 0 14px; }
+  .expense-grid{ display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:14px; margin-bottom:14px; }
+  .expense-grid .field input, .expense-grid .field select{ width:100%; box-sizing:border-box; }
+  .expense-grid .span-2{ grid-column:span 2; }
+  .expense-grid .span-all{ grid-column:1 / -1; }
+  .field select{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:13px; font-family:var(--font-body); background:#fff; color:var(--text-dark); }
+  .field input[type=file]{ padding:6px; background:#f7f9f7; border-style:dashed; }
+  .field input:focus-visible, .field select:focus-visible{ outline:2px solid var(--green-btn); outline-offset:1px; }
+  .field .hint{ font-size:12px; color:var(--text-mid); line-height:1.4; }
+  .inline-check{ display:inline-flex !important; align-items:center; gap:7px; font-size:12.5px !important; text-transform:none !important; letter-spacing:0 !important; color:var(--text-dark) !important; font-weight:500 !important; cursor:pointer; }
+  .inline-check.strong{ font-weight:600 !important; }
+  .inline-check input{ width:16px; height:16px; accent-color:var(--green-btn); margin:0; }
+  .current-receipt{ display:flex; align-items:center; gap:14px; font-size:12.5px; margin-top:2px; }
+  .current-receipt a{ color:var(--green-btn); font-weight:600; }
+  .repeat-box{ background:#f5f8f5; border:1px solid #e1e8e1; border-radius:10px; padding:12px 14px; gap:6px; }
+  .repeat-box #frequencyField{ max-width:320px; margin-top:6px; }
+  .expense-footer{ display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+  .report-table a{ color:var(--green-btn); font-weight:600; }
+  .row-actions{ white-space:nowrap; text-align:right; }
+  .row-actions .mini-btn.danger{ margin-left:14px; }
+  /* Long descriptions wrap instead of stretching the table */
+  .desc-cell{ min-width:180px; max-width:320px; overflow-wrap:anywhere; }
+  /* Loading: old month's numbers are dimmed until the new ones arrive */
+  #expensesArea[aria-busy="true"] .profit-sum, #expensesArea[aria-busy="true"] #expenseList,
+  #expensesArea[aria-busy="true"] #recurringList, #expensesArea[aria-busy="true"] #expenseHistory{ opacity:.45; pointer-events:none; transition:opacity .15s ease-out; }
+  .list-msg{ margin:-4px 0 12px; }
+  .edit-note{ grid-column:1 / -1; font-size:12.5px; color:#1f4f87; background:#e3edf9; border-radius:8px; padding:9px 12px; margin:0; }
+  .field input[aria-invalid="true"], .field select[aria-invalid="true"]{ border-color:#ba2828; box-shadow:0 0 0 1px #ba2828; }
+  .month-link{ background:none; border:none; padding:6px 0; font:inherit; color:var(--green-btn); font-weight:600; text-decoration:underline; text-underline-offset:3px; cursor:pointer; text-align:left; }
+  .month-link:focus-visible{ outline:2px solid var(--green-btn); outline-offset:2px; border-radius:2px; }
+  .mini-btn{ border:1px solid var(--border); background:#fff; border-radius:6px; padding:5px 10px; font-size:12px; font-weight:600; color:var(--text-mid); cursor:pointer; margin-left:6px; min-height:30px; }
+  .mini-btn:hover{ background:#f2f5f2; }
+  .mini-btn.danger{ color:#ba2828; }
+  .mini-btn.danger:hover{ background:#fbe9e9; }
+  .mini-btn:focus-visible{ outline:2px solid var(--green-btn); outline-offset:1px; }
+  .link-btn.muted{ color:var(--text-mid); font-weight:500; padding:4px 0; }
+  .tag{ display:inline-block; font-size:11.5px; font-weight:600; padding:1px 8px; border-radius:999px; background:#eef1ee; color:var(--text-mid); vertical-align:1px; }
+  .cat{ display:inline-block; font-size:11.5px; font-weight:600; padding:2px 9px; border-radius:999px; background:#eef1ee; color:#3d4a3e; white-space:nowrap; }
+  .cat-electricity, .cat-water, .cat-internet{ background:#fff3d6; color:#7a5300; }
+  .cat-salaries{ background:#e3edf9; color:#1f4f87; }
+  .cat-repairs{ background:#fde8e0; color:#8f3412; }
+  .cat-equipment{ background:#ece6f6; color:#563a85; }
+  .cat-supplies{ background:#dcebdc; color:#194e19; }
+  tr.paused td{ color:var(--text-light); }
+  .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  @media (max-width:820px){ .expense-grid{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:560px){
+    .expense-grid{ grid-template-columns:1fr; } .expense-grid .span-2{ grid-column:auto; } .card-form{ padding:14px; }
+    .mini-btn{ min-height:44px; padding:8px 16px; }
+    /* Expense and recurring lists become stacked cards, so Edit/Delete stay on screen */
+    .stack-table thead{ display:none; }
+    .stack-table, .stack-table tbody, .stack-table tr, .stack-table td{ display:block; width:100%; box-sizing:border-box; }
+    .stack-table{ border:none; background:none; }
+    .stack-table tr{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:10px 14px; margin-bottom:10px; }
+    .stack-table td{ border:none; padding:5px 0; display:flex; justify-content:space-between; gap:12px; text-align:right !important; max-width:none; }
+    .stack-table td::before{ content:attr(data-label); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); text-align:left; flex-shrink:0; }
+    .stack-table td.row-actions{ justify-content:flex-end; padding-top:10px; margin-top:4px; border-top:1px solid #f0f2f0; }
+    .stack-table td.row-actions::before{ content:none; }
+    .stack-table td.row-actions .mini-btn{ flex:1; margin-left:0; }
+    .stack-table td.row-actions .mini-btn.danger{ margin-left:14px; }
+  }
+  /* Daily Collection */
+  .cash-flow{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:6px 18px; margin-bottom:20px; max-width:560px; }
+  .cash-flow .line{ display:flex; justify-content:space-between; gap:12px; padding:9px 0; font-size:13px; border-bottom:1px solid #f0f2f0; font-variant-numeric:tabular-nums; }
+  .cash-flow .line.sub{ padding-left:16px; color:var(--text-mid); font-size:12.5px; }
+  .cash-flow .line.minus span:last-child{ color:#ba2828; }
+  .cash-flow .line.result{ font-weight:700; }
+  .cash-flow .line.deposit{ border-bottom:none; margin:6px -10px 6px; padding:11px 10px; background:#dcebdc; border-radius:8px; color:#194e19; font-size:14.5px; font-weight:700; }
+  .cash-flow .line.deposit.loss{ background:#fbe9e9; color:#ba2828; }
+  .cash-flow .gap{ height:8px; }
   .profit-sum{ display:grid; grid-template-columns:1fr auto 1fr auto 1.2fr; align-items:center; gap:10px; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:14px; }
   .profit-sum .part{ min-width:0; }
   .profit-sum .part span{ display:block; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); margin-bottom:4px; }
@@ -167,6 +232,7 @@
         <button type="button" class="report-tab active" data-type="occupancy">Occupancy Report</button>
         <button type="button" class="report-tab" data-type="financial">Financial / Billing Report</button>
         <button type="button" class="report-tab" data-type="forecast">Forecast</button>
+        <button type="button" class="report-tab" data-type="daily">Daily Collection</button>
         <button type="button" class="report-tab" data-type="expenses">Expenses &amp; Profit</button>
       </div>
 
@@ -187,45 +253,105 @@
       </div>
       <p class="export-error" id="exportError" role="alert"></p>
       <p class="occupancy-note" id="occupancyNote">Occupancy always reflects current room/bed status in real time. The date range only applies to the Financial report.</p>
+      <p class="occupancy-note" id="dailyNote" hidden>Payments received and expenses paid each day, and the cash left for the bank deposit. Starts on today; pick a From/To range to cover several days.</p>
       <div id="resultsArea">
         <div class="empty-note">Pick a report type and click Generate to see the numbers.</div>
       </div>
 
-      {{-- Monthly Expenses: the dorm's own bills for a month. The Financial
-           report subtracts these from payments collected to get Net Profit. --}}
+      {{-- Expenses & Profit (Pureza revision 2026-11-14): expenses are recorded
+           one by one, each with an optional receipt. Recurring ones (e.g.
+           salaries every payday) are recorded automatically. Every report
+           (Financial, Forecast, Daily Collection) adds these up. --}}
       <div id="expensesArea" hidden>
         <div class="controls-row">
           <div class="field">
             <label for="expenseMonth">Month</label>
             <input type="month" id="expenseMonth">
           </div>
-          <p class="occupancy-note" style="margin:0 0 4px;">Enter the whole building's bills for the month. Saving a month again replaces what was saved before.</p>
+          <p class="occupancy-note" style="margin:0 0 4px;">Shows the expenses paid in this month and its net profit.</p>
         </div>
-        <form id="expenseForm" novalidate>
+
+        <div class="profit-sum" aria-live="polite">
+          <div class="part"><span id="collectedLabel">Collected</span><strong id="sumCollected">&#8369;0.00</strong></div>
+          <div class="op" aria-hidden="true">&minus;</div>
+          <div class="part"><span>Expenses</span><strong id="expenseTotal">&#8369;0.00</strong></div>
+          <div class="op" aria-hidden="true">=</div>
+          <div class="part result" id="sumResult"><span>Net Profit</span><strong id="sumNet">&#8369;0.00</strong></div>
+        </div>
+        <p class="profit-note">Collected = approved tenant payments dated within the month (rent, utilities, move-in fees, penalties).</p>
+
+        <form id="expenseForm" class="card-form" novalidate>
+          <div class="card-form-head">
+            <h2 id="expenseFormTitle">Record an Expense</h2>
+            <p>For bills, salaries, repairs, and purchases like furniture or appliances.</p>
+          </div>
           <div class="expense-grid">
-            <div class="field"><label for="exElectricity">Electricity (Meralco)</label><input type="number" id="exElectricity" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
-            <div class="field"><label for="exWater">Water</label><input type="number" id="exWater" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
-            <div class="field"><label for="exInternet">Internet / WiFi</label><input type="number" id="exInternet" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
-            <div class="field"><label for="exSalaries">Staff Salaries</label><input type="number" id="exSalaries" min="0" step="0.01" inputmode="decimal" placeholder="0.00"><span class="hint">Caretaker, cleaners, guards, etc.</span></div>
-            <div class="field"><label for="exOther">Others</label><input type="number" id="exOther" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
-            <div class="field wide"><label for="exOtherNotes">What were the "Others"? (optional)</label><input type="text" id="exOtherNotes" maxlength="255" placeholder="e.g. Plumbing repair, cleaning supplies"></div>
+            <p class="edit-note" id="autoEditNote" hidden>This entry was recorded by a recurring schedule. Saving changes only this one payment. To change future ones, remove the schedule under Recurring Expenses and record a new one.</p>
+            <div class="field">
+              <label for="exCategory">Category</label>
+              <select id="exCategory" required>
+                @foreach(\App\Models\Expense::CATEGORIES as $key => $label)
+                  <option value="{{ $key }}">{{ $label }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="field span-2">
+              <label for="exDescription">Description</label>
+              <input type="text" id="exDescription" maxlength="255" required placeholder="e.g. Electric fan for Room 204">
+            </div>
+            <div class="field">
+              <label for="exAmount">Amount (&#8369;)</label>
+              <input type="number" id="exAmount" min="0.01" step="0.01" inputmode="decimal" required placeholder="0.00">
+            </div>
+            <div class="field">
+              <label for="exDate">Date Paid</label>
+              <input type="date" id="exDate" required>
+            </div>
+            <div class="field">
+              <label for="exMethod">Paid By</label>
+              <select id="exMethod">
+                @foreach(\App\Models\Expense::PAYMENT_METHODS as $key => $label)
+                  <option value="{{ $key }}">{{ $label }}</option>
+                @endforeach
+              </select>
+              <span class="hint">Cash expenses lower the cash for bank deposit.</span>
+            </div>
+            <div class="field span-2">
+              <label for="exReceipt">Receipt / Proof of Purchase (optional)</label>
+              <input type="file" id="exReceipt" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf">
+              <span class="hint">JPG, PNG or PDF, up to 5 MB.</span>
+              <div class="current-receipt" id="currentReceipt" hidden>
+                <a id="currentReceiptLink" href="#" target="_blank" rel="noopener">View current receipt</a>
+                <label class="inline-check"><input type="checkbox" id="exRemoveReceipt"> Remove it</label>
+              </div>
+            </div>
+            <div class="field span-all repeat-box" id="repeatBox">
+              <label class="inline-check strong"><input type="checkbox" id="exRepeat"> Repeat this expense automatically</label>
+              <span class="hint">For regular costs like employee salaries. The next ones are recorded on their due dates without retyping.</span>
+              <div class="field" id="frequencyField" hidden>
+                <label for="exFrequency">How often</label>
+                <select id="exFrequency">
+                  @foreach(\App\Models\RecurringExpense::FREQUENCIES as $key => $label)
+                    <option value="{{ $key }}">{{ $label }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
           </div>
-          {{-- Money in minus money out for the picked month. Updates as the
-               expense amounts are typed, before saving. --}}
-          <div class="profit-sum" aria-live="polite">
-            <div class="part"><span id="collectedLabel">Collected</span><strong id="sumCollected">&#8369;0.00</strong></div>
-            <div class="op" aria-hidden="true">&minus;</div>
-            <div class="part"><span>Expenses</span><strong id="expenseTotal">&#8369;0.00</strong></div>
-            <div class="op" aria-hidden="true">=</div>
-            <div class="part result" id="sumResult"><span>Net Profit</span><strong id="sumNet">&#8369;0.00</strong></div>
-          </div>
-          <p class="profit-note">Collected = approved tenant payments dated within the month (rent, utilities, move-in fees, penalties).</p>
           <p class="form-msg" id="expenseMsg" role="status"></p>
           <div class="expense-footer">
-            <span class="save-state" id="saveState"></span>
-            <button type="submit" class="btn primary" id="saveExpenseBtn">Save Expenses</button>
+            <button type="button" class="btn secondary" id="cancelEditBtn" hidden>Cancel Edit</button>
+            <button type="submit" class="btn primary" id="saveExpenseBtn">Save Expense</button>
           </div>
         </form>
+
+        <div class="results-head"><h2 id="monthListTitle">Expenses</h2></div>
+        <p class="form-msg list-msg" id="listMsg" role="status"></p>
+        <div class="table-scroll" id="expenseList"><div class="empty-note">Loading expenses…</div></div>
+
+        <div class="results-head"><h2>Recurring Expenses</h2></div>
+        <div class="table-scroll" id="recurringList"></div>
+
         <div class="results-head">
           <h2>Profit by Month</h2>
           <div class="report-actions">
@@ -245,6 +371,8 @@
 (function(){
   const csrf = document.querySelector('meta[name="csrf-token"]').content;
   const $ = id => document.getElementById(id);
+  // Escapes text typed by admins (descriptions, names) before it goes into HTML.
+  const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
   let currentType = 'occupancy';
   let hasResults = false;
@@ -252,6 +380,10 @@
   // these (not the live date inputs), so the file always matches what
   // the admin is looking at even if they edit the dates afterwards.
   let generatedParams = null;
+  // Each tab keeps its own From/To dates. Daily Collection starts on today.
+  const today0 = new Date();
+  const todayIso = today0.getFullYear() + '-' + String(today0.getMonth() + 1).padStart(2, '0') + '-' + String(today0.getDate()).padStart(2, '0');
+  const savedDates = { daily:[todayIso, todayIso] };
 
   document.querySelectorAll('[data-href]').forEach(el => {
     el.addEventListener('click', () => window.location.href = el.dataset.href);
@@ -295,6 +427,7 @@
     $('expensesArea').hidden = !isExpenses;
     $('exportError').classList.remove('visible');
     $('occupancyNote').style.display = currentType === 'occupancy' ? 'block' : 'none';
+    $('dailyNote').hidden = currentType !== 'daily';
     // Forecast always looks at the last 6 months and the next 3, so the dates don't apply.
     $('startField').hidden = $('endField').hidden = currentType === 'forecast';
     if (isExpenses) loadExpenses();
@@ -304,7 +437,9 @@
     tab.addEventListener('click', function(){
       document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
       this.classList.add('active');
+      savedDates[currentType] = [$('startDate').value, $('endDate').value];
       currentType = this.dataset.type;
+      [$('startDate').value, $('endDate').value] = savedDates[currentType] || ['', ''];
       hasResults = false;
       destroyCharts();
       $('exportBtn').disabled = true;
@@ -536,6 +671,55 @@
     });
   }
 
+  // Daily Collection: who paid, the expenses paid the same days, and the cash
+  // left for the bank. Only cash is deposited (online payments are already in
+  // an account), so expenses paid by GCash/bank don't reduce it.
+  function renderDaily(data){
+    const r = data.range;
+    const depositClass = data.cash_for_deposit < 0 ? ' loss' : '';
+    let html = `
+      <div class="results-head"><h2>Daily Collection: ${esc(r.label)}</h2></div>
+      <div class="stats-row money">
+        <div class="stat-card"><div class="stat-label">Total Collections</div><div class="stat-value">${money(data.total_collected)}</div><div class="stat-sub">${data.payments.length} payment(s)</div></div>
+        <div class="stat-card"><div class="stat-label">Expenses Paid</div><div class="stat-value">${money(data.total_expenses)}</div><div class="stat-sub">${data.expenses.length} expense(s)</div></div>
+        <div class="stat-card ${data.cash_for_deposit < 0 ? 'loss' : 'profit'}"><div class="stat-label">Cash for Bank Deposit</div><div class="stat-value">${signedMoney(data.cash_for_deposit)}</div>${data.cash_for_deposit < 0 ? '<div class="stat-sub">Short: more cash spent than collected</div>' : ''}</div>
+      </div>
+      <div class="results-head"><h2>Cash on Hand</h2></div>
+      <div class="cash-flow">
+        <div class="line"><span>Total collections</span><span>${money(data.total_collected)}</span></div>
+        <div class="line sub"><span>Cash</span><span>${money(data.cash_collected)}</span></div>
+        <div class="line sub"><span>Online (GCash / bank / other)</span><span>${money(data.online_collected)}</span></div>
+        <div class="line minus"><span>Less: expenses paid</span><span>&minus;${money(data.total_expenses)}</span></div>
+        <div class="line result"><span>Remaining after expenses</span><span class="${data.remaining < 0 ? 'neg' : ''}">${signedMoney(data.remaining)}</span></div>
+        <div class="gap"></div>
+        <div class="line"><span>Cash collected</span><span>${money(data.cash_collected)}</span></div>
+        <div class="line minus"><span>Less: expenses paid in cash</span><span>&minus;${money(data.cash_expenses)}</span></div>
+        <div class="line deposit${depositClass}"><span>Net cash for bank deposit</span><span>${signedMoney(data.cash_for_deposit)}</span></div>
+      </div>
+      ${data.cash_for_deposit < 0 ? `<div class="missing-note">More cash was spent than collected, so the cash on hand is short by ${money(Math.abs(data.cash_for_deposit))}.</div>` : ''}
+      <div class="results-head"><h2>Payments Received</h2></div>
+      <div class="table-scroll">${data.payments.length ? `<table class="report-table">
+        <thead><tr><th>Date</th><th>Tenant</th><th>Room</th><th>Method</th><th>Reference No.</th><th class="num">Amount</th></tr></thead>
+        <tbody>${data.payments.map(p => `<tr><td style="white-space:nowrap">${esc(p.date_label)}</td><td>${esc(p.tenant)}</td><td>${esc(p.room)}</td><td>${esc(p.method_label)}</td><td>${esc(p.reference || '—')}</td><td class="num">${money(p.amount)}</td></tr>`).join('')}
+          <tr class="total-row"><td colspan="5">Total</td><td class="num">${money(data.total_collected)}</td></tr></tbody>
+      </table>` : '<div class="empty-note">No payments received in this period.</div>'}</div>
+      <div class="results-head"><h2>Expenses Paid</h2></div>
+      <div class="table-scroll">${data.expenses.length ? `<table class="report-table">
+        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th>Paid By</th><th class="num">Amount</th></tr></thead>
+        <tbody>${data.expenses.map(e => `<tr><td style="white-space:nowrap">${esc(e.date_label)}</td><td>${esc(e.description)}</td><td><span class="cat cat-${esc(e.category)}">${esc(e.category_label)}</span></td><td>${esc(e.payment_method_label)}</td><td class="num">${money(e.amount)}</td></tr>`).join('')}
+          <tr class="total-row"><td colspan="4">Total</td><td class="num">${money(data.total_expenses)}</td></tr></tbody>
+      </table>` : '<div class="empty-note">No expenses paid in this period.</div>'}</div>`;
+    if (data.days.length > 1) {
+      html += `
+      <div class="results-head"><h2>Day by Day</h2></div>
+      <div class="table-scroll"><table class="report-table">
+        <thead><tr><th>Date</th><th class="num">Cash Collected</th><th class="num">Online Collected</th><th class="num">Expenses Paid</th><th class="num">Cash Expenses</th><th class="num">Cash for Deposit</th></tr></thead>
+        <tbody>${data.days.map(d => `<tr><td style="white-space:nowrap">${esc(d.date_label)}</td><td class="num">${money(d.cash_collected)}</td><td class="num">${money(d.online_collected)}</td><td class="num">${money(d.total_expenses)}</td><td class="num">${money(d.cash_expenses)}</td><td class="num ${d.cash_for_deposit < 0 ? 'neg' : ''}"><strong>${signedMoney(d.cash_for_deposit)}</strong></td></tr>`).join('')}</tbody>
+      </table></div>`;
+    }
+    $('resultsArea').innerHTML = html;
+  }
+
   $('generateBtn').addEventListener('click', async function(){
     destroyCharts();
     this.disabled = true;
@@ -547,6 +731,7 @@
       const data = await res.json();
       if(currentType === 'occupancy'){ renderOccupancy(data); }
       else if(currentType === 'forecast'){ renderForecast(data); }
+      else if(currentType === 'daily'){ renderDaily(data); }
       else { renderFinancial(data); }
       hasResults = true;
       generatedParams = rangeParams();
@@ -564,28 +749,128 @@
     this.textContent = 'Generate';
   });
 
-  // ---- Monthly Expenses tab ----
-  const EXPENSE_FIELDS = { electricity:'exElectricity', water:'exWater', internet:'exInternet', salaries:'exSalaries', other:'exOther' };
+  // ---- Expenses & Profit tab ----
   const now = new Date();
-  const thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  const pad = n => String(n).padStart(2, '0');
+  const thisMonth = now.getFullYear() + '-' + pad(now.getMonth() + 1);
+  const todayStr = thisMonth + '-' + pad(now.getDate());
   $('expenseMonth').value = thisMonth;
   $('expenseMonth').max = thisMonth;
+  $('exDate').max = todayStr;
+  $('exDate').value = todayStr;
 
-  let monthCollected = 0;
-  function updateExpenseTotal(){
-    const total = Object.values(EXPENSE_FIELDS).reduce((sum, id) => sum + (parseFloat($(id).value) || 0), 0);
-    const net = monthCollected - total;
-    $('expenseTotal').textContent = money(total);
-    $('sumCollected').textContent = money(monthCollected);
-    $('sumNet').textContent = (net < 0 ? '-' : '') + money(Math.abs(net));
-    $('sumResult').classList.toggle('loss', net < 0);
-  }
-  Object.values(EXPENSE_FIELDS).forEach(id => $(id).addEventListener('input', updateExpenseTotal));
+  let editingId = null;   // id of the expense being edited, or null when recording a new one
+  let monthExpenses = [];
 
   function showExpenseMsg(text, ok){
     const el = $('expenseMsg');
     el.textContent = text;
     el.className = 'form-msg ' + (ok ? 'ok' : 'err');
+  }
+  // Messages for actions taken in the lists (delete, pause, remove) show
+  // next to the lists, where the admin clicked, not up in the form.
+  function showListMsg(text, ok){
+    const el = $('listMsg');
+    el.textContent = text;
+    el.className = 'form-msg list-msg ' + (ok ? 'ok' : 'err');
+    if (el.getBoundingClientRect().top < 0) el.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+  // Server validation errors are shown on the field they belong to.
+  const FIELD_IDS = { category:'exCategory', description:'exDescription', amount:'exAmount', date_paid:'exDate', payment_method:'exMethod', receipt:'exReceipt', frequency:'exFrequency' };
+  function clearFieldErrors(){
+    Object.values(FIELD_IDS).forEach(id => { $(id).removeAttribute('aria-invalid'); $(id).removeAttribute('aria-describedby'); });
+  }
+  function markField(id){
+    $(id).setAttribute('aria-invalid', 'true');
+    $(id).setAttribute('aria-describedby', 'expenseMsg');
+    $(id).focus();
+  }
+  // Client-side check failed: show the message on that field.
+  function fieldError(id, text){ clearFieldErrors(); showExpenseMsg(text, false); markField(id); }
+  const signedMoney = n => (n < 0 ? '-' : '') + money(Math.abs(n));
+
+  $('exRepeat').addEventListener('change', () => { $('frequencyField').hidden = !$('exRepeat').checked; });
+
+  function resetExpenseForm(){
+    editingId = null;
+    $('expenseForm').reset();
+    $('exDate').value = todayStr;
+    $('frequencyField').hidden = true;
+    $('repeatBox').hidden = false;
+    $('currentReceipt').hidden = true;
+    $('autoEditNote').hidden = true;
+    $('cancelEditBtn').hidden = true;
+    clearFieldErrors();
+    $('expenseFormTitle').textContent = 'Record an Expense';
+    $('saveExpenseBtn').textContent = 'Save Expense';
+  }
+  $('cancelEditBtn').addEventListener('click', () => { resetExpenseForm(); $('expenseMsg').className = 'form-msg'; });
+
+  function startEdit(id){
+    const e = monthExpenses.find(x => x.id === id);
+    if (!e) return;
+    resetExpenseForm();
+    editingId = id;
+    $('exCategory').value = e.category;
+    $('exDescription').value = e.description;
+    $('exAmount').value = e.amount;
+    $('exDate').value = e.date_paid;
+    $('exMethod').value = e.payment_method;
+    // Repeating is set up when recording; an edit changes only this one expense.
+    $('repeatBox').hidden = true;
+    $('autoEditNote').hidden = !e.is_recurring;
+    $('currentReceipt').hidden = !e.receipt_url;
+    if (e.receipt_url) $('currentReceiptLink').href = e.receipt_url;
+    $('cancelEditBtn').hidden = false;
+    $('expenseFormTitle').textContent = 'Edit Expense';
+    $('saveExpenseBtn').textContent = 'Save Changes';
+    $('expenseMsg').className = 'form-msg';
+    $('expenseForm').scrollIntoView({ behavior:'smooth', block:'start' });
+    $('exDescription').focus({ preventScroll:true });
+  }
+
+  function renderExpenseList(rows, label){
+    $('monthListTitle').textContent = 'Expenses in ' + label;
+    if (!rows.length) {
+      $('expenseList').innerHTML = `<div class="empty-note">No expenses recorded for ${esc(label)} yet.</div>`;
+      return;
+    }
+    $('expenseList').innerHTML = `<table class="report-table stack-table">
+      <thead><tr><th>Date Paid</th><th>Description</th><th>Category</th><th>Paid By</th><th class="num">Amount</th><th>Receipt</th><th><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>${rows.map(e => `<tr>
+        <td data-label="Date Paid" style="white-space:nowrap">${esc(e.date_label)}</td>
+        <td data-label="Description" class="desc-cell">${esc(e.description)}${e.is_recurring ? ' <span class="tag" title="Recorded by a recurring schedule">Auto</span>' : ''}</td>
+        <td data-label="Category"><span class="cat cat-${esc(e.category)}">${esc(e.category_label)}</span></td>
+        <td data-label="Paid By">${esc(e.payment_method_label)}</td>
+        <td data-label="Amount" class="num">${money(e.amount)}</td>
+        <td data-label="Receipt">${e.receipt_url ? `<a href="${esc(e.receipt_url)}" target="_blank" rel="noopener" aria-label="View receipt for ${esc(e.description)}">View</a>` : `<button type="button" class="link-btn muted" data-edit="${e.id}" aria-label="Attach a receipt to ${esc(e.description)}">None · Attach</button>`}</td>
+        <td class="row-actions"><button type="button" class="mini-btn" data-edit="${e.id}" aria-label="Edit ${esc(e.description)}">Edit</button><button type="button" class="mini-btn danger" data-delete="${e.id}" aria-label="Delete ${esc(e.description)}">Delete</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+    $('expenseList').querySelectorAll('[data-edit]').forEach(b => b.addEventListener('click', () => startEdit(Number(b.dataset.edit))));
+    $('expenseList').querySelectorAll('[data-delete]').forEach(b => b.addEventListener('click', () => deleteExpense(Number(b.dataset.delete))));
+  }
+
+  function renderRecurring(rows){
+    if (!rows.length) {
+      $('recurringList').innerHTML = '<div class="empty-note">No recurring expenses yet. Turn on "Repeat this expense automatically" when recording one, e.g. a salary.</div>';
+      return;
+    }
+    $('recurringList').innerHTML = `<table class="report-table stack-table">
+      <thead><tr><th>Description</th><th>Category</th><th class="num">Amount</th><th>How Often</th><th>Next Date</th><th><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>${rows.map(r => `<tr${r.active ? '' : ' class="paused"'}>
+        <td data-label="Description" class="desc-cell">${esc(r.description)}</td>
+        <td data-label="Category"><span class="cat cat-${esc(r.category)}">${esc(r.category_label)}</span></td>
+        <td data-label="Amount" class="num">${money(r.amount)}</td>
+        <td data-label="How Often">${esc(r.frequency_label)}</td>
+        <td data-label="Next Date" style="white-space:nowrap">${r.active ? esc(r.next_date) : '<span class="tag">Paused</span>'}</td>
+        <td class="row-actions"><button type="button" class="mini-btn" data-toggle="${r.id}" data-active="${r.active ? 0 : 1}" aria-label="${r.active ? 'Pause' : 'Resume'} ${esc(r.description)}">${r.active ? 'Pause' : 'Resume'}</button><button type="button" class="mini-btn danger" data-remove="${r.id}" aria-label="Remove schedule for ${esc(r.description)}">Remove</button></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+    $('recurringList').querySelectorAll('[data-toggle]').forEach(b => b.addEventListener('click', () => sendJson('PATCH', '/reports/recurring-expenses/' + b.dataset.toggle, { active: b.dataset.active === '1' })));
+    $('recurringList').querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => {
+      if (confirm('Stop this recurring expense? Expenses it already recorded will be kept.')) sendJson('DELETE', '/reports/recurring-expenses/' + b.dataset.remove);
+    }));
   }
 
   function renderExpenseHistory(rows){
@@ -594,63 +879,122 @@
       return;
     }
     $('expenseHistory').innerHTML = `<table class="report-table">
-      <thead><tr><th>Month</th><th class="num">Collected</th><th class="num">Meralco</th><th class="num">Water</th><th class="num">WiFi</th><th class="num">Salaries</th><th class="num">Others</th><th class="num">Total Expenses</th><th class="num">Net Profit</th></tr></thead>
-      <tbody>${rows.map(r => `<tr data-month="${r.month}" tabindex="0" style="cursor:pointer" title="Click to edit ${r.label}"><td>${r.label}</td><td class="num">${money(r.collected)}</td><td class="num">${money(r.electricity)}</td><td class="num">${money(r.water)}</td><td class="num">${money(r.internet)}</td><td class="num">${money(r.salaries)}</td><td class="num">${money(r.other)}</td><td class="num">${money(r.total)}</td><td class="num ${r.net < 0 ? 'neg' : ''}"><strong>${r.net < 0 ? '-' : ''}${money(Math.abs(r.net))}</strong></td></tr>`).join('')}</tbody>
-    </table>`;
-    $('expenseHistory').querySelectorAll('tr[data-month]').forEach(tr => {
-      const edit = () => { $('expenseMonth').value = tr.dataset.month; loadExpenses(); window.scrollTo({ top:0, behavior:'smooth' }); };
-      tr.addEventListener('click', edit);
-      tr.addEventListener('keydown', e => { if (e.key === 'Enter') edit(); });
-    });
+      <thead><tr><th>Month</th><th class="num">Collected</th><th class="num">Utilities</th><th class="num">Salaries</th><th class="num">Other Expenses</th><th class="num">Total Expenses</th><th class="num">Net Profit</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td><button type="button" class="month-link" data-month="${r.month}" aria-label="Show expenses for ${r.label}">${r.label}</button></td><td class="num">${money(r.collected)}</td><td class="num">${money(r.utilities)}</td><td class="num">${money(r.salaries)}</td><td class="num">${money(r.total - r.utilities - r.salaries)}</td><td class="num">${money(r.total)}</td><td class="num ${r.net < 0 ? 'neg' : ''}"><strong>${signedMoney(r.net)}</strong></td></tr>`).join('')}</tbody>
+    </table>
+    <p class="profit-note" style="margin-top:8px;">Utilities = electricity, water and internet. Other expenses = repairs, furniture/appliances/equipment, supplies and others. Pick a month to see its expenses.</p>`;
+    $('expenseHistory').querySelectorAll('[data-month]').forEach(b => b.addEventListener('click', () => {
+      $('expenseMonth').value = b.dataset.month;
+      loadExpenses();
+      $('monthListTitle').scrollIntoView({ behavior:'smooth', block:'start' });
+    }));
   }
 
   async function loadExpenses(){
+    const area = $('expensesArea');
+    area.setAttribute('aria-busy', 'true');
+    $('expenseMonth').disabled = true;
     try {
       const res = await fetch('/reports/expenses?month=' + encodeURIComponent($('expenseMonth').value || thisMonth), { headers:{ 'Accept':'application/json' } });
       if (!res.ok) throw new Error();
       const data = await res.json();
-      Object.entries(EXPENSE_FIELDS).forEach(([key, id]) => { $(id).value = data.expense ? data.expense[key] : ''; });
-      $('exOtherNotes').value = data.expense ? (data.expense.other_notes || '') : '';
-      monthCollected = Number(data.collected) || 0;
-      const state = $('saveState');
-      state.textContent = data.expense ? `Saved for ${data.label}. Edit the amounts and save again to update.` : `Nothing saved for ${data.label} yet.`;
-      state.className = 'save-state' + (data.expense ? '' : ' unsaved');
+      monthExpenses = data.expenses;
       $('collectedLabel').textContent = 'Collected in ' + data.label;
-      updateExpenseTotal();
+      $('sumCollected').textContent = money(data.collected);
+      $('expenseTotal').textContent = money(data.total);
+      $('sumNet').textContent = signedMoney(data.net);
+      $('sumResult').classList.toggle('loss', data.net < 0);
+      renderExpenseList(data.expenses, data.label);
+      renderRecurring(data.recurring);
       renderExpenseHistory(data.history);
     } catch(e){
-      showExpenseMsg('Could not load expenses. Please refresh the page.', false);
+      showListMsg('Could not load expenses. Check your connection, then pick the month again or refresh the page.', false);
+    } finally {
+      area.removeAttribute('aria-busy');
+      $('expenseMonth').disabled = false;
     }
   }
-  $('expenseMonth').addEventListener('change', () => { $('expenseMsg').className = 'form-msg'; loadExpenses(); });
+  $('expenseMonth').addEventListener('change', () => { $('expenseMsg').className = 'form-msg'; $('listMsg').className = 'form-msg list-msg'; loadExpenses(); });
+
+  // Sends a JSON request (delete, pause/resume), then reloads the tab.
+  async function sendJson(method, url, body){
+    try {
+      const res = await fetch(url, {
+        method,
+        headers:{ 'Content-Type':'application/json', 'Accept':'application/json', 'X-CSRF-TOKEN':csrf },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Something went wrong. Please try again.');
+      await loadExpenses();
+      showListMsg(data.message, true);
+    } catch(err){
+      showListMsg(err.message, false);
+    }
+  }
+
+  function deleteExpense(id){
+    const e = monthExpenses.find(x => x.id === id);
+    if (!e || !confirm(`Delete "${e.description}" (${money(e.amount)})?${e.receipt_url ? ' Its receipt will be deleted too.' : ''}`)) return;
+    if (editingId === id) resetExpenseForm();
+    sendJson('DELETE', '/reports/expenses/' + id);
+  }
 
   $('expenseForm').addEventListener('submit', async function(e){
     e.preventDefault();
-    const body = { month:$('expenseMonth').value, other_notes:$('exOtherNotes').value.trim() || null };
-    if (!body.month) { showExpenseMsg('Pick a month first.', false); return; }
-    for (const [key, id] of Object.entries(EXPENSE_FIELDS)) {
-      const v = $(id).value.trim();
-      const n = v === '' ? 0 : Number(v);
-      if (!Number.isFinite(n) || n < 0) { showExpenseMsg('Amounts must be zero or more.', false); $(id).focus(); return; }
-      body[key] = n;
+    const amount = Number($('exAmount').value);
+    clearFieldErrors();
+    if (!$('exDescription').value.trim()) return fieldError('exDescription', 'Please describe the expense.');
+    if (!Number.isFinite(amount) || amount <= 0) return fieldError('exAmount', 'Enter an amount greater than zero.');
+    if (amount > 9999999) return fieldError('exAmount', 'That amount is too large. Please check it.');
+    if (!$('exDate').value) return fieldError('exDate', 'Pick the date it was paid.');
+    if ($('exDate').value > todayStr) return fieldError('exDate', 'The date paid can\'t be in the future.');
+    const file = $('exReceipt').files[0];
+    if (file && file.size > 5 * 1024 * 1024) return fieldError('exReceipt', 'The receipt must be 5 MB or smaller. Try a smaller photo or a PDF.');
+
+    // FormData (not JSON) so the receipt file can go along with the fields.
+    const form = new FormData();
+    form.append('category', $('exCategory').value);
+    form.append('description', $('exDescription').value.trim());
+    form.append('amount', amount);
+    form.append('date_paid', $('exDate').value);
+    form.append('payment_method', $('exMethod').value);
+    if (file) form.append('receipt', file);
+    if (editingId) {
+      if ($('exRemoveReceipt').checked) form.append('remove_receipt', '1');
+    } else if ($('exRepeat').checked) {
+      form.append('repeat', '1');
+      form.append('frequency', $('exFrequency').value);
     }
 
     const btn = $('saveExpenseBtn');
     btn.disabled = true; btn.textContent = 'Saving...';
     try {
-      const res = await fetch('/reports/expenses', {
+      const res = await fetch(editingId ? '/reports/expenses/' + editingId : '/reports/expenses', {
         method:'POST',
-        headers:{ 'Content-Type':'application/json', 'Accept':'application/json', 'X-CSRF-TOKEN':csrf },
-        body:JSON.stringify(body),
+        headers:{ 'Accept':'application/json', 'X-CSRF-TOKEN':csrf },
+        body:form,
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || 'Could not save. Please check the amounts and try again.');
+      if (!res.ok) {
+        if (data.errors) {
+          const keys = Object.keys(data.errors);
+          showExpenseMsg(keys.map(k => data.errors[k][0]).join(' '), false);
+          keys.slice().reverse().forEach(k => { if (FIELD_IDS[k]) markField(FIELD_IDS[k]); });
+          throw null;
+        }
+        throw new Error(data.message || 'Could not save. Please check the details and try again.');
+      }
+      // Jump to the month the expense belongs to, so it shows in the list.
+      $('expenseMonth').value = $('exDate').value.slice(0, 7);
+      resetExpenseForm();
       await loadExpenses();
       showExpenseMsg(data.message, true);
     } catch(err){
-      showExpenseMsg(err.message, false);
+      if (err) showExpenseMsg(err.message, false);
     }
-    btn.disabled = false; btn.textContent = 'Save Expenses';
+    btn.disabled = false;
+    btn.textContent = editingId ? 'Save Changes' : 'Save Expense';
   });
 
   // Downloads via fetch (not a page redirect) so the button can show

@@ -63,3 +63,8 @@ Schedule::command('reservations:expire')->daily();
 // (3 days before the due date, and during the grace period). Overdue
 // emails go out with the escalation SMS above. See SendBillingReminders.
 Schedule::command('billing:send-reminders')->dailyAt('08:00');
+
+// Pureza revision (2026-11-14): recurring expenses such as staff salaries
+// every payday are recorded on their due date (PostRecurringExpenses). The
+// Reports page also catches up on any missed days when it loads.
+Schedule::command('expenses:post-recurring')->dailyAt('00:30');

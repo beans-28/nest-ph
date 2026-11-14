@@ -180,7 +180,7 @@ class DemoDataSeeder extends Seeder
         $this->seedFormerTenants();
         $this->seedTenantReports();
         $this->seedPendingApplications();
-        $this->seedMonthlyExpenses();
+        $this->seedExpenses();
         $this->seedInquiries();
         $this->seedAnnouncements();
         $this->seedTenantNotifications();
@@ -210,7 +210,7 @@ class DemoDataSeeder extends Seeder
             'payments', 'billing_statements', 'lease_contracts', 'applications', 'inquiries',
             'tenants', 'beds', 'admin_access_logs', 'admin_login_sessions', 'sessions',
             'password_reset_codes', 'password_reset_tokens', 'personal_access_tokens',
-            'deposit_refunds', 'tenant_notifications', 'monthly_expenses', 'partner_requests', 'partner_request_notes',
+            'deposit_refunds', 'tenant_notifications', 'expenses', 'recurring_expenses', 'partner_requests', 'partner_request_notes',
         ] as $table) {
             DB::table($table)->truncate();
         }
@@ -1393,53 +1393,103 @@ class DemoDataSeeder extends Seeder
     }
 
     /* ------------------------------------------------------------------ */
-    /*  4d. Monthly expenses -- the dorm's own bills                       */
+    /*  4d. Expenses -- the dorm's own bills, salaries and purchases       */
     /* ------------------------------------------------------------------ */
 
     /**
-     * 12 months of the building's own costs, so Reports can show Net
-     * Profit (payments collected minus these). Pureza includes water,
-     * electricity and Wi-Fi in the rent, so the dorm pays them: Meralco is
-     * its biggest cost and goes up in the hot months (March-May) when the
-     * aircons work hardest (and hardest of all in the El Nino year);
-     * December has 13th-month pay.
+     * 18 months of the building's own costs, recorded one by one, so
+     * Reports can show Net Profit (payments collected minus these). Pureza
+     * includes water, electricity and Wi-Fi in the rent, so the dorm pays
+     * them: Meralco is its biggest cost and goes up in the hot months
+     * (March-May) when the aircons work hardest (and hardest of all in the
+     * El Nino year); December has 13th-month pay.
+     *
+     * Staff are paid every payday (15th and end of month) through recurring
+     * schedules. Past months are written directly; this month's paydays are
+     * left to the schedules, which record them when Reports is opened.
      */
-    private function seedMonthlyExpenses(): void
+    private function seedExpenses(): void
     {
         mt_srand(4242);
+        $admin = $this->admins['mark'];
+        // Half a month's pay per payday: caretaker 16k, two cleaners 13k each, night guard 15k.
+        $staff = [
+            ['Caretaker salary', 8000],
+            ['Cleaner salary (Cleaner 1)', 6500],
+            ['Cleaner salary (Cleaner 2)', 6500],
+            ['Night guard salary', 7500],
+        ];
+        // Months ago => [category, description, amount, has receipt]
         $oneOffs = [
-            2 => [18500, 'Aircon cleaning and freon recharge (all AC rooms)'],
-            5 => [6400, 'Plumbing repair, 3F shared CR'],
-            8 => [24000, 'Repainting of hallway and lobby'],
-            10 => [4500, 'Pest control (whole building)'],
-            11 => [9800, 'Replacement of water pump capacitor'],
+            2 => [['repairs', 'Aircon cleaning and freon recharge (all AC rooms)', 18500], ['equipment', 'Electric fan for Room 204', 1850]],
+            4 => [['equipment', 'Replacement double-deck bed frame, Room 305', 7200]],
+            5 => [['repairs', 'Plumbing repair, 3F shared CR', 6400]],
+            7 => [['equipment', 'Water dispenser for 2F lounge', 6990]],
+            8 => [['repairs', 'Repainting of hallway and lobby (paint and labor)', 24000]],
+            10 => [['repairs', 'Pest control (whole building)', 4500]],
+            11 => [['repairs', 'Replacement of water pump capacitor', 9800]],
+            14 => [['equipment', 'Lobby sofa set', 15500]],
         ];
 
-        // 18 finished months (this month is left for the admin to enter), so
-        // the forecast always has "the same month last year" to compare
-        // utilities against.
+        $rows = [];
+        $add = function (Carbon $date, string $category, string $description, float $amount, string $method = 'cash') use (&$rows, $admin) {
+            $rows[] = [
+                'category' => $category,
+                'description' => $description,
+                'amount' => round($amount, 2),
+                'date_paid' => $date->toDateString(),
+                'payment_method' => $method,
+                'receipt_path' => null,
+                'recurring_expense_id' => null,
+                'recorded_by' => $admin,
+                'created_at' => $date->copy()->setTime(17, 0),
+                'updated_at' => $date->copy()->setTime(17, 0),
+            ];
+        };
+
         for ($i = 18; $i >= 1; $i--) {
             $month = $this->today->copy()->startOfMonth()->subMonthsNoOverflow($i);
             $hot = in_array($month->month, [3, 4, 5], true);
-            // Dummy El Nino year: the most recent hot season ran hotter, so
-            // aircons (and the Meralco bill) worked harder than the year before.
+            // Dummy El Nino year: the most recent hot season ran hotter.
             $elNino = $hot && $i <= 12 ? 1.15 : 1.0;
-            // Caretaker 16k, two cleaners 13k each, night guard 15k; plus 13th month in December.
-            $salaries = 57000 + ($month->month === 12 ? 57000 : 0);
-            [$other, $note] = $oneOffs[$i] ?? [mt_rand(0, 1) ? mt_rand(1500, 3500) : 0, 'Cleaning supplies and toiletries for common areas'];
 
-            DB::table('monthly_expenses')->insert([
-                'month' => $month->toDateString(),
-                'electricity' => round((($hot ? 128000 : 96000) + mt_rand(-6000, 8000)) * $elNino, 2),
-                // More showers and laundry in the hot months, too.
-                'water' => round(14500 + ($hot ? 2500 : 0) + mt_rand(-1500, 2500), 2),
-                'internet' => 6998, // two 3,499 fiber lines
-                'salaries' => $salaries,
-                'other' => $other,
-                'other_notes' => $other ? $note : null,
-                'recorded_by' => $this->admins['mark'],
-                'created_at' => $month->copy()->endOfMonth(),
-                'updated_at' => $month->copy()->endOfMonth(),
+            $add($month->copy()->day(10), 'electricity', 'Meralco bill', (($hot ? 128000 : 96000) + mt_rand(-6000, 8000)) * $elNino, 'bank_transfer');
+            // More showers and laundry in the hot months, too.
+            $add($month->copy()->day(12), 'water', 'Water bill', 14500 + ($hot ? 2500 : 0) + mt_rand(-1500, 2500), 'bank_transfer');
+            $add($month->copy()->day(5), 'internet', 'Fiber internet (two 3,499 lines)', 6998, 'gcash');
+            foreach ([$month->copy()->day(15), $month->copy()->endOfMonth()->startOfDay()] as $payday) {
+                foreach ($staff as [$what, $amount]) {
+                    $add($payday, 'salaries', $what, $amount);
+                }
+            }
+            if ($month->month === 12) {
+                $add($month->copy()->day(20), 'salaries', '13th month pay (all staff)', 57000);
+            }
+            foreach ($oneOffs[$i] ?? [] as [$category, $description, $amount]) {
+                $add($month->copy()->day(mt_rand(3, 26)), $category, $description, $amount);
+            }
+            if (mt_rand(0, 1)) {
+                $add($month->copy()->day(mt_rand(2, 25)), 'supplies', 'Cleaning supplies and toiletries for common areas', mt_rand(1500, 3500));
+            }
+        }
+        foreach (array_chunk($rows, 200) as $chunk) {
+            DB::table('expenses')->insert($chunk);
+        }
+
+        // This month onwards: salaries come from recurring schedules.
+        foreach ($staff as [$what, $amount]) {
+            DB::table('recurring_expenses')->insert([
+                'category' => 'salaries',
+                'description' => $what,
+                'amount' => $amount,
+                'payment_method' => 'cash',
+                'frequency' => 'payday',
+                'day_of_month' => null,
+                'next_date' => $this->today->copy()->day(15)->toDateString(),
+                'active' => true,
+                'created_by' => $admin,
+                'created_at' => $this->today,
+                'updated_at' => $this->today,
             ]);
         }
     }

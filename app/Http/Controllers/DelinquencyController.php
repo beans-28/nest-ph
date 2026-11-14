@@ -31,29 +31,11 @@ class DelinquencyController extends Controller
      */
     public function page(Request $request)
     {
-        BillingStatement::syncOverdueStatuses();
-
-        // A tenant belongs on this page if they have an overdue bill right
-        // now, OR they're permanently blacklisted (Stage 6 doesn't get
-        // lifted by resolveSettledEscalations() even if the triggering
-        // bill later gets paid -- Table 27 treats it as final).
-        $overdueTenantIds = BillingStatement::where('status', 'overdue')->pluck('tenant_id');
-        $blacklistedTenantIds = Tenant::where('is_blacklisted', true)->pluck('id');
-        $tenantIds = $overdueTenantIds->merge($blacklistedTenantIds)->unique();
-
-        $tenants = Tenant::whereIn('id', $tenantIds)
-            ->with(['activeContract.bed.room', 'billingStatements' => function ($q) {
-                $q->where('status', 'overdue')->withApprovedPaid()->orderByDesc('total_amount');
-            }, 'escalationLogs'])
-            ->get();
-
-        $accounts = $tenants->map(fn (Tenant $tenant) => $this->transformTenant($tenant))
-            ->sortByDesc('days_overdue')
-            ->values();
+        $accounts = $this->delinquentAccounts();
 
         $stats = [
             'overdue_accounts' => BillingStatement::where('status', 'overdue')->count(),
-            'tenants_in_escalation' => $tenants->count(),
+            'tenants_in_escalation' => $accounts->count(),
             'total_overdue_balance' => $accounts->sum('balance'),
             'avg_days_overdue' => $accounts->isEmpty() ? 0 : (int) round($accounts->avg('days_overdue')),
         ];
@@ -75,6 +57,57 @@ class DelinquencyController extends Controller
             'stats' => $stats,
             'stageBreakdown' => $stageBreakdown,
             'accounts' => $accounts,
+        ]);
+    }
+
+    /**
+     * Everyone who belongs on the Delinquency page, most days overdue first.
+     * A tenant belongs here if they have an overdue bill right now, OR
+     * they're permanently blacklisted (Stage 6 doesn't get lifted by
+     * resolveSettledEscalations() even if the triggering bill later gets
+     * paid -- Table 27 treats it as final). Shared by the page and the PDF.
+     */
+    private function delinquentAccounts()
+    {
+        BillingStatement::syncOverdueStatuses();
+
+        $overdueTenantIds = BillingStatement::where('status', 'overdue')->pluck('tenant_id');
+        $blacklistedTenantIds = Tenant::where('is_blacklisted', true)->pluck('id');
+        $tenantIds = $overdueTenantIds->merge($blacklistedTenantIds)->unique();
+
+        return Tenant::whereIn('id', $tenantIds)
+            ->with(['activeContract.bed.room', 'billingStatements' => function ($q) {
+                $q->where('status', 'overdue')->withApprovedPaid()->orderByDesc('total_amount');
+            }, 'escalationLogs'])
+            ->get()
+            ->map(fn (Tenant $tenant) => $this->transformTenant($tenant))
+            ->sortByDesc('days_overdue')
+            ->values();
+    }
+
+    /**
+     * GET /delinquency/report.pdf -- Pureza revision (2026-11-14): a
+     * downloadable list of delinquent tenants (name, room no., outstanding
+     * balance), with days overdue and escalation stage for context.
+     */
+    public function downloadReport()
+    {
+        $accounts = $this->delinquentAccounts()->sortByDesc('balance')->values();
+
+        $pdf = Pdf::loadView('pdfs.delinquent-report', [
+            'accounts' => $accounts,
+            'total' => round($accounts->sum('balance'), 2),
+        ]);
+        $dompdf = $pdf->getDomPDF();
+        $dompdf->render();
+        $canvas = $dompdf->getCanvas();
+        $font = $dompdf->getFontMetrics()->getFont('DejaVu Sans');
+        $canvas->page_text($canvas->get_width() / 2 - 22, $canvas->get_height() - 22,
+            'Page {PAGE_NUM} of {PAGE_COUNT}', $font, 7.5, [0.54, 0.54, 0.54]);
+
+        return response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="delinquent-tenants-' . now()->format('Y-m-d') . '.pdf"',
         ]);
     }
 

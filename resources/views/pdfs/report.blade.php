@@ -51,7 +51,7 @@
   <div class="letter-header">
     @if($brandLogoFile)<img src="{{ $brandLogoFile }}" class="brand-logo"><br>@endif
     <h1>{{ $dormName }}</h1>
-    <p>{{ ['occupancy' => 'Occupancy Report', 'financial' => 'Financial / Billing Report', 'forecast' => 'Forecast Report', 'expenses' => 'Expenses and Profit Report'][$type] }}</p>
+    <p>{{ ['occupancy' => 'Occupancy Report', 'financial' => 'Financial / Billing Report', 'forecast' => 'Forecast Report', 'expenses' => 'Expenses and Profit Report', 'daily' => 'Daily Collection Report'][$type] }}</p>
   </div>
 
   <table class="meta">
@@ -60,6 +60,8 @@
       <tr><td><strong>Coverage:</strong></td><td>Current room and bed status (live snapshot), plus a 12-month trend</td></tr>
     @elseif($type === 'expenses')
       <tr><td><strong>Months Covered:</strong></td><td>{{ $report['range'] ?? 'No months recorded yet' }}</td></tr>
+    @elseif($type === 'daily')
+      <tr><td><strong>Period Covered:</strong></td><td>{{ $report['range']['label'] }}</td></tr>
     @elseif($type === 'forecast')
       <tr><td><strong>Coverage:</strong></td><td>Estimates for {{ $report['range'] }}, based on the last 6 months</td></tr>
     @else
@@ -255,11 +257,9 @@
     <table class="summary">
       <thead><tr><th>Expense</th><th style="text-align:right;">Amount</th></tr></thead>
       <tbody>
-        <tr class="sub"><td>Electricity (Meralco)</td><td class="amount">PHP {{ number_format($t['electricity'], 2) }}</td></tr>
-        <tr class="sub"><td>Water</td><td class="amount">PHP {{ number_format($t['water'], 2) }}</td></tr>
-        <tr class="sub"><td>Internet / WiFi</td><td class="amount">PHP {{ number_format($t['internet'], 2) }}</td></tr>
-        <tr class="sub"><td>Staff Salaries</td><td class="amount">PHP {{ number_format($t['salaries'], 2) }}</td></tr>
-        <tr class="sub"><td>Others</td><td class="amount">PHP {{ number_format($t['other'], 2) }}</td></tr>
+        @foreach(\App\Models\Expense::CATEGORIES as $key => $label)
+          <tr class="sub"><td>{{ $label }}</td><td class="amount">PHP {{ number_format($t[$key], 2) }}</td></tr>
+        @endforeach
         <tr class="total"><td>Total Expenses:</td><td class="amount warn">PHP {{ number_format($t['total'], 2) }}</td></tr>
       </tbody>
     </table>
@@ -271,28 +271,148 @@
     @endif
     @if(count($report['months']))
       <table class="detail-table">
-        <thead><tr><th class="first" style="font-size:9px;">Month</th>@foreach(['Collected', 'Meralco', 'Water', 'WiFi', 'Salaries', 'Others', 'Total Exp.', 'Net Profit'] as $h)<th style="font-size:9px;">{{ $h }}</th>@endforeach</tr></thead>
+        <thead><tr><th class="first">Month</th><th>Collected</th><th>Utilities</th><th>Salaries</th><th>Other Expenses</th><th>Total Expenses</th><th>Net Profit</th></tr></thead>
         <tbody>
-          @foreach($report['months'] as $m)
-            <tr>
-              <td class="first" style="font-size:9px;">{{ $m['label'] }}</td>
-              @foreach(['collected', 'electricity', 'water', 'internet', 'salaries', 'other', 'total'] as $k)
-                <td style="font-size:9px;">{{ number_format($m[$k], 2) }}</td>
-              @endforeach
-              <td class="rate" style="font-size:9px;@if($m['net'] < 0) color:#ba2828;@endif">{{ number_format($m['net'], 2) }}</td>
+          @foreach(array_merge($report['months'], [array_merge($t, ['label' => 'Total', 'is_total' => true])]) as $m)
+            @php $utilities = $m['electricity'] + $m['water'] + $m['internet']; @endphp
+            <tr @if(! empty($m['is_total'])) style="background:#dcebdc;font-weight:bold;" @endif>
+              <td class="first">{{ $m['label'] }}</td>
+              <td>{{ number_format($m['collected'], 2) }}</td>
+              <td>{{ number_format($utilities, 2) }}</td>
+              <td>{{ number_format($m['salaries'], 2) }}</td>
+              <td>{{ number_format($m['total'] - $utilities - $m['salaries'], 2) }}</td>
+              <td>{{ number_format($m['total'], 2) }}</td>
+              <td class="rate" @if($m['net'] < 0) style="color:#ba2828;" @endif>{{ number_format($m['net'], 2) }}</td>
             </tr>
           @endforeach
-          <tr style="background:#dcebdc;font-weight:bold;">
-            <td class="first" style="font-size:9px;">Total</td>
-            @foreach(['collected', 'electricity', 'water', 'internet', 'salaries', 'other', 'total', 'net'] as $k)
-              <td style="font-size:9px;@if($k === 'net' && $t['net'] < 0) color:#ba2828;@endif">{{ number_format($t[$k], 2) }}</td>
-            @endforeach
-          </tr>
         </tbody>
       </table>
-      <p class="body-text" style="font-size:9.5px;color:#8a8a8a;margin-top:6px;">Amounts in PHP. Collected = approved tenant payments dated within the month.</p>
+      <p class="body-text" style="font-size:9.5px;color:#8a8a8a;margin-top:6px;">Amounts in PHP. Collected = approved tenant payments dated within the month. Utilities = electricity, water and internet. Other expenses = repairs, furniture/appliances/equipment, supplies and others.</p>
+
+      <h2 class="section" style="margin-top:26px;">Itemized Expenses</h2>
+      <table class="detail-table">
+        <thead><tr><th class="first">Date Paid</th><th class="first">Description</th><th class="first">Category</th><th>Paid By</th><th>Amount (PHP)</th><th>Receipt</th></tr></thead>
+        <tbody>
+          @foreach($report['items'] as $e)
+            <tr>
+              <td class="first" style="white-space:nowrap;">{{ $e['date_label'] }}</td>
+              <td class="first">{{ $e['description'] }}</td>
+              <td class="first">{{ $e['category_label'] }}</td>
+              <td>{{ $e['payment_method_label'] }}</td>
+              <td style="text-align:right;">{{ number_format($e['amount'], 2) }}</td>
+              <td>{{ $e['receipt_url'] ? 'Attached' : ($e['is_recurring'] ? 'Recurring' : 'None') }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
     @else
       <p class="body-text">No months recorded yet.</p>
+    @endif
+  @elseif($type === 'daily')
+    <h2 class="section">Overview</h2>
+    <p class="body-text">
+      Payments received by {{ $dormName }} on {{ $report['range']['label'] }}, the expenses paid
+      in the same {{ $report['range']['single_day'] ? 'day' : 'days' }}, and the cash left to deposit in the bank.
+    </p>
+
+    <div class="highlight-box">
+      <table>
+        <tr>
+          <td>
+            <div class="label">Total Collections</div>
+            <div class="value">PHP {{ number_format($report['total_collected'], 2) }}</div>
+            <div class="note">{{ count($report['payments']) }} payment(s)</div>
+          </td>
+          <td>
+            <div class="label">Remaining After Expenses</div>
+            <div class="value" @if($report['remaining'] < 0) style="color:#ba2828;" @endif>PHP {{ number_format($report['remaining'], 2) }}</div>
+            <div class="note">Collections minus PHP {{ number_format($report['total_expenses'], 2) }} expenses</div>
+          </td>
+          <td>
+            <div class="label">Net Cash for Bank Deposit</div>
+            <div class="value" @if($report['cash_for_deposit'] < 0) style="color:#ba2828;" @endif>PHP {{ number_format($report['cash_for_deposit'], 2) }}</div>
+            <div class="note">Cash collected minus cash expenses</div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <h2 class="section">Cash on Hand</h2>
+    <table class="summary">
+      <thead><tr><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Total Collections</td><td class="amount">PHP {{ number_format($report['total_collected'], 2) }}</td></tr>
+        <tr class="sub"><td>Cash</td><td class="amount">PHP {{ number_format($report['cash_collected'], 2) }}</td></tr>
+        <tr class="sub"><td>Online (GCash / Bank / Other)</td><td class="amount">PHP {{ number_format($report['online_collected'], 2) }}</td></tr>
+        <tr><td>Less: Expenses Paid</td><td class="amount warn">PHP {{ number_format($report['total_expenses'], 2) }}</td></tr>
+        <tr><td>Remaining After Expenses</td><td class="amount {{ $report['remaining'] < 0 ? 'warn' : '' }}">PHP {{ number_format($report['remaining'], 2) }}</td></tr>
+        <tr class="sub"><td>Cash Collected</td><td class="amount">PHP {{ number_format($report['cash_collected'], 2) }}</td></tr>
+        <tr class="sub"><td>Less: Expenses Paid in Cash</td><td class="amount">PHP {{ number_format($report['cash_expenses'], 2) }}</td></tr>
+        <tr class="total"><td>Net Cash for Bank Deposit:</td><td class="amount {{ $report['cash_for_deposit'] < 0 ? 'warn' : '' }}">PHP {{ number_format($report['cash_for_deposit'], 2) }}</td></tr>
+      </tbody>
+    </table>
+    <p class="body-text" style="font-size:9.5px;color:#8a8a8a;margin-top:6px;">Only cash is deposited: GCash and bank transfer payments are already in the account, and expenses paid by GCash or bank transfer did not use the cash on hand.</p>
+
+    <h2 class="section" style="margin-top:26px;">Payments Received</h2>
+    <table class="detail-table">
+      <thead><tr><th class="first">Date</th><th class="first">Tenant</th><th>Room</th><th>Method</th><th>Reference No.</th><th>Amount (PHP)</th></tr></thead>
+      <tbody>
+        @forelse($report['payments'] as $p)
+          <tr>
+            <td class="first" style="white-space:nowrap;">{{ $p['date_label'] }}</td>
+            <td class="first">{{ $p['tenant'] }}</td>
+            <td>{{ $p['room'] }}</td>
+            <td>{{ $p['method_label'] }}</td>
+            <td>{{ $p['reference'] ?: '-' }}</td>
+            <td style="text-align:right;">{{ number_format($p['amount'], 2) }}</td>
+          </tr>
+        @empty
+          <tr><td colspan="6">No payments received in this period.</td></tr>
+        @endforelse
+        @if(count($report['payments']))
+          <tr style="background:#dcebdc;font-weight:bold;"><td class="first" colspan="5">Total</td><td style="text-align:right;">{{ number_format($report['total_collected'], 2) }}</td></tr>
+        @endif
+      </tbody>
+    </table>
+
+    <h2 class="section" style="margin-top:26px;">Expenses Paid</h2>
+    <table class="detail-table">
+      <thead><tr><th class="first">Date</th><th class="first">Description</th><th class="first">Category</th><th>Paid By</th><th>Amount (PHP)</th></tr></thead>
+      <tbody>
+        @forelse($report['expenses'] as $e)
+          <tr>
+            <td class="first" style="white-space:nowrap;">{{ $e['date_label'] }}</td>
+            <td class="first">{{ $e['description'] }}</td>
+            <td class="first">{{ $e['category_label'] }}</td>
+            <td>{{ $e['payment_method_label'] }}</td>
+            <td style="text-align:right;">{{ number_format($e['amount'], 2) }}</td>
+          </tr>
+        @empty
+          <tr><td colspan="5">No expenses paid in this period.</td></tr>
+        @endforelse
+        @if(count($report['expenses']))
+          <tr style="background:#dcebdc;font-weight:bold;"><td class="first" colspan="4">Total</td><td style="text-align:right;">{{ number_format($report['total_expenses'], 2) }}</td></tr>
+        @endif
+      </tbody>
+    </table>
+
+    @if(count($report['days']) > 1)
+      <h2 class="section" style="margin-top:26px;">Day by Day</h2>
+      <table class="detail-table">
+        <thead><tr><th class="first">Date</th><th>Cash Collected</th><th>Online Collected</th><th>Expenses Paid</th><th>Cash Expenses</th><th>Cash for Deposit</th></tr></thead>
+        <tbody>
+          @foreach($report['days'] as $d)
+            <tr>
+              <td class="first" style="white-space:nowrap;">{{ $d['date_label'] }}</td>
+              <td>{{ number_format($d['cash_collected'], 2) }}</td>
+              <td>{{ number_format($d['online_collected'], 2) }}</td>
+              <td>{{ number_format($d['total_expenses'], 2) }}</td>
+              <td>{{ number_format($d['cash_expenses'], 2) }}</td>
+              <td class="rate" @if($d['cash_for_deposit'] < 0) style="color:#ba2828;" @endif>{{ number_format($d['cash_for_deposit'], 2) }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
     @endif
   @else
     <h2 class="section">Overview</h2>
@@ -325,11 +445,9 @@
       <tbody>
         <tr><td>Total Collected</td><td class="amount">PHP {{ number_format($report['total_collected'], 2) }}</td></tr>
         <tr><td>Less: Total Expenses</td><td class="amount warn">PHP {{ number_format($report['total_expenses'], 2) }}</td></tr>
-        <tr class="sub"><td>Electricity (Meralco)</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['electricity'], 2) }}</td></tr>
-        <tr class="sub"><td>Water</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['water'], 2) }}</td></tr>
-        <tr class="sub"><td>Internet / WiFi</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['internet'], 2) }}</td></tr>
-        <tr class="sub"><td>Staff Salaries</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['salaries'], 2) }}</td></tr>
-        <tr class="sub"><td>Others</td><td class="amount">PHP {{ number_format($report['expense_breakdown']['other'], 2) }}</td></tr>
+        @foreach(\App\Models\Expense::CATEGORIES as $key => $label)
+          <tr class="sub"><td>{{ $label }}</td><td class="amount">PHP {{ number_format($report['expense_breakdown'][$key], 2) }}</td></tr>
+        @endforeach
         <tr class="total"><td>Net Profit:</td><td class="amount {{ $report['net_profit'] < 0 ? 'warn' : '' }}">PHP {{ number_format($report['net_profit'], 2) }}</td></tr>
       </tbody>
     </table>
