@@ -339,6 +339,15 @@ class BillingController extends Controller
             'Total: ₱' . number_format((float) $bill->total_amount, 2) . ', due on ' . $bill->due_date?->format('F j, Y') . '.',
             '/billing');
 
+        // Pureza revision (2026-11-14): the new bill by email too.
+        if ($bill->status !== 'paid') {
+            $bill->loadMissing('tenant');
+            app(\App\Services\BillingEmailService::class)->toTenant($bill, 'new_bill',
+                'Your bill for ' . $bill->billing_period_start->format('F Y'),
+                'Your bill for ' . $bill->billing_period_start->format('F Y') . ' is ready',
+                'Your monthly bill has been issued. Please pay on or before the due date.');
+        }
+
         return $bill;
     }
 
@@ -484,14 +493,7 @@ class BillingController extends Controller
 
         Penalty::whereIn('id', $penalties->pluck('id'))->update(['billing_id' => $bill->id]);
 
-        $penaltyTotal = Penalty::where('billing_id', $bill->id)
-            ->where('status', 'active')
-            ->sum('amount');
-
-        $bill->update([
-            'penalty_amount' => $penaltyTotal,
-            'total_amount' => $bill->base_rent + $bill->utilities_amount + $bill->wifi_amount + $penaltyTotal,
-        ]);
+        $bill->recalculateTotals();
 
         return $penalties->count();
     }

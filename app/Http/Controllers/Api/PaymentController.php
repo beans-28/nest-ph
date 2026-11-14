@@ -59,7 +59,7 @@ class PaymentController extends Controller
         // Active penalties not yet on any bill, per tenant, for the
         // statement drawer's "Add unbilled penalties" section.
         $unbilledByTenant = \App\Models\Penalty::where('status', 'active')->whereNull('billing_id')
-            ->groupBy('tenant_id')->selectRaw('tenant_id, SUM(amount) as total')->pluck('total', 'tenant_id');
+            ->groupBy('tenant_id')->selectRaw('tenant_id, SUM(' . \App\Models\Penalty::CHARGED_SQL . ') as total')->pluck('total', 'tenant_id');
 
         $overview = BillingStatement::with([
             'tenant:id,first_name,last_name',

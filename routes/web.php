@@ -194,6 +194,7 @@ Route::middleware(['auth', 'admin', 'admin.access'])->group(function () {
     Route::patch('/lease-contracts/{leaseContract}/notarized/approve', [LeaseContractController::class, 'approveNotarized']);
     Route::patch('/lease-contracts/{leaseContract}/notarized/reject', [LeaseContractController::class, 'rejectNotarized']);
     Route::get('/tenants/{tenant}/active-lease', [LeaseContractController::class, 'activeLeaseForTenant']);
+    Route::get('/lease-contracts/tenants/{tenant}', [LeaseContractController::class, 'forTenant'])->whereNumber('tenant');
 
     // --- Penalties & Damages (Week 5, Wed + Thu) ---
     Route::get('/penalties', [PenaltyController::class, 'index']);
@@ -230,6 +231,8 @@ Route::middleware(['auth', 'admin', 'admin.access'])->group(function () {
     Route::get('/admin/notifications', [\App\Http\Controllers\AdminNotificationController::class, 'index'])->name('admin.notifications');
     Route::get('/tenant-manager', [TenantController::class, 'page'])->name('tenant-manager.index');
     Route::get('/tenant-manager/{tenant}', [TenantController::class, 'show']);
+    Route::get('/tenant-manager/{tenant}/payments', [TenantController::class, 'paymentHistory']);
+    Route::get('/tenant-manager/{tenant}/activity', [TenantController::class, 'activity']);
     Route::post('/tenant-manager', [TenantController::class, 'store']);
     Route::post('/tenant-manager/{tenant}', [TenantController::class, 'update']);
     Route::post('/tenant-manager/{tenant}/status', [TenantController::class, 'setStatus']);

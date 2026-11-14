@@ -79,6 +79,32 @@ class DepositRefund extends Model
         return self::depositOf($moveIn);
     }
 
+    /**
+     * Deposit already used to pay penalties (Pureza revision 2026-11-14).
+     * Only active penalties count, so a waived one gives its share back.
+     */
+    public static function usedForPenalties(Tenant $tenant, ?int $exceptPenaltyId = null): float
+    {
+        return round((float) Penalty::where('tenant_id', $tenant->id)
+            ->where('status', 'active')
+            ->when($exceptPenaltyId, fn ($q) => $q->where('id', '!=', $exceptPenaltyId))
+            ->sum('deposit_deducted'), 2);
+    }
+
+    /**
+     * Deposit still available to cover new penalties: the deposit paid
+     * minus what penalties already used. 0 once the deposit has been
+     * refunded/settled at move-out, or if no deposit was ever paid.
+     */
+    public static function depositRemainingFor(Tenant $tenant, ?int $exceptPenaltyId = null): float
+    {
+        if (self::where('tenant_id', $tenant->id)->exists()) {
+            return 0.0;
+        }
+
+        return max(0, round(self::depositHeldFor($tenant) - self::usedForPenalties($tenant, $exceptPenaltyId), 2));
+    }
+
     /** The deposit part of a move-in fee (rows saved without the split are the old 1 + 1 month fee). */
     private static function depositOf(BillingStatement $moveIn): float
     {
@@ -155,6 +181,8 @@ class DepositRefund extends Model
             'prorated_credit' => $credit,
             'pay_ahead_credit' => $moveIn->contract ? \App\Services\PayAhead::unusedCredit($moveIn->contract) : 0.0,
             'deposit_amount' => self::depositOf($moveIn),
+            // Penalties paid from the deposit during the stay (2026-11-14).
+            'used_for_penalties' => $paid ? self::usedForPenalties($tenant) : 0.0,
             'deposit_status' => $depositStatus,
             'refund' => $refund ? [
                 'deductions_amount' => (float) $refund->deductions_amount,

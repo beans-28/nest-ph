@@ -266,9 +266,11 @@ class BillingStatement extends Model
      */
     public function recalculateTotals(): void
     {
-        $penaltyTotal = (float) Penalty::where('billing_id', $this->id)
+        // Only the part of each penalty the security deposit did NOT
+        // cover is charged on the bill (see Penalty::booted()).
+        $penaltyTotal = round((float) Penalty::where('billing_id', $this->id)
             ->where('status', 'active')
-            ->sum('amount');
+            ->sum(\DB::raw(Penalty::CHARGED_SQL)), 2);
 
         $this->update([
             'penalty_amount' => $penaltyTotal,
@@ -350,7 +352,7 @@ class BillingStatement extends Model
             $amount = round($overdueRent * $percent / 100, 2);
             $percentLabel = rtrim(rtrim(number_format($percent, 2), '0'), '.');
 
-            DB::transaction(function () use ($bill, $amount, $overdueRent, $percentLabel, $profile) {
+            $penalty = DB::transaction(function () use ($bill, $amount, $overdueRent, $percentLabel, $profile) {
                 $penalty = Penalty::create([
                     'tenant_id' => $bill->tenant_id,
                     'billing_id' => $bill->id,
@@ -372,12 +374,14 @@ class BillingStatement extends Model
                 ]);
 
                 $bill->recalculateTotals();
+
+                return $penalty;
             });
 
             TenantNotification::send($bill->tenant_id, 'late_penalty',
                 'A late payment penalty was added',
                 'Your ' . $bill->billing_period_start->format('F Y') . ' rent was not paid within the grace period, so a one-time penalty of ₱'
-                    . number_format($amount, 2) . ' was added to the bill.',
+                    . number_format($amount, 2) . ' was charged. ' . $penalty->paymentNote('It was added to the bill.'),
                 '/billing', "late_penalty:{$bill->id}");
         }
     }

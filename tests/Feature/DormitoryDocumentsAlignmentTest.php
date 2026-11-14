@@ -176,7 +176,8 @@ class DormitoryDocumentsAlignmentTest extends TestCase
 
     public function test_one_time_ten_percent_penalty_after_the_grace_period(): void
     {
-        $bill = $this->monthlyBill($this->tenantWithContract('2026-09-01'), '2026-10-01');
+        // No deposit on file, so the penalty goes on the bill (normal flow).
+        $bill = $this->monthlyBill($this->tenantWithContract('2026-09-01', 4200, false), '2026-10-01');
 
         Carbon::setTestNow('2026-10-05 08:00:00');
         BillingStatement::syncOverdueStatuses();

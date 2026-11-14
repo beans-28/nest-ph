@@ -32,29 +32,28 @@ class LeaseContractController extends Controller
      * `php artisan schedule:run` to a real server cron is real remaining
      * infrastructure work, not something this page alone can provide.
      */
-    public function page()
+    public function page(Request $request)
+    {
+        // Pureza revision (2026-11-14): Lease Management is now part of the
+        // tenant profile in the Tenant Manager, so this old page sends the
+        // admin there (old links and bookmarks keep working).
+        return redirect()->route('tenant-manager.index', array_filter(['lease' => $request->query('lease')]));
+    }
+
+    /**
+     * GET /lease-contracts/tenants/{tenant}: every lease of one tenant,
+     * newest first, for the Lease tab of the tenant profile.
+     */
+    public function forTenant(Tenant $tenant): JsonResponse
     {
         $this->syncExpiringAndExpired();
 
-        $contracts = LeaseContract::with([
-            'tenant:id,first_name,last_name',
-            'bed:id,room_id,bed_label,status',
-            'bed.room:id,room_no',
-        ])->latest()->get();
-
-        $stats = [
-            'active' => $contracts->where('status', 'active')->count(),
-            'total_tenants' => $contracts->pluck('tenant_id')->filter()->unique()->count(),
-            'expired' => $contracts->where('status', 'expired')->count(),
-            'expiring_soon' => $contracts->where('status', 'expiring_soon')->count(),
-        ];
-
-        $rows = $contracts->map(fn ($c) => $this->transformRow($c))->values();
-
-        return view('admincontracts', [
-            'contracts' => $rows,
-            'stats' => $stats,
-            'notarizationRequired' => $this->profile()->notarization_required,
+        return response()->json([
+            'contracts' => LeaseContract::where('tenant_id', $tenant->id)
+                ->with(['tenant:id,first_name,last_name', 'bed:id,room_id,bed_label,status', 'bed.room:id,room_no'])
+                ->latest('id')->get()
+                ->map(fn ($c) => $this->transformRow($c))->values(),
+            'notarization_required' => (bool) $this->profile()->notarization_required,
         ]);
     }
 
@@ -540,7 +539,7 @@ class LeaseContractController extends Controller
      * note on page() above for what's still missing to make this truly
      * automated.
      */
-    private function syncExpiringAndExpired(): void
+    public function syncExpiringAndExpired(): void
     {
         $today = now()->startOfDay();
         $threshold = $today->copy()->addDays(self::EXPIRING_SOON_WINDOW_DAYS);

@@ -39,7 +39,11 @@ class TenantController extends Controller
         // full_name is a computed accessor now (first_name + last_name),
         // not a real column, so it can't be used in orderBy() -- sort on
         // the real columns instead.
-        $tenants = Tenant::with(['activeContract.bed.room'])
+        // Lease statuses (expiring soon / expired) are worked out by the
+        // lease controller; run the same update so the filter is current.
+        app(\App\Http\Controllers\Api\LeaseContractController::class)->syncExpiringAndExpired();
+
+        $tenants = Tenant::with(['activeContract.bed.room', 'latestContract'])
             ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
@@ -59,9 +63,22 @@ class TenantController extends Controller
             fn ($row) => $row['raw_status'] === 'active' && ! $row['is_blacklisted']
         )->count();
 
+        $leaseCounts = [
+            'expiring_soon' => $rows->where('lease_status', 'expiring_soon')->count(),
+            'expired' => $rows->where('lease_status', 'expired')->count(),
+            'notarized_review' => $rows->where('notarized_status', 'submitted')->count(),
+        ];
+
+        $user = $request->user()?->loadMissing('privileges');
+
         return view('tenantmanager', [
             'tenants' => $rows,
             'totalCount' => $activeCount,
+            'leaseCounts' => $leaseCounts,
+            // Lease actions (renew, terminate, notarized copies...) need the
+            // "manage contracts" privilege; billing links need "manage billing".
+            'canManageLeases' => (bool) $user?->hasPrivilege('manage_contracts'),
+            'canManageBilling' => (bool) $user?->hasPrivilege('manage_billing'),
         ]);
     }
 
@@ -78,10 +95,14 @@ class TenantController extends Controller
     private function depositSummary(Tenant $tenant, float $outstanding): array
     {
         $refund = \App\Models\DepositRefund::where('tenant_id', $tenant->id)->with('recordedBy:id,name')->latest('id')->first();
-        $unbilled = (float) \App\Models\Penalty::where('tenant_id', $tenant->id)->where('status', 'active')->whereNull('billing_id')->sum('amount');
+        $unbilled = (float) \App\Models\Penalty::where('tenant_id', $tenant->id)->where('status', 'active')->whereNull('billing_id')->sum(\DB::raw(\App\Models\Penalty::CHARGED_SQL));
 
         return [
-            'held' => \App\Models\DepositRefund::depositHeldFor($tenant),
+            // 'held' is what's LEFT after penalties paid from the deposit
+            // (Pureza revision 2026-11-14); 'paid' is the original deposit.
+            'paid' => \App\Models\DepositRefund::depositHeldFor($tenant),
+            'used_for_penalties' => \App\Models\DepositRefund::usedForPenalties($tenant),
+            'held' => max(0, round(\App\Models\DepositRefund::depositHeldFor($tenant) - \App\Models\DepositRefund::usedForPenalties($tenant), 2)),
             // Pureza rule: non-refundable before the minimum stay (6 months).
             'eligibility' => \App\Models\DepositRefund::eligibilityFor($tenant),
             'suggested_deductions' => round($outstanding + $unbilled, 2),
@@ -183,8 +204,27 @@ class TenantController extends Controller
 
         $contract = $tenant->activeContract;
 
+        // Details only the online application has (gender, school, etc.).
+        $application = \App\Models\Application::where('tenant_id', $tenant->id)->latest('id')->first();
+        $firstContract = $tenant->contracts()->whereNotNull('start_date')->orderBy('start_date')->first();
+        $overdueIds = BillingStatement::where('status', 'overdue')->where('tenant_id', $tenant->id)->pluck('tenant_id');
+
         return response()->json([
             'id' => $tenant->id,
+            'display_status' => $this->deriveStatus($tenant, $overdueIds),
+            'tenant_since' => $this->formatDate($firstContract?->start_date, 'M j, Y'),
+            'emergency_contact_email' => $tenant->emergency_contact_email,
+            'application' => $application ? [
+                'gender' => $application->gender,
+                'nationality' => $application->nationality,
+                'occupation' => $application->occupation,
+                'school_company' => $application->school_company,
+                'school_company_address' => $application->school_company_address,
+                'medical_condition' => $application->medical_condition,
+                'landline' => $application->landline,
+                'emergency_contact_relation' => $application->emergency_contact_relation,
+                'submitted_at' => $this->formatDate($application->created_at, 'M j, Y'),
+            ] : null,
             'full_name' => $tenant->full_name,
             'first_name' => $tenant->first_name,
             'last_name' => $tenant->last_name,
@@ -207,6 +247,7 @@ class TenantController extends Controller
             'emergency_contact_id_url' => $this->publicUrlFor($tenant->emergency_contact_id_path),
             'signed_contract_url' => $this->publicUrlFor($tenant->signed_contract_path),
             'contract' => $contract ? [
+                'id' => $contract->id,
                 'room_no' => $contract->bed?->room?->room_no,
                 'bed_label' => $contract->bed?->bed_label,
                 'start_date' => $this->formatDate($contract->start_date, 'M j, Y'),
@@ -217,6 +258,115 @@ class TenantController extends Controller
             'payments_count' => $tenant->payments()->count(),
             'deposit' => $this->depositSummary($tenant, (float) $outstanding),
         ]);
+    }
+
+    /**
+     * GET /tenant-manager/{tenant}/payments (Pureza revision 2026-11-14):
+     * the tenant's bills, every payment with its uploaded proof (the same
+     * proof the tenant sees on their Billing page) and their penalties,
+     * including how much of each penalty the security deposit covered.
+     */
+    public function paymentHistory(Tenant $tenant): JsonResponse
+    {
+        $bills = $tenant->billingStatements()->withApprovedPaid()
+            ->orderByDesc('billing_period_start')->orderByDesc('id')->get()
+            ->map(fn (BillingStatement $b) => [
+                'id' => $b->id,
+                'label' => match ($b->type) {
+                    'move_in' => 'Move-in fee',
+                    BillingStatement::PAY_AHEAD => 'Rent paid ahead',
+                    default => 'Rent for ' . $b->billing_period_start?->format('F Y'),
+                },
+                'due_date' => $this->formatDate($b->due_date, 'M j, Y'),
+                'total' => (float) $b->total_amount,
+                'penalty' => (float) $b->penalty_amount,
+                'balance' => $b->remainingBalance(),
+                'status' => $b->status,
+            ])->values();
+
+        $billLabels = $bills->pluck('label', 'id');
+
+        $payments = $tenant->payments()->with(['recordedBy:id,name'])
+            ->orderByDesc('payment_date')->orderByDesc('id')->get()
+            ->map(fn (\App\Models\Payment $p) => [
+                'id' => $p->id,
+                'bill' => $billLabels[$p->billing_id] ?? '—',
+                'amount' => (float) $p->amount_paid,
+                'method' => $p->payment_method_label ?: $p->payment_method,
+                'reference' => $p->reference_number,
+                'payment_date' => $this->formatDate($p->payment_date, 'M j, Y'),
+                'submitted_at' => $this->formatDate($p->created_at, 'M j, Y g:ia'),
+                'status' => $p->status,
+                'proof_url' => $this->publicUrlFor($p->proof_path),
+                'review_notes' => $p->review_notes,
+                'reviewed_at' => $this->formatDate($p->reviewed_at, 'M j, Y g:ia'),
+                'recorded_by' => $p->recordedBy?->name,
+                'receipt_url' => $p->status === 'approved' ? url("/payments/{$p->id}/receipt") : null,
+            ])->values();
+
+        $penalties = $tenant->penalties()->orderByDesc('date_incurred')->orderByDesc('id')->get()
+            ->map(fn (\App\Models\Penalty $p) => [
+                'id' => $p->id,
+                'description' => $p->description,
+                'type' => $p->type,
+                'amount' => (float) $p->amount,
+                'from_deposit' => (float) $p->deposit_deducted,
+                'charged' => $p->chargedAmount(),
+                'status' => $p->status,
+                'date' => $this->formatDate($p->date_incurred, 'M j, Y'),
+                'billed' => (bool) $p->billing_id,
+            ])->values();
+
+        return response()->json([
+            'bills' => $bills,
+            'payments' => $payments,
+            'penalties' => $penalties,
+            'totals' => [
+                'paid' => round($payments->where('status', 'approved')->sum('amount'), 2),
+                'outstanding' => round($bills->whereIn('status', ['unpaid', 'partial', 'overdue'])->sum('balance'), 2),
+                'pending_review' => $payments->where('status', 'pending')->count(),
+            ],
+        ]);
+    }
+
+    /**
+     * GET /tenant-manager/{tenant}/activity (Pureza revision 2026-11-14):
+     * one timeline of what happened on this account -- portal notifications
+     * sent to the tenant, delinquency steps (SMS, restrictions, letters) and
+     * billing emails -- newest first.
+     */
+    public function activity(Tenant $tenant): JsonResponse
+    {
+        $items = collect();
+
+        foreach (\App\Models\TenantNotification::where('tenant_id', $tenant->id)->latest('id')->limit(150)->get() as $n) {
+            $items->push(['at' => $n->created_at, 'kind' => 'notification', 'title' => $n->title, 'detail' => $n->body, 'status' => null]);
+        }
+        foreach ($tenant->escalationLogs()->with('performedBy:id,name')->latest('id')->limit(150)->get() as $log) {
+            $type = (string) $log->action_type;
+            $items->push([
+                'at' => $log->created_at,
+                'kind' => (str_starts_with($type, 'guardian_') || $type === 'emergency_contact_notified') ? 'guardian' : 'delinquency',
+                'title' => 'Stage ' . $log->stage . ': ' . ucfirst(str_replace('_', ' ', $type)),
+                'detail' => str_ends_with((string) $log->message_content, '.pdf') ? 'Demand letter PDF generated.' : $log->message_content,
+                'status' => $log->status,
+                'by' => $log->performedBy?->name,
+            ]);
+        }
+        foreach (\App\Models\BillingEmailLog::where('tenant_id', $tenant->id)->latest('id')->limit(150)->get() as $e) {
+            $items->push([
+                'at' => $e->created_at,
+                'kind' => 'email',
+                'title' => 'Email to ' . ($e->recipient_type === 'guardian' ? 'guardian' : 'tenant') . ': ' . str_replace('_', ' ', $e->kind),
+                'detail' => $e->email . ($e->error ? ' (error: ' . $e->error . ')' : ''),
+                'status' => $e->status,
+            ]);
+        }
+
+        return response()->json(
+            $items->filter(fn ($i) => $i['at'])->sortByDesc('at')->take(200)
+                ->map(fn ($i) => array_merge($i, ['at' => \Illuminate\Support\Carbon::parse($i['at'])->format('M j, Y g:ia')]))->values()
+        );
     }
 
     /**
@@ -356,6 +506,7 @@ class TenantController extends Controller
             'email' => ['required', 'email', 'max:150', Rule::unique('tenants', 'email')->ignore($tenant->id)],
             'emergency_contact_name' => ['nullable', 'string', 'max:150'],
             'emergency_contact_number' => ['nullable', 'string', 'max:20'],
+            'emergency_contact_email' => ['nullable', 'email', 'max:150'],
             // Tenant Agreement 9.3/9.4: on only with the emergency contact's
             // written consent; turned off when they ask to opt out.
             'emergency_billing_reminders' => ['sometimes', 'boolean'],
@@ -560,6 +711,11 @@ class TenantController extends Controller
             'tenant_type' => $tenant->tenant_type,
             'id_photo_url' => $tenant->id_photo_url,
             'initials' => $tenant->initials,
+            // Newest lease's status, for the Lease filter (replaces the old
+            // Lease Management page's tabs).
+            'lease_status' => $tenant->latestContract?->status,
+            'lease_end' => $tenant->latestContract?->end_date?->format('M j, Y'),
+            'notarized_status' => $tenant->latestContract?->notarized_status,
         ];
     }
 

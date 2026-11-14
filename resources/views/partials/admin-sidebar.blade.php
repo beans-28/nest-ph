@@ -63,12 +63,7 @@
             <span class="label">VR Management</span>
         </li>
         @endif
-        @if ($canSee('contracts.index'))
-        <li class="nav-item {{ request()->routeIs('contracts.*') ? 'active' : '' }}" data-href="{{ route('contracts.index') }}" tabindex="0">
-            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 17-2.156-1.868A.5.5 0 0 0 18 15.5v.5a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1c0-2.545-3.991-3.97-8.5-4a1 1 0 0 0 0 5c4.153 0 4.745-11.295 5.708-13.5a2.5 2.5 0 1 1 3.31 3.284"/><path d="M3 21h18"/></svg></span>
-            <span class="label">Lease Management</span>
-        </li>
-        @endif
+        {{-- Lease Management now lives in each tenant's profile (Tenant Manager). --}}
         @if ($canSee('reports.index'))
         <li class="nav-item {{ request()->routeIs('reports.*') ? 'active' : '' }}" data-href="{{ route('reports.index') }}" tabindex="0">
             <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg></span>

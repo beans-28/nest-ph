@@ -869,6 +869,7 @@ class ApplicationController extends Controller
             'email' => $application->email,
             'emergency_contact_name' => $application->emergency_contact_name,
             'emergency_contact_number' => $application->emergency_contact_number,
+            'emergency_contact_email' => $application->emergency_contact_email,
             'emergency_billing_reminders' => (bool) $application->emergency_billing_consent,
             // Bug fix: these five were being silently dropped on approval --
             // they exist on the application (from the online form) but were

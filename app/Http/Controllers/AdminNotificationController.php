@@ -122,7 +122,7 @@ class AdminNotificationController extends Controller
                 'one' => 'review held by the filter', 'many' => 'reviews held by the filter',
             ],
             [
-                'key' => 'leases', 'urgent' => false, 'link' => '/lease-contracts',
+                'key' => 'leases', 'urgent' => false, 'link' => '/tenant-manager?lease=expiring_soon',
                 'count' => LeaseContract::whereIn('status', ['active', 'expiring_soon'])
                     ->whereBetween('end_date', [now()->toDateString(), now()->addDays(30)->toDateString()])
                     ->count(),

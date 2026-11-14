@@ -53,7 +53,12 @@
         @php $r = $fee['refund']; @endphp
         <div class="fee-lines">
           <div><span>Deposit</span><span>{{ $peso($fee['deposit_amount']) }}</span></div>
-          <div><span>Deductions{{ $r['deductions_note'] ? ' (' . $r['deductions_note'] . ')' : '' }}</span><span>− {{ $peso($r['deductions_amount']) }}</span></div>
+          @if(($fee['used_for_penalties'] ?? 0) > 0)
+            <div><span>Used for penalties during your stay</span><span>− {{ $peso($fee['used_for_penalties']) }}</span></div>
+          @endif
+          @if($r['deductions_amount'] > 0)
+            <div><span>Deductions{{ $r['deductions_note'] ? ' (' . $r['deductions_note'] . ')' : '' }}</span><span>− {{ $peso($r['deductions_amount']) }}</span></div>
+          @endif
           <div class="total"><span>Refunded to you</span><span>{{ $peso($r['refund_amount']) }}</span></div>
         </div>
         <div class="fee-note" style="margin-top:6px;">
@@ -65,6 +70,18 @@
           @if($fee['still_owed'] > 0)
             <br><strong>Still owed: {{ $peso($fee['still_owed']) }}</strong>. The deposit did not cover your full balance.
           @endif
+        </div>
+      @elseif(($fee['used_for_penalties'] ?? 0) > 0)
+        @php $left = max(0, $fee['deposit_amount'] - $fee['used_for_penalties']); @endphp
+        <div class="fee-lines">
+          <div><span>Deposit paid</span><span>{{ $peso($fee['deposit_amount']) }}</span></div>
+          <div><span>Used for penalties</span><span>− {{ $peso($fee['used_for_penalties']) }}</span></div>
+          <div class="total"><span>Deposit left</span><span>{{ $peso($left) }}</span></div>
+        </div>
+        <div class="fee-note" style="margin-top:6px;">
+          Penalties are paid from your deposit first while some is left.
+          @if($left <= 0) Your deposit is used up, so new penalties will be added to your bill. @endif
+          What's left is returned after you move out, less any unpaid rent or damages.
         </div>
       @else
         <div class="fee-amount">{{ $peso($fee['deposit_amount']) }}</div>

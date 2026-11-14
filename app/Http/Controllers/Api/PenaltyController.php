@@ -112,7 +112,7 @@ class PenaltyController extends Controller
 
         \App\Models\TenantNotification::send($penalty->tenant_id, 'penalty_added',
             'A penalty of ₱' . number_format((float) $penalty->amount, 2) . ' was added',
-            $penalty->description . '. It will be included in your next bill.', '/billing');
+            $penalty->description . '. ' . $penalty->paymentNote(), '/billing');
 
         return response()->json([
             'message' => 'Penalty added.',
@@ -306,7 +306,7 @@ class PenaltyController extends Controller
         $unbilledPenaltyTotal = Penalty::where('tenant_id', $tenantId)
             ->where('status', 'active')
             ->whereNull('billing_id')
-            ->sum('amount');
+            ->sum(DB::raw(Penalty::CHARGED_SQL));
 
         return [
             'tenant_id' => $tenantId,
@@ -328,13 +328,6 @@ class PenaltyController extends Controller
             return;
         }
 
-        $activePenaltyTotal = Penalty::where('billing_id', $billingId)
-            ->where('status', 'active')
-            ->sum('amount');
-
-        $bill->update([
-            'penalty_amount' => $activePenaltyTotal,
-            'total_amount' => $bill->base_rent + $bill->utilities_amount + $bill->wifi_amount + $activePenaltyTotal,
-        ]);
+        $bill->recalculateTotals();
     }
 }

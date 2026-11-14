@@ -58,3 +58,8 @@ Schedule::command('applications:notify-overdue')->daily();
 // Payments and Fees Schedule 3.2: release the bed when a half-paid move-in
 // fee is still unpaid one month after the payment (ExpireMoveInReservations).
 Schedule::command('reservations:expire')->daily();
+
+// Pureza revision (2026-11-14): email reminders before a bill is overdue
+// (3 days before the due date, and during the grace period). Overdue
+// emails go out with the escalation SMS above. See SendBillingReminders.
+Schedule::command('billing:send-reminders')->dailyAt('08:00');

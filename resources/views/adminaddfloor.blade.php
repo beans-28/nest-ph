@@ -50,6 +50,30 @@
   .legend-dot.reserved{ background:var(--status-reserved); }
   .legend-dot.maintenance{ background:var(--status-maintenance); }
 
+  /* Bed colour key (client request 2026-11-14): big, at the top of the page,
+     and pinned under the top bar while scrolling, so staff never have to
+     hunt for what a colour means. Swatches are real mini bed tiles. */
+  .bed-key{ position:sticky; top:var(--key-top, 56px); z-index:15; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; box-shadow:0 4px 12px rgba(20,30,20,0.06); }
+  .bed-key h2{ font-size:13px; font-weight:700; margin:0; color:var(--text-dark); white-space:nowrap; }
+  .bed-key ul{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; flex:1; min-width:0; }
+  .key-item{ display:flex; align-items:center; gap:10px; border-radius:9px; padding:8px 12px; border:1px solid transparent; min-width:0; }
+  .key-item svg{ width:22px; height:22px; flex-shrink:0; }
+  .key-item .kname{ font-size:14px; font-weight:700; display:flex; align-items:baseline; gap:8px; }
+  .key-item .kcount{ font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; opacity:.85; }
+  .key-item .kmean{ font-size:11.5px; line-height:1.35; opacity:.9; }
+  .key-item.occupied{ background:var(--status-occupied-bg); color:#9b2f29; border-color:#efc4c0; }
+  .key-item.vacant{ background:var(--status-vacant-bg); color:#256b33; border-color:#8fd09a; }
+  .key-item.reserved{ background:var(--status-reserved-bg); color:#553a9c; border-color:#d6caf0; }
+  .key-item.maintenance{ background:var(--status-maintenance-bg); color:#7a5712; border-color:#ead6a8; }
+  @media (max-width: 1100px){ .bed-key ul{ grid-template-columns:repeat(2, minmax(0,1fr)); } }
+  @media (max-width: 560px){
+    .bed-key{ padding:10px; gap:8px; }
+    .bed-key h2{ width:100%; }
+    .key-item{ padding:7px 9px; gap:7px; }
+    .key-item .kmean{ display:none; }
+    .key-item svg{ width:18px; height:18px; }
+  }
+
   .floor-block{ margin-bottom:10px; }
   .floor-header{ display:flex; align-items:center; justify-content:space-between; border:1px solid var(--border); border-radius:8px; padding:13px 16px; font-size:13.5px; font-weight:600; color:var(--text-dark); cursor:pointer; background:#fff; }
   .floor-header:hover{ background:#f7f9f7; }
@@ -187,6 +211,16 @@
         </div>
       </div>
 
+      <section class="bed-key" id="bedKey" aria-labelledby="bedKeyTitle">
+        <h2 id="bedKeyTitle">Bed colours</h2>
+        <ul>
+          <li class="key-item vacant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 18v-6a2 2 0 012-2h16a2 2 0 012 2v6"/><path d="M2 18h20M4 10V6a2 2 0 012-2h4a2 2 0 012 2v4"/></svg><div><div class="kname">Vacant <span class="kcount" data-key-count="statVacant">{{ $stats['vacant'] }}</span></div><div class="kmean">Open for new tenants</div></div></li>
+          <li class="key-item occupied"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 18v-6a2 2 0 012-2h16a2 2 0 012 2v6"/><path d="M2 18h20M4 10V6a2 2 0 012-2h4a2 2 0 012 2v4"/></svg><div><div class="kname">Occupied <span class="kcount" data-key-count="statOccupied">{{ $stats['occupied'] }}</span></div><div class="kmean">A tenant lives here</div></div></li>
+          <li class="key-item reserved"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 18v-6a2 2 0 012-2h16a2 2 0 012 2v6"/><path d="M2 18h20M4 10V6a2 2 0 012-2h4a2 2 0 012 2v4"/></svg><div><div class="kname">Reserved <span class="kcount" data-key-count="statReserved">{{ $stats['reserved'] }}</span></div><div class="kmean">Held for an incoming tenant</div></div></li>
+          <li class="key-item maintenance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 18v-6a2 2 0 012-2h16a2 2 0 012 2v6"/><path d="M2 18h20M4 10V6a2 2 0 012-2h4a2 2 0 012 2v4"/></svg><div><div class="kname">Maintenance <span class="kcount" data-key-count="statMaintenance">{{ $stats['maintenance'] }}</span></div><div class="kmean">Not available right now</div></div></li>
+        </ul>
+      </section>
+
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-icon bedspaces"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 18v-6a2 2 0 012-2h16a2 2 0 012 2v6"/><path d="M2 18h20M4 10V6a2 2 0 012-2h4a2 2 0 012 2v4"/></svg></div>
@@ -231,13 +265,7 @@
 
       <div class="map-card">
         <div class="map-head">
-          <div><h2>Room / Bed Map</h2><p>Click a bed to change its status. Green beds are open for new tenants.</p></div>
-          <div class="legend">
-            <div class="legend-item"><span class="legend-dot occupied"></span>Occupied</div>
-            <div class="legend-item"><span class="legend-dot vacant"></span>Vacant</div>
-            <div class="legend-item"><span class="legend-dot reserved"></span>Reserved</div>
-            <div class="legend-item"><span class="legend-dot maintenance"></span>Maintenance</div>
-          </div>
+          <div><h2>Room / Bed Map</h2><p>Click a bed to change its status. Colours follow the key at the top.</p></div>
         </div>
         <div id="floors"></div>
       </div>
@@ -918,5 +946,19 @@
 })();
 </script>
 
+<script>
+(function(){
+  // Pin the colour key just below the sticky top bar.
+  const bar = document.querySelector('.main > .topbar, .topbar');
+  const setTop = () => document.documentElement.style.setProperty('--key-top', ((bar ? bar.offsetHeight : 0) + 8) + 'px');
+  setTop(); window.addEventListener('resize', setTop);
+  // Mirror the live stat numbers (they update when a bed's status changes).
+  document.querySelectorAll('[data-key-count]').forEach(el => {
+    const src = document.getElementById(el.dataset.keyCount);
+    if(!src) return;
+    new MutationObserver(() => { el.textContent = src.textContent; }).observe(src, { childList:true, characterData:true, subtree:true });
+  });
+})();
+</script>
 </body>
 </html>

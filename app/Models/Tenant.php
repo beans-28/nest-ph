@@ -20,6 +20,7 @@ class Tenant extends Model
         'email',
         'emergency_contact_name',
         'emergency_contact_number',
+        'emergency_contact_email',
         'emergency_billing_reminders',
         'is_blacklisted',
         'status',
@@ -92,6 +93,12 @@ class Tenant extends Model
     public function activeContract(): HasOne
     {
         return $this->hasOne(LeaseContract::class)->where('status', 'active')->latestOfMany();
+    }
+
+    /** The tenant's newest lease, whatever its status (for the lease filter). */
+    public function latestContract(): HasOne
+    {
+        return $this->hasOne(LeaseContract::class)->latestOfMany();
     }
 
     public function billingStatements(): HasMany

@@ -39,7 +39,7 @@ class EscalationService
     /** A log row in this status counts as "this action actually succeeded." */
     private const COMPLETE_STATUSES = ['sent', 'resolved'];
 
-    public function __construct(private TextbeeService $sms)
+    public function __construct(private TextbeeService $sms, private BillingEmailService $emails)
     {
     }
 
@@ -140,27 +140,107 @@ class EscalationService
 
         $this->stage1Flag($bill);
 
+        // Pureza revision (2026-11-14): every notice after the grace period
+        // is also EMAILED to the tenant, and the guardian gets the same
+        // notices (SMS + email). See notifyAlso().
         foreach (self::STAGE_2_DAYS as $day) {
             if ($daysOverdue >= $day) {
                 $this->stage2Reminder($bill, $day);
+                $this->notifyAlso($bill, "overdue_day{$day}", 2,
+                    ($day >= 7 ? 'URGENT: ' : '') . "Your account is {$day} day(s) overdue",
+                    "Your bill is now {$day} day(s) past the grace period. Please pay as soon as possible to avoid further account restrictions.");
             }
         }
 
         if ($daysOverdue >= $stage3Day) {
             $this->stage3PortalRestriction($bill);
+            $this->notifyAlso($bill, 'portal_restricted', 3, 'Payment required: your portal is limited to Billing',
+                'Your bill is still unpaid, so your tenant portal is now limited to the Billing and Delinquency pages until it is settled. The next step is a formal demand letter.');
         }
 
         if ($daysOverdue >= $stage4Day) {
             $this->stage4EmergencyContact($bill);
+            // The guardian's SMS is Stage 4 itself; this adds the emails.
+            // (Without consent, stage4TenantFallback already emailed the tenant.)
+            if ($bill->tenant->emergency_billing_reminders) {
+                $this->notifyAlso($bill, 'one_month_overdue', 4, 'Your account is one month overdue',
+                    'Your bill has been unpaid for a month after the grace period. Your emergency contact has been sent a billing reminder, as you agreed in the Tenant Agreement.', false);
+            }
         }
 
         if ($daysOverdue >= $stage5Day) {
             $this->stage5DemandLetter($bill);
+            if ($this->isComplete($this->findLog($bill, 'demand_letter_generated'))) {
+                $this->notifyAlso($bill, 'demand_letter', 5, 'Formal demand letter issued',
+                    'A formal demand letter has been issued for your unpaid balance. You can download it on the Delinquency page of the tenant portal. Please pay before the deadline in the letter to avoid being blacklisted.');
+            }
         }
 
         if ($daysOverdue >= $stage6Day) {
             $this->stage6Blacklist($bill);
+            if ($this->isComplete($this->findLog($bill, 'delinquent_blacklisted'))) {
+                $this->notifyAlso($bill, 'blacklisted', 6, 'Your tenant account has been deactivated',
+                    'Your balance remained unpaid after the demand letter deadline, so your account has been blacklisted and online payment is closed. The balance is still due: please settle it directly with the dormitory office' . self::officeContactSuffix(),
+                    true, 'Please contact the dormitory office to settle your balance.');
+            }
         }
+    }
+
+    /**
+     * Pureza revision (2026-11-14): sends the same overdue notice through
+     * the extra channels:
+     *   - an email to the tenant (BillingEmailService, sent once per notice)
+     *   - an SMS to the guardian (emergency contact), logged on the
+     *     escalation history as "guardian_<kind>" and retried if it fails
+     *   - an email to the guardian, if they have one
+     * Guardians are only contacted if they agreed to billing reminders
+     * (Tenant Agreement 9.3), and their message states only the amount,
+     * due date and penalty -- no name or other details.
+     */
+    private function notifyAlso(BillingStatement $bill, string $kind, int $stage, string $heading, string $intro, bool $guardianSms = true, string $closing = ''): void
+    {
+        $this->emails->toTenant($bill, $kind, $heading, $heading, $intro, $closing);
+
+        $tenant = $bill->tenant;
+        if (! $tenant->emergency_billing_reminders) {
+            return;
+        }
+
+        $guardianText = $this->guardianMessage($bill);
+        $this->emails->toGuardian($bill, $kind, 'This is a billing reminder from ' . TextbeeService::BRAND_NAME
+            . ': there is an overdue amount on the account you are the emergency contact for.');
+
+        if (! $guardianSms || empty($tenant->emergency_contact_number)) {
+            return;
+        }
+
+        $actionType = "guardian_{$kind}";
+        $log = $this->findLog($bill, $actionType);
+        if ($this->isComplete($log)) {
+            return;
+        }
+
+        $sent = $this->sms->send($tenant->emergency_contact_number, $guardianText);
+        $this->saveLog($log, [
+            'tenant_id' => $tenant->id,
+            'billing_id' => $bill->id,
+            'stage' => $stage,
+            'action_type' => $actionType,
+            'message_content' => 'To emergency contact: ' . $guardianText,
+            'status' => $sent ? 'sent' : 'pending',
+        ]);
+    }
+
+    /** Guardian SMS wording (Agreement 9.3/9.4): amount, due date, penalty, opt-out. */
+    private function guardianMessage(BillingStatement $bill): string
+    {
+        $profile = \App\Models\DormitoryProfile::current();
+
+        return TextbeeService::BRAND_NAME . ' billing reminder: amount overdue PHP ' . number_format($bill->remainingBalance(), 2)
+            . ', due ' . $bill->due_date->format('M j, Y')
+            . ((float) $bill->penalty_amount > 0 ? ', includes penalty PHP ' . number_format((float) $bill->penalty_amount, 2) : '')
+            . '. You receive this because you agreed to billing reminders as an emergency contact.'
+            . ($profile->contact_email ? " To stop, email {$profile->contact_email}." : '');
     }
 
     /** Start days of Stages 3-6, in order (see STAGE_DAYS). */
