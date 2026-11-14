@@ -58,6 +58,7 @@ class PurezaStationSeeder extends Seeder
             'move_out_notice_days' => 14,     // two (2) weeks
             'extension_notice_days' => 30,    // one (1) month
             'deposit_refund_days' => 21,
+            'deposit_refundable_after_months' => 6,
             'reservation_validity_days' => 30, // one (1) month
             'short_term_rate' => 4500,
             'transient_rate' => 300,

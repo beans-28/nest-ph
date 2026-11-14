@@ -174,6 +174,18 @@
         .why-section h2 { font-size: clamp(20px, 2.6vw, 26px); font-weight: 700; margin-bottom: 14px; }
         .why-section p { font-size: 14.5px; max-width: 740px; margin: 0 auto; line-height: 1.6; }
 
+        .location-section { background: #fff; padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px); }
+        .location-inner { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 28px; align-items: center; }
+        .location-text h2 { font-size: clamp(19px, 2.4vw, 24px); font-weight: 700; margin-bottom: 10px; }
+        .location-text p { font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
+        .location-text .location-address { font-weight: 600; }
+        .location-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+        .location-map { position: relative; width: 100%; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; border: 1px solid var(--gray-border); background: var(--cream-light); }
+        .location-map iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+        @media (max-width: 760px) {
+            .location-inner { grid-template-columns: 1fr; }
+            .location-map { aspect-ratio: 4 / 3; }
+        }
         .about-section { background: var(--green-dark); padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px); }
         .about-header { text-align: center; max-width: 720px; margin: 0 auto 32px; }
         .about-header .eyebrow { color: rgba(255,255,255,0.85); }
@@ -306,6 +318,27 @@
         <div class="eyebrow">You Are in Good Company</div>
         <h2>Why Pick Us?</h2>
         <p>Located right at the doorstep of Manila's academic hubs, Pureza Station Dormitory gives students a secure, comfortable, and accessible place to stay. Our management platform, NEST.PH, covers everything from your first virtual room viewing to your everyday tenant needs, so you can focus on school instead of paperwork.</p>
+    </section>
+
+    @php
+        $mapQuery = $address ? $brandDormName . ', ' . $address : $brandDormName . ', Sta. Mesa, Manila';
+    @endphp
+    <section class="location-section" id="location" aria-labelledby="locationTitle">
+        <div class="location-inner">
+            <div class="location-text">
+                <div class="eyebrow">Find Us</div>
+                <h2 id="locationTitle">Where We Are</h2>
+                @if($address)<p class="location-address">{{ $address }}</p>@endif
+                <p>A short walk from PUP and LRT-2 Pureza Station. Drop by for a visit, or take the virtual tour first.</p>
+                <div class="location-actions">
+                    <a class="btn btn-green" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ urlencode($mapQuery) }}" target="_blank" rel="noopener">Get Directions</a>
+                    <a class="btn btn-outline-green" href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($mapQuery) }}" target="_blank" rel="noopener">Open in Google Maps</a>
+                </div>
+            </div>
+            <div class="location-map">
+                <iframe src="https://www.google.com/maps?q={{ urlencode($mapQuery) }}&amp;z=17&amp;output=embed" title="Map showing the location of {{ $brandDormName }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+            </div>
+        </div>
     </section>
 
     <section class="about-section textured">

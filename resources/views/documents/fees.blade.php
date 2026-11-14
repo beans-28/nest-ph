@@ -52,7 +52,7 @@
     '3. RESERVATION FEE, ADVANCE RENT, AND SECURITY DEPOSIT' => [
       '3.1' => 'Upon registration, the new tenant pays a reservation fee made up of (a) one (1) month advance rent and (b) one (1) month security deposit. The advance rent pays for the first month. After that, rent is due every first (1st) day of the month.',
       '3.2' => 'The reservation is valid for one (1) month from the date of payment.',
-      '3.3' => 'The security deposit is refundable after the tenant completes the three (3)-month minimum stay, less deductions for unpaid rent, penalties, damage beyond normal wear and tear, and other outstanding charges. Deductions are given in writing with reasons.',
+      '3.3' => 'The security deposit is non-refundable if the tenant stays less than six (6) months. It becomes refundable after the tenant completes six (6) months of stay, less deductions for unpaid rent, penalties, damage beyond normal wear and tear, and other outstanding charges. Deductions are given in writing with reasons.',
       '3.4' => 'If the tenant cancels the reservation or checks out before completing the three (3)-month minimum, the amounts paid may be applied to the tenant’s outstanding obligations, as stated in Section 4.6 of the Agreement.',
       '3.5' => 'The remaining deposit is returned within twenty-one (21) days after check-out, inspection, and clearance, by the refund method the tenant chose (GCash or bank transfer).',
     ],

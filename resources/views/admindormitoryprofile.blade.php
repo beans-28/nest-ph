@@ -594,6 +594,13 @@
                 <input type="number" id="polReservation" min="1" max="180" value="{{ $profile->reservation_validity_days }}">
               </div>
             </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="polRefundAfter">Deposit refundable after (months of stay)</label>
+                <input type="number" id="polRefundAfter" min="0" max="24" value="{{ $profile->deposit_refundable_after_months }}" aria-describedby="polRefundAfterHint">
+              </div>
+            </div>
+            <p class="policy-hint" id="polRefundAfterHint">Tenants who leave before staying this many months forfeit their security deposit. After that it is refunded, minus any deductions. Set 0 to always refund. Up to 24 months.</p>
 
             <h3 class="policy-sub">Other stays (shown on the fee schedule)</h3>
             <div class="field-row">
@@ -1992,6 +1999,7 @@
       move_out_notice_days: $('polMoveOut').value,
       extension_notice_days: $('polExtend').value,
       deposit_refund_days: $('polRefund').value,
+      deposit_refundable_after_months: $('polRefundAfter').value,
       reservation_validity_days: $('polReservation').value,
       mid_month_move_in: $('polMidMonth').value,
       mid_month_move_out: $('polMidMonthOut').value,

@@ -27,3 +27,20 @@ Thumbs.db
 
 # Promo videos and scripts (kept locally, not in git)
 /docs/promo/
+
+# Project documents (kept locally, not in git)
+/docs/
+
+# AI tool folders and files (kept locally, not in git)
+/.agents/
+/.claude/
+/.codex/
+/.impeccable/
+/.cursor/
+/.windsurf/
+/.github/copilot-instructions.md
+/CLAUDE.md
+/AGENTS.md
+/GEMINI.md
+/PRODUCT.md
+/DESIGN.md

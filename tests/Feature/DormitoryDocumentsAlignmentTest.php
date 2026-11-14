@@ -463,6 +463,7 @@ class DormitoryDocumentsAlignmentTest extends TestCase
 
         $admin = User::factory()->create();
         $admin->forceFill(['role_id' => Role::firstOrCreate(['role_name' => 'admin'])->id])->save();
+        \App\Models\AdminPrivilege::create(['user_id' => $admin->id, 'privilege_name' => 'manage_users']); // Owner: full admin access
         foreach (['agreement', 'rules', 'fees'] as $doc) {
             $this->actingAs($admin)->get("/dormitory-profile/documents/{$doc}")->assertOk()->assertHeader('content-type', 'application/pdf');
         }
@@ -472,6 +473,7 @@ class DormitoryDocumentsAlignmentTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->forceFill(['role_id' => Role::firstOrCreate(['role_name' => 'admin'])->id])->save();
+        \App\Models\AdminPrivilege::create(['user_id' => $admin->id, 'privilege_name' => 'manage_users']); // Owner: full admin access
         $room = $this->roomOfType('Room with AC, 6 persons', '2nd to 5th floor', 6);
         $type = $room->roomType;
 

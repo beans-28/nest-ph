@@ -406,6 +406,7 @@ class DormitoryProfileController extends Controller
             'move_out_notice_days' => ['required', 'integer', 'min:0', 'max:180'],
             'extension_notice_days' => ['required', 'integer', 'min:0', 'max:180'],
             'deposit_refund_days' => ['required', 'integer', 'min:0', 'max:180'],
+            'deposit_refundable_after_months' => ['sometimes', 'required', 'integer', 'min:0', 'max:24'],
             'advance_rent_months' => ['required', 'integer', 'min:0', 'max:3'],
             'security_deposit_months' => ['required', 'integer', 'min:0', 'max:3'],
             'reservation_validity_days' => ['required', 'integer', 'min:1', 'max:180'],

@@ -47,6 +47,11 @@
   tbody tr:hover{ background:#fafcfa; }
   .empty-row td{ text-align:center; color:var(--text-light); padding:32px; font-style:italic; }
 
+  .tenant-cell{ display:flex; align-items:center; gap:10px; }
+  .tenant-avatar{ width:36px; height:36px; border-radius:6px; flex-shrink:0; object-fit:cover; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:var(--green-dark, #3f6b4a); background:#d9f2dd; border:1px solid #c3e3c6; }
+  .drawer-photo{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .drawer-photo .tenant-avatar{ width:96px; height:96px; border-radius:8px; font-size:26px; }
+  .drawer-photo .hint{ font-size:12px; color:var(--text-light); }
   .tenant-cell .name{ font-weight:600; font-size:13.5px; }
   .tenant-cell .email{ font-size:12px; color:var(--text-light); margin-top:2px; }
   .not-assigned{ color:var(--text-light); font-style:italic; }
@@ -230,6 +235,7 @@
       </div>
 
       <div class="modal-section-title">Documents</div>
+      <div class="fld"><label for="addIdPhoto">2x2 ID Picture (optional, JPG or PNG, up to 5 MB)</label><input type="file" id="addIdPhoto" accept=".jpg,.jpeg,.png"></div>
       <div class="fld"><label for="addIdDocument">Valid ID</label><input type="file" id="addIdDocument" accept=".pdf,.jpg,.jpeg,.png"></div>
       <div class="fld"><label for="addSignedContract">Signed Contract (optional)</label><input type="file" id="addSignedContract" accept=".pdf,.jpg,.jpeg,.png"></div>
 
@@ -254,6 +260,7 @@
     <div class="modal-head"><h2 id="depositRefundTitle">Record Deposit Refund</h2></div>
     <div class="modal-body">
       <div class="modal-error" id="drError"></div>
+      <p id="drForfeitNote" role="status" style="display:none;font-size:13px;line-height:1.5;color:var(--status-occupied);background:#fdecec;border:1px solid #f3c4c4;border-radius:8px;padding:10px 12px;margin:0 0 14px;"></p>
       <p style="font-size:12.5px;color:var(--text-mid);margin:0 0 14px;">The deposit is half of the paid move-in fee. Suggested deductions are the tenant's unpaid balance plus penalties not yet billed; change them if needed.</p>
       <div class="modal-row2">
         <div class="fld"><label for="drDeposit">Deposit Amount (₱)</label><input type="number" id="drDeposit" min="0.01" step="0.01"></div>
@@ -313,6 +320,13 @@
         </label>
       </div>
       <div class="modal-section-title">Documents (leave blank to keep existing)</div>
+      <div class="fld"><label for="editIdPhoto">Replace 2x2 ID Picture (JPG or PNG, up to 5 MB)</label><input type="file" id="editIdPhoto" accept=".jpg,.jpeg,.png"></div>
+      <div class="fld" id="editRemovePhotoRow" style="display:none;">
+        <label style="display:flex;gap:8px;align-items:center;font-weight:500;text-transform:none;letter-spacing:0;">
+          <input type="checkbox" id="editRemovePhoto" style="width:16px;height:16px;">
+          <span>Remove the current 2x2 ID picture</span>
+        </label>
+      </div>
       <div class="fld"><label for="editIdDocument">Replace Valid ID</label><input type="file" id="editIdDocument" accept=".pdf,.jpg,.jpeg,.png"></div>
       <div class="fld"><label for="editSignedContract">Replace Signed Contract</label><input type="file" id="editSignedContract" accept=".pdf,.jpg,.jpeg,.png"></div>
     </div>
@@ -471,10 +485,13 @@
     } else {
       $('tableBody').innerHTML = pageItems.map(t => `
         <tr>
-          <td class="tenant-cell">
-            <div class="name">${esc(t.full_name)}</div>
-            <div class="email">${esc(t.email ?? '')}</div>
-          </td>
+          <td><div class="tenant-cell">
+            ${avatarHtml(t)}
+            <div>
+              <div class="name">${esc(t.full_name)}</div>
+              <div class="email">${esc(t.email ?? '')}</div>
+            </div>
+          </div></td>
           <td>${t.room_bed ? esc(t.room_bed) : '<span class="not-assigned">Not Assigned</span>'}</td>
           <td>${t.date_started ? esc(t.date_started) : '—'}</td>
           <td>${peso(t.monthly_rate)}</td>
@@ -546,6 +563,7 @@
 
   function depositHtml(t){
     const d = t.deposit || {};
+    const e = d.eligibility || {};
     if(d.refund){
       const r = d.refund;
       return `
@@ -553,7 +571,7 @@
         <div class="kv">
           <div><div class="k">Deposit</div>${val(peso(r.deposit_amount))}</div>
           <div><div class="k">Deductions</div>${val(peso(r.deductions_amount))}${r.deductions_note ? `<div class="k" style="margin-top:4px;text-transform:none;letter-spacing:0;">${esc(r.deductions_note)}</div>` : ''}</div>
-          <div><div class="k">Refunded</div>${val(peso(r.refund_amount))}</div>
+          <div><div class="k">Refunded</div>${r.forfeited ? '<span class="v">Forfeited (stay under the minimum)</span>' : val(peso(r.refund_amount))}</div>
           <div><div class="k">Date &amp; Method</div>${val(r.refunded_at + ' · ' + r.refund_method)}</div>
           <div><div class="k">Reference</div>${val(r.reference_number)}</div>
           <div><div class="k">Recorded By</div>${val(r.recorded_by)}</div>
@@ -564,6 +582,7 @@
       <div class="kv">
         <div><div class="k">Deposit Held</div><span class="v">${d.held ? peso(d.held) : 'None on record'}</span></div>
         <div><div class="k">Status</div><span class="v">${d.held ? 'Held until move-out' : 'Move-in fee not yet paid'}</span></div>
+        ${e.required_months ? `<div><div class="k">Refundable?</div><span class="v">${e.refundable ? `Yes, stayed ${e.months_stayed} months (minus deductions)` : `Not yet, stayed ${e.months_stayed} of ${e.required_months} months. Moving out now forfeits it.`}</span></div>` : ''}
         ${d.unused_pay_ahead > 0 ? `<div><div class="k">Unused Rent Paid Ahead</div><span class="v">${peso(d.unused_pay_ahead)}, return it to the tenant at move-out</span></div>` : ''}
       </div>
       <button type="button" class="btn" id="openDepositRefundBtn" style="margin-top:10px;">Record Deposit Refund</button>`;
@@ -574,9 +593,16 @@
     $('drDeposit').value = d.held ? Number(d.held).toFixed(2) : '';
     // Only suggest deductions against a deposit that exists; for a walk-in
     // the admin types both amounts.
-    const suggest = d.held ? Math.min(d.suggested_deductions || 0, d.held) : 0;
+    const forfeit = d.eligibility && !d.eligibility.refundable;
+    const suggest = forfeit ? (d.held || 0) : (d.held ? Math.min(d.suggested_deductions || 0, d.held) : 0);
     $('drDeductions').value = suggest.toFixed(2);
-    $('drNote').value = suggest > 0 ? 'Unpaid balance and penalties' : '';
+    $('drNote').value = forfeit ? `Forfeited: stayed ${d.eligibility.months_stayed} of ${d.eligibility.required_months} months` : (suggest > 0 ? 'Unpaid balance and penalties' : '');
+    $('drDeductions').readOnly = $('drNote').readOnly = !!forfeit;
+    $('drForfeitNote').style.display = forfeit ? 'block' : 'none';
+    $('drForfeitNote').innerHTML = forfeit
+      ? `<strong>Deposit forfeited.</strong> This tenant stayed ${d.eligibility.months_stayed} of the ${d.eligibility.required_months} months needed, so the deposit is non-refundable. The refund will be ₱0.00.`
+      : '';
+    $('drSubmitBtn').textContent = forfeit ? 'Record Forfeit' : 'Save Refund';
     $('drMethod').value = 'Cash';
     $('drReference').value = '';
     $('drDate').value = new Date().toISOString().slice(0, 10);
@@ -620,6 +646,13 @@
     if(e.target.id === 'openDepositRefundBtn') openDepositModal();
   });
 
+  // 2x2 ID picture as the tenant's profile picture; initials when there's none.
+  function avatarHtml(t){
+    return t.id_photo_url
+      ? `<img class="tenant-avatar" src="${esc(t.id_photo_url)}" alt="" loading="lazy">`
+      : `<span class="tenant-avatar" aria-hidden="true">${esc(t.initials || '?')}</span>`;
+  }
+
   async function openDrawer(id){
     $('drawerBody').innerHTML = 'Loading…';
     $('overlay').classList.add('open');
@@ -630,6 +663,10 @@
       drawerTenant = t;
       $('drawerTitle').textContent = t.full_name;
       $('drawerBody').innerHTML = `
+        <div class="drawer-photo">
+          ${t.id_photo_url ? `<a href="${esc(t.id_photo_url)}" data-lightbox="tenant-photo-${t.id}" target="_blank" rel="noopener" aria-label="View ${esc(t.full_name)}'s 2x2 ID picture">${avatarHtml(t)}</a>` : avatarHtml(t)}
+          <div class="hint">${t.id_photo_url ? '2x2 ID picture (profile picture)' : 'No 2x2 ID picture on file. Add one with Edit.'}</div>
+        </div>
         <div class="sec">
           <h3>Personal Information</h3>
           <div class="kv">
@@ -702,6 +739,7 @@
     ['addFirstName','addLastName','addDob','addHomeAddress','addContactNumber','addEmail','addEmergencyName','addEmergencyNumber','addStartDate','addEndDate'].forEach(id => $(id).value = '');
     $('addTenantType').value = '';
     $('addIdDocument').value = '';
+    $('addIdPhoto').value = '';
     $('addSignedContract').value = '';
     $('addRoomSelect').innerHTML = '<option value="">Loading rooms…</option>';
     $('addRoomSelect').disabled = false;
@@ -771,6 +809,7 @@
     form.append('start_date', $('addStartDate').value);
     form.append('end_date', $('addEndDate').value);
     form.append('id_document', $('addIdDocument').files[0]);
+    if($('addIdPhoto').files[0]) form.append('id_photo', $('addIdPhoto').files[0]);
     if($('addSignedContract').files[0]) form.append('signed_contract', $('addSignedContract').files[0]);
 
     this.disabled = true;
@@ -807,6 +846,9 @@
       $('editEmergencyNumber').value = t.emergency_contact_number ?? '';
       $('editEmergencyReminders').checked = !!t.emergency_billing_reminders;
       $('editIdDocument').value = '';
+      $('editIdPhoto').value = '';
+      $('editRemovePhoto').checked = false;
+      $('editRemovePhotoRow').style.display = t.id_photo_url ? '' : 'none';
       $('editSignedContract').value = '';
       $('editModal').classList.add('open');
     } catch(e){ toast(e.message, true); }
@@ -832,6 +874,8 @@
     form.append('emergency_contact_number', $('editEmergencyNumber').value.trim());
     form.append('emergency_billing_reminders', $('editEmergencyReminders').checked ? '1' : '0');
     if($('editIdDocument').files[0]) form.append('id_document', $('editIdDocument').files[0]);
+    if($('editIdPhoto').files[0]) form.append('id_photo', $('editIdPhoto').files[0]);
+    else if($('editRemovePhoto').checked) form.append('remove_id_photo', '1');
     if($('editSignedContract').files[0]) form.append('signed_contract', $('editSignedContract').files[0]);
 
     this.disabled = true;

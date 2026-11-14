@@ -202,6 +202,11 @@
         .file-drop .upload-icon { width: 28px; height: 28px; color: #567357; }
         .file-drop .placeholder { font-size: 13px; color: #9aa5ac; }
         .file-drop .filename { font-size: 13px; color: #194e19; font-weight: 500; word-break: break-all; }
+        .id-photo-row { display: flex; gap: 16px; align-items: center; }
+        .id-photo-row .file-drop { flex: 1; }
+        .id-photo-preview { width: 96px; height: 96px; flex-shrink: 0; border-radius: 8px; border: 1px dashed #c1c7cd; background: #f2f4f8 center/cover no-repeat; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #9aa5ac; text-align: center; }
+        .id-photo-preview.has-photo { border-style: solid; color: transparent; }
+        .field-hint { font-size: 12px; color: #6b7479; margin: 0; }
         .file-drop-icons { display: flex; gap: 10px; color: #9aa5ac; }
         .file-drop-icons svg { width: 16px; height: 16px; }
 
@@ -702,6 +707,22 @@
                     </div>
 
                     <div class="field-row">
+                        <div class="field full">
+                            <label for="id_photo">Your 2x2 ID Picture <span class="field-hint" style="display:inline;">(optional)</span></label>
+                            <p class="field-hint">A clear, front-facing photo with a plain background. It becomes your profile picture in the tenant portal.</p>
+                            <p class="form-error" id="idPhotoError" role="alert" style="margin:0;"></p>
+                            <div class="id-photo-row">
+                                <div class="id-photo-preview" id="idPhotoPreview" aria-hidden="true">2x2</div>
+                                <div class="file-drop" id="idPhotoDrop">
+                                    <input type="file" id="id_photo" accept=".jpg,.jpeg,.png">
+                                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    <span class="placeholder" id="idPhotoPlaceholder">Add photo (JPG or PNG, up to 5 MB)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-row">
                         <div class="field">
                             <label for="id_document">Your Valid ID <span class="req">*</span></label>
                             <div class="file-drop" id="idDrop">
@@ -775,6 +796,7 @@
                                 <div class="summary-item"><span class="label">Bed</span><span class="value" id="sum_bed"></span></div>
                                 <div class="summary-item"><span class="label">Type of Tenant</span><span class="value" id="sum_tenant_type"></span></div>
                                 <div class="summary-item"><span class="label">Your ID</span><span class="value" id="sum_id_file"></span></div>
+                                <div class="summary-item"><span class="label">2x2 ID Picture</span><span class="value" id="sum_id_photo"></span></div>
                                 <div class="summary-item"><span class="label">Emergency Contact's ID</span><span class="value" id="sum_emergency_id_file"></span></div>
                                 <div class="summary-item"><span class="label">Signed Documents</span><span class="value" id="sum_contract_file"></span></div>
                             </div>
@@ -1171,6 +1193,7 @@
         setSummary('sum_bed', bedText);
         setSummary('sum_tenant_type', tenantTypeLabel);
         setSummary('sum_id_file', document.getElementById('id_document').files[0]?.name);
+        setSummary('sum_id_photo', document.getElementById('id_photo').files[0]?.name || 'Not added');
         setSummary('sum_emergency_id_file', document.getElementById('emergency_contact_id').files[0]?.name);
         setSummary('sum_contract_file', document.getElementById('signed_contract_path').value ? 'Signed by you and your emergency contact' : 'Not signed yet');
     }
@@ -1178,6 +1201,34 @@
     // ===== File drop labels =====
     document.getElementById('id_document').addEventListener('change', function () {
         document.getElementById('idPlaceholder').textContent = this.files[0]?.name || 'Add file (JPG, PNG, or PDF, up to 5 MB)';
+    });
+    document.getElementById('id_photo').addEventListener('change', function () {
+        const file = this.files[0];
+        const preview = document.getElementById('idPhotoPreview');
+        const errorEl = document.getElementById('idPhotoError');
+        errorEl.textContent = '';
+        errorEl.classList.remove('visible');
+        let problem = '';
+        if (file && !['image/jpeg', 'image/png'].includes(file.type)) {
+            problem = 'Your 2x2 ID picture must be a JPG or PNG photo. iPhone HEIC photos need to be saved as JPG first.';
+        } else if (file && file.size > 5 * 1024 * 1024) {
+            problem = 'Your 2x2 ID picture is larger than 5 MB. Please choose a smaller photo.';
+        }
+        if (problem) {
+            errorEl.textContent = problem;
+            errorEl.classList.add('visible');
+            this.value = '';
+        }
+        document.getElementById('idPhotoPlaceholder').textContent = this.files[0]?.name || 'Add photo (JPG or PNG, up to 5 MB)';
+        if (preview.dataset.url) URL.revokeObjectURL(preview.dataset.url);
+        if (this.files[0]) {
+            preview.dataset.url = URL.createObjectURL(this.files[0]);
+            preview.style.backgroundImage = `url("${preview.dataset.url}")`;
+            preview.classList.add('has-photo');
+        } else {
+            preview.style.backgroundImage = '';
+            preview.classList.remove('has-photo');
+        }
     });
     document.getElementById('emergency_contact_id').addEventListener('change', function () {
         document.getElementById('emergencyIdPlaceholder').textContent = this.files[0]?.name || 'Add file (JPG, PNG, or PDF, up to 5 MB)';
@@ -1271,6 +1322,8 @@
 
         const idFile = document.getElementById('id_document').files[0];
         if (idFile) formData.append('id_document', idFile);
+        const idPhoto = document.getElementById('id_photo').files[0];
+        if (idPhoto) formData.append('id_photo', idPhoto);
         const emergencyIdFile = document.getElementById('emergency_contact_id').files[0];
         if (emergencyIdFile) formData.append('emergency_contact_id', emergencyIdFile);
         formData.append('signed_contract_path', document.getElementById('signed_contract_path').value);

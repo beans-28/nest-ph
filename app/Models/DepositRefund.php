@@ -10,15 +10,44 @@ class DepositRefund extends Model
 {
     protected $fillable = [
         'tenant_id', 'deposit_amount', 'deductions_amount', 'deductions_note',
-        'refund_amount', 'refund_method', 'reference_number', 'refunded_at', 'recorded_by',
+        'refund_amount', 'forfeited', 'refund_method', 'reference_number', 'refunded_at', 'recorded_by',
     ];
 
     protected $casts = [
         'deposit_amount' => 'decimal:2',
         'deductions_amount' => 'decimal:2',
         'refund_amount' => 'decimal:2',
+        'forfeited' => 'boolean',
         'refunded_at' => 'date',
     ];
+
+    /**
+     * Pureza rule (2026-11-14): the deposit is non-refundable when the tenant
+     * stayed less than the set months (6), and refundable, minus deductions,
+     * after that. Stay = first lease start → today (or last lease end if
+     * earlier). Returns months stayed, required months and whether it's refundable.
+     */
+    public static function eligibilityFor(Tenant $tenant): array
+    {
+        $required = (int) (DormitoryProfile::current()->deposit_refundable_after_months ?? 6);
+        $first = $tenant->contracts()->whereNotNull('start_date')->orderBy('start_date')->first();
+        $last = $tenant->contracts()->latest('id')->first();
+
+        $months = 0;
+        if ($first) {
+            $end = now()->startOfDay();
+            if ($tenant->status === 'inactive' && $last?->end_date && $last->end_date->lt($end)) {
+                $end = $last->end_date;
+            }
+            $months = (int) $first->start_date->diffInMonths($end);
+        }
+
+        return [
+            'months_stayed' => $months,
+            'required_months' => $required,
+            'refundable' => $required === 0 || $months >= $required,
+        ];
+    }
 
     public function tenant(): BelongsTo
     {

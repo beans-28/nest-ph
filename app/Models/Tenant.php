@@ -29,6 +29,7 @@ class Tenant extends Model
         'home_address',
         'tenant_type',
         'id_document_path',
+        'id_photo_path',
         'emergency_contact_id_path',
         'signed_contract_path',
         'deactivation_reason',
@@ -46,6 +47,24 @@ class Tenant extends Model
     ];
 
     protected $appends = ['full_name'];
+
+    /** Public URL of the tenant's 2x2 ID picture (their profile picture), or null. */
+    public function getIdPhotoUrlAttribute(): ?string
+    {
+        if (! $this->id_photo_path) {
+            return null;
+        }
+
+        return str_starts_with($this->id_photo_path, 'http')
+            ? $this->id_photo_path
+            : \Illuminate\Support\Facades\Storage::disk('public')->url($this->id_photo_path);
+    }
+
+    /** Two-letter initials, shown when there's no ID picture. */
+    public function getInitialsAttribute(): string
+    {
+        return strtoupper(mb_substr((string) $this->first_name, 0, 1) . mb_substr((string) $this->last_name, 0, 1)) ?: '?';
+    }
 
     public function getFullNameAttribute(): string
     {

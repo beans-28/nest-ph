@@ -22,6 +22,7 @@ class TicketDeadlinesTest extends TestCase
     {
         $admin = User::factory()->create();
         $admin->forceFill(['role_id' => Role::firstOrCreate(['role_name' => 'admin'])->id])->save();
+        \App\Models\AdminPrivilege::create(['user_id' => $admin->id, 'privilege_name' => 'manage_users']); // Owner: full admin access
 
         return $admin;
     }

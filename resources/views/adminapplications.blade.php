@@ -258,6 +258,9 @@
 
   function docLinksHtml(a){
     const links = [];
+    if(a.id_photo_url){
+      links.push(`<a class="doc-link" href="${a.id_photo_url}" data-lightbox="app-docs-${a.id}" target="_blank" rel="noopener"><img src="${a.id_photo_url}" alt="" style="width:20px;height:20px;border-radius:50%;object-fit:cover;">2x2 ID Picture</a>`);
+    }
     if(a.id_document_url){
       links.push(`<a class="doc-link" href="${a.id_document_url}" data-lightbox="app-docs-${a.id}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>View ID</a>`);
     }

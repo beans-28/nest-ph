@@ -115,6 +115,10 @@
 
   /* ===== Submitted ID (side panel) ===== */
   .profile-layout{ display:flex; align-items:flex-start; gap:24px; }
+  .profile-photo{ display:flex; align-items:center; gap:16px; margin-bottom:22px; }
+  .profile-photo .photo{ width:96px; height:96px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid var(--border); background:#d9f2dd; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:#3f6b4a; }
+  .profile-photo .name{ font-size:16px; font-weight:700; }
+  .profile-photo .hint{ font-size:12px; color:var(--text-light, #6b7479); margin-top:4px; line-height:1.5; }
   .profile-layout > .settings-card{ flex:1 1 640px; }
   .id-card{
     flex:0 0 320px; background:var(--card-bg); border:1px solid var(--border); border-radius:14px;
@@ -161,7 +165,7 @@
       <div class="hamburger-icon" id="hamburgerBtn" tabindex="0" aria-label="Toggle sidebar"><svg width="20" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></div>
       <div class="topbar-right">
         <span class="topbar-username">{{ $tenant->full_name ?? 'Tenant' }}</span>
-        <div class="topbar-icon" data-href="{{ route('tenant.account') }}" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        @include('partials.tenant-avatar')
       </div>
     </div>
 
@@ -195,6 +199,24 @@
 
         <div class="profile-layout">
         <div class="settings-card">
+
+          <div class="profile-photo">
+            @if($tenant?->id_photo_url)
+              <img class="photo" src="{{ $tenant->id_photo_url }}" alt="Your 2x2 ID picture">
+            @else
+              <div class="photo" aria-hidden="true">{{ $tenant?->initials ?? '?' }}</div>
+            @endif
+            <div>
+              <div class="name">{{ $tenant->full_name ?? 'Tenant' }}</div>
+              <div class="hint">
+                @if($tenant?->id_photo_url)
+                  Your 2x2 ID picture is your profile picture.
+                @else
+                  No 2x2 ID picture yet. <a href="{{ route('tenant.tickets') }}">Submit a ticket</a> to have an admin add one.
+                @endif
+              </div>
+            </div>
+          </div>
 
           <div class="profile-section">
             <h3 class="profile-section-title">Personal Information</h3>

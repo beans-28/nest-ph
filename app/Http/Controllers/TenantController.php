@@ -82,6 +82,8 @@ class TenantController extends Controller
 
         return [
             'held' => \App\Models\DepositRefund::depositHeldFor($tenant),
+            // Pureza rule: non-refundable before the minimum stay (6 months).
+            'eligibility' => \App\Models\DepositRefund::eligibilityFor($tenant),
             'suggested_deductions' => round($outstanding + $unbilled, 2),
             // Rent paid ahead but never used (e.g. moving out early): returned to the tenant at move-out.
             'unused_pay_ahead' => ($contract = $tenant->contracts()->latest('id')->first())
@@ -91,6 +93,7 @@ class TenantController extends Controller
                 'deductions_amount' => (float) $refund->deductions_amount,
                 'deductions_note' => $refund->deductions_note,
                 'refund_amount' => (float) $refund->refund_amount,
+                'forfeited' => (bool) $refund->forfeited,
                 'refund_method' => $refund->refund_method,
                 'reference_number' => $refund->reference_number,
                 'refunded_at' => $refund->refunded_at->format('M j, Y'),
@@ -117,6 +120,17 @@ class TenantController extends Controller
             'refunded_at.before_or_equal' => 'The refund date cannot be in the future.',
         ]);
 
+        // Pureza rule: a tenant who stayed less than the required months
+        // forfeits the whole deposit, whatever the admin typed.
+        $eligibility = \App\Models\DepositRefund::eligibilityFor($tenant);
+        $forfeited = ! $eligibility['refundable'];
+        if ($forfeited) {
+            $data['deductions_amount'] = $data['deposit_amount'];
+            $data['deductions_note'] = "Forfeited: stayed {$eligibility['months_stayed']} "
+                . \Illuminate\Support\Str::plural('month', $eligibility['months_stayed'])
+                . " (deposit is non-refundable before {$eligibility['required_months']} months)";
+        }
+
         if ((float) $data['deductions_amount'] > (float) $data['deposit_amount']) {
             return response()->json(['message' => 'Deductions cannot be more than the deposit.'], 422);
         }
@@ -128,9 +142,16 @@ class TenantController extends Controller
         $refund = \App\Models\DepositRefund::create($data + [
             'tenant_id' => $tenant->id,
             'refund_amount' => round((float) $data['deposit_amount'] - (float) $data['deductions_amount'], 2),
+            'forfeited' => $forfeited,
             'recorded_by' => $request->user()?->id,
         ]);
 
+        if ($forfeited) {
+            \App\Models\TenantNotification::send($tenant->id, 'deposit_refunded',
+                'Your security deposit was forfeited',
+                'Deposits are non-refundable for stays shorter than ' . $eligibility['required_months'] . ' months. You stayed ' . $eligibility['months_stayed'] . '.',
+                '/billing');
+        } else
         \App\Models\TenantNotification::send($tenant->id, 'deposit_refunded',
             'Your security deposit refund of ₱' . number_format((float) $refund->refund_amount, 2) . ' was recorded',
             'Sent via ' . $refund->refund_method . ' on ' . $refund->refunded_at->format('F j, Y') . '.'
@@ -181,6 +202,8 @@ class TenantController extends Controller
             'deactivated_at' => $this->formatDate($tenant->deactivated_at, 'M j, Y g:ia'),
             'deactivated_by_name' => $tenant->deactivatedBy?->name,
             'id_document_url' => $this->publicUrlFor($tenant->id_document_path),
+            'id_photo_url' => $tenant->id_photo_url,
+            'initials' => $tenant->initials,
             'emergency_contact_id_url' => $this->publicUrlFor($tenant->emergency_contact_id_path),
             'signed_contract_url' => $this->publicUrlFor($tenant->signed_contract_path),
             'contract' => $contract ? [
@@ -215,6 +238,7 @@ class TenantController extends Controller
             'emergency_contact_number' => ['nullable', 'string', 'max:20'],
             'tenant_type' => ['nullable', Rule::in(self::TENANT_TYPES)],
             'id_document' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'id_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'signed_contract' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
             'bed_id' => ['required', 'integer', 'exists:beds,id'],
             'start_date' => ['required', 'date'],
@@ -234,11 +258,12 @@ class TenantController extends Controller
         }
 
         $idDocPath = $request->file('id_document')->store('tenant-documents', 'public');
+        $idPhotoPath = $request->hasFile('id_photo') ? $request->file('id_photo')->store('id-photos', 'public') : null;
         $signedContractPath = $request->hasFile('signed_contract')
             ? $request->file('signed_contract')->store('tenant-documents', 'public')
             : null;
 
-        [$tenant, $temporaryPassword] = DB::transaction(function () use ($data, $bed, $idDocPath, $signedContractPath, $request) {
+        [$tenant, $temporaryPassword] = DB::transaction(function () use ($data, $bed, $idDocPath, $idPhotoPath, $signedContractPath, $request) {
             $tenantRole = Role::firstOrCreate(['role_name' => 'tenant']);
             $temporaryPassword = \App\Support\TemporaryPassword::generate();
 
@@ -266,6 +291,7 @@ class TenantController extends Controller
                 'home_address' => $data['home_address'] ?? null,
                 'tenant_type' => $data['tenant_type'] ?? null,
                 'id_document_path' => $idDocPath,
+                'id_photo_path' => $idPhotoPath,
                 'signed_contract_path' => $signedContractPath,
                 // A walk-in registration is completed entirely by the
                 // admin, bypassing the online Pay Move-In Fees flow that
@@ -335,18 +361,24 @@ class TenantController extends Controller
             'emergency_billing_reminders' => ['sometimes', 'boolean'],
             'tenant_type' => ['nullable', Rule::in(self::TENANT_TYPES)],
             'id_document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'id_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'signed_contract' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ], [
             'email.unique' => 'A tenant record with this email address already exists.',
         ]);
 
+        if ($request->hasFile('id_photo')) {
+            $data['id_photo_path'] = $request->file('id_photo')->store('id-photos', 'public');
+        } elseif ($request->boolean('remove_id_photo')) {
+            $data['id_photo_path'] = null;
+        }
         if ($request->hasFile('id_document')) {
             $data['id_document_path'] = $request->file('id_document')->store('tenant-documents', 'public');
         }
         if ($request->hasFile('signed_contract')) {
             $data['signed_contract_path'] = $request->file('signed_contract')->store('tenant-documents', 'public');
         }
-        unset($data['id_document'], $data['signed_contract']);
+        unset($data['id_document'], $data['id_photo'], $data['signed_contract']);
 
         $tenant->update($data);
 
@@ -526,6 +558,8 @@ class TenantController extends Controller
             'raw_status' => $tenant->status,
             'is_blacklisted' => (bool) $tenant->is_blacklisted,
             'tenant_type' => $tenant->tenant_type,
+            'id_photo_url' => $tenant->id_photo_url,
+            'initials' => $tenant->initials,
         ];
     }
 

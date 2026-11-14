@@ -75,6 +75,8 @@ class ApplicationController extends Controller
             'tenant_end_date' => ['nullable', 'date', 'after:preferred_start_date'],
             'type_of_tenant' => ['nullable', Rule::in(self::TENANT_TYPES)],
             'id_document' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            // Optional 2x2 ID picture; becomes the tenant's profile picture.
+            'id_photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
             'emergency_contact_id' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             'signed_contract' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
 
@@ -101,6 +103,9 @@ class ApplicationController extends Controller
             'emergency_contact_id.required' => 'Please upload a valid ID of your emergency contact.',
             'emergency_contact_id.mimes' => "Your emergency contact's ID must be a JPG, PNG, or PDF file.",
             'emergency_contact_id.max' => "Your emergency contact's ID file is larger than 5 MB. Please upload a smaller photo or scan.",
+            'id_photo.image' => 'Your 2x2 ID picture must be a JPG or PNG image.',
+            'id_photo.mimes' => 'Your 2x2 ID picture must be a JPG or PNG image.',
+            'id_photo.max' => 'Your 2x2 ID picture is larger than 5 MB. Please upload a smaller photo.',
             'id_document.mimes' => 'Your ID must be a JPG, PNG, or PDF file.',
             'id_document.max' => 'Your ID file is larger than 5 MB. Please upload a smaller photo or scan.',
             'birthdate.required' => 'Please enter your birthdate.',
@@ -180,6 +185,10 @@ class ApplicationController extends Controller
             ? $request->file('id_document')->store('application-documents', 'public')
             : null;
 
+        $idPhotoPath = $request->hasFile('id_photo')
+            ? $request->file('id_photo')->store('id-photos', 'public')
+            : null;
+
         // E-sign flow: the applicant (and their emergency contact) already
         // signed the documents via signContract(). Only a path that
         // signContract() itself wrote is accepted, and only if the details
@@ -213,7 +222,7 @@ class ApplicationController extends Controller
             ], 422);
         }
 
-        $application = DB::transaction(function () use ($data, $bed, $idDocumentPath, $emergencyContactIdPath, $signedContractPath, $signingRecord) {
+        $application = DB::transaction(function () use ($data, $bed, $idDocumentPath, $idPhotoPath, $emergencyContactIdPath, $signedContractPath, $signingRecord) {
             $application = Application::create([
                 'inquiry_id' => $data['inquiry_id'] ?? null,
                 'tenant_id' => null,
@@ -248,6 +257,7 @@ class ApplicationController extends Controller
                 'tenant_end_date' => $data['tenant_end_date'] ?? null,
                 'type_of_tenant' => $data['type_of_tenant'] ?? null,
                 'id_document_path' => $idDocumentPath,
+                'id_photo_path' => $idPhotoPath,
                 'emergency_contact_id_path' => $emergencyContactIdPath,
                 'signed_contract_path' => $signedContractPath,
 
@@ -472,6 +482,8 @@ class ApplicationController extends Controller
                     'emergency_contact_name' => $application->emergency_contact_name ?? $tenant->emergency_contact_name,
                     'emergency_contact_number' => $application->emergency_contact_number ?? $tenant->emergency_contact_number,
                     'emergency_billing_reminders' => (bool) $application->emergency_billing_consent,
+                    // A new 2x2 picture replaces the old profile picture.
+                    'id_photo_path' => $application->id_photo_path ?? $tenant->id_photo_path,
                 ]);
             }
 
@@ -776,6 +788,7 @@ class ApplicationController extends Controller
                 'tenant_end_date' => $application->tenant_end_date?->format('M j, Y'),
                 'type_of_tenant' => $application->type_of_tenant,
                 'id_document_url' => $this->publicUrlFor($application->id_document_path),
+                'id_photo_url' => $this->publicUrlFor($application->id_photo_path),
                 'emergency_contact_id_url' => $this->publicUrlFor($application->emergency_contact_id_path),
                 'signed_contract_url' => $this->publicUrlFor($application->signed_contract_path),
                 'rejection_reason' => $application->rejection_reason,
@@ -870,6 +883,7 @@ class ApplicationController extends Controller
             'home_address' => $application->home_address,
             'tenant_type' => $application->type_of_tenant,
             'id_document_path' => $application->id_document_path,
+            'id_photo_path' => $application->id_photo_path,
             'emergency_contact_id_path' => $application->emergency_contact_id_path,
             'signed_contract_path' => $application->signed_contract_path,
             'status' => 'pending_move_in_payment',

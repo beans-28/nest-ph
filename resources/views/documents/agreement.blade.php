@@ -88,11 +88,11 @@
   <h3>4.3 Advance Rent</h3>
   <p class="loose">The advance rent is applied to the Tenant’s rent for the first month. After that, rent is due on the first (1st) day of each month.</p>
   <h3>4.4 Security Deposit</h3>
-  <p class="loose">The security deposit secures the Tenant’s obligations. It is refundable after the Tenant completes the minimum three (3)-month tenancy, less deductions for unpaid rent, penalties, damage beyond normal wear and tear, and other outstanding charges. The Tenant may not use the security deposit as payment of rent unless the Lessor agrees in writing.</p>
+  <p class="loose">The security deposit secures the Tenant’s obligations. The security deposit is non-refundable if the Tenant stays less than six (6) months. It becomes refundable after the Tenant completes six (6) months of tenancy, less deductions for unpaid rent, penalties, damage beyond normal wear and tear, and other outstanding charges. The Tenant may not use the security deposit as payment of rent unless the Lessor agrees in writing.</p>
   <h3>4.5 Refund</h3>
   <p class="loose">The Lessor shall return the remaining security deposit within twenty-one (21) days after check-out, once the room inspection and clearance are complete. If any amount is deducted, the Lessor shall give the Tenant a written list of the deductions and the reasons.</p>
   <h3>4.6 Early Cancellation or Check-Out</h3>
-  <p class="loose">If the Tenant cancels the reservation or checks out before completing the minimum three (3)-month tenancy, the amounts paid may be applied to the Tenant’s outstanding obligations, including rent due for the remainder of the minimum term, subject to this Agreement and applicable law. Any balance shall be refunded under Section 4.5.</p>
+  <p class="loose">If the Tenant cancels the reservation or checks out before completing the minimum three (3)-month tenancy, the amounts paid may be applied to the Tenant’s outstanding obligations, including rent due for the remainder of the minimum term, subject to this Agreement and applicable law. Any balance, other than the security deposit (which is non-refundable under Section 4.4), shall be refunded under Section 4.5.</p>
 
   <h2>5. DORMITORY RULES AND REGULATIONS</h2>
   <h3>5.1 Compliance</h3>

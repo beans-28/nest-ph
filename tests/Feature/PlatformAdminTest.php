@@ -70,7 +70,8 @@ class PlatformAdminTest extends TestCase
 
         $req->refresh();
         $this->assertSame('contacted', $req->status);
-        $this->assertSame('Called owner', $req->notes);
+        // Notes are now a history: each save adds a team note.
+        $this->assertSame('Called owner', $req->teamNotes()->first()?->body);
     }
 
     public function test_each_login_page_only_accepts_its_own_role(): void
