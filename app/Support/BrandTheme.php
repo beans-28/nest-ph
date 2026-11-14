@@ -57,13 +57,24 @@ class BrandTheme
             return '';
         }
 
-        [$h, $s] = self::toHsl($hex);
+        [$h, $s, $l] = self::toHsl($hex);
         // Very grey picks stay grey; very loud picks get toned down so pale
         // backgrounds don't look neon.
         $s = min($s, 70);
+        // The shade table was built around the default green (lightness 31).
+        // Shift every shade by how much lighter/darker the pick is, so a
+        // light color gives a lighter theme instead of always the same depth.
+        $shift = $l - 31;
+        // Don't shift dark shades so far that white text on them becomes
+        // unreadable; moving them together keeps the gradient's depth.
+        $darkShift = $shift;
+        while ($darkShift > -20 && self::contrastWithWhite(self::fromHsl($h, $s, 42 + $darkShift)) < 3) {
+            $darkShift--;
+        }
 
         $vars = '';
-        foreach (self::SHADES as $name => $lightness) {
+        foreach (self::SHADES as $name => $base) {
+            $lightness = max(5, min(97, $base + ($base <= 45 ? $darkShift : $shift / 3)));
             // Pale shades get less color so they read as a soft tint.
             $sat = $lightness >= 80 ? min($s, 45) : $s;
             $hex = self::fromHsl($h, $sat, $lightness);
@@ -71,8 +82,10 @@ class BrandTheme
             // used as text on white. Yellows and oranges look lighter than
             // greens at the same lightness, so darken until white-on-it is
             // readable (WCAG AA, 4.5:1).
-            if ($lightness <= 45) {
-                for ($l = $lightness; self::contrastWithWhite($hex) < 4.5 && $l > 5; $l--) {
+            // 3:1 is the readability minimum for bold/large text and buttons;
+            // stricter than that and light picks get forced dark again.
+            if ($base <= 45) {
+                for ($l = $lightness; self::contrastWithWhite($hex) < 3 && $l > 5; $l--) {
                     $hex = self::fromHsl($h, $sat, $l);
                 }
             }
@@ -92,7 +105,7 @@ class BrandTheme
         return 1.05 / ($luminance + 0.05);
     }
 
-    /** @return array{0: float, 1: float} hue (0-360), saturation (0-100) */
+    /** @return array{0: float, 1: float, 2: float} hue (0-360), saturation, lightness (0-100) */
     private static function toHsl(string $hex): array
     {
         [$r, $g, $b] = array_map(fn ($c) => hexdec($c) / 255, str_split(substr($hex, 1), 2));
@@ -101,7 +114,7 @@ class BrandTheme
         $l = ($max + $min) / 2;
         $d = $max - $min;
         if ($d == 0) {
-            return [0, 0];
+            return [0, 0, $l * 100];
         }
         $s = $d / (1 - abs(2 * $l - 1));
         $h = match ($max) {
@@ -110,7 +123,7 @@ class BrandTheme
             default => ($r - $g) / $d + 4,
         };
 
-        return [$h * 60, $s * 100];
+        return [$h * 60, $s * 100, $l * 100];
     }
 
     private static function fromHsl(float $h, float $s, float $l): string
