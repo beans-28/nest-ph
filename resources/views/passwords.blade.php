@@ -400,7 +400,7 @@
                 {{-- STEP 2 — enter the code --}}
                 <div class="step-card" id="step-code" data-step="2">
                     <h2>Verify Code</h2>
-                    <p class="intro">We sent a code to <strong id="codeEmailDisplay">your email</strong>. Enter the 5-digit code below.</p>
+                    <p class="intro">We sent a code to <strong id="codeEmailDisplay">your email</strong>. Enter the 5-digit code below. Don't see it? Check your <strong>Spam</strong> or <strong>Promotions</strong> folder.</p>
                     <fieldset class="otp-fieldset">
                         <legend class="visually-hidden">5-digit verification code</legend>
                         <div class="otp-row">
@@ -416,7 +416,7 @@
                         <span class="spinner"></span>
                         <span class="btn-text">Verify Code</span>
                     </button>
-                    <p class="help-text">Haven't got the email yet? <button type="button" id="resendLink" class="link-button">Resend email</button></p>
+                    <p class="help-text">Still haven't got it after checking Spam? <button type="button" id="resendLink" class="link-button">Resend email</button></p>
                 </div>
 
                 {{-- STEP 3 — set the new password --}}

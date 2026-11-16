@@ -96,7 +96,7 @@
                     @unless($halfPaid)
                         <p class="helper-text">Your bedspace is already reserved for you. Your Move-In Permit is sent once your full payment is verified.</p>
                     @endunless
-                    <p class="sub-text">Please wait for the administrator's review and approval. Kindly check your inbox regularly for updates regarding your application status.</p>
+                    <p class="sub-text">Please wait for the administrator's review and approval. Kindly check your inbox regularly for updates regarding your application status. If you don't see our emails, check your <strong>Spam</strong> folder and mark them as "Not spam".</p>
 
                     <button type="submit" class="btn-login" id="continueBtn" @disabled($canHalf)>
                         <span class="spinner"></span>

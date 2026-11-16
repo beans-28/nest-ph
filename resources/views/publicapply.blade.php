@@ -827,7 +827,7 @@
                     </svg>
                     <h2>Application Successful</h2>
                     <p id="successAppNumber" style="display:none; font-weight:700; color:#194e19; margin-bottom:6px;"></p>
-                    <p>Please wait for the administrator's review and approval. Kindly check your email inbox regularly for updates regarding your application status.</p>
+                    <p>Please wait for the administrator's review and approval. Kindly check your email inbox regularly for updates regarding your application status. If you don't see our emails, check your <strong>Spam</strong> folder and mark them as "Not spam".</p>
                     <a href="{{ route('home') }}" class="btn-nav primary" style="display:inline-flex;">BACK TO HOME</a>
                 </div>
 
