@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         // Dorm's own color palette on every page (Dormitory Profile > Site Color).
         $middleware->web(append: [\App\Http\Middleware\InjectBrandTheme::class]);
+        // Hover prefetches (public/js/smooth-nav.js) must not use up one-time session messages.
+        $middleware->web(append: [\App\Http\Middleware\KeepSessionOnPrefetch::class]);
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'platform' => \App\Http\Middleware\EnsureUserIsPlatformAdmin::class,

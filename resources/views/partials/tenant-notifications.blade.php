@@ -11,7 +11,8 @@
 @php
     $notifTenant = auth()->user()?->tenant;
     $popupBills = collect();
-    if ($notifTenant && session()->pull('show_bill_popup')) {
+    // A hover prefetch (smooth-nav.js) must not use up the one-time pop-up.
+    if ($notifTenant && ! request()->prefetch() && session()->pull('show_bill_popup')) {
         $notifService = app(\App\Services\TenantNotificationService::class);
         $notifService->syncAutomatic($notifTenant);
         $popupBills = $notifService->billsNeedingAttention($notifTenant);

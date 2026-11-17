@@ -1,4 +1,6 @@
 <aside class="sidebar" id="sidebar">
+    {{-- Collapse before the first paint (the page scripts used to do it after load, so the sidebar flashed wide on every page switch). --}}
+    <script>try{if(localStorage.getItem('nestph_sidebar_collapsed')==='1'){document.getElementById('sidebar').classList.add('collapsed')}}catch(e){}</script>
     @include('partials.sidebar-brand')
     @php
         // Hide links this admin has no privilege for (rules live in

@@ -9,6 +9,8 @@
     here anyway. Log Out stays available.
 --}}
 <aside class="sidebar restricted-lock" id="sidebar">
+    {{-- Collapse before the first paint (the page scripts used to do it after load, so the sidebar flashed wide on every page switch). --}}
+    <script>try{if(localStorage.getItem('nestph_sidebar_collapsed')==='1'){document.getElementById('sidebar').classList.add('collapsed')}}catch(e){}</script>
   @include('partials.sidebar-brand')
   <div class="lock-panel-body">
     <div class="lock-icon-circle">

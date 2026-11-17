@@ -22,3 +22,23 @@ input, button, select, textarea{ font-family: inherit; }
 
 /* Numbers line up in columns (amounts, dates, counts). */
 table, .amt, .amount, .stat-value, .stat-num, .kpi-value, .money{ font-variant-numeric: tabular-nums; }
+
+/* ===== Smoother page switches =====
+   Same-site page loads cross-fade instead of flashing blank (Chrome/Edge,
+   Safari 18.2+; other browsers load normally). The opt-in itself
+   (@view-transition) is an inline <style> at the top of each page's <head>:
+   Chrome decides before this stylesheet is applied, so here it never took
+   effect. This file only styles the fade. The sidebar and top bars are named
+   so they stay put while only the page content fades.
+   Pair: public/js/smooth-nav.js fetches the next page on hover. */
+::view-transition-old(root){ animation-duration: 90ms; animation-timing-function: ease-out; }
+::view-transition-new(root){ animation-duration: 160ms; animation-timing-function: cubic-bezier(.2, 0, 0, 1); }
+.topbar { view-transition-name: app-topbar; }
+.topnav { view-transition-name: public-topnav; }
+@media (min-width: 861px) {
+  /* Desktop only: on phones the sidebar is a slide-in drawer. */
+  .sidebar { view-transition-name: app-sidebar; }
+}
+::view-transition-old(app-sidebar), ::view-transition-new(app-sidebar),
+::view-transition-old(app-topbar), ::view-transition-new(app-topbar),
+::view-transition-old(public-topnav), ::view-transition-new(public-topnav) { animation: none; }
