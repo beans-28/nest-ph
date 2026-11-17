@@ -21,7 +21,7 @@
         }
         .choice:hover { border-color: #a6b69f; }
         .choice input { width: 18px; height: 18px; margin: 0; accent-color: var(--green-darker); flex-shrink: 0; }
-        .choice:has(input:checked) { border-color: var(--green-darker); box-shadow: 0 2px 10px rgba(25,115,53,0.12); }
+        .choice:has(input:checked) { border-color: var(--green-darker); box-shadow: 0 2px 10px color-mix(in srgb, var(--green-darker, #197335) 12%, transparent); }
         .choice:has(input:focus-visible) { outline: 2px solid var(--green-darker); outline-offset: 2px; }
         .method-icon {
             width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center;

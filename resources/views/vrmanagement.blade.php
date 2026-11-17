@@ -17,11 +17,11 @@
   /* Shared sidebar/topbar/content-header/reset styles now live in
      public/css/admin.css (linked above). Only this page's own VR-tour
      content styling stays here. */
-  .page-head .room-pill.off{ background:#eef1ee; color:var(--text-mid); }
-  .page-head .room-pill{ background:var(--status-vacant-bg); color:var(--green-accent); font-size:11.5px; font-weight:700; padding:5px 13px; border-radius:20px; }
+  .page-head .room-pill.off{ background:#f0f0f0; color:var(--text-mid); }
+  .page-head .room-pill{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); color:var(--green-darker, #1f5a2c); font-size:11.5px; font-weight:700; padding:5px 13px; border-radius:20px; }
 
   .vr-btn{ font-size:12px; font-weight:600; padding:9px 16px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; text-align:center; font-family:var(--font-body); }
-  .vr-btn:hover:not(:disabled){ background:#f7f9f7; }
+  .vr-btn:hover:not(:disabled){ background:#f8f8f8; }
   .vr-btn:disabled{ opacity:0.45; cursor:not-allowed; }
   .vr-btn.primary{ background:var(--green-btn); border-color:var(--green-btn); color:#fff; }
   .vr-btn.primary:hover:not(:disabled){ background:var(--green-btn-hover); }
@@ -39,19 +39,19 @@
   .vr-card-panel h2{ font-size:15px; font-weight:700; margin:0 0 18px 0; }
   .vr-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:18px; }
   .vr-card{ border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff; }
-  .vr-thumb{ position:relative; height:130px; background:#dfe6e0 center/cover no-repeat; display:flex; align-items:flex-start; justify-content:space-between; padding:8px; }
+  .vr-thumb{ position:relative; height:130px; background:#e4e4e4 center/cover no-repeat; display:flex; align-items:flex-start; justify-content:space-between; padding:8px; }
   .vr-thumb.empty{ align-items:center; justify-content:center; color:var(--text-light); font-size:11px; }
   .vr-badge-360{ background:rgba(0,0,0,0.55); color:#fff; font-size:10px; font-weight:700; padding:3px 7px; border-radius:5px; }
   .vr-lock-icon{ margin-left:auto; width:26px; height:26px; border-radius:50%; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; }
   .vr-lock-icon svg{ width:13px; height:13px; color:#fff; }
   .vr-card-body{ padding:12px 14px 14px 14px; }
   .vr-card-title{ font-size:13px; font-weight:700; display:flex; align-items:center; gap:6px; }
-  .vr-floor-chip{ font-size:10px; font-weight:600; color:var(--text-mid); background:#eef1ee; padding:2px 7px; border-radius:20px; }
+  .vr-floor-chip{ font-size:10px; font-weight:600; color:var(--text-mid); background:#f0f0f0; padding:2px 7px; border-radius:20px; }
   /* Whether visitors can see this room on the public VR Tour page. Worked
      out from the tour itself (has photos + visibility is Public). */
   .vr-summary{ display:flex; gap:10px; flex-wrap:wrap; margin:-6px 0 18px 0; }
-  .vr-summary span{ font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px; background:#eef1ee; color:var(--text-mid); }
-  .vr-summary span.live{ background:var(--status-vacant-bg); color:var(--green-accent); }
+  .vr-summary span{ font-size:12px; font-weight:600; padding:5px 12px; border-radius:20px; background:#f0f0f0; color:var(--text-mid); }
+  .vr-summary span.live{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); color:var(--green-darker, #1f5a2c); }
   .vr-live{ display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; margin-top:6px; }
   .vr-live::before{ content:''; width:8px; height:8px; border-radius:50%; background:currentColor; flex-shrink:0; }
   .vr-live.on{ color:var(--green-accent); }
@@ -65,13 +65,13 @@
   .vr-tabs-scroll{ display:flex; gap:8px; overflow-x:auto; flex:1; padding-bottom:2px; }
   .vr-tab{ flex-shrink:0; border:1px solid var(--border); background:#fff; border-radius:8px; padding:8px 16px; font-size:12.5px; font-weight:600; color:var(--text-mid); cursor:pointer; white-space:nowrap; }
   .vr-tab .tab-floor{ display:block; font-size:10px; font-weight:500; color:var(--text-light); }
-  .vr-tab.active{ background:var(--status-vacant-bg); border-color:var(--status-vacant); color:var(--green-accent); }
+  .vr-tab.active{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); border-color:color-mix(in srgb, var(--green-accent, #2f6f3c) 35%, #fff); color:var(--green-darker, #1f5a2c); }
   .vr-tab-scroll-btn{ flex-shrink:0; width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:#fff; color:var(--text-mid); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .vr-tab-scroll-btn svg{ width:14px; height:14px; }
 
   /* Step cards */
   .step-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; margin-bottom:18px; overflow:hidden; }
-  .step-head{ display:flex; align-items:center; gap:12px; padding:16px 22px; border-bottom:1px solid var(--border); background:#fbfcfb; }
+  .step-head{ display:flex; align-items:center; gap:12px; padding:16px 22px; border-bottom:1px solid var(--border); background:#fcfcfc; }
   .step-num{ width:26px; height:26px; border-radius:50%; background:var(--green-accent); color:#fff; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .step-title{ font-size:14px; font-weight:700; }
   .step-sub{ font-size:11.5px; color:var(--text-light); margin-top:2px; }
@@ -81,17 +81,17 @@
 
   /* Step 1 — photos */
   .photo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px; margin-bottom:18px; }
-  .photo-tile{ border:2px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; background:#fafbfa; transition:border-color .18s, transform .18s; }
+  .photo-tile{ border:2px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; background:#fbfbfb; transition:border-color .18s, transform .18s; }
   .photo-tile:hover{ transform:translateY(-2px); }
   .photo-tile.active{ border-color:var(--green-accent); }
-  .photo-tile img{ width:100%; height:88px; object-fit:cover; display:block; background:#dfe6e0; }
+  .photo-tile img{ width:100%; height:88px; object-fit:cover; display:block; background:#e4e4e4; }
   .photo-tile .pt-meta{ padding:9px 11px; }
   .photo-tile .pt-title{ font-size:12px; font-weight:700; word-break:break-word; }
   .photo-tile .pt-flags{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--green-accent); margin-top:3px; }
   .photo-tile .pt-links{ font-size:10.5px; color:var(--text-light); margin-top:3px; }
 
-  .add-tile{ border:2px dashed var(--status-vacant); border-radius:10px; background:var(--status-vacant-bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:139px; cursor:pointer; color:var(--green-accent); font-size:12px; font-weight:700; text-align:center; padding:12px; }
-  .add-tile:hover{ background:#cfeed5; }
+  .add-tile{ border:2px dashed color-mix(in srgb, var(--green-accent, #2f6f3c) 35%, #fff); border-radius:10px; background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:139px; cursor:pointer; color:var(--green-darker, #1f5a2c); font-size:12px; font-weight:700; text-align:center; padding:12px; }
+  .add-tile:hover{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); }
   .add-tile .plus{ font-size:24px; line-height:1; }
 
   .add-form{ display:none; border-top:1px solid var(--border); padding-top:18px; }
@@ -101,12 +101,12 @@
   .fld label{ font-size:11px; font-weight:700; letter-spacing:.4px; color:var(--text-mid); text-transform:uppercase; }
   .fld input[type=text], .fld select{ border:1px solid var(--border); border-radius:8px; padding:10px 13px; font-size:13px; font-family:var(--font-body); min-width:210px; background:#fff; }
   .tip-list{ margin:6px 0; padding-left:18px; }
-  .tip{ background:#eef5ef; border:1px solid #cfe0d1; border-radius:8px; padding:10px 14px; font-size:12px; color:#33513a; line-height:1.6; margin-bottom:16px; }
+  .tip{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); border:1px solid color-mix(in srgb, var(--green-accent, #2f6f3c) 22%, #fff); border-radius:8px; padding:10px 14px; font-size:12px; color:var(--text-dark, #243026); line-height:1.6; margin-bottom:16px; }
 
   /* Listing photos — regular (flat) pictures for the public Rooms page */
   .lp-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px; }
   .lp-tile{ border:1px solid var(--border); border-radius:10px; overflow:hidden; background:#fff; }
-  .lp-tile img{ width:100%; aspect-ratio:16/10; object-fit:cover; display:block; background:#dfe6e0; }
+  .lp-tile img{ width:100%; aspect-ratio:16/10; object-fit:cover; display:block; background:#e4e4e4; }
   .lp-meta{ display:flex; align-items:center; gap:6px; padding:8px 10px; min-height:40px; }
   .lp-main{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--green-accent); }
   .lp-meta .vr-btn{ margin-left:auto; }
@@ -125,7 +125,7 @@
   .placing-banner .pulse{ width:9px; height:9px; border-radius:50%; background:#d9a520; animation:pulse 1.1s ease-in-out infinite; flex-shrink:0; }
   @keyframes pulse{ 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.5); opacity:.5; } }
 
-  .arrow-panel{ border:1px solid var(--border); border-radius:10px; background:#fbfcfb; padding:16px; display:flex; flex-direction:column; }
+  .arrow-panel{ border:1px solid var(--border); border-radius:10px; background:#fcfcfc; padding:16px; display:flex; flex-direction:column; }
   .arrow-panel h3{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); margin:0 0 12px 0; }
   .arrow-list{ list-style:none; margin:0 0 14px 0; padding:0; display:flex; flex-direction:column; gap:8px; }
   .arrow-item{ background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:12px; }
@@ -151,7 +151,7 @@
   /* Step 3 — settings */
   .settings-row{ display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   .settings-row .fld input, .settings-row .fld select{ width:100%; }
-  .fld input[readonly]{ background:#f4f6f4; color:var(--text-mid); }
+  .fld input[readonly]{ background:#f5f5f5; color:var(--text-mid); }
   .save-msg{ font-size:12px; color:var(--green-accent); font-weight:600; display:none; align-self:center; }
 
   .toast{ position:fixed; bottom:22px; right:22px; background:var(--green-accent); color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; display:none; z-index:99; box-shadow:0 6px 18px rgba(0,0,0,0.2); }

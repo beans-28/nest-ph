@@ -38,7 +38,7 @@
   .pm-email{ font-size:12px; color:var(--text-mid, #5b6b60); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .pm-role{ display:inline-block; margin-top:3px; font-size:11px; font-weight:600; color:var(--green-accent, #2f6f3c); }
   .pm-item{ display:flex; align-items:center; gap:10px; width:100%; padding:10px; border:none; border-radius:8px; background:none; font:inherit; font-size:13.5px; color:var(--text-dark, #26302a); text-decoration:none; cursor:pointer; text-align:left; }
-  .pm-item:hover{ background:#f3f4f3; }
+  .pm-item:hover{ background:#f4f4f4; }
   .pm-item:focus-visible{ outline:2px solid var(--green-accent, #2f6f3c); outline-offset:-2px; }
   .pm-item svg{ width:18px; height:18px; flex:none; color:var(--text-mid, #5b655d); }
   .pm-item.danger, .pm-item.danger svg{ color:#b42318; }

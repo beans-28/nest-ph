@@ -34,8 +34,8 @@
   .btn{ border:none; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer; }
   .btn.primary{ background:var(--green-btn); color:#fff; }
   .btn.primary:hover{ background:var(--green-btn-hover); }
-  .btn.secondary{ background:#eef1ee; color:var(--text-dark); border:1px solid var(--border); }
-  .btn.secondary:hover{ background:#e2e6e2; }
+  .btn.secondary{ background:#f0f0f0; color:var(--text-dark); border:1px solid var(--border); }
+  .btn.secondary:hover{ background:#e5e5e5; }
   .btn:disabled{ opacity:0.6; cursor:not-allowed; }
   .report-actions{ display:flex; gap:10px; }
   @media (max-width:560px){ .report-actions{ display:grid; grid-template-columns:1fr 1fr; width:100%; } .report-actions #generateBtn{ grid-column:1 / -1; } .report-actions .btn{ min-height:44px; } }
@@ -50,9 +50,9 @@
   .stat-value{ font-size:22px; font-weight:700; }
 
   table.report-table{ width:100%; border-collapse:collapse; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  table.report-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:10px 14px; border-bottom:1px solid var(--border); background:#f7f9f7; }
-  table.report-table td{ font-size:13px; color:var(--text-dark); padding:10px 14px; border-bottom:1px solid #f0f2f0; }
-  table.report-table tr.total-row td{ font-weight:700; background:#f2f7f2; color:#194e19; }
+  table.report-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:10px 14px; border-bottom:1px solid var(--border); background:#f8f8f8; }
+  table.report-table td{ font-size:13px; color:var(--text-dark); padding:10px 14px; border-bottom:1px solid #f1f1f1; }
+  table.report-table tr.total-row td{ font-weight:700; background:#f6f6f6; color:#194e19; }
 
   .empty-note{ font-size:13px; color:var(--text-light); text-align:center; padding:40px 10px; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; }
   .results-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
@@ -84,7 +84,7 @@
   .chart-card h3{ font-size:13.5px; margin:0 0 2px; }
   .chart-card .chart-sub{ font-size:11.5px; color:var(--text-light); margin:0 0 12px; }
   .chart-box{ position:relative; height:260px; }
-  .chart-fallback{ position:absolute; inset:0; margin:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:12px; font-size:12.5px; color:var(--text-mid); background:#f7f9f7; border-radius:8px; }
+  .chart-fallback{ position:absolute; inset:0; margin:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:12px; font-size:12.5px; color:var(--text-mid); background:#f8f8f8; border-radius:8px; }
   .chart-legend{ display:flex; gap:16px; flex-wrap:wrap; font-size:11.5px; color:var(--text-mid); margin-bottom:8px; }
   .chart-legend span::before{ content:""; display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; vertical-align:-1px; background:var(--swatch); }
   .stat-card.profit{ background:#dcebdc; border-color:#b9d6b9; }
@@ -105,7 +105,7 @@
   .expense-grid .span-2{ grid-column:span 2; }
   .expense-grid .span-all{ grid-column:1 / -1; }
   .field select{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:13px; font-family:var(--font-body); background:#fff; color:var(--text-dark); }
-  .field input[type=file]{ padding:6px; background:#f7f9f7; border-style:dashed; }
+  .field input[type=file]{ padding:6px; background:#f8f8f8; border-style:dashed; }
   .field input:focus-visible, .field select:focus-visible{ outline:2px solid var(--green-btn); outline-offset:1px; }
   .field .hint{ font-size:12px; color:var(--text-mid); line-height:1.4; }
   .inline-check{ display:inline-flex !important; align-items:center; gap:7px; font-size:12.5px !important; text-transform:none !important; letter-spacing:0 !important; color:var(--text-dark) !important; font-weight:500 !important; cursor:pointer; }
@@ -113,7 +113,7 @@
   .inline-check input{ width:16px; height:16px; accent-color:var(--green-btn); margin:0; }
   .current-receipt{ display:flex; align-items:center; gap:14px; font-size:12.5px; margin-top:2px; }
   .current-receipt a{ color:var(--green-btn); font-weight:600; }
-  .repeat-box{ background:#f5f8f5; border:1px solid #e1e8e1; border-radius:10px; padding:12px 14px; gap:6px; }
+  .repeat-box{ background:#f7f7f7; border:1px solid #e6e6e6; border-radius:10px; padding:12px 14px; gap:6px; }
   .repeat-box #frequencyField{ max-width:320px; margin-top:6px; }
   .expense-footer{ display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
   .report-table a{ color:var(--green-btn); font-weight:600; }
@@ -130,13 +130,13 @@
   .month-link{ background:none; border:none; padding:6px 0; font:inherit; color:var(--green-btn); font-weight:600; text-decoration:underline; text-underline-offset:3px; cursor:pointer; text-align:left; }
   .month-link:focus-visible{ outline:2px solid var(--green-btn); outline-offset:2px; border-radius:2px; }
   .mini-btn{ border:1px solid var(--border); background:#fff; border-radius:6px; padding:5px 10px; font-size:12px; font-weight:600; color:var(--text-mid); cursor:pointer; margin-left:6px; min-height:30px; }
-  .mini-btn:hover{ background:#f2f5f2; }
+  .mini-btn:hover{ background:#f4f4f4; }
   .mini-btn.danger{ color:#ba2828; }
   .mini-btn.danger:hover{ background:#fbe9e9; }
   .mini-btn:focus-visible{ outline:2px solid var(--green-btn); outline-offset:1px; }
   .link-btn.muted{ color:var(--text-mid); font-weight:500; padding:4px 0; }
-  .tag{ display:inline-block; font-size:11.5px; font-weight:600; padding:1px 8px; border-radius:999px; background:#eef1ee; color:var(--text-mid); vertical-align:1px; }
-  .cat{ display:inline-block; font-size:11.5px; font-weight:600; padding:2px 9px; border-radius:999px; background:#eef1ee; color:#3d4a3e; white-space:nowrap; }
+  .tag{ display:inline-block; font-size:11.5px; font-weight:600; padding:1px 8px; border-radius:999px; background:#f0f0f0; color:var(--text-mid); vertical-align:1px; }
+  .cat{ display:inline-block; font-size:11.5px; font-weight:600; padding:2px 9px; border-radius:999px; background:#f0f0f0; color:#3d4a3e; white-space:nowrap; }
   .cat-electricity, .cat-water, .cat-internet{ background:#fff3d6; color:#7a5300; }
   .cat-salaries{ background:#e3edf9; color:#1f4f87; }
   .cat-repairs{ background:#fde8e0; color:#8f3412; }
@@ -155,14 +155,14 @@
     .stack-table tr{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:10px 14px; margin-bottom:10px; }
     .stack-table td{ border:none; padding:5px 0; display:flex; justify-content:space-between; gap:12px; text-align:right !important; max-width:none; }
     .stack-table td::before{ content:attr(data-label); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); text-align:left; flex-shrink:0; }
-    .stack-table td.row-actions{ justify-content:flex-end; padding-top:10px; margin-top:4px; border-top:1px solid #f0f2f0; }
+    .stack-table td.row-actions{ justify-content:flex-end; padding-top:10px; margin-top:4px; border-top:1px solid #f1f1f1; }
     .stack-table td.row-actions::before{ content:none; }
     .stack-table td.row-actions .mini-btn{ flex:1; margin-left:0; }
     .stack-table td.row-actions .mini-btn.danger{ margin-left:14px; }
   }
   /* Daily Collection */
   .cash-flow{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:6px 18px; margin-bottom:20px; max-width:560px; }
-  .cash-flow .line{ display:flex; justify-content:space-between; gap:12px; padding:9px 0; font-size:13px; border-bottom:1px solid #f0f2f0; font-variant-numeric:tabular-nums; }
+  .cash-flow .line{ display:flex; justify-content:space-between; gap:12px; padding:9px 0; font-size:13px; border-bottom:1px solid #f1f1f1; font-variant-numeric:tabular-nums; }
   .cash-flow .line.sub{ padding-left:16px; color:var(--text-mid); font-size:12.5px; }
   .cash-flow .line.minus span:last-child{ color:#ba2828; }
   .cash-flow .line.result{ font-weight:700; }

@@ -26,7 +26,7 @@
   .emergency-pop .actions{ display:flex; gap:8px; }
   .emergency-pop .actions a, .emergency-pop .actions button{ flex:1; min-height:38px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; text-decoration:none; font-family:inherit; }
   .emergency-pop .actions a{ background:#b42318; color:#fff; border:none; }
-  .emergency-pop .actions button{ background:#fff; color:#5b655d; border:1px solid #dfe3df; }
+  .emergency-pop .actions button{ background:#fff; color:#5b655d; border:1px solid #e2e2e2; }
   .emergency-pop .actions :focus-visible{ outline:2px solid #26302a; outline-offset:2px; }
 </style>
 

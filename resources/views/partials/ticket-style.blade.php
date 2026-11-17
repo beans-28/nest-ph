@@ -12,7 +12,7 @@
     --tk-ink:#292420;
     --tk-late:#b3261e;   --tk-late-bg:#fdf1f0;
     --tk-soon:#7a4508;   --tk-soon-bg:#fcf0dc;
-    --tk-closed:#5d6661; --tk-closed-bg:#eceeec;
+    --tk-closed:#5d6661; --tk-closed-bg:#ededed;
     --tk-pending:#33629e; --tk-pending-bg:#e3ecf7;
   }
 
@@ -20,7 +20,7 @@
   .prio.critical{ background:#fde7e7; color:#b42318; }
   .prio.high{ background:#fdeedd; color:#9a4a0a; }
   .prio.medium{ background:#e3ecf7; color:#2a5a99; }
-  .prio.low{ background:#eceeec; color:#4a524e; }
+  .prio.low{ background:#ededed; color:#4a524e; }
 
   .due{ font-size:12.5px; color:#5d6661; }
   .due.late, .due.soon{ display:inline-flex; align-items:center; gap:5px; font-weight:700; padding-left:8px; border-left:3px solid currentColor; }

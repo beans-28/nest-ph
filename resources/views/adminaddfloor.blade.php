@@ -19,10 +19,10 @@
   .head-tool-btn svg{ width:14px; height:14px; }
 
   .stats-row{ display:grid; grid-template-columns:repeat(5, 1fr); gap:16px; margin-bottom:20px; }
-  .stat-card{ background:var(--card-bg); border-radius:12px; border:1px solid var(--border); padding:18px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 1px 2px rgba(20,30,20,0.03); }
+  .stat-card{ background:var(--card-bg); border-radius:12px; border:1px solid var(--border); padding:18px 20px; display:flex; align-items:center; gap:14px; box-shadow:0 1px 2px rgba(0,0,0,0.03); }
   .stat-icon{ width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .stat-icon svg{ width:20px; height:20px; }
-  .stat-icon.bedspaces{ background:var(--status-vacant-bg); color:var(--green-accent); }
+  .stat-icon.bedspaces{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); color:var(--green-darker, #1f5a2c); }
   .stat-icon.occupied{ background:var(--status-occupied-bg); color:var(--status-occupied); }
   .stat-icon.vacant{ background:var(--status-vacant-bg); color:#4a9a58; }
   .stat-icon.reserved{ background:var(--status-reserved-bg); color:var(--status-reserved); }
@@ -54,7 +54,7 @@
   /* Bed colour key (client request 2026-11-14): big, at the top of the page,
      and pinned under the top bar while scrolling, so staff never have to
      hunt for what a colour means. Swatches are real mini bed tiles. */
-  .bed-key{ position:sticky; top:var(--key-top, 56px); z-index:15; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; box-shadow:0 4px 12px rgba(20,30,20,0.06); }
+  .bed-key{ position:sticky; top:var(--key-top, 56px); z-index:15; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
   .bed-key h2{ font-size:13px; font-weight:700; margin:0; color:var(--text-dark); white-space:nowrap; }
   .bed-key ul{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; flex:1; min-width:0; }
   .key-item{ display:flex; align-items:center; gap:10px; border-radius:9px; padding:8px 12px; border:1px solid transparent; min-width:0; }
@@ -77,7 +77,7 @@
 
   .floor-block{ margin-bottom:10px; }
   .floor-header{ display:flex; align-items:center; justify-content:space-between; border:1px solid var(--border); border-radius:8px; padding:13px 16px; font-size:13.5px; font-weight:600; color:var(--text-dark); cursor:pointer; background:#fff; }
-  .floor-header:hover{ background:#f7f9f7; }
+  .floor-header:hover{ background:#f8f8f8; }
   .floor-header .chev{ width:14px; height:14px; color:var(--text-light); transition:transform 0.2s ease; flex-shrink:0; }
   .floor-block.open .floor-header .chev{ transform:rotate(90deg); }
   .floor-block.open .floor-header{ border-bottom-left-radius:0; border-bottom-right-radius:0; border-bottom:none; }
@@ -100,7 +100,7 @@
   .floor-header-left{ display:flex; align-items:center; gap:10px; }
   .floor-header-right{ display:flex; align-items:center; gap:10px; }
   .floor-add-room-btn{ display:flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--border); color:var(--green-btn); font-size:11.5px; font-weight:700; padding:6px 11px; border-radius:6px; cursor:pointer; }
-  .floor-add-room-btn:hover{ background:var(--status-vacant-bg); border-color:#bfe0c6; }
+  .floor-add-room-btn:hover{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); border-color:color-mix(in srgb, var(--green-accent, #2f6f3c) 35%, #fff); }
   .floor-add-room-btn svg{ width:11px; height:11px; }
 
   .delete-floor-btn{ width:26px; height:26px; border-radius:6px; border:1px solid var(--border); background:#fff; color:var(--text-light); display:flex; align-items:center; justify-content:center; cursor:pointer; }
@@ -110,12 +110,12 @@
   .room-actions{ display:flex; align-items:center; gap:4px; flex-shrink:0; }
   .room-action-btn{ width:22px; height:22px; border-radius:5px; border:1px solid transparent; background:transparent; color:var(--text-light); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .room-action-btn svg{ width:11px; height:11px; }
-  .room-action-btn.edit:hover{ color:var(--green-accent); background:var(--status-vacant-bg); }
+  .room-action-btn.edit:hover{ color:var(--green-darker, #1f5a2c); background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); }
   .room-action-btn.delete:hover{ color:var(--status-occupied); background:var(--status-occupied-bg); }
 
-  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(20,30,20,0.45); align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:100; padding:20px; }
   .modal-overlay.open{ display:flex; }
-  .modal-box{ background:#fff; border-radius:14px; width:100%; max-width:420px; padding:24px 24px 20px 24px; box-shadow:0 20px 50px rgba(20,30,20,0.25); max-height:90vh; overflow-y:auto; }
+  .modal-box{ background:#fff; border-radius:14px; width:100%; max-width:420px; padding:24px 24px 20px 24px; box-shadow:0 20px 50px rgba(0,0,0,0.25); max-height:90vh; overflow-y:auto; }
   .modal-title{ font-size:16px; font-weight:700; color:var(--text-dark); margin:0 0 4px 0; }
   .modal-sub{ font-size:12.5px; color:var(--text-light); margin:0 0 18px 0; }
   .modal-row{ display:flex; gap:12px; }
@@ -132,7 +132,7 @@
   .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:6px; }
   .modal-btn{ padding:9px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--border); }
   .modal-btn.cancel{ background:#fff; color:var(--text-mid); }
-  .modal-btn.cancel:hover{ background:#f5f6f5; }
+  .modal-btn.cancel:hover{ background:#f6f6f6; }
   .modal-btn.confirm{ background:var(--green-btn); color:#fff; border-color:var(--green-btn); }
   .modal-btn.confirm:hover{ background:var(--green-btn-hover); }
   .modal-error{ font-size:12px; color:var(--status-occupied); margin:-10px 0 14px 0; display:none; }
@@ -147,7 +147,7 @@
   .overview-top h2{ font-size:15px; font-weight:700; margin:0; }
   .overview-headline{ font-size:13px; color:var(--text-mid); font-variant-numeric:tabular-nums; }
   .overview-headline strong{ font-size:22px; color:#2f7a3d; margin-right:3px; }
-  .occ-bar{ display:flex; gap:2px; height:12px; border-radius:6px; overflow:hidden; background:#eef1ee; }
+  .occ-bar{ display:flex; gap:2px; height:12px; border-radius:6px; overflow:hidden; background:#f0f0f0; }
   .occ-bar span{ display:block; height:100%; min-width:3px; }
   .occ-bar .occupied{ background:var(--status-occupied); }
   .occ-bar .reserved{ background:var(--status-reserved); }
@@ -155,7 +155,7 @@
   .occ-bar .maintenance{ background:var(--status-maintenance); }
   .floor-summary{ list-style:none; margin:14px 0 0; padding:0; }
   .floor-sum-item{ display:grid; grid-template-columns:72px minmax(120px, 1fr) 130px 150px; align-items:center; gap:16px; width:100%; padding:10px 8px; border:0; border-top:1px solid var(--border); background:none; text-align:left; font:inherit; font-size:12.5px; color:var(--text-mid); cursor:pointer; border-radius:0; font-variant-numeric:tabular-nums; }
-  .floor-sum-item:hover{ background:#f7f9f7; }
+  .floor-sum-item:hover{ background:#f8f8f8; }
   .floor-sum-item:focus-visible{ outline:2px solid var(--green-accent); outline-offset:-2px; }
   .floor-sum-item .fs-name{ font-weight:700; color:var(--text-dark); font-size:13px; }
   .floor-sum-item .occ-bar{ height:8px; }
@@ -175,7 +175,7 @@
   .bed-avail-head .ratio.none b{ color:#b23b34; }
   .bed-tiles{ display:grid; grid-template-columns:repeat(auto-fill, minmax(70px, 1fr)); gap:6px; }
   .bed-tile{ display:flex; flex-direction:column; align-items:center; gap:2px; border-radius:7px; padding:8px 4px 7px; cursor:pointer; border:1px solid transparent; line-height:1.2; transition:transform 0.12s cubic-bezier(0.16,1,0.3,1), box-shadow 0.12s ease; }
-  .bed-tile:hover{ transform:translateY(-1px); box-shadow:0 2px 6px rgba(20,30,20,0.10); }
+  .bed-tile:hover{ transform:translateY(-1px); box-shadow:0 2px 6px rgba(0,0,0,0.10); }
   .bed-tile:focus-visible{ outline:2px solid var(--text-dark); outline-offset:2px; }
   .bed-tile svg{ width:15px; height:15px; margin-bottom:2px; }
   .bed-tile .bt-name{ font-size:11.5px; font-weight:600; white-space:nowrap; }

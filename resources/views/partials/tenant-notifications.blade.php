@@ -22,7 +22,7 @@
   .notif-bell{ position:relative; border:none; padding:0; }
   .notif-bell .notif-badge{ position:absolute; top:-6px; right:-8px; min-width:12px; height:16px; padding:0 4px; border-radius:8px; background:#c0392b; color:#fff; font-size:10px; font-weight:700; line-height:16px; text-align:center; border:2px solid var(--sage-800); font-variant-numeric:tabular-nums; pointer-events:none; }
   .notif-bell .notif-badge[hidden]{ display:none; }
-  .bill-popup{ position:fixed; inset:0; background:rgba(20,30,24,.55); z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .bill-popup{ position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; }
   .bill-popup[hidden]{ display:none; }
   .bill-popup-box{ background:#fff; border-radius:16px; width:100%; max-width:440px; max-height:calc(100vh - 32px); overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3); }
   .bill-popup-head{ padding:22px 24px 8px; text-align:center; }

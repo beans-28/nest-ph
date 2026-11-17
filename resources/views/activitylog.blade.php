@@ -13,14 +13,14 @@
 <style>
   :root{
     --green-dark:#3f6b4a; --green-mid:#4f7c57; --green-accent:#2f6f3c;
-    --bg-page:#eef1ee; --card-bg:#ffffff;
-    --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
+    --bg-page:#f0f0f0; --card-bg:#ffffff;
+    --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e5e5;
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   }
   *{box-sizing:border-box;}
   html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
 
-  .topbar{ display:flex; align-items:center; gap:10px; background:linear-gradient(90deg, var(--green-mid), var(--green-dark)); padding:16px 32px; color:#eaf0ea; }
+  .topbar{ display:flex; align-items:center; gap:10px; background:linear-gradient(90deg, var(--green-mid), var(--green-dark)); padding:16px 32px; color:#eeeeee; }
   .topbar .logo-img{ height:24px; width:auto; }
   .topbar .logo-text{ font-weight:700; font-size:15px; }
 
@@ -37,7 +37,7 @@
   table.activity-table th, table.activity-table td{ text-align:left; }
   table.activity-table th.right, table.activity-table td.right{ text-align:right; }
   table.activity-table th{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:12px 8px; border-bottom:1px solid var(--border); }
-  table.activity-table td{ font-size:13px; color:var(--text-dark); padding:12px 8px; border-bottom:1px solid #f0f2f0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  table.activity-table td{ font-size:13px; color:var(--text-dark); padding:12px 8px; border-bottom:1px solid #f1f1f1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   table.activity-table td.detail-cell{ white-space:normal; }
   table.activity-table td.type-cell{ color:var(--text-mid); }
   table.activity-table td.admin-cell{ color:var(--text-mid); }
@@ -46,7 +46,7 @@
   .pagination{ display:flex; align-items:center; justify-content:center; gap:6px; padding:18px 0; }
   .page-link, .page-current{ min-width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px; font-size:12.5px; text-decoration:none; }
   .page-link{ background:var(--card-bg); border:1px solid var(--border); color:var(--text-mid); }
-  .page-link:hover{ background:#f3f6f3; }
+  .page-link:hover{ background:#f5f5f5; }
   .page-current{ background:var(--green-accent); color:#fff; font-weight:700; }
   .page-disabled{ min-width:32px; height:32px; display:flex; align-items:center; justify-content:center; color:var(--text-light); opacity:0.4; }
   /* Mobile: tighter padding; the log table scrolls sideways instead of crushing the Details column */

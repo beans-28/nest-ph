@@ -19,7 +19,7 @@
     }
     .app-topbar a,
     .app-topbar button {
-        color: #f4f7f1;
+        color: #f6f6f6;
         text-decoration: none;
         font-size: 13px;
         letter-spacing: .02em;
@@ -29,14 +29,14 @@
     }
     .app-topbar a:hover,
     .app-topbar button:hover {
-        color: #d8e4d3;
+        color: #e0e0e0;
     }
     .app-topbar .logo {
         font-size: 18px;
         font-weight: 600;
         letter-spacing: 0.15em;
         text-transform: uppercase;
-        color: #f4f7f1;
+        color: #f6f6f6;
     }
     .app-topbar .logout-btn {
         border: 1px solid rgba(255,255,255,0.18);

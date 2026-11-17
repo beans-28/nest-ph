@@ -75,9 +75,9 @@
 
   /* Review modal */
   body.modal-open{ overflow:hidden; }
-  .review-modal-overlay{ display:none; position:fixed; inset:0; background:rgba(31,70,48,0.45); align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .review-modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:100; padding:20px; }
   .review-modal-overlay.open{ display:flex; }
-  .review-modal{ background:#fff; border-radius:18px; padding:26px; width:100%; max-width:480px; box-shadow:0 20px 50px rgba(31,70,48,0.25); max-height:calc(100dvh - 40px); overflow-y:auto; }
+  .review-modal{ background:#fff; border-radius:18px; padding:26px; width:100%; max-width:480px; box-shadow:0 20px 50px rgba(0,0,0,0.25); max-height:calc(100dvh - 40px); overflow-y:auto; }
   .review-modal h2{ margin:0 0 4px; font-size:20px; color:var(--text-dark); }
   .review-modal-sub{ margin:0 0 18px; font-size:13px; color:var(--text-mid); line-height:1.5; }
   .review-modal-error{ display:none; background:#f7d9d7; color:#a8382f; font-size:13px; padding:9px 12px; border-radius:8px; margin-bottom:14px; }

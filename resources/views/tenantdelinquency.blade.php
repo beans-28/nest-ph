@@ -71,7 +71,7 @@
 
   .breakdown-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
   .breakdown-card h3{ font-size:13px; font-weight:700; margin:0 0 14px 0; letter-spacing:0.3px; color:var(--text-dark); }
-  .breakdown-line{ display:flex; justify-content:space-between; font-size:13px; color:var(--text-dark); padding:9px 0; border-bottom:1px solid #f0f2f0; }
+  .breakdown-line{ display:flex; justify-content:space-between; font-size:13px; color:var(--text-dark); padding:9px 0; border-bottom:1px solid #f1f1f1; }
   .breakdown-line:last-child{ border-bottom:none; }
   .breakdown-line.penalty-line{ color:#c0463d; font-weight:700; }
 

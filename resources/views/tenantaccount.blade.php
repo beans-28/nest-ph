@@ -82,7 +82,7 @@
   .notarize-msg{ font-size:12px; margin:6px 0 0; min-height:1em; }
   .notarize-msg.error{ color:#a8403a; }
   .btn-outline-sm.solid{ background:var(--green-dark); color:#fff; }
-  .btn-outline-sm.solid:hover:not(:disabled){ background:#45604a; }
+  .btn-outline-sm.solid:hover:not(:disabled){ background:var(--green-btn-hover, #45604a); }
   .btn-outline-sm:focus-visible, .notarize-row input[type=file]:focus-visible{ outline:2px solid var(--green-dark); outline-offset:2px; }
   .required-note.is-rejected{ color:#8f3530; background:#fbeceb; border-color:#f2cfcc; }
   .required-note{ flex-basis:100%; font-size:12px; color:#7a5a12; background:#f6ecd6; border:1px solid #ead7a8; border-radius:8px; padding:10px 12px; margin:0; line-height:1.5; }
@@ -116,7 +116,7 @@
   /* ===== Submitted ID (side panel) ===== */
   .profile-layout{ display:flex; align-items:flex-start; gap:24px; }
   .profile-photo{ display:flex; align-items:center; gap:16px; margin-bottom:22px; }
-  .profile-photo .photo{ width:96px; height:96px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid var(--border); background:#d9f2dd; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:#3f6b4a; }
+  .profile-photo .photo{ width:96px; height:96px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid var(--border); background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:var(--green-darker, #1f5a2c); }
   .profile-photo .name{ font-size:16px; font-weight:700; }
   .profile-photo .hint{ font-size:12px; color:var(--text-light, #6b7479); margin-top:4px; line-height:1.5; }
   .profile-layout > .settings-card{ flex:1 1 640px; }
@@ -127,10 +127,10 @@
   .id-card .profile-section-title{ margin-bottom:16px; }
   .id-frame{
     display:block; position:relative; border-radius:10px; overflow:hidden; background:var(--sage-50);
-    border:1px solid var(--sage-200); aspect-ratio:1.586 / 1; box-shadow:0 6px 18px rgba(30,60,40,0.08);
+    border:1px solid var(--sage-200); aspect-ratio:1.586 / 1; box-shadow:0 6px 18px rgba(0,0,0,0.08);
     transition:transform 0.2s ease, box-shadow 0.2s ease;
   }
-  .id-frame:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(30,60,40,0.14); }
+  .id-frame:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(0,0,0,0.14); }
   .id-frame img{ width:100%; height:100%; object-fit:cover; display:block; }
   .id-frame .id-zoom{
     position:absolute; right:10px; bottom:10px; background:rgba(255,255,255,0.92); color:var(--green-dark);

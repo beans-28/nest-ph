@@ -230,7 +230,7 @@
             font-family: inherit;
             outline: none;
         }
-        .otp-box:focus { border-color: #567357; box-shadow: 0 0 0 3px rgba(86,115,87,0.15); }
+        .otp-box:focus { border-color: #567357; box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-dark, #567357) 15%, transparent); }
 
         .btn-login {
             display: block;

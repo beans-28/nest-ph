@@ -27,25 +27,25 @@
 
   .filters{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
   .filter-chip{ border:1px solid var(--border); background:#fff; border-radius:20px; padding:7px 16px; font-size:12px; font-family:inherit; font-weight:600; color:var(--text-mid); cursor:pointer; }
-  .filter-chip.active{ background:var(--status-vacant-bg); border-color:var(--status-vacant); color:var(--green-accent); }
+  .filter-chip.active{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); border-color:color-mix(in srgb, var(--green-accent, #2f6f3c) 35%, #fff); color:var(--green-darker, #1f5a2c); }
 
   .list-panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
-  .list-row{ display:flex; align-items:center; gap:16px; padding:16px 20px; border-bottom:1px solid #f0f2f0; cursor:pointer; }
+  .list-row{ display:flex; align-items:center; gap:16px; padding:16px 20px; border-bottom:1px solid #f1f1f1; cursor:pointer; }
   .list-row:last-child{ border-bottom:none; }
-  .list-row:hover{ background:#fbfcfb; }
+  .list-row:hover{ background:#fcfcfc; }
   .lr-name{ font-size:13.5px; font-weight:700; min-width:150px; }
-  .lr-room{ font-size:11px; font-weight:700; color:var(--green-accent); background:var(--status-vacant-bg); padding:3px 10px; border-radius:20px; white-space:nowrap; }
+  .lr-room{ font-size:11px; font-weight:700; color:var(--green-darker, #1f5a2c); background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); padding:3px 10px; border-radius:20px; white-space:nowrap; }
   .lr-msg{ font-size:12.5px; color:var(--text-mid); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .lr-date{ font-size:11.5px; color:var(--text-light); white-space:nowrap; }
   .badge{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:4px 10px; border-radius:20px; white-space:nowrap; }
   .badge.new{ background:var(--status-maintenance-bg); color:var(--status-maintenance); }
-  .badge.contacted{ background:var(--status-vacant-bg); color:var(--green-accent); }
+  .badge.contacted{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); color:var(--green-darker, #1f5a2c); }
   .badge.converted{ background:#e3ecf7; color:#33629e; }
   .badge.closed{ background:#f0f1f0; color:var(--text-light); }
   .empty{ color:var(--text-light); font-size:13px; font-style:italic; padding:30px; text-align:center; }
 
   .btn{ font-size:12px; font-weight:600; padding:10px 18px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); }
-  .btn:hover:not(:disabled){ background:#f7f9f7; }
+  .btn:hover:not(:disabled){ background:#f8f8f8; }
   .btn:disabled{ opacity:.5; cursor:not-allowed; }
   .btn.primary{ background:var(--green-btn); border-color:var(--green-btn); color:#fff; }
   .btn.primary:hover:not(:disabled){ background:var(--green-btn-hover); }
@@ -67,7 +67,7 @@
   .kv .v{ font-size:13px; font-weight:500; margin-top:3px; word-break:break-word; }
   .kv .v.empty-v{ color:#c2c9c5; font-style:italic; font-weight:400; }
 
-  .msg-box{ background:#fbfcfb; border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-size:13px; line-height:1.7; white-space:pre-line; }
+  .msg-box{ background:#fcfcfc; border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-size:13px; line-height:1.7; white-space:pre-line; }
 
   .reply-box textarea{ width:100%; border:1px solid var(--border); border-radius:8px; padding:12px 14px; font-size:13px; font-family:var(--font-body); min-height:110px; resize:vertical; margin-bottom:12px; }
   .tpl-label{ font-size:11px; font-weight:600; color:var(--text-light); margin-bottom:8px; }
@@ -76,7 +76,7 @@
   .tpl-chip:hover{ border-color:var(--green-accent); }
   .tpl-chip.active{ background:var(--green-accent); border-color:var(--green-accent); color:#fff; }
   .reply-box textarea{ min-height:220px; }
-  .already-replied{ background:var(--status-vacant-bg); border:1px solid var(--status-vacant); border-radius:10px; padding:14px 16px; font-size:12.5px; color:var(--green-accent); line-height:1.6; }
+  .already-replied{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); border:1px solid color-mix(in srgb, var(--green-accent, #2f6f3c) 35%, #fff); border-radius:10px; padding:14px 16px; font-size:12.5px; color:var(--green-darker, #1f5a2c); line-height:1.6; }
 
   .status-row{ display:flex; gap:8px; flex-wrap:wrap; }
 

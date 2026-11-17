@@ -66,7 +66,7 @@
 
   table.mini-table{ width:100%; border-collapse:collapse; }
   table.mini-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:6px 4px; border-bottom:1px solid var(--border); }
-  table.mini-table td{ font-size:13px; color:var(--text-dark); padding:12px 4px; border-bottom:1px solid #f0f2f0; }
+  table.mini-table td{ font-size:13px; color:var(--text-dark); padding:12px 4px; border-bottom:1px solid #f1f1f1; }
   .status-pill{ font-size:11px; font-weight:600; padding:4px 12px; border-radius:20px; display:inline-block; }
   .status-pill.pending{ background:var(--pending-bg); color:var(--pending-text); }
   .status-pill.paid{ background:var(--paid-bg); color:var(--paid-text); }

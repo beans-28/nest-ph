@@ -16,7 +16,7 @@
 --}}
 @once
 <style>
-  .notif-panel{ position:fixed; top:64px; right:16px; width:min(380px, calc(100vw - 32px)); background:#fff; border:1px solid var(--border, #e3e7e3); border-radius:14px; box-shadow:0 14px 40px rgba(20,30,24,.18); z-index:200; display:none; flex-direction:column; overflow:hidden; font-family:var(--font-body); }
+  .notif-panel{ position:fixed; top:64px; right:16px; width:min(380px, calc(100vw - 32px)); background:#fff; border:1px solid var(--border, #e3e7e3); border-radius:14px; box-shadow:0 14px 40px rgba(0,0,0,.18); z-index:200; display:none; flex-direction:column; overflow:hidden; font-family:var(--font-body); }
   .notif-panel.open{ display:flex; }
   .notif-panel .np-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:14px 16px 8px; }
   .notif-panel .np-head h2{ margin:0; font-size:18px; font-weight:700; color:var(--text-dark, #26302a); }

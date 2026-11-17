@@ -52,7 +52,7 @@
   .breakdown-row{ display:grid; grid-template-columns:70px 1fr 60px; align-items:center; gap:12px; margin-bottom:14px; }
   .breakdown-row:last-child{ margin-bottom:0; }
   .breakdown-label{ font-size:12.5px; color:var(--text-mid); }
-  .breakdown-track{ height:8px; border-radius:20px; background:#eef0ee; overflow:hidden; }
+  .breakdown-track{ height:8px; border-radius:20px; background:#efefef; overflow:hidden; }
   .breakdown-fill{ height:100%; border-radius:20px; }
   .breakdown-fill.rent{ background:#e8b13c; }
   .breakdown-fill.utilities{ background:#6f8fae; }
@@ -95,7 +95,7 @@
   .billing-panel h3{ font-size:15px; font-weight:700; margin:0 0 16px 0; }
   table.billing-table{ width:100%; border-collapse:collapse; }
   table.billing-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:8px 10px; border-bottom:1px solid var(--border); }
-  table.billing-table td{ font-size:13px; color:var(--text-dark); padding:14px 10px; border-bottom:1px solid #f0f2f0; }
+  table.billing-table td{ font-size:13px; color:var(--text-dark); padding:14px 10px; border-bottom:1px solid #f1f1f1; }
   .status-pill{ font-size:11.5px; font-weight:600; padding:4px 14px; border-radius:20px; display:inline-block; }
   .status-pill.pending{ background:var(--pending-bg); color:var(--pending-text); }
   .status-pill.paid{ background:var(--paid-bg); color:var(--paid-text); }
@@ -121,7 +121,7 @@
 
   .summary-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px 22px; }
   .summary-card h3{ font-size:13.5px; font-weight:700; margin:0 0 14px 0; letter-spacing:0.3px; }
-  .summary-row{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-mid); padding:8px 0; border-bottom:1px solid #f0f2f0; }
+  .summary-row{ display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-mid); padding:8px 0; border-bottom:1px solid #f1f1f1; }
   .summary-row span:last-child{ color:var(--text-dark); font-weight:600; }
   .summary-row.total{ border-bottom:none; padding-top:12px; font-weight:700; }
   .summary-row.total span{ color:var(--text-dark); font-size:13.5px; }
@@ -221,7 +221,7 @@
 
   .empty-note{ font-size:12px; color:var(--text-light); text-align:center; padding:20px; }
 
-  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(20,30,20,0.45); align-items:center; justify-content:center; z-index:50; }
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:50; }
   .modal-overlay.open{ display:flex; }
   .modal-box{ background:#fff; border-radius:14px; padding:24px; width:420px; max-width:92vw; max-height:85vh; overflow-y:auto; }
   .modal-box h3{ margin:0 0 14px 0; font-size:15px; }

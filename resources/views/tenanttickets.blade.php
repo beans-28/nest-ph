@@ -96,7 +96,7 @@
   .success-safety a{ color:#b42318; font-weight:700; }
 
   /* ===== New Ticket modal ===== */
-  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(20,30,20,.5); z-index:60; align-items:center; justify-content:center; padding:20px; }
+  .modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:60; align-items:center; justify-content:center; padding:20px; }
   .modal-overlay.open{ display:flex; }
   .modal-box{ background:#fff; border-radius:16px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; padding:26px 28px; }
   .modal-box h2{ font-size:19px; font-weight:700; color:var(--green-accent); margin:0 0 20px 0; }
@@ -114,7 +114,7 @@
   .photo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(76px, 1fr)); gap:10px; }
   .photo-tile{ position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:var(--sage-50); }
   .photo-tile img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .photo-tile .remove-tile{ position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(20,30,20,.65); color:#fff; border:none; font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+  .photo-tile .remove-tile{ position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,.65); color:#fff; border:none; font-size:13px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
   .photo-tile .remove-tile:hover{ background:var(--red); }
   .add-tile{ aspect-ratio:1; border:1.5px dashed var(--border); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; color:var(--text-light); background:none; }
   .add-tile:hover{ border-color:var(--green-mid); color:var(--green-accent); }

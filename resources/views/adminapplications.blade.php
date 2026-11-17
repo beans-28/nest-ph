@@ -19,8 +19,8 @@
     --status-occupied:#d9564f; --status-vacant:#7fc98a; --status-vacant-bg:#d9f2dd;
     --status-maintenance:#c9962f; --status-maintenance-bg:#f6ecd6;
     --purple:#7a4fc9; --purple-bg:#e9defa;
-    --bg-page:#eef1ee; --card-bg:#ffffff;
-    --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
+    --bg-page:#f0f0f0; --card-bg:#ffffff;
+    --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e5e5;
     --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -34,7 +34,7 @@
   .filters{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
   .filters .search-input{ border:1px solid var(--border); border-radius:20px; padding:7px 16px; font-size:12px; font-family:var(--font-body); color:var(--text-dark); min-width:220px; }
   .filter-chip{ border:1px solid var(--border); background:#fff; border-radius:20px; padding:7px 16px; font-size:12px; font-family:inherit; font-weight:600; color:var(--text-mid); cursor:pointer; }
-  .filter-chip.active{ background:var(--status-vacant-bg); border-color:var(--status-vacant); color:var(--green-accent); }
+  .filter-chip.active{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); border-color:color-mix(in srgb, var(--green-accent, #2f6f3c) 35%, #fff); color:var(--green-darker, #1f5a2c); }
 
   .app-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:16px; }
   .app-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:18px 20px; cursor:pointer; }
@@ -43,7 +43,7 @@
   .ac-room{ font-size:11.5px; color:var(--text-light); margin-top:2px; }
   .badge{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:4px 9px; border-radius:20px; margin-left:auto; white-space:nowrap; }
   .badge.pending{ background:var(--status-maintenance-bg); color:var(--status-maintenance); }
-  .badge.approved{ background:var(--status-vacant-bg); color:var(--green-accent); }
+  .badge.approved{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); color:var(--green-darker, #1f5a2c); }
   .badge.rejected{ background:#fbeceb; color:var(--status-occupied); }
   .badge.re_application_requested{ background:#e3ecf7; color:#33629e; }
   .badge.cancelled{ background:#f0f1f0; color:var(--text-light); }
@@ -54,7 +54,7 @@
   .empty{ color:var(--text-light); font-size:13px; font-style:italic; padding:30px; text-align:center; grid-column:1/-1; }
 
   .btn{ font-size:12px; font-weight:600; padding:10px 18px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); }
-  .btn:hover:not(:disabled){ background:#f7f9f7; }
+  .btn:hover:not(:disabled){ background:#f8f8f8; }
   .btn:disabled{ opacity:.5; cursor:not-allowed; }
   .btn.primary{ background:var(--green-btn); border-color:var(--green-btn); color:#fff; }
   .btn.primary:hover:not(:disabled){ background:var(--green-btn-hover); }
@@ -81,7 +81,7 @@
   .kv .v.empty-v{ color:#c2c9c5; font-style:italic; font-weight:400; }
 
   .doc-links{ display:flex; gap:10px; flex-wrap:wrap; }
-  .doc-link{ display:inline-flex; align-items:center; gap:7px; background:#fbfcfb; border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-size:12.5px; font-weight:600; color:var(--green-accent); text-decoration:none; }
+  .doc-link{ display:inline-flex; align-items:center; gap:7px; background:#fcfcfc; border:1px solid var(--border); border-radius:8px; padding:9px 14px; font-size:12.5px; font-weight:600; color:var(--green-accent); text-decoration:none; }
   .doc-link svg{ width:14px; height:14px; }
   .doc-missing{ color:#c2c9c5; font-style:italic; font-size:12.5px; }
 
@@ -90,13 +90,13 @@
   .discount-fld label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
   .discount-fld input{ border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:13px; font-family:var(--font-body); }
 
-  .decision-box{ display:none; border:1px solid var(--border); border-radius:10px; padding:16px; background:#fbfcfb; margin-top:12px; }
+  .decision-box{ display:none; border:1px solid var(--border); border-radius:10px; padding:16px; background:#fcfcfc; margin-top:12px; }
   .decision-box.open{ display:block; }
   .decision-box textarea{ width:100%; border:1px solid var(--border); border-radius:8px; padding:11px 13px; font-size:13px; font-family:var(--font-body); min-height:90px; resize:vertical; margin-bottom:12px; }
   .decision-actions{ display:flex; gap:8px; }
 
   .action-row{ display:flex; gap:10px; flex-wrap:wrap; }
-  .final-note{ background:#fbfcfb; border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-size:12.5px; line-height:1.6; color:var(--text-mid); }
+  .final-note{ background:#fcfcfc; border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-size:12.5px; line-height:1.6; color:var(--text-mid); }
   .final-note.rejected{ color:var(--status-occupied); }
   .final-note.re_application_requested{ color:#33629e; }
   .final-note.approved{ color:var(--green-accent); }

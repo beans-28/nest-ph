@@ -31,7 +31,7 @@
   .search-input{ flex:1; min-width:220px; border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:13px; font-family:var(--font-body); background:#fff; }
   .filters-row select{ border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:13px; font-family:var(--font-body); background:#fff; min-width:170px; }
   .btn{ border:1px solid var(--border); background:#fff; border-radius:10px; padding:10px 16px; font-size:13px; font-weight:600; cursor:pointer; color:var(--text-dark); white-space:nowrap; }
-  .btn:hover{ background:#f5f6f5; }
+  .btn:hover{ background:#f6f6f6; }
   .btn.primary{ background:var(--green-btn); border-color:var(--green-btn); color:#fff; }
   .btn.primary:hover{ background:var(--green-btn-hover); }
   .btn.warn{ background:var(--status-occupied); border-color:var(--status-occupied); color:#fff; }
@@ -42,13 +42,13 @@
   .table-panel{ background:var(--card-bg); border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,0.04); overflow:hidden; }
   table{ width:100%; border-collapse:collapse; }
   thead th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-light); font-weight:700; padding:14px 18px; border-bottom:1px solid var(--border); }
-  tbody td{ padding:14px 18px; font-size:13px; border-bottom:1px solid #f1f3f1; vertical-align:middle; }
+  tbody td{ padding:14px 18px; font-size:13px; border-bottom:1px solid #f2f2f2; vertical-align:middle; }
   tbody tr:last-child td{ border-bottom:none; }
-  tbody tr:hover{ background:#fafcfa; }
+  tbody tr:hover{ background:#fbfbfb; }
   .empty-row td{ text-align:center; color:var(--text-light); padding:32px; font-style:italic; }
 
   .tenant-cell{ display:flex; align-items:center; gap:10px; }
-  .tenant-avatar{ width:36px; height:36px; border-radius:6px; flex-shrink:0; object-fit:cover; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:var(--green-dark, #3f6b4a); background:#d9f2dd; border:1px solid #c3e3c6; }
+  .tenant-avatar{ width:36px; height:36px; border-radius:6px; flex-shrink:0; object-fit:cover; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px; color:var(--green-darker, #1f5a2c); background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); border:1px solid color-mix(in srgb, var(--green-accent, #2f6f3c) 22%, #fff); }
   .drawer-photo{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
   .drawer-photo .tenant-avatar{ width:96px; height:96px; border-radius:8px; font-size:26px; }
   .drawer-photo .hint{ font-size:12px; color:var(--text-light); }
@@ -112,7 +112,7 @@
      Replaces the old side drawer: a big, centered window with tabs, so all
      of a tenant's info (personal, lease, billing, activity) is in one place.
      Lease Management used to be its own page; it now lives in the Lease tab. */
-  .profile-overlay{ display:none; position:fixed; inset:0; background:rgba(20,30,22,.55); z-index:60; align-items:center; justify-content:center; padding:24px; }
+  .profile-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:60; align-items:center; justify-content:center; padding:24px; }
   .profile-overlay.open{ display:flex; }
   .profile-box{ background:var(--bg-page); border-radius:18px; width:100%; max-width:1080px; height:min(92vh, 900px); display:flex; flex-direction:column; overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,.25); }
   .profile-top{ background:#fff; padding:20px 28px 0 28px; border-bottom:1px solid var(--border); position:relative; }
@@ -128,12 +128,12 @@
   .pill.active{ background:#d9f2dd; color:#2f6f3c; }
   .pill.delinquent{ background:#fbeceb; color:#b13f39; }
   .pill.pending_move_in_payment{ background:#f6ecd6; color:#8a6516; }
-  .pill.inactive{ background:#eceeec; color:#6b746e; }
+  .pill.inactive{ background:#ededed; color:#6b746e; }
   .pill.sm{ font-size:11px; padding:3px 9px; }
   .pill.ok{ background:#d9f2dd; color:#2f6f3c; }
   .pill.bad{ background:#fbeceb; color:#b13f39; }
   .pill.wait{ background:#f6ecd6; color:#8a6516; }
-  .pill.muted{ background:#eceeec; color:#6b746e; }
+  .pill.muted{ background:#ededed; color:#6b746e; }
   .profile-tabs{ display:flex; gap:24px; margin-top:16px; overflow-x:auto; scrollbar-width:none; }
   .profile-tab{ padding:10px 2px 12px; border:none; border-bottom:2px solid transparent; background:none; font:600 13.5px var(--font-body); color:var(--text-mid); cursor:pointer; white-space:nowrap; margin-bottom:-1px; }
   .profile-tab:hover{ color:var(--text-dark); }
@@ -156,13 +156,13 @@
   .money-strip .n.red{ color:#b13f39; }
   .mini-table td.num, .pay-item .amt{ font-variant-numeric:tabular-nums; }
   .mini-table{ width:100%; border-collapse:collapse; }
-  .mini-table th{ font-size:10.5px; padding:8px 10px; background:#fafbfa; }
+  .mini-table th{ font-size:10.5px; padding:8px 10px; background:#fbfbfb; }
   .mini-table td{ font-size:12.5px; padding:9px 10px; }
   .mini-table .num{ text-align:right; white-space:nowrap; }
   .table-scroll{ overflow-x:auto; }
   .pay-list{ display:flex; flex-direction:column; gap:10px; }
   .pay-item{ display:flex; gap:14px; border:1px solid var(--border); border-radius:12px; padding:12px; align-items:flex-start; }
-  .pay-item .proof{ width:84px; height:84px; flex-shrink:0; border-radius:8px; border:1px solid var(--border); background:#f6f7f6; display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:11px; color:var(--text-light); text-align:center; }
+  .pay-item .proof{ width:84px; height:84px; flex-shrink:0; border-radius:8px; border:1px solid var(--border); background:#f7f7f7; display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:11px; color:var(--text-light); text-align:center; }
   .pay-item .proof img{ width:100%; height:100%; object-fit:cover; }
   .pay-item .info{ flex:1; min-width:0; }
   .pay-item .top{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -187,17 +187,17 @@
   .profile-msg .btn{ margin-left:10px; }
   .lease-older{ margin-top:6px; }
   .lease-older summary{ cursor:pointer; font-size:12.5px; font-weight:600; color:var(--green-accent); }
-  .signed-note{ background:var(--status-vacant-bg, #d9f2dd); border:1px solid #9fd6a8; border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--green-accent); line-height:1.6; }
+  .signed-note{ background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); border:1px solid #9fd6a8; border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--green-darker, #1f5a2c); line-height:1.6; }
   .signed-note a{ color:inherit; font-weight:700; }
   .signed-note.review{ background:#f6ecd6; border-color:#ead7a8; color:#7a5a12; }
   .signed-note.missing{ background:#fbeceb; border-color:#f2cfcc; color:#a8403a; }
-  .sign-box{ border:1px solid var(--border); border-radius:10px; padding:14px 16px; background:#fbfcfb; margin-top:10px; }
+  .sign-box{ border:1px solid var(--border); border-radius:10px; padding:14px 16px; background:#fcfcfc; margin-top:10px; }
   .sign-box .fld, .action-box .fld{ display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
   .sign-box label, .action-box label{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
   .sign-box input, .sign-box select, .action-box input, .action-box textarea{ border:1px solid var(--border); border-radius:8px; padding:9px 12px; font-size:13px; font-family:var(--font-body); background:#fff; width:100%; }
   .confirm-row{ display:flex; gap:9px; align-items:flex-start; font-size:12px; color:var(--text-mid); line-height:1.6; margin-bottom:12px; }
   .confirm-row input{ width:15px !important; height:15px; margin-top:2px; flex-shrink:0; }
-  .action-box{ display:none; border:1px solid var(--border); border-radius:10px; padding:14px; background:#fbfcfb; margin-top:12px; }
+  .action-box{ display:none; border:1px solid var(--border); border-radius:10px; padding:14px; background:#fcfcfc; margin-top:12px; }
   .action-box.open{ display:block; }
   .action-box textarea{ min-height:80px; resize:vertical; }
   .action-hint{ font-size:11.5px; color:#a8403a; margin:8px 0 0; line-height:1.5; }
@@ -232,7 +232,7 @@
     @media (max-width: 760px){
     .table-panel table{ min-width:0 !important; }
     .table-panel thead{ display:none; }
-    .table-panel tbody tr{ display:grid; grid-template-columns:1fr auto; gap:4px 12px; padding:14px 16px; border-bottom:1px solid #f1f3f1; }
+    .table-panel tbody tr{ display:grid; grid-template-columns:1fr auto; gap:4px 12px; padding:14px 16px; border-bottom:1px solid #f2f2f2; }
     .table-panel tbody td{ display:block; padding:0; border:none; }
     .table-panel tbody td:nth-child(1){ grid-column:1 / -1; }
     .table-panel tbody td:nth-child(3){ display:none; }

@@ -14,8 +14,8 @@
   :root{
     --green-dark:#3f6b4a; --green-darker:#345a3e;
     --green-sidebar-top:#33513c; --green-sidebar-bottom:#223a29;
-    --bg-page:#f4f6f4; --card-bg:#ffffff;
-    --text-dark:#1f2a22; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e9e4;
+    --bg-page:#f5f5f5; --card-bg:#ffffff;
+    --text-dark:#1f2a22; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e8e8e8;
     --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   }
   *{box-sizing:border-box;}
@@ -24,14 +24,14 @@
   .topbar{
     display:flex; align-items:center; gap:10px;
     background:linear-gradient(90deg, var(--green-sidebar-top), var(--green-dark));
-    padding:16px 32px; color:#eaf0ea;
+    padding:16px 32px; color:#eeeeee;
   }
   .topbar .logo-img{ height:24px; width:auto; }
   .topbar .logo-text{ font-weight:700; font-size:15px; }
 
   .content{ min-height:calc(100vh - 57px); display:flex; align-items:center; justify-content:center; padding:24px; }
   .notice-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:16px; padding:40px 36px; max-width:440px; text-align:center; }
-  .notice-icon{ width:56px; height:56px; border-radius:50%; background:#eaf3ec; color:var(--green-dark); display:flex; align-items:center; justify-content:center; margin:0 auto 20px auto; }
+  .notice-icon{ width:56px; height:56px; border-radius:50%; background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); color:var(--green-darker, #1f5a2c); display:flex; align-items:center; justify-content:center; margin:0 auto 20px auto; }
   .notice-icon svg{ width:26px; height:26px; }
   .notice-card h1{ font-size:18px; font-weight:700; margin:0 0 10px 0; color:var(--text-dark); }
   .notice-card p{ font-size:13px; color:var(--text-mid); line-height:1.65; margin:0 0 24px 0; }

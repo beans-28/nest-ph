@@ -34,7 +34,7 @@
   .demo-tools-toggle[aria-expanded="true"] svg{ transform:rotate(90deg); }
   .demo-tools-panel{ margin-top:8px; background:#fff; border:1px dashed #c9d2ca; border-radius:10px; padding:16px; }
   .demo-tools-hint{ font-size:12.5px; color:#5b6b60; margin:0 0 12px; line-height:1.5; max-width:70ch; }
-  .demo-tools-select{ width:100%; max-width:480px; padding:8px 10px; border:1px solid #e2e6e2; border-radius:6px; font:13px inherit; color:#243026; background:#fff; margin-bottom:12px; }
+  .demo-tools-select{ width:100%; max-width:480px; padding:8px 10px; border:1px solid #e5e5e5; border-radius:6px; font:13px inherit; color:#243026; background:#fff; margin-bottom:12px; }
   .demo-tools-actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .demo-tools-btn{ padding:8px 14px; border-radius:6px; border:1px solid #197335; background:#197335; color:#fff; font:600 12.5px inherit; cursor:pointer; }
   .demo-tools-btn.is-secondary{ background:#fff; color:#197335; }

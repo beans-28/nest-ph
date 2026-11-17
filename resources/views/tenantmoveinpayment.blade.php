@@ -38,7 +38,7 @@
         .qr-method { font-size: 18px; font-weight: 900; color: var(--green-deep); margin-top: 2px; }
         .qr-account { font-size: 13px; color: var(--ink); margin-top: 6px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
         .qr-instructions { font-size: 12px; color: var(--muted); margin-top: 6px; overflow-wrap: anywhere; }
-        .qr-code-box { background: #fff; border: 1px solid #e2e6e3; border-radius: 8px; padding: 6px; flex-shrink: 0; font: inherit; }
+        .qr-code-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 6px; flex-shrink: 0; font: inherit; }
         .qr-code-box img { display: block; width: 110px; height: 110px; object-fit: contain; border-radius: 4px; }
         .qr-code-box .qr-tap-hint { color: var(--muted); text-align: center; }
         .qr-fallback { width: 110px; height: 110px; display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); text-align: center; padding: 8px; border: 1.5px dashed #cfd6d0; border-radius: 6px; flex-shrink: 0; }
@@ -50,9 +50,9 @@
 
         .dropzone {
             border: 2px dashed #c5d1c7; border-radius: 10px; padding: 30px 20px; text-align: center;
-            cursor: pointer; position: relative; background: #fbfcfb; transition: border-color 0.15s, background 0.15s;
+            cursor: pointer; position: relative; background: #fcfcfc; transition: border-color 0.15s, background 0.15s;
         }
-        .dropzone:hover, .dropzone.dragover { border-color: var(--green-dark); background: #eef5ef; }
+        .dropzone:hover, .dropzone.dragover { border-color: var(--green-dark); background: color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); }
         .dropzone:has(input:focus-visible) { outline: 2px solid var(--green-darker); outline-offset: 2px; }
         .dropzone input[type=file] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
         .dropzone-icon { width: 44px; height: 44px; border-radius: 50%; background: #e2ede3; color: var(--green-dark); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
@@ -64,9 +64,9 @@
         .touch-only { display: none; }
         @media (hover: none) { .touch-only { display: inline; } .pointer-only { display: none; } }
 
-        .uploaded-file { display: none; align-items: center; gap: 12px; background: #fbfcfb; border: 1px solid #e2e6e3; border-radius: 8px; padding: 10px 12px; margin-top: 14px; }
+        .uploaded-file { display: none; align-items: center; gap: 12px; background: #fcfcfc; border: 1px solid #e5e5e5; border-radius: 8px; padding: 10px 12px; margin-top: 14px; }
         .uploaded-file.visible { display: flex; }
-        .uploaded-file-thumb { width: 40px; height: 40px; border-radius: 6px; background: #dfe6e0; object-fit: cover; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--green-dark); font-size: 10px; font-weight: 700; }
+        .uploaded-file-thumb { width: 40px; height: 40px; border-radius: 6px; background: #e4e4e4; object-fit: cover; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--green-dark); font-size: 10px; font-weight: 700; }
         .uploaded-file-meta { min-width: 0; }
         .uploaded-file-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .uploaded-file-size { font-size: 12px; color: var(--muted); }
@@ -81,8 +81,8 @@
             width: 100%; border: 1px solid #cfd6d0; border-radius: 8px; padding: 10px 12px;
             font-size: 14px; font-family: inherit; color: var(--ink); background: #fff;
         }
-        .fld input:focus, .fld textarea:focus { border-color: var(--green-dark); outline: none; box-shadow: 0 0 0 3px rgba(86,115,87,0.15); }
-        .fld input[readonly] { background: #f3f5f3; color: var(--muted); }
+        .fld input:focus, .fld textarea:focus { border-color: var(--green-dark); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-dark, #567357) 15%, transparent); }
+        .fld input[readonly] { background: #f4f4f4; color: var(--muted); }
         .fld textarea { min-height: 72px; resize: vertical; }
         .fld-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
 

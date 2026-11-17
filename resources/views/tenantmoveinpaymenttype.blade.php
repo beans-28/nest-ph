@@ -30,7 +30,7 @@
         .choice-grid.is-single { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
         .choice-title { font-weight: 700; font-size: 15px; color: var(--ink); }
         .choice-desc { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
-        .choice:has(input:checked) { border-color: var(--green-darker); box-shadow: 0 2px 10px rgba(25,115,53,0.12); }
+        .choice:has(input:checked) { border-color: var(--green-darker); box-shadow: 0 2px 10px color-mix(in srgb, var(--green-darker, #197335) 12%, transparent); }
         .choice:has(input:focus-visible) { outline: 2px solid var(--green-darker); outline-offset: 2px; }
 
         .helper-text { font-weight: 700; font-size: 14px; color: var(--ink); margin-bottom: 6px; }

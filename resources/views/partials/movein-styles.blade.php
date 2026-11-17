@@ -13,7 +13,7 @@
         --green-deep: #194e19;
         --ink: #292420;
         --muted: #5a6b5e;
-        --line: #d5ddd6;
+        --line: #dbdbdb;
         --panel: #eeeded;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -150,7 +150,7 @@
         background: transparent; color: #345234; font-family: inherit; font-weight: 700; font-size: 13px;
         letter-spacing: 0.03em; cursor: pointer; text-decoration: none; transition: background 0.2s;
     }
-    .btn-secondary:hover { background: rgba(86,115,87,0.08); }
+    .btn-secondary:hover { background: color-mix(in srgb, var(--green-dark, #567357) 8%, transparent); }
 
     .spinner {
         display: none; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3);
@@ -182,7 +182,7 @@
         font-variant-numeric: tabular-nums;
     }
     .movein-ledger div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 11px 0; font-size: 14px; }
-    .movein-ledger div + div { border-top: 1px solid #e8ece8; }
+    .movein-ledger div + div { border-top: 1px solid #ebebeb; }
     .movein-ledger dt { color: var(--muted); }
     .movein-ledger dd { margin: 0; color: var(--ink); font-weight: 500; }
     .movein-ledger .is-due dt { color: var(--ink); font-weight: 700; }

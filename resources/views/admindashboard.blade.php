@@ -42,7 +42,7 @@
   .delta.up{ background:var(--brand-tint); color:var(--green-accent); }
   .delta.down{ background:var(--status-occupied-bg); color:var(--danger-text); }
   .chart-box{ position:relative; height:190px; }
-  .chart-fallback{ position:absolute; inset:0; margin:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:12px; font-size:12.5px; color:var(--text-mid); background:#f7f9f7; border-radius:8px; }
+  .chart-fallback{ position:absolute; inset:0; margin:0; display:flex; align-items:center; justify-content:center; text-align:center; padding:12px; font-size:12.5px; color:var(--text-mid); background:#f8f8f8; border-radius:8px; }
   .chart-box.chart-sm{ height:84px; }
 
   .bed-map{ display:flex; flex-direction:column; gap:10px; }
@@ -104,7 +104,7 @@
   .action-text span{ font-size:11.5px; color:var(--text-mid); }
   .attn{ list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:6px 10px; }
   .attn > li{ min-width:0; } .attn-row{ height:100%; }
-  .attn-row{ display:flex; align-items:center; gap:12px; padding:10px 12px; min-height:48px; border-radius:9px; text-decoration:none; color:var(--text-dark); background:#f7f9f7; }
+  .attn-row{ display:flex; align-items:center; gap:12px; padding:10px 12px; min-height:48px; border-radius:9px; text-decoration:none; color:var(--text-dark); background:#f8f8f8; }
   .attn-row:hover{ background:var(--brand-tint); }
   .attn-row:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; }
   .attn-count{ flex:0 0 auto; min-width:32px; height:28px; padding:0 8px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; background:var(--card-bg); border:1px solid var(--border); }
@@ -156,7 +156,7 @@
   .activity-tabs{ font-size:11.5px; color:var(--green-accent); font-weight:600; margin-bottom:10px; }
   table.activity-table{ width:100%; border-collapse:collapse; }
   table.activity-table th{ text-align:left; font-size:12px; font-weight:600; color:var(--text-mid); padding:6px 8px; border-bottom:1px solid var(--border); }
-  table.activity-table td{ font-size:12px; color:var(--text-dark); padding:8px 8px; border-bottom:1px solid #f0f2f0; }
+  table.activity-table td{ font-size:12px; color:var(--text-dark); padding:8px 8px; border-bottom:1px solid #f1f1f1; }
   table.activity-table td.type{ text-align:right; color:var(--text-mid); }
 </style>
 @include('partials.ticket-style')

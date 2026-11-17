@@ -15,6 +15,12 @@
     underneath, inside the same sticky bar.
 --}}
 <style>
+    @if(empty($platformNav))
+    /* The leaf texture photo is green. Greyscale keeps only its pattern, so
+       the top bar and other textured areas show the dorm's real chosen color
+       on every page (the homepage already did this; other pages tinted it). */
+    .textured .bg-texture { filter: grayscale(1); }
+    @endif
     .topnav .nav-toggle, .topnav .nav-apply { display: none; }
     .topnav .nav-logout-form .btn { height: 38px; padding: 0 16px; font-size: 13px; }
     /* The logo is a link now; some pages' own styles don't remove the link underline */

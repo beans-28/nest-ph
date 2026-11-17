@@ -20,8 +20,8 @@
     --status-maintenance:#c9962f; --status-maintenance-bg:#f6ecd6;
     --purple:#7a4fc9; --purple-bg:#e9defa;
     --blue:#33629e; --blue-bg:#e3ecf7;
-    --bg-page:#eef1ee; --card-bg:#ffffff;
-    --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
+    --bg-page:#f0f0f0; --card-bg:#ffffff;
+    --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e5e5;
     --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -34,7 +34,7 @@
   .page-head .spacer{ flex:1; }
 
   .btn{ font-size:12.5px; font-weight:600; padding:10px 18px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); }
-  .btn:hover:not(:disabled){ background:#f7f9f7; }
+  .btn:hover:not(:disabled){ background:#f8f8f8; }
   .btn:disabled{ opacity:.5; cursor:not-allowed; }
   .btn{ border-radius:5px; }
   .btn.primary{ background:var(--green-btn); border-color:var(--green-btn); color:#fff; }
@@ -57,15 +57,15 @@
 
   .table-panel{ background:var(--card-bg); border:1px solid var(--border); border-radius:6px; overflow-x:auto; }
   table{ width:100%; border-collapse:collapse; min-width:820px; }
-  thead th{ text-align:left; font-size:12px; font-weight:700; color:var(--text-mid); padding:14px 20px; border-bottom:1px solid var(--border); background:#fbfcfb; white-space:nowrap; }
-  tbody td{ padding:14px 20px; font-size:13px; border-bottom:1px solid #f0f2f0; vertical-align:middle; }
+  thead th{ text-align:left; font-size:12px; font-weight:700; color:var(--text-mid); padding:14px 20px; border-bottom:1px solid var(--border); background:#fcfcfc; white-space:nowrap; }
+  tbody td{ padding:14px 20px; font-size:13px; border-bottom:1px solid #f1f1f1; vertical-align:middle; }
   tbody tr:last-child td{ border-bottom:none; }
-  tbody tr:hover{ background:#fbfcfb; }
+  tbody tr:hover{ background:#fcfcfc; }
   .admin-cell{ display:flex; align-items:center; gap:10px; }
   /* No random per-row rainbow — every avatar is the same tone family as
      the brand, just varied one step in lightness so rows stay tellable
      apart without introducing new hues. */
-  .avatar{ width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11.5px; color:var(--green-dark); background:var(--status-vacant-bg); border:1px solid #c3e3c6; flex-shrink:0; }
+  .avatar{ width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11.5px; color:var(--green-darker, #1f5a2c); background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); border:1px solid color-mix(in srgb, var(--green-accent, #2f6f3c) 22%, #fff); flex-shrink:0; }
   .admin-name{ font-weight:600; white-space:nowrap; }
   .avatar{ position:relative; }
   .avatar.is-online::after{ content:""; position:absolute; right:-1px; bottom:-1px; width:10px; height:10px; border-radius:50%; background:#22a04b; border:2px solid #fff; }
@@ -111,7 +111,7 @@
   .checkbox-fld{ display:flex; align-items:center; gap:8px; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:12.5px; }
   .checkbox-fld input{ width:auto; flex-shrink:0; }
   .checkbox-fld.disabled{ opacity:.55; }
-  .password-box{ background:#fbfcfb; border:1px dashed var(--border); border-radius:8px; padding:16px; text-align:center; margin:0 24px 24px 24px; }
+  .password-box{ background:#fcfcfc; border:1px dashed var(--border); border-radius:8px; padding:16px; text-align:center; margin:0 24px 24px 24px; }
   .password-box .pw{ font-size:20px; font-weight:700; letter-spacing:1px; color:var(--green-accent); margin:8px 0; font-family:monospace; }
   .password-box .note{ font-size:12.5px; color:var(--text-mid); }
 
@@ -125,7 +125,7 @@
   .live-dot{ width:8px; height:8px; border-radius:50%; background:#3f9a52; box-shadow:0 0 0 3px #d9f2dd; flex-shrink:0; }
   .tracker table{ min-width:760px; }
   .tracker-more{ display:inline-flex; align-items:center; margin-top:12px; padding:0 16px; min-height:44px; border:1px solid var(--border); border-radius:6px; background:var(--card-bg); font-size:12.5px; font-weight:600; color:var(--green-accent); text-decoration:none; }
-  .tracker-more:hover{ background:#f7f9f7; }
+  .tracker-more:hover{ background:#f8f8f8; }
   .tracker .empty-row td{ color:var(--text-mid); }
   .tracker-more:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; }
   .tracker .when{ font-variant-numeric:tabular-nums; white-space:nowrap; }

@@ -8,7 +8,7 @@
   buttons, mouse wheel, pinch, double-click/tap, and drag to pan.
 --}}
 <style>
-  .qr-lightbox{ position:fixed; inset:0; z-index:1000; background:rgba(12,20,15,.92); display:none; flex-direction:column; }
+  .qr-lightbox{ position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,.92); display:none; flex-direction:column; }
   .qr-lightbox.open{ display:flex; }
   .qr-lightbox-bar{ display:flex; align-items:center; gap:10px; padding:12px 16px; color:#fff; flex-shrink:0; }
   .qr-lightbox-title{ font-size:15px; font-weight:700; margin:0; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff; }

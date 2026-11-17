@@ -18,12 +18,12 @@
   --status-maintenance:#c9962f; --status-maintenance-bg:#f6ecd6;
   --status-reserved:#7c5cc4; --status-reserved-bg:#ece6f8;
   --danger:#c0463d; --danger-text:#a8382f;
-  --chart-muted:#c5d9c8; --chart-muted-hover:#9fc2a5; --chart-grid:#edf0ed; --chart-tooltip:#243026;
+  --chart-muted:#c5d9c8; --chart-muted-hover:#9fc2a5; --chart-grid:#efefef; --chart-tooltip:#243026;
   --bar-neutral:#b3bdb5; --bed-open-ring:#8fbf97;
-  --bg-page:#eef1ee; --card-bg:#ffffff;
+  --bg-page:#f0f0f0; --card-bg:#ffffff;
   --brand-tint:#e6f2e8; /* pale brand color for hovers / icon chips */
   --status-good:#2f6f3c; /* "occupied" / "paid" green. Fixed: the dorm's site color never changes it. */
-  --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
+  --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e5e5;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 }
 *{box-sizing:border-box;}
@@ -40,13 +40,13 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
 .sidebar{
   width:220px; flex-shrink:0;
   background:linear-gradient(180deg, var(--green-sidebar-top) 0%, var(--green-sidebar-bottom) 100%);
-  color:#eaf0ea; display:flex; flex-direction:column; padding:18px 0;
+  color:#eeeeee; display:flex; flex-direction:column; padding:18px 0;
   position:sticky; top:0; height:100vh; overflow:hidden;
   transition:width 0.2s ease;
 }
 .sidebar-logo{ display:flex; align-items:center; gap:8px; padding:0 20px 18px 20px; font-weight:700; font-size:16px; border-bottom:1px solid rgba(255,255,255,0.12); margin-bottom:12px; white-space:nowrap; flex-shrink:0; }
 .sidebar-logo .logo-img{ height:24px; width:auto; flex-shrink:0; }
-.sidebar-section-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:rgba(234,240,234,0.55); padding:4px 20px 8px 20px; font-weight:600; white-space:nowrap; flex-shrink:0; }
+.sidebar-section-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:rgba(255,255,255,0.55); padding:4px 20px 8px 20px; font-weight:600; white-space:nowrap; flex-shrink:0; }
 /* Group headings inside the nav list (Daily Work / Rooms / Management). */
 .nav-list .nav-group-label{ list-style:none; padding-top:16px; }
 .nav-list .nav-group-label:first-child{ padding-top:4px; }
@@ -61,7 +61,7 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
 .nav-list::-webkit-scrollbar-track{ background:transparent; }
 .nav-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.28); border-radius:10px; }
 
-.nav-item{ display:flex; align-items:center; gap:11px; padding:9px 20px; font-size:13px; color:rgba(234,240,234,0.78); cursor:pointer; border-left:3px solid transparent; white-space:nowrap; flex-shrink:0; }
+.nav-item{ display:flex; align-items:center; gap:11px; padding:9px 20px; font-size:13px; color:rgba(255,255,255,0.78); cursor:pointer; border-left:3px solid transparent; white-space:nowrap; flex-shrink:0; }
 .nav-item:hover{ background:rgba(255,255,255,0.06); color:#fff; }
 .nav-item.active{ background:rgba(255,255,255,0.14); color:#fff; font-weight:600; border-left:3px solid #ffffff; }
 .nav-item .icon{ display:flex; align-items:center; justify-content:center; width:15px; height:15px; flex-shrink:0; }
@@ -85,10 +85,10 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
 .main{ flex:1; display:flex; flex-direction:column; min-width:0; }
 .topbar{ display:flex; align-items:center; gap:16px; background:linear-gradient(90deg, var(--green-mid), var(--green-dark)); padding:14px 28px; position:sticky; top:0; z-index:20; }
 .topbar .hamburger{ width:20px; height:16px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; }
-.topbar .hamburger span{ display:block; height:2px; background:#eaf0ea; border-radius:2px; }
+.topbar .hamburger span{ display:block; height:2px; background:#eeeeee; border-radius:2px; }
 
 .topbar-right{ margin-left:auto; display:flex; align-items:center; gap:18px; }
-.topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; color:#eaf0ea; cursor:pointer; position:relative; }
+.topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; color:#eeeeee; cursor:pointer; position:relative; }
 .topbar-icon svg{ width:16px; height:16px; }
 /* Scoped to .topbar-icon: a bare .badge rule leaked position:absolute and a
    15px size into the status labels on Tickets, Inquiries and Applications,
@@ -148,7 +148,7 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
   .sidebar .nav-item{ padding-top:12px; padding-bottom:12px; font-size:14px; }
 
   .sidebar-backdrop{
-    position:fixed; inset:0; z-index:190; background:rgba(20,32,24,.45);
+    position:fixed; inset:0; z-index:190; background:rgba(0,0,0,.45);
     opacity:0; visibility:hidden; transition:opacity .2s ease, visibility 0s linear .2s;
   }
   .sidebar-backdrop.show{ opacity:1; visibility:visible; transition:opacity .2s ease, visibility 0s; }
@@ -225,7 +225,7 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
 /* The full dorm name always shows: long names wrap onto more lines, never "..." */
 .sidebar-logo .logo-text{ white-space:normal; overflow-wrap:anywhere; hyphens:auto; min-width:0; font-size:15px; line-height:1.25; text-wrap:balance; }
 .sidebar-logo .logo-img-dorm{ width:28px; height:28px; object-fit:contain; border-radius:6px; background:#fff; padding:2px; }
-.powered-by{ display:flex; align-items:center; justify-content:center; gap:6px; min-height:32px; margin-top:6px; border-radius:6px; font-size:11px; color:rgba(234,240,234,0.82); text-decoration:none; white-space:nowrap; transition:color .15s ease; }
+.powered-by{ display:flex; align-items:center; justify-content:center; gap:6px; min-height:32px; margin-top:6px; border-radius:6px; font-size:11px; color:rgba(255,255,255,0.82); text-decoration:none; white-space:nowrap; transition:color .15s ease; }
 .powered-by:focus-visible{ outline:2px solid #fff; outline-offset:2px; }
 .powered-by:hover{ color:#fff; }
 .powered-by img{ height:14px; width:auto; }
