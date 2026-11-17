@@ -27,7 +27,6 @@
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
   .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
   .back-arrow{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
-  .page-head h1{ font-size:19px; font-weight:700; margin:0; color:var(--green-accent); }
   .page-head p{ font-size:12.5px; color:var(--text-mid); margin:2px 0 0 0; }
 
   .stage-banner{ font-size:22px; font-weight:800; color:var(--pending-text); letter-spacing:0.3px; margin:2px 0 10px 0; }

@@ -30,7 +30,6 @@
      the .avatar-icon override class), and .page-head (this page uses a
      20px margin-bottom vs admin.css's 22px). */
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); color:var(--green-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-  .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:20px; }
 
   .filters{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
   .filters .search-input{ border:1px solid var(--border); border-radius:20px; padding:7px 16px; font-size:12px; font-family:var(--font-body); color:var(--text-dark); min-width:220px; }

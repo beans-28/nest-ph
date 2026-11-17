@@ -27,7 +27,6 @@
   .page-head{ display:flex; align-items:flex-start; gap:12px; margin-bottom:8px; }
   .back-arrow{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; margin-top:2px; }
   .page-head-text{ flex:1; }
-  .page-head-text h1{ font-size:20px; font-weight:700; margin:0; color:var(--green-accent); }
   .page-head-text p{ font-size:12.5px; color:var(--text-mid); margin:2px 0 0 0; }
   .new-ticket-btn{ background:var(--green-btn); color:#fff; border:none; border-radius:8px; padding:12px 20px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; flex-shrink:0; }
   .new-ticket-btn:hover{ background:var(--green-btn-hover); }

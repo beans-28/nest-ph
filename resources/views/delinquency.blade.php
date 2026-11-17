@@ -33,8 +33,7 @@
      .page-head h1 (this page colors the title var(--green-accent) instead
      of the default var(--text-dark)). */
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); color:var(--green-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
-  .page-head{ display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
-  .page-head h1{ font-size:20px; font-weight:700; margin:0; color:var(--green-accent); }
+  .page-head{ flex-wrap:wrap; }
   .pdf-download{ margin-left:auto; display:inline-flex; align-items:center; gap:7px; padding:9px 16px; min-height:40px; box-sizing:border-box; border-radius:8px; background:var(--green-btn); color:#fff; font-size:13px; font-weight:600; text-decoration:none; }
   .pdf-download:hover{ background:var(--green-btn-hover); }
   .pdf-download:focus-visible{ outline:2px solid var(--green-btn); outline-offset:2px; }

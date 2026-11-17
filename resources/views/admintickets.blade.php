@@ -34,7 +34,8 @@
 
   /* Kanban board: one column per status */
   .board{ display:grid; grid-template-columns:repeat(4, minmax(240px, 1fr)); gap:14px; align-items:start; }
-  @media (max-width:1100px){ .board{ grid-template-columns:repeat(2, minmax(240px, 1fr)); } }
+  /* 4 columns need ~1290px of screen next to the 220px sidebar. */
+  @media (max-width:1320px){ .board{ grid-template-columns:repeat(2, minmax(240px, 1fr)); } }
   @media (max-width:640px){ .board{ grid-template-columns:1fr; } .deadline-chips{ margin-left:0; } }
   .col{ border-radius:12px; border:1px solid var(--border); padding:10px; display:flex; flex-direction:column; min-height:160px; }
   .col.open{ background:#f4f5f4; }

@@ -17,14 +17,10 @@
      and this page's own content styling stay here. */
 
   /* Customized vs admin.css: symmetric padding + max-width, no flex:1 */
-  .content{ padding:28px; max-width:1100px; }
-  /* Customized vs admin.css: slightly different page-head margin */
-  .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .content{ max-width:1100px; }
   /* Customized vs admin.css: no font-weight/color (missing font-weight:700
      and color:var(--text-dark) that admin.css's .page-head h1 sets) */
-  .page-head h1{ font-size:20px; margin:0; }
   /* Customized vs admin.css: plain icon, no circular button background/border */
-  .back-arrow{ cursor:pointer; color:var(--text-mid); display:flex; }
 
   .report-tabs{ display:flex; gap:8px; margin-bottom:18px; }
   .report-tab{ padding:9px 18px; border-radius:8px; border:1px solid var(--border); background:var(--card-bg); font-size:13px; font-weight:600; color:var(--text-mid); cursor:pointer; }

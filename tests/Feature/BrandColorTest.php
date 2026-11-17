@@ -139,4 +139,32 @@ class BrandColorTest extends TestCase
                 ->assertStatus(422);
         }
     }
+
+    public function test_public_rooms_page_greens_follow_the_theme_but_status_dots_stay_green(): void
+    {
+        $html = file_get_contents(resource_path('views/publicrooms.blade.php'));
+        $out = BrandTheme::recolorHtml($html, '#c98a2b');
+
+        // Page background and card buttons are brand colors: swapped.
+        $this->assertStringNotContainsString('#4e7454', $out);
+        $this->assertStringNotContainsString('#1d4f27', $out);
+        // The vacant-bed dot means "vacant": unchanged.
+        $this->assertStringContainsString('#00d444', $out);
+    }
+
+    public function test_reset_links_show_only_when_a_color_is_set(): void
+    {
+        $owner = $this->owner();
+
+        $html = $this->actingAs($owner)->get('/dormitory-profile')->assertOk()->getContent();
+        $this->assertStringNotContainsString('id="siteColorReset"', $html);
+        $this->assertStringNotContainsString('id="bgColorReset"', $html);
+
+        $this->actingAs($owner)->postJson('/dormitory-profile/brand-color', ['brand_color' => '#c98a2b'])->assertOk();
+        $this->actingAs($owner)->postJson('/dormitory-profile/background-color', ['background_color' => '#efe4d3'])->assertOk();
+
+        $html = $this->actingAs($owner)->get('/dormitory-profile')->getContent();
+        $this->assertStringContainsString('id="siteColorReset"', $html);
+        $this->assertStringContainsString('id="bgColorReset"', $html);
+    }
 }

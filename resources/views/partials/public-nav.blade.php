@@ -10,7 +10,7 @@
     The NEST.PH platform landing page passes ['platformNav' => true] to get
     the same bar with platform links instead of the dormitory's.
 
-    Phones (860px and below): one slim row with the logo, an Apply button
+    Phones, tablets and small laptops (1180px and below): one slim row with the logo, an Apply button
     and a Menu button. Menu opens the page links and Log In / Admin
     underneath, inside the same sticky bar.
 --}}
@@ -27,13 +27,13 @@
     .topnav .logo .logo-img-dorm { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; background: #fff; padding: 2px; }
     .topnav .menu a[aria-current="page"], .topnav .menu a[aria-current="location"] { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
     /* Current page on the pill link: filled white instead of underlined (desktop; the phone menu has no pill shape) */
-    @media (min-width: 861px) {
+    @media (min-width: 1181px) {
         .topnav .menu a.pill[aria-current="page"], .topnav .menu a.pill[aria-current="location"] {
             text-decoration: none; background: #fff; border-color: #fff; color: var(--green-darker, #197335);
         }
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 1180px) {
         .topnav {
             display: grid; grid-template-columns: 1fr auto auto; align-items: center;
             column-gap: 8px; row-gap: 0; padding: 10px 16px;
@@ -73,8 +73,25 @@
         .topnav.menu-open .buttons .btn { width: 100%; }
         .topnav .buttons .nav-apply-full { display: none; }
     }
-    @media (min-width: 861px) {
+    @media (min-width: 1181px) {
         .topnav .buttons .nav-apply-full { display: inline-flex; }
+        /* One desktop bar for every public page (each page used to size it
+           slightly differently). Links never wrap onto two lines. */
+        .topnav { min-height: 72px; padding: 14px clamp(24px, 4vw, 64px); gap: clamp(16px, 2.5vw, 36px); }
+        .topnav .menu { gap: 6px; }
+        .topnav .menu a, .topnav .menu span { white-space: nowrap; font-size: 14px; font-weight: 500; letter-spacing: 0.02em; padding: 10px 8px; }
+        .topnav .menu a.pill { padding: 7px 16px; }
+        .topnav .buttons { gap: 10px; }
+        .topnav .buttons .btn { height: 44px; padding: 0 18px; font-size: 13.5px; font-weight: 500; white-space: nowrap; }
+    }
+    /* "Back to NEST.PH": small icon + a thin divider, so it reads as the way
+       out of this dorm's site rather than one of its pages. */
+    .topnav .menu a.nav-back { display: inline-flex; align-items: center; gap: 6px; opacity: 0.85; }
+    .topnav .menu a.nav-back:hover { opacity: 1; }
+    .topnav .menu a.nav-back svg { width: 15px; height: 15px; flex-shrink: 0; }
+    @media (min-width: 1181px) {
+        .topnav .menu a.nav-back { margin-right: 8px; padding-right: 16px; position: relative; }
+        .topnav .menu a.nav-back::after { content: ''; position: absolute; right: 0; top: 50%; height: 18px; margin-top: -9px; border-right: 1px solid rgba(255,255,255,0.35); }
     }
 </style>
 
@@ -91,7 +108,7 @@
     <a href="#for-owners" class="btn btn-white nav-apply">Request NEST.PH</a>
     @else
     <div class="menu" id="publicNavMenu">
-        <a href="{{ route('platform') }}" title="Back to the NEST.PH platform">&larr; NEST.PH</a>
+        <a href="{{ route('platform') }}" class="nav-back" title="Back to the NEST.PH platform"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>NEST.PH</a>
         <a href="{{ route('home') }}" @if(request()->routeIs('home')) aria-current="page" @endif>HOME</a>
         <a href="{{ route('public.rooms') }}" @if(request()->routeIs('public.rooms')) aria-current="page" @endif>ROOMS</a>
         <a href="{{ route('public.vr') }}" @if(request()->routeIs('public.vr')) aria-current="page" @endif>VR TOUR</a>
@@ -151,7 +168,7 @@
     document.addEventListener('click', function (e) {
         if (nav.classList.contains('menu-open') && !nav.contains(e.target)) setOpen(false);
     });
-    window.matchMedia('(min-width: 861px)').addEventListener('change', function (e) { if (e.matches) setOpen(false); });
+    window.matchMedia('(min-width: 1181px)').addEventListener('change', function (e) { if (e.matches) setOpen(false); });
 })();
 </script>
 @if(!empty($platformNav))

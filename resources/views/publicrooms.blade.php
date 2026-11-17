@@ -300,18 +300,6 @@
             }
         }
 
-        /* Scales the whole page down uniformly on larger screens, where the
-           fixed px sizes above otherwise read a bit large relative to
-           available screen space (e.g. a 14" laptop at 100% zoom). Left
-           untouched on tablet/mobile widths, where the breakpoints above
-           already handle sizing appropriately. `zoom` (not
-           `transform: scale`) is used deliberately -- it recalculates
-           layout at the smaller size instead of just visually shrinking a
-           layout still sized for full scale, which is what avoids leftover
-           blank space or overflow. */
-        @media (min-width: 1025px) {
-            .page-wrap { zoom: 0.85; }
-        }
     </style>
 </head>
 <body>

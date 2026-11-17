@@ -33,9 +33,6 @@
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:#eaf0ea; display:flex; align-items:center; justify-content:center; color:var(--green-accent); }
   .topbar-icon svg{ width:17px; height:17px; }
 
-  .content{ padding:24px 28px 60px 28px; }
-  .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
-  .page-head h1{ font-size:22px; font-weight:700; margin:0; color:var(--green-accent); }
   .page-sub{ font-size:12.5px; color:var(--text-mid); margin:0 0 22px 46px; }
 
   /* ===== Layout: form column + sticky preview column ===== */
@@ -68,6 +65,11 @@
   .swatches{ display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 10px; }
   .swatch{ display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:6px 12px 6px 8px; border:1px solid var(--border); border-radius:20px; background:var(--card-bg); font:inherit; font-size:12.5px; color:var(--text-dark); cursor:pointer; }
   .swatch:hover{ border-color:var(--text-light); }
+  .swatch:disabled, .cp-actions button:disabled, .color-reset:disabled{ opacity:.55; cursor:wait; }
+  .color-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .color-head h3{ margin-bottom:4px; }
+  .color-reset{ border:none; background:none; padding:6px 2px; font:inherit; font-size:12.5px; font-weight:600; color:var(--green-accent); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .color-reset:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; border-radius:4px; }
   .swatch:focus-visible, .swatch:focus-within{ outline:2px solid var(--green-accent); outline-offset:2px; }
   .swatch.selected{ border-color:var(--text-dark); box-shadow:inset 0 0 0 1px var(--text-dark); font-weight:600; }
   .swatch-dot{ width:22px; height:22px; border-radius:50%; background:var(--sw); flex-shrink:0; }
@@ -410,7 +412,10 @@
             {{-- Site Color: the whole site's palette is built from this one color (App\Support\BrandTheme). --}}
             @php $currentColor = $profile->brand_color ?: \App\Support\BrandTheme::DEFAULT; @endphp
             <div class="site-color">
-              <h3 id="siteColorHead">Site Color <x-info-tip text="Used for buttons, links, the sidebar and top bars on every page." /></h3>
+              <div class="color-head">
+                <h3 id="siteColorHead">Site Color <x-info-tip text="Used for buttons, links, the sidebar and top bars on every page." /></h3>
+                @if($profile->brand_color)<button type="button" class="color-reset" id="siteColorReset">Reset to default</button>@endif
+              </div>
               <div class="swatches" role="radiogroup" aria-labelledby="siteColorHead">
                 @foreach(\App\Support\BrandTheme::PRESETS as $name => $hex)
                   <button type="button" class="swatch{{ $currentColor === $hex ? ' selected' : '' }}" role="radio" aria-checked="{{ $currentColor === $hex ? 'true' : 'false' }}" data-color="{{ $hex }}" style="--sw:{{ $hex }}" title="{{ $name }}">
@@ -426,7 +431,7 @@
                 </button>
               </div>
               <div class="color-picker" id="colorPicker" hidden data-start="{{ $currentColor }}">
-                <div class="cp-sv" id="cpSv" tabindex="0" role="slider" aria-label="Shade: use arrow keys to change lightness and strength" aria-valuetext="">
+                <div class="cp-sv" id="cpSv" tabindex="0" role="slider" aria-label="Shade: up and down change brightness, left and right change strength" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="">
                   <span class="cp-knob" id="cpSvKnob" aria-hidden="true"></span>
                 </div>
                 <input type="range" class="cp-hue" id="cpHue" min="0" max="359" step="1" aria-label="Hue">
@@ -447,7 +452,10 @@
             {{-- Background Color: light neutrals only, so text on the page stays readable. --}}
             @php $currentBg = $profile->background_color ?: ''; @endphp
             <div class="site-color">
-              <h3 id="bgColorHead">Background Color <x-info-tip text="The page color behind your content. Top bars and the sidebar keep the site color." /></h3>
+              <div class="color-head">
+                <h3 id="bgColorHead">Background Color <x-info-tip text="The page color behind your content. Top bars and the sidebar keep the site color." /></h3>
+                @if($profile->background_color)<button type="button" class="color-reset" id="bgColorReset">Reset to default</button>@endif
+              </div>
               <div class="swatches" role="radiogroup" aria-labelledby="bgColorHead">
                 @foreach(\App\Support\BrandTheme::BACKGROUNDS as $name => $hex)
                   <button type="button" class="swatch{{ $currentBg === $hex ? ' selected' : '' }}" role="radio" aria-checked="{{ $currentBg === $hex ? 'true' : 'false' }}" data-bg="{{ $hex }}" style="--sw:{{ $hex ?: '#eef1ee' }}" title="{{ $name }}">
@@ -1155,8 +1163,15 @@
   // ===== Site Color =====
   // Saves the color, then reloads so every color on the page (sidebar,
   // buttons, links) switches over at once.
+  // While a color saves, lock every color control so nothing is clicked twice.
+  function lockColorControls(locked){
+    document.querySelectorAll('.swatch, .color-reset, #cpApply, #cpCancel').forEach(b => b.disabled = locked);
+    const apply = document.getElementById('cpApply');
+    if (apply) apply.textContent = locked ? 'Saving…' : 'Use this color';
+  }
   async function saveSiteColor(color){
     $('siteColorStatus').textContent = 'Saving…';
+    lockColorControls(true);
     try {
       await api('{{ route('dormitory-profile.brand-color') }}', {
         method: 'POST',
@@ -1167,9 +1182,11 @@
       location.reload();
     } catch(e){
       $('siteColorStatus').textContent = '';
+      lockColorControls(false);
       toast(e.message, true);
     }
   }
+  $('siteColorReset')?.addEventListener('click', () => saveSiteColor(@json(\App\Support\BrandTheme::DEFAULT)));
   document.querySelectorAll('.swatch[data-color]').forEach(btn => {
     btn.addEventListener('click', () => saveSiteColor(btn.dataset.color));
   });
@@ -1199,7 +1216,8 @@
       knob.style.background = c;
       preview.style.background = c;
       hue.value = h;
-      sv.setAttribute('aria-valuetext', `${Math.round(sat * 100)}% strength, ${Math.round(val * 100)}% brightness`);
+      sv.setAttribute('aria-valuenow', Math.round(val * 100));
+      sv.setAttribute('aria-valuetext', `${Math.round(val * 100)}% brightness, ${Math.round(sat * 100)}% strength`);
       if (updateHexBox) { hex.value = c; err.textContent = ''; }
     }
     function setFrom(x){ [h, sat, val] = fromHex(x); draw(); }
@@ -1248,23 +1266,25 @@
   })();
 
   // ===== Background Color =====
-  document.querySelectorAll('.swatch[data-bg]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      $('bgColorStatus').textContent = 'Saving…';
-      try {
-        await api('{{ route('dormitory-profile.background-color') }}', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ background_color: btn.dataset.bg || null }),
-        });
-        $('bgColorStatus').textContent = 'Saved. Applying your new background…';
-        location.reload();
-      } catch(e){
-        $('bgColorStatus').textContent = '';
-        toast(e.message, true);
-      }
-    });
-  });
+  async function saveBackground(bg){
+    $('bgColorStatus').textContent = 'Saving…';
+    lockColorControls(true);
+    try {
+      await api('{{ route('dormitory-profile.background-color') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ background_color: bg || null }),
+      });
+      $('bgColorStatus').textContent = 'Saved. Applying your new background…';
+      location.reload();
+    } catch(e){
+      $('bgColorStatus').textContent = '';
+      lockColorControls(false);
+      toast(e.message, true);
+    }
+  }
+  document.querySelectorAll('.swatch[data-bg]').forEach(btn => btn.addEventListener('click', () => saveBackground(btn.dataset.bg)));
+  $('bgColorReset')?.addEventListener('click', () => saveBackground(null));
 
   // ===== Own tenancy documents (replace the generated ones) =====
   document.querySelectorAll('.doc-row[data-doc]').forEach(row => {

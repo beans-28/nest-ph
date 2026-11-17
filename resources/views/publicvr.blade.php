@@ -127,7 +127,7 @@
         .info-size { margin-top: 4px; font-size: 14px; color: rgba(243,241,236,0.82); }
         .info-size strong { color: #fff; font-weight: 600; }
         .pricing-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; line-height: 1.3; }
-        .pricing-tag.per-bed { background: rgba(162,217,164,0.18); color: #a2d9a4; border: 1px solid rgba(162,217,164,0.45); }
+        .pricing-tag.per-bed { background: color-mix(in srgb, var(--green-light, #a2d9a4) 18%, transparent); color: #a2d9a4; border: 1px solid color-mix(in srgb, var(--green-light, #a2d9a4) 45%, transparent); }
         .pricing-tag.per-room { background: #a2d9a4; color: #1b3a1f; }
         .info-caption {
             margin-top: 10px; font-size: 13px; line-height: 1.5; color: rgba(243,241,236,0.75);
@@ -157,7 +157,7 @@
             transition: background 0.2s ease;
         }
         .ctrl:hover { background: rgba(255,255,255,0.12); }
-        .ctrl[aria-pressed="true"] { background: rgba(146,219,159,0.22); color: var(--mint); }
+        .ctrl[aria-pressed="true"] { background: color-mix(in srgb, var(--mint) 22%, transparent); color: var(--mint); }
         .ctrl svg { width: 20px; height: 20px; }
         .ctrl-sep { height: 1px; margin: 3px 6px; background: rgba(255,255,255,0.14); }
 
@@ -239,13 +239,13 @@
         .pnlm-container { background: #141714 !important; font-family: inherit !important; }
         .pnlm-load-box { border-radius: 14px !important; background: rgba(20,24,21,0.8) !important; }
         .pnlm-hotspot-base.pnlm-scene {
-            width: 46px; height: 46px; border-radius: 50%; background: rgba(25,115,53,0.88);
+            width: 46px; height: 46px; border-radius: 50%; background: color-mix(in srgb, var(--green-darker, #197335) 88%, transparent);
             border: 2px solid #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.4); cursor: pointer;
             margin: -23px 0 0 -23px;
         }
         .pnlm-hotspot-base.pnlm-scene::before {
             content: ''; position: absolute; inset: -2px; border-radius: 50%;
-            border: 2px solid rgba(146,219,159,0.9); animation: pulse 2s ease-out infinite;
+            border: 2px solid color-mix(in srgb, var(--mint) 90%, transparent); animation: pulse 2s ease-out infinite;
         }
         .pnlm-hotspot-base.pnlm-scene::after {
             content: ''; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px;

@@ -19,8 +19,6 @@
   /* Customized vs admin.css: light-background icon (not using .avatar-icon) */
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); color:var(--green-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
 
-  /* Customized vs admin.css: slightly different page-head margin */
-  .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:20px; }
 
   /* This page's own inquiry search (filters the list below) — this is
      NOT the shared topbar page-navigation search that was removed, so

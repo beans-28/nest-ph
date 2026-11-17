@@ -83,7 +83,15 @@ class BrandTheme
      * and public pages) instead of using the variables above. The theme
      * swaps these in the page HTML too, or those pages would stay green-grey.
      */
-    private const LITERALS = ['#567357', '#197335', '#44ad65', '#425542', '#194e19', '#a6b69f', '#4b5f4c', '#d8dcd8', '#a2d9a4'];
+    private const LITERALS = [
+        '#567357', '#197335', '#44ad65', '#425542', '#194e19', '#a6b69f', '#4b5f4c', '#d8dcd8', '#a2d9a4',
+        // Public Rooms / VR Tour pages: page background, prices, tags, buttons.
+        '#4e7454', '#3b4a3e', '#92db9f', '#63856a', '#355e3d', '#e3efe3', '#2d5a35', '#1d4f27', '#3f533f', '#cfe9d2',
+        '#1b3a1f', '#10301a', '#a9e6b4',
+        // About the Dorm, Apply and Inquiry pages: headings, buttons, borders.
+        '#d7e8d8', '#1f5130', '#345234', '#26401f', '#e2ede3', '#c5dbc7',
+        // Not here on purpose: #00d444 (vacant-bed dot) and #2f7a3a ("verified" text) are status colors.
+    ];
 
     /** Saturation of the default green; literals keep their saturation relative to it. */
     private const DEFAULT_SAT = 41;

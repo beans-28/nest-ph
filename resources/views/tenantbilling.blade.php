@@ -27,7 +27,6 @@
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
   .page-head{ display:flex; align-items:flex-start; gap:12px; margin-bottom:20px; }
   .back-arrow{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; margin-top:2px; }
-  .page-head-text h1{ font-size:19px; font-weight:700; margin:0; color:var(--green-accent); }
   .soa-btn{ margin-left:auto; display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:0 14px; border:1px solid var(--border); border-radius:10px; background:#fff; color:var(--sage-700); font-size:13px; font-weight:600; text-decoration:none; white-space:nowrap; }
   .soa-btn:hover{ background:var(--sage-50); }
   .soa-btn:focus-visible{ outline:2px solid var(--sage-600); outline-offset:2px; }

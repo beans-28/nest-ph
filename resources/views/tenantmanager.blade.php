@@ -23,10 +23,8 @@
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); color:var(--green-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
 
   /* Customized vs admin.css: tighter/wider content, different page-head spacing, smaller plain back-arrow, different h1 size/color */
-  .content{ padding:26px 34px 48px 34px; flex:1; width:100%; max-width:1400px; margin:0 auto; }
+  .content{ width:100%; max-width:1400px; margin:0 auto; }
   .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:6px; }
-  .back-arrow{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
-  .page-head h1{ font-size:19px; font-weight:700; margin:0; color:var(--green-accent); }
   .page-sub{ font-size:12.5px; color:var(--text-mid); margin:0 0 22px 42px; }
 
   .filters-row{ display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }

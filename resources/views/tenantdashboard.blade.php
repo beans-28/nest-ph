@@ -23,7 +23,6 @@
   .content{ padding:26px 34px 48px 34px; flex:1; max-width:1180px; }
   .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
   .back-arrow{ width:30px; height:30px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-mid); flex-shrink:0; }
-  .page-head h1{ font-size:19px; font-weight:700; margin:0; color:var(--green-accent); }
 
   .stats-row{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:16px; }
   .stat-card{ background:var(--card-bg); border-radius:14px; border:1px solid var(--border); padding:18px 20px; display:flex; align-items:center; gap:16px; }

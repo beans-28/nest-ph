@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
-  .page-head{ display:flex; align-items:center; gap:12px; margin-bottom:20px; }
   .settings-grid{ display:grid; gap:20px; max-width:640px; }
   .card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:24px; }
   .card h2{ font-size:15px; font-weight:700; color:var(--green-accent); margin:0 0 18px; }
@@ -24,7 +23,7 @@
   .field-error:empty{ display:none; }
   .confirm-field[hidden]{ display:none; }
   .actions{ display:flex; align-items:center; gap:12px; margin-top:6px; }
-  .btn-save{ min-height:40px; padding:0 20px; border:none; border-radius:8px; background:var(--green-btn); color:#fff; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer; }
+  .btn-save{ height:38px; padding:0 20px; border:none; border-radius:8px; background:var(--green-btn); color:#fff; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
   .btn-save:hover{ background:var(--green-btn-hover); }
   .btn-save:disabled{ opacity:.6; cursor:default; }
   .btn-save:focus-visible{ outline:2px solid var(--text-dark); outline-offset:2px; }

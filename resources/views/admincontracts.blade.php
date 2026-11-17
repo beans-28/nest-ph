@@ -30,7 +30,6 @@
   .topbar-icon{ width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.9); color:var(--green-dark); display:flex; align-items:center; justify-content:center; cursor:pointer; }
   .topbar-icon svg{ width:16px; height:16px; }
 
-  .page-head h1{ font-size:22px; font-weight:700; margin:0; color:var(--green-accent); }
   .page-head .spacer{ flex:1; }
 
   .btn{ font-size:12.5px; font-weight:600; padding:10px 18px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); }
