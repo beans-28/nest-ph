@@ -8,7 +8,8 @@
 <link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -22,7 +23,7 @@
     --orange:#c9962f; --orange-bg:#f6ecd6;
     --bg-page:#eef1ee; --card-bg:#ffffff;
     --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e2e6e2;
-    --font-body:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
      public/css/admin.css (linked above). The rules below are kept because
@@ -47,7 +48,7 @@
   @media (max-width:640px){ .page-sub{ margin-left:0; } .card{ padding:18px 16px; } }
 
   .card{ background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:22px 24px; margin-bottom:20px; }
-  .card h2{ font-size:15px; font-weight:700; color:var(--green-accent); margin:0 0 4px 0; }
+  .card h2{ font-size:15px; font-weight:700; color:var(--green-accent); margin:0 0 16px 0; }
   .card .card-sub{ font-size:12px; color:var(--text-light); margin:0 0 18px 0; }
 
   /* Dorm Logo card */
@@ -72,7 +73,28 @@
   .swatch-dot{ width:22px; height:22px; border-radius:50%; background:var(--sw); flex-shrink:0; }
   .swatch-custom{ position:relative; }
   /* The real color input covers the whole pill (invisible) so a click anywhere opens the picker. */
-  .swatch-custom input[type=color]{ position:absolute; inset:0; width:100%; height:100%; opacity:0; cursor:pointer; border:none; padding:0; }
+  .color-picker{ max-width:320px; margin:2px 0 12px; padding:14px; border:1px solid var(--border); border-radius:12px; background:var(--card-bg); box-shadow:0 8px 24px rgba(0,0,0,.08); }
+  .color-picker[hidden]{ display:none; }
+  .cp-sv{ position:relative; height:170px; border-radius:8px; cursor:crosshair; touch-action:none; background:linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent), hsl(var(--cp-h, 30) 100% 50%); }
+  .cp-sv:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; }
+  .cp-knob{ position:absolute; width:20px; height:20px; margin:-10px 0 0 -10px; border:3px solid #fff; border-radius:50%; box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.3); pointer-events:none; }
+  .cp-hue{ -webkit-appearance:none; appearance:none; display:block; width:100%; height:16px; margin:14px 0; border-radius:8px; background:linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00); cursor:pointer; }
+  .cp-hue::-webkit-slider-thumb{ -webkit-appearance:none; width:24px; height:24px; border-radius:50%; background:#fff; border:none; box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.3); }
+  .cp-hue::-moz-range-thumb{ width:24px; height:24px; border-radius:50%; background:#fff; border:none; box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.3); }
+  .cp-hue:focus-visible{ outline:2px solid var(--green-accent); outline-offset:3px; }
+  .cp-row{ display:flex; align-items:center; gap:10px; }
+  .cp-preview{ width:40px; height:40px; border-radius:50%; flex:none; box-shadow:inset 0 0 0 1px rgba(0,0,0,.15); }
+  .cp-hex-label{ font-size:12.5px; font-weight:600; color:var(--text-mid); }
+  .cp-hex{ flex:1; min-width:0; min-height:40px; padding:0 12px; border:1px solid var(--border); border-radius:8px; font:inherit; font-size:14px; font-variant-numeric:tabular-nums; text-transform:lowercase; color:var(--text-dark); }
+  .cp-hex:focus{ outline:2px solid var(--green-accent); outline-offset:0; border-color:transparent; }
+  .cp-error{ min-height:0; margin:6px 0 0; font-size:12px; color:#b42318; }
+  .cp-error:empty{ display:none; }
+  .cp-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+  .cp-actions button{ min-height:40px; padding:0 16px; border-radius:8px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+  .cp-cancel{ background:#fff; color:var(--text-dark); border:1px solid var(--border); }
+  .cp-apply{ background:var(--green-btn); color:#fff; border:none; }
+  .cp-apply:hover{ background:var(--green-btn-hover); }
+  .cp-actions button:focus-visible{ outline:2px solid var(--text-dark); outline-offset:2px; }
   .swatch-rainbow{ background:conic-gradient(#d9534f, #e8a33d, #e6d34a, #5cb85c, #3fa7c9, #5b6fd6, #a05bc8, #d9534f); }
   @media (max-width:900px){ .brand-logo-row{ grid-template-columns:auto 1fr; } .brand-logo-preview{ grid-column:1 / -1; width:auto; max-width:240px; } }
   @media (max-width:420px){ .brand-logo-tile{ width:76px; height:76px; } .brand-logo-tile img{ width:56px; height:56px; } .brand-logo-row{ gap:14px; } }
@@ -102,9 +124,10 @@
   .btn svg{ width:14px; height:14px; }
 
   /* Form fields */
-  .field-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  .field-row{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; margin-bottom:16px; }
+  .field-row > .field{ min-width:0; }
   .field-row.full{ grid-template-columns:1fr; }
-  @media (max-width:640px){ .field-row{ grid-template-columns:1fr; } }
+  @media (max-width:640px){ .field-row{ grid-template-columns:minmax(0,1fr); } }
   .field{ display:flex; flex-direction:column; gap:6px; }
   .field[hidden]{ display:none; }
   .field label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); }
@@ -119,7 +142,7 @@
 
   /* Payment methods */
   .pm-card-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
-  .pm-card-head .card-sub{ margin-bottom:0; }
+  .pm-card-head .card-sub, .pm-card-head h2{ margin-bottom:0; }
   .pm-list{ list-style:none; margin:0; padding:0; display:grid; gap:10px; }
   .pm-row{ display:flex; align-items:center; gap:12px; border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
   .pm-logo{ width:38px; height:38px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:800; font-size:11px; color:#fff; background:var(--green-accent); }
@@ -298,8 +321,9 @@
   .policy-sub:first-of-type{ margin-top:4px; padding-top:0; border-top:none; }
   .field-row.three{ grid-template-columns:1fr 1fr 1fr; }
   @media (max-width:760px){ .field-row.three{ grid-template-columns:1fr; } }
-  .field select{ border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13.5px; font-family:var(--font-body); color:var(--text-dark); background:#fff; }
+  .field select{ max-width:100%; min-width:0; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:13.5px; font-family:var(--font-body); color:var(--text-dark); background:#fff; }
   .policy-hint{ font-size:12px; color:var(--text-mid); margin:-6px 0 14px; line-height:1.5; }
+  .policy-hint-top{ margin:-4px 0 12px; }
   .policy-checks{ border:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
   .policy-checks legend{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--text-mid); margin-bottom:8px; padding:0; }
   .policy-checks label, .inline-check{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-dark); text-transform:none; letter-spacing:0; font-weight:500; }
@@ -325,15 +349,13 @@
         <div class="back-arrow" data-href="{{ route('dashboard') }}" tabindex="0" aria-label="Back to dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></div>
         <h1>Dormitory Profile</h1>
       </div>
-      <p class="page-sub">Set up your dormitory's public listing: basic info, house rules, amenities, and legitimacy documents.</p>
 
       <div class="profile-grid">
         <div class="form-col">
 
           {{-- Cover Photo --}}
           <div class="card">
-            <h2>Cover Photo</h2>
-            <p class="card-sub">Shown at the top of your public Dormitory Profile.</p>
+            <h2>Cover Photo <x-info-tip text="Shown at the top of your public profile." /></h2>
             <div class="cover-wrap" id="coverWrap">
               @if($coverPhotoUrl)
                 <img src="{{ $coverPhotoUrl }}" id="coverImg" alt="Cover photo">
@@ -352,16 +374,14 @@
 
           {{-- Homepage Slideshow --}}
           <div class="card">
-            <h2>Homepage Slideshow</h2>
-            <p class="card-sub">Your cover photo always shows first on the homepage. Add up to 4 more and they'll rotate every 5 seconds. Landscape photos (4:3) work best; the edges of other shapes get cropped.</p>
+            <h2>Homepage Slideshow <x-info-tip text="Cover photo first, then up to 4 more, every 5 seconds. Landscape (4:3) fits best." /></h2>
             <div class="hero-grid" id="heroGrid"></div>
             <input type="file" id="heroPhotoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
           </div>
 
           {{-- Dorm Logo (dual branding: dorm = PIC, NEST.PH = PIP) --}}
           <div class="card">
-            <h2>Dorm Logo</h2>
-            <p class="card-sub">Your dorm's own mark. It appears in the sidebar, login page, browser tab, emails and PDFs, with a small "Powered by NEST.PH" beside it.</p>
+            <h2>Dorm Logo <x-info-tip text="Appears in the sidebar, login page, browser tab, emails and PDFs." /></h2>
             <div class="brand-logo-row">
               <div class="brand-logo-tile">
                 <img src="{{ $brandLogoOnLightUrl }}" id="brandLogoImg" alt="{{ $brandLogoUrl ? 'Current dorm logo' : 'NEST.PH logo (used until you upload one)' }}" width="80" height="80">
@@ -374,7 +394,7 @@
                     No dorm logo yet. The NEST.PH logo is shown in its place.
                   @endif
                 </p>
-                <p class="brand-logo-hint">Square PNG, JPG or WEBP, up to 2 MB. A transparent background looks best.</p>
+                <p class="brand-logo-hint">Square PNG, JPG or WEBP · max 2 MB</p>
                 <button type="button" class="btn" id="changeBrandLogoBtn">{{ $brandLogoUrl ? 'Replace Logo' : 'Upload Logo' }}</button>
               </div>
               <div class="brand-logo-preview" aria-hidden="true">
@@ -390,8 +410,7 @@
             {{-- Site Color: the whole site's palette is built from this one color (App\Support\BrandTheme). --}}
             @php $currentColor = $profile->brand_color ?: \App\Support\BrandTheme::DEFAULT; @endphp
             <div class="site-color">
-              <h3 id="siteColorHead">Site Color</h3>
-              <p class="brand-logo-hint">Pick a color that matches your logo. Buttons, links, the sidebar and highlights across the admin, tenant and public pages will follow it.</p>
+              <h3 id="siteColorHead">Site Color <x-info-tip text="Used for buttons, links, the sidebar and top bars on every page." /></h3>
               <div class="swatches" role="radiogroup" aria-labelledby="siteColorHead">
                 @foreach(\App\Support\BrandTheme::PRESETS as $name => $hex)
                   <button type="button" class="swatch{{ $currentColor === $hex ? ' selected' : '' }}" role="radio" aria-checked="{{ $currentColor === $hex ? 'true' : 'false' }}" data-color="{{ $hex }}" style="--sw:{{ $hex }}" title="{{ $name }}">
@@ -399,21 +418,50 @@
                   </button>
                 @endforeach
                 @php $isCustom = ! in_array($currentColor, \App\Support\BrandTheme::PRESETS, true); @endphp
-                <label class="swatch swatch-custom{{ $isCustom ? ' selected' : '' }}" title="Pick any color">
+                {{-- Our own picker instead of <input type=color>: Android's built-in one only offers ~8 colors. --}}
+                <button type="button" class="swatch swatch-custom{{ $isCustom ? ' selected' : '' }}" id="customColorBtn" aria-expanded="false" aria-controls="colorPicker" title="Pick any color">
                   {{-- Rainbow until a custom color is in use, so it never looks like a second copy of a preset. --}}
                   <span class="swatch-dot{{ $isCustom ? '' : ' swatch-rainbow' }}" aria-hidden="true" style="--sw:{{ $currentColor }}"></span>
-                  <input type="color" id="customColorInput" value="{{ $currentColor }}" aria-label="Pick a custom color">
                   <span class="swatch-name">Custom…</span>
-                </label>
+                </button>
               </div>
-              <p class="brand-logo-hint" id="siteColorStatus" aria-live="polite">The page reloads after you pick, so you can see the new colors right away.</p>
+              <div class="color-picker" id="colorPicker" hidden data-start="{{ $currentColor }}">
+                <div class="cp-sv" id="cpSv" tabindex="0" role="slider" aria-label="Shade: use arrow keys to change lightness and strength" aria-valuetext="">
+                  <span class="cp-knob" id="cpSvKnob" aria-hidden="true"></span>
+                </div>
+                <input type="range" class="cp-hue" id="cpHue" min="0" max="359" step="1" aria-label="Hue">
+                <div class="cp-row">
+                  <span class="cp-preview" id="cpPreview" aria-hidden="true"></span>
+                  <label class="cp-hex-label" for="cpHex">Hex</label>
+                  <input type="text" class="cp-hex" id="cpHex" maxlength="7" spellcheck="false" autocomplete="off" inputmode="text" aria-describedby="cpHexError">
+                </div>
+                <p class="cp-error" id="cpHexError" role="alert"></p>
+                <div class="cp-actions">
+                  <button type="button" class="cp-cancel" id="cpCancel">Cancel</button>
+                  <button type="button" class="cp-apply" id="cpApply">Use this color</button>
+                </div>
+              </div>
+              <p class="brand-logo-hint" id="siteColorStatus" aria-live="polite"></p>
+            </div>
+
+            {{-- Background Color: light neutrals only, so text on the page stays readable. --}}
+            @php $currentBg = $profile->background_color ?: ''; @endphp
+            <div class="site-color">
+              <h3 id="bgColorHead">Background Color <x-info-tip text="The page color behind your content. Top bars and the sidebar keep the site color." /></h3>
+              <div class="swatches" role="radiogroup" aria-labelledby="bgColorHead">
+                @foreach(\App\Support\BrandTheme::BACKGROUNDS as $name => $hex)
+                  <button type="button" class="swatch{{ $currentBg === $hex ? ' selected' : '' }}" role="radio" aria-checked="{{ $currentBg === $hex ? 'true' : 'false' }}" data-bg="{{ $hex }}" style="--sw:{{ $hex ?: '#eef1ee' }}" title="{{ $name }}">
+                    <span class="swatch-dot" aria-hidden="true" style="box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)"></span><span class="swatch-name">{{ $name }}</span>
+                  </button>
+                @endforeach
+              </div>
+              <p class="brand-logo-hint" id="bgColorStatus" aria-live="polite"></p>
             </div>
           </div>
 
           {{-- Dormitory Information --}}
           <div class="card">
-            <h2>Dormitory Information</h2>
-            <p class="card-sub">This is how prospective tenants will see your dormitory profile.</p>
+            <h2>Dormitory Information <x-info-tip text="Shown on your public profile." /></h2>
 
             <div class="field-row">
               <div class="field">
@@ -451,8 +499,7 @@
 
           {{-- House Rules --}}
           <div class="card">
-            <h2>House Rules</h2>
-            <p class="card-sub">List of rules that all tenants must follow. These are printed on the Rules and Regulations every applicant signs, grouped by section (for example "A. Conduct and Respect").</p>
+            <h2>House Rules <x-info-tip text="Printed on the Rules and Regulations each applicant signs, grouped by section." /></h2>
 
             <ul class="rules-list" id="rulesList">
               @forelse($houseRules as $i => $rule)
@@ -489,8 +536,7 @@
           <div class="card" id="roomTypesCard">
             <div class="pm-card-head">
               <div>
-                <h2>Room Types &amp; Rates</h2>
-                <p class="card-sub">The kinds of rooms your dorm offers and their monthly rent. Assign a type to each room on the Vacancy Monitoring page. These rates are printed on the Payments and Fees Schedule that applicants sign.</p>
+                <h2>Room Types &amp; Rates <x-info-tip text="Printed on the Payments and Fees Schedule. Each room's type is set in Vacancy Monitoring." /></h2>
               </div>
               <button type="button" class="btn primary sm" id="addRoomTypeBtn">+ Add Room Type</button>
             </div>
@@ -499,8 +545,8 @@
 
           {{-- Rental Policy & Contract Details --}}
           <div class="card" id="policyCard">
-            <h2>Rental Policy &amp; Contract Details</h2>
-            <p class="card-sub">The terms in your Tenant Agreement and Payments and Fees Schedule. Billing follows these numbers, and new applicants sign documents showing them. Tenants who already signed keep their agreed monthly rate.</p>
+            <h2 style="margin-bottom:4px;">Rental Policy &amp; Contract Details</h2>
+            <p class="card-sub">Billing uses these terms, and they print on the Tenant Agreement and Fees Schedule. Current tenants keep their signed rate.</p>
 
             <h3 class="policy-sub">Lessor details</h3>
             <div class="field-row">
@@ -531,6 +577,7 @@
             </div>
 
             <h3 class="policy-sub">Rent and late payment</h3>
+            <p class="policy-hint policy-hint-top">Changes apply to new bills only. Issued bills keep their original terms.</p>
             <div class="field-row full">
               <div class="field">
                 <label for="polDueBasis">Monthly rent due date</label>
@@ -555,7 +602,6 @@
               </div>
             </div>
             <p class="policy-hint" id="polRentHint"></p>
-            <p class="policy-hint">Changes apply to bills created from now on. Bills already issued keep the grace period and penalty they were created with.</p>
 
             <div class="field-row">
               <div class="field" id="polMidMonthField">
@@ -578,11 +624,10 @@
                 <label><input type="checkbox" id="polWifi" @checked($profile->wifi_included)> Wi-Fi</label>
               </fieldset>
             </div>
-            <p class="policy-hint">Checked items are not added to the monthly bill. Unchecked items are billed from the room's utility and Wi-Fi costs, split across its beds.</p>
+            <p class="policy-hint">Unchecked items are billed from the room's utility and Wi-Fi costs, split across its beds.</p>
 
             <h3 class="policy-sub">Lease contracts</h3>
-            <label class="inline-check" style="margin-bottom:12px;"><input type="checkbox" id="polNotarization" aria-describedby="polNotarizationHint" @checked($profile->notarization_required)> Require a notarized copy of every lease contract</label>
-            <p class="policy-hint" id="polNotarizationHint" style="margin-top:0;">Optional. Notarization is not needed for a lease to be valid (Civil Code Arts. 1318 and 1356). Turn this on only if your dorm asks tenants to have their contract notarized. When on, admins must upload the notarized copy on each contract, a contract can't be renewed without it, and tenants can view their copy from My Account.</p>
+            <label class="inline-check" style="margin-bottom:12px;"><input type="checkbox" id="polNotarization" @checked($profile->notarization_required)> Require a notarized copy of every lease contract</label> <x-info-tip text="Not needed for a valid lease (Civil Code Arts. 1318, 1356). When on, a contract can't be renewed until its notarized copy is uploaded." />
 
             <h3 class="policy-sub">Stay, notice and deposit</h3>
             <div class="field-row three">
@@ -634,7 +679,7 @@
                 <input type="number" id="polRefundAfter" min="0" max="24" value="{{ $profile->deposit_refundable_after_months }}" aria-describedby="polRefundAfterHint">
               </div>
             </div>
-            <p class="policy-hint" id="polRefundAfterHint">Tenants who leave before staying this many months forfeit their security deposit. After that it is refunded, minus any deductions. Set 0 to always refund. Up to 24 months.</p>
+            <p class="policy-hint" id="polRefundAfterHint">Tenants who leave earlier forfeit the deposit. 0 = always refunded. Max 24.</p>
 
             <h3 class="policy-sub">Other stays (shown on the fee schedule)</h3>
             <div class="field-row">
@@ -664,8 +709,7 @@
               </div>
             </div>
 
-            <h3 class="policy-sub">Use your own documents (optional)</h3>
-            <p class="card-sub" style="margin-bottom:6px;">Already have your own signed contract or rules? Upload them as PDFs and applicants will read and sign your files instead of the ones generated from the fields above. Signatures go on a separate acknowledgment page added at the end. Billing still follows the numbers above, so keep them matching your documents.</p>
+            <h3 class="policy-sub">Use your own documents (optional) <x-info-tip text="Applicants sign your uploaded PDFs instead of the generated ones. Billing still follows the numbers above." /></h3>
             @foreach(\App\Services\TenancyDocuments::DOCUMENTS as $docKey => $docTitle)
               <div class="doc-row" data-doc="{{ $docKey }}">
                 <div>
@@ -691,8 +735,7 @@
           <div class="card" id="chargesCard">
             <div class="pm-card-head">
               <div>
-                <h2>Other Charges</h2>
-                <p class="card-sub">Fees besides rent, such as a lost key or a rule violation. Your fee schedule says no charge applies unless it is listed here, so these appear as choices when you add a penalty.</p>
+                <h2>Other Charges <x-info-tip text="Fees besides rent, like a lost key. Only charges listed here can be added as penalties." /></h2>
               </div>
               <button type="button" class="btn primary sm" id="addChargeBtn">+ Add Charge</button>
             </div>
@@ -703,8 +746,7 @@
           <div class="card" id="paymentMethodsCard">
             <div class="pm-card-head">
               <div>
-                <h2>Payment Methods</h2>
-                <p class="card-sub">How tenants can pay their bills and move-in fees. Changes show on tenant payment screens right away.</p>
+                <h2>Payment Methods <x-info-tip text="Shown on tenant payment screens." /></h2>
               </div>
               <button type="button" class="btn primary sm" id="addPmBtn">+ Add Method</button>
             </div>
@@ -714,7 +756,6 @@
           {{-- Amenities --}}
           <div class="card">
             <h2>Amenities</h2>
-            <p class="card-sub">Select the amenities available in your dormitory.</p>
 
             <div class="amenities-grid" id="amenitiesGrid">
               @foreach($amenities as $amenity)
@@ -731,8 +772,7 @@
           <div class="card" id="reviewModerationCard">
             <div class="rv-card-head">
               <div>
-                <h2>Review Moderation</h2>
-                <p class="card-sub">Reviews with offensive language (English or Filipino), links, contact details, or spam patterns are hidden automatically and wait here for your decision.</p>
+                <h2>Review Moderation <x-info-tip text="Reviews with offensive words, links, contact details or spam are held here until approved." /></h2>
               </div>
               <button type="button" class="btn sm" id="rvRescanBtn">Re-scan Reviews</button>
             </div>
@@ -805,8 +845,7 @@
 
           {{-- Legitimacy Documents --}}
           <div class="card">
-            <h2>Legitimacy Documents</h2>
-            <p class="card-sub">Uploading BIR Registration displays a verification badge on your public profile per BIR RMC No. 038-2026.</p>
+            <h2>Legitimacy Documents <x-info-tip text="A BIR Registration adds a verified badge to your public profile (BIR RMC No. 038-2026)." /></h2>
 
             <div class="doc-row">
               <div class="doc-info">
@@ -1134,8 +1173,98 @@
   document.querySelectorAll('.swatch[data-color]').forEach(btn => {
     btn.addEventListener('click', () => saveSiteColor(btn.dataset.color));
   });
-  // 'change' fires once when the color window closes, not on every drag.
-  $('customColorInput').addEventListener('change', e => saveSiteColor(e.target.value));
+  // ----- Custom color picker (works the same on phones and computers) -----
+  (function(){
+    const picker = $('colorPicker'), sv = $('cpSv'), knob = $('cpSvKnob'), hue = $('cpHue');
+    const hex = $('cpHex'), preview = $('cpPreview'), err = $('cpHexError'), btn = $('customColorBtn');
+    let h = 0, sat = 0, val = 0; // hue 0-359, saturation/value 0-1
+
+    const toHex = (h, s, v) => {
+      const f = n => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+      return '#' + [f(5), f(3), f(1)].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join('');
+    };
+    const fromHex = (x) => {
+      const [r, g, b] = [1, 3, 5].map(i => parseInt(x.slice(i, i + 2), 16) / 255);
+      const max = Math.max(r, g, b), d = max - Math.min(r, g, b);
+      let hh = 0;
+      if (d) hh = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      return [(Math.round(hh * 60) + 360) % 360, max ? d / max : 0, max];
+    };
+
+    function draw(updateHexBox = true){
+      const c = toHex(h, sat, val);
+      sv.style.setProperty('--cp-h', h);
+      knob.style.left = (sat * 100) + '%';
+      knob.style.top = ((1 - val) * 100) + '%';
+      knob.style.background = c;
+      preview.style.background = c;
+      hue.value = h;
+      sv.setAttribute('aria-valuetext', `${Math.round(sat * 100)}% strength, ${Math.round(val * 100)}% brightness`);
+      if (updateHexBox) { hex.value = c; err.textContent = ''; }
+    }
+    function setFrom(x){ [h, sat, val] = fromHex(x); draw(); }
+
+    function open(){
+      setFrom(picker.dataset.start || '#c98a2b');
+      picker.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      sv.focus();
+    }
+    function close(){ picker.hidden = true; btn.setAttribute('aria-expanded', 'false'); btn.focus(); }
+    btn.addEventListener('click', () => picker.hidden ? open() : close());
+    $('cpCancel').addEventListener('click', close);
+
+    // Drag on the shade square (finger or mouse).
+    function pick(e){
+      const r = sv.getBoundingClientRect();
+      sat = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
+      val = 1 - Math.min(1, Math.max(0, (e.clientY - r.top) / r.height));
+      draw();
+    }
+    sv.addEventListener('pointerdown', e => { sv.setPointerCapture(e.pointerId); pick(e); });
+    sv.addEventListener('pointermove', e => { if (sv.hasPointerCapture(e.pointerId)) pick(e); });
+    sv.addEventListener('keydown', e => {
+      const step = e.shiftKey ? 0.1 : 0.02;
+      const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] }[e.key];
+      if (!moves) return;
+      e.preventDefault();
+      sat = Math.min(1, Math.max(0, sat + moves[0]));
+      val = Math.min(1, Math.max(0, val + moves[1]));
+      draw();
+    });
+    hue.addEventListener('input', () => { h = Number(hue.value); draw(); });
+    hex.addEventListener('input', () => {
+      let x = hex.value.trim().toLowerCase();
+      if (x && x[0] !== '#') x = '#' + x;
+      if (/^#[0-9a-f]{6}$/.test(x)) { [h, sat, val] = fromHex(x); draw(false); err.textContent = ''; }
+    });
+    $('cpApply').addEventListener('click', () => {
+      let x = hex.value.trim().toLowerCase();
+      if (x && x[0] !== '#') x = '#' + x;
+      if (!/^#[0-9a-f]{6}$/.test(x)) { err.textContent = 'Use a 6-digit code like #c98a2b.'; hex.focus(); return; }
+      saveSiteColor(x);
+    });
+    picker.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  })();
+
+  // ===== Background Color =====
+  document.querySelectorAll('.swatch[data-bg]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      $('bgColorStatus').textContent = 'Saving…';
+      try {
+        await api('{{ route('dormitory-profile.background-color') }}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ background_color: btn.dataset.bg || null }),
+        });
+        $('bgColorStatus').textContent = 'Saved. Applying your new background…';
+        location.reload();
+      } catch(e){
+        $('bgColorStatus').textContent = '';
+        toast(e.message, true);
+      }
+    });
+  });
 
   // ===== Own tenancy documents (replace the generated ones) =====
   document.querySelectorAll('.doc-row[data-doc]').forEach(row => {

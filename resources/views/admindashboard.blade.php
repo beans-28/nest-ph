@@ -8,7 +8,8 @@
 <link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -515,7 +516,7 @@
   const C = { muted:css('--chart-muted'), mutedHover:css('--chart-muted-hover'), accent:css('--green-accent'),
     accentHover:css('--green-btn-hover'), grid:css('--chart-grid'), tooltip:css('--chart-tooltip'), text:css('--text-mid') };
   const last = d.labels.length - 1;
-  Chart.defaults.font.family = 'Roboto, sans-serif';
+  Chart.defaults.font.family = 'Inter, sans-serif';
   Chart.defaults.font.size = 11;
   Chart.defaults.color = C.text;
   const peso = v => '₱' + Number(v).toLocaleString('en-PH');

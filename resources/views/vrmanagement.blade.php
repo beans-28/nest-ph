@@ -8,7 +8,8 @@
 <link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 <link rel="stylesheet" href="{{ asset('vendor/pannellum/pannellum.css') }}">
 <script src="{{ asset('vendor/pannellum/pannellum.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
@@ -212,8 +213,7 @@
         <div class="step-card">
           <div class="step-head">
             <div>
-              <div class="step-title">Listing photos</div>
-              <div class="step-sub">Regular photos (not 360) shown on the public Rooms page. Visitors can click them to see them full size. With none, the tour's starting 360 photo is used as the thumbnail once the tour is public.</div>
+              <div class="step-title">Listing photos <x-info-tip text="Regular (non-360) photos on the public Rooms page. Without any, the tour's first 360 photo is used." /></div>
             </div>
             <div class="step-status" id="listingStatus"></div>
           </div>
@@ -228,8 +228,7 @@
           <div class="step-head">
             <div class="step-num">1</div>
             <div>
-              <div class="step-title">Add photos of the room</div>
-              <div class="step-sub">Each photo is one spot a visitor can stand in.</div>
+              <div class="step-title">Add photos of the room <x-info-tip text="Each 360 photo is one viewpoint in the tour." /></div>
             </div>
             <div class="step-status" id="step1Status"></div>
           </div>
@@ -272,8 +271,7 @@
           <div class="step-head">
             <div class="step-num">2</div>
             <div>
-              <div class="step-title">Link the photos together</div>
-              <div class="step-sub">Add arrows so visitors can walk from one spot to the next.</div>
+              <div class="step-title">Link the photos together <x-info-tip text="Arrows let visitors move between viewpoints." /></div>
             </div>
             <div class="step-status" id="step2Status"></div>
           </div>
@@ -346,7 +344,6 @@
             <div class="step-num">3</div>
             <div>
               <div class="step-title">Publish</div>
-              <div class="step-sub">Control whether visitors can see this tour.</div>
             </div>
             <div class="step-status" id="step3Status"></div>
           </div>

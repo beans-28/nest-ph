@@ -8,7 +8,8 @@
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     @include('partials.movein-styles')
     <style>
         /* This step carries a two-column form, so the panel gets more room */
@@ -211,10 +212,10 @@
                                     <label for="amountPaid">Amount paid <span class="req" aria-hidden="true">*</span></label>
                                     @if($paymentType === 'partial')
                                         <input type="number" id="amountPaid" inputmode="decimal" step="0.01" min="0.01" value="{{ number_format($amountDue, 2, '.', '') }}" readonly required>
-                                        <div class="fld-hint">Set to half of your move-in fee. Send exactly this amount.</div>
+                                        <div class="fld-hint">Half of your move-in fee.</div>
                                     @else
                                         <input type="number" id="amountPaid" inputmode="decimal" step="0.01" min="0.01" value="{{ number_format($balance, 2, '.', '') }}" readonly required>
-                                        <div class="fld-hint">Set to your full remaining balance. Send exactly this amount.</div>
+                                        <div class="fld-hint">Your full remaining balance.</div>
                                     @endif
                                 </div>
                                 <div class="fld">

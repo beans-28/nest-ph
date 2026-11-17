@@ -241,6 +241,23 @@ class DormitoryProfileController extends Controller
     }
 
     /**
+     * Page background: one of the light neutral presets only (white, cream,
+     * beige...), so text stays readable. Empty = each page's own default.
+     */
+    public function updateBackgroundColor(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'background_color' => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_values(\App\Support\BrandTheme::BACKGROUNDS))],
+        ]);
+
+        $profile = DormitoryProfile::current();
+        $profile->background_color = $data['background_color'] ?: null;
+        $profile->save();
+
+        return response()->json(['message' => 'Background color updated.']);
+    }
+
+    /**
      * Blank copy of one of the dorm's documents (agreement / rules / fees),
      * for the admin to check. The old "policies file" upload was replaced:
      * the public Dorm Info page now always shows the Rules and Regulations.

@@ -8,7 +8,8 @@
     <link rel="icon" href="{{ asset('images/nestphgreen.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     {{-- Same tokens, nav, hero, section and footer styles as welcome.blade.php
          (the dormitory homepage) so the platform and dorm pages look alike. --}}
     <style>
@@ -25,7 +26,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-        body { font-family: 'Roboto', system-ui, -apple-system, sans-serif; color: var(--ink); background: #fff; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; color: var(--ink); background: #fff; }
         section[id] { scroll-margin-top: 80px; }
         .page-wrap { overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }

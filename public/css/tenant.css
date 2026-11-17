@@ -36,7 +36,7 @@
   --logout-bg:rgba(0,0,0,0.22); --logout-bg-hover:rgba(0,0,0,0.32);
   --bg-page:var(--cream); --card-bg:#ffffff;
   --text-dark:#26302a; --text-mid:#5e675f; --text-light:#8b938a; --border:#e7e2d8;
-  --font-body: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 }
 *{box-sizing:border-box;}
 html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }

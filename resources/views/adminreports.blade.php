@@ -8,7 +8,8 @@
 <link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -308,13 +309,12 @@
               <input type="date" id="exDate" required>
             </div>
             <div class="field">
-              <label for="exMethod">Paid By</label>
+              <label for="exMethod">Paid By <x-info-tip text="Cash expenses are subtracted from the cash for bank deposit." /></label>
               <select id="exMethod">
                 @foreach(\App\Models\Expense::PAYMENT_METHODS as $key => $label)
                   <option value="{{ $key }}">{{ $label }}</option>
                 @endforeach
               </select>
-              <span class="hint">Cash expenses lower the cash for bank deposit.</span>
             </div>
             <div class="field span-2">
               <label for="exReceipt">Receipt / Proof of Purchase (optional)</label>
@@ -326,8 +326,7 @@
               </div>
             </div>
             <div class="field span-all repeat-box" id="repeatBox">
-              <label class="inline-check strong"><input type="checkbox" id="exRepeat"> Repeat this expense automatically</label>
-              <span class="hint">For regular costs like employee salaries. The next ones are recorded on their due dates without retyping.</span>
+              <label class="inline-check strong"><input type="checkbox" id="exRepeat"> Repeat this expense automatically</label> <x-info-tip text="For regular costs like salaries. Each one is recorded on its due date." />
               <div class="field" id="frequencyField" hidden>
                 <label for="exFrequency">How often</label>
                 <select id="exFrequency">

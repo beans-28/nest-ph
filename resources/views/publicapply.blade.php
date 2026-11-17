@@ -8,7 +8,8 @@
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <style>
         :root {
             --green-light: #a2d9a4;
@@ -21,7 +22,7 @@
         .page-wrap { overflow-x: hidden; }
 
         body {
-            font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             color: var(--ink);
             background: linear-gradient(180deg, #567357 0%, #59473f 100%);
             min-height: 100vh;
@@ -108,7 +109,7 @@
             background: linear-gradient(180deg, #567357 0%, #a2d9a4 100%);
             border-radius: 0 70px 70px 0; display: flex; align-items: center; justify-content: center;
         }
-        .brand-mark span { font-family: 'Agbalumo', cursive; font-size: 84px; color: #fff; line-height: 1; }
+        .brand-mark span { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.04em; font-size: 84px; color: #fff; line-height: 1; }
 
         .apply-right-wrap { position: relative; padding-top: 16px; display: flex; flex-direction: column; }
         .apply-right {
@@ -709,7 +710,7 @@
                     <div class="field-row">
                         <div class="field full">
                             <label for="id_photo">Your 2x2 ID Picture <span class="field-hint" style="display:inline;">(optional)</span></label>
-                            <p class="field-hint">A clear, front-facing photo with a plain background. It becomes your profile picture in the tenant portal.</p>
+                            <p class="field-hint">Front-facing, plain background. Used as your tenant profile picture.</p>
                             <p class="form-error" id="idPhotoError" role="alert" style="margin:0;"></p>
                             <div class="id-photo-row">
                                 <div class="id-photo-preview" id="idPhotoPreview" aria-hidden="true">2x2</div>

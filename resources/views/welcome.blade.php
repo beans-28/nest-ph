@@ -7,7 +7,8 @@
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <style>
         :root {
             --green-light: #a2d9a4;
@@ -21,7 +22,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             color: var(--ink);
             background: #fff;
         }
@@ -59,6 +60,9 @@
             z-index: 0;
             mix-blend-mode: multiply;
             opacity: 0.5;
+            /* The leaf photo is green; greyscale keeps only its pattern so
+               it never tints the dorm's chosen color green. */
+            filter: grayscale(1);
         }
         .textured > *:not(.bg-texture) { position: relative; z-index: 1; }
 

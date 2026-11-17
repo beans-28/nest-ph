@@ -47,4 +47,5 @@
   </div>
 </aside>
 @include('partials.tenant-notifications')
+@include('partials.profile-menu')
 <script src="{{ asset('js/sidebar-drawer.js') }}"></script>

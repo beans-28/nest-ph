@@ -53,6 +53,7 @@ class EnsureAdminHasPrivilege
 
         // Dev/demo testing tools on several pages
         'demo-tools' => null,
+        'settings' => null, // every admin manages their own account
     ];
 
     public function handle(Request $request, Closure $next): Response

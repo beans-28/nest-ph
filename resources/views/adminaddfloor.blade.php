@@ -8,7 +8,8 @@
 <link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar/search, and
@@ -276,8 +277,7 @@
 <!-- ADD FLOOR MODAL (client-side grouping label only — becomes real once a room is saved under it) -->
 <div class="modal-overlay" id="addFloorModal">
   <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="addFloorModalTitle">
-    <h3 class="modal-title" id="addFloorModalTitle">Add Floor</h3>
-    <p class="modal-sub">Name a new floor group. It's saved to the database as soon as you add the first room to it.</p>
+    <h3 class="modal-title" id="addFloorModalTitle">Add Floor <x-info-tip text="The floor is saved once its first room is added." /></h3>
     <div class="modal-field"><label for="newFloorName">Floor Label</label><input type="text" id="newFloorName" placeholder="e.g. 5"></div>
     <p class="modal-error" id="floorModalError" role="alert"></p>
     <div class="modal-actions">
@@ -307,10 +307,9 @@
     <p class="modal-hint" id="roomTypePriceHint"></p>
     <div class="modal-field" id="customRoomTypeField" style="display:none;"><label for="newRoomType">Custom type name</label><input type="text" id="newRoomType" placeholder="e.g. Standard"></div>
     <div class="modal-row">
-      <div class="modal-field"><label for="newRoomUtility">Monthly Utilities</label><input type="number" id="newRoomUtility" min="0" step="0.01" placeholder="0.00"></div>
+      <div class="modal-field"><label for="newRoomUtility">Monthly Utilities <x-info-tip text="Whole-room amounts, split evenly across beds. Applies from each tenant's next bill." /></label><input type="number" id="newRoomUtility" min="0" step="0.01" placeholder="0.00"></div>
       <div class="modal-field"><label for="newRoomWifi">Monthly WiFi</label><input type="number" id="newRoomWifi" min="0" step="0.01" placeholder="0.00"></div>
     </div>
-    <p class="modal-hint">Whole-room amounts, split evenly by the number of beds, same as rent. Changes apply from each tenant's next generated bill.</p>
     <div class="modal-row">
       <div class="modal-field"><label for="newRoomBedCount">Number of Beds</label><input type="number" id="newRoomBedCount" min="1" max="20" value="2"></div>
       <div class="modal-field"><label for="newRoomArea">Room area (m²)</label><input type="number" id="newRoomArea" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 18"></div>

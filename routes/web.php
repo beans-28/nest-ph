@@ -131,6 +131,11 @@ Route::middleware(['auth', 'movein.check', 'moveout.check', 'delinquency.check']
 */
 
 Route::middleware(['auth', 'admin', 'admin.access'])->group(function () {
+    // Admin's own account: name, email, password (top-bar profile menu > Settings).
+    Route::get('/settings', [\App\Http\Controllers\AdminSettingsController::class, 'show'])->name('admin.settings');
+    Route::patch('/settings/profile', [\App\Http\Controllers\AdminSettingsController::class, 'updateProfile'])->name('admin.settings.profile');
+    Route::post('/settings/avatar', [\App\Http\Controllers\AdminSettingsController::class, 'uploadAvatar'])->name('admin.settings.avatar');
+    Route::delete('/settings/avatar', [\App\Http\Controllers\AdminSettingsController::class, 'deleteAvatar']);
     Route::get('/admin/add-floor', [VacancyController::class, 'index'])->name('admin.addfloor');
     Route::get('/vacancy-monitoring', [VacancyController::class, 'index'])->name('vacancy.index');
 
@@ -230,6 +235,7 @@ Route::middleware(['auth', 'admin', 'admin.access'])->group(function () {
 
     // --- Tenant Manager (Manage Tenant Records / Add New Tenant / Deactivate) ---
     Route::get('/admin/notifications', [\App\Http\Controllers\AdminNotificationController::class, 'index'])->name('admin.notifications');
+    Route::post('/admin/notifications/read', [\App\Http\Controllers\AdminNotificationController::class, 'markRead'])->name('admin.notifications.read');
     Route::get('/tenant-manager', [TenantController::class, 'page'])->name('tenant-manager.index');
     Route::get('/tenant-manager/{tenant}', [TenantController::class, 'show']);
     Route::get('/tenant-manager/{tenant}/payments', [TenantController::class, 'paymentHistory']);
@@ -270,6 +276,7 @@ Route::middleware(['auth', 'admin', 'admin.access'])->group(function () {
     Route::delete('/dormitory-profile/hero-photos/{name}', [DormitoryProfileController::class, 'deleteHeroPhoto'])->where('name', '[A-Za-z0-9._-]+');
     Route::post('/dormitory-profile/brand-logo', [DormitoryProfileController::class, 'uploadBrandLogo'])->name('dormitory-profile.brand-logo');
     Route::post('/dormitory-profile/brand-color', [DormitoryProfileController::class, 'updateBrandColor'])->name('dormitory-profile.brand-color');
+    Route::post('/dormitory-profile/background-color', [DormitoryProfileController::class, 'updateBackgroundColor'])->name('dormitory-profile.background-color');
     Route::post('/dormitory-profile/business-permit', [DormitoryProfileController::class, 'uploadBusinessPermit'])->name('dormitory-profile.business-permit');
     Route::delete('/dormitory-profile/business-permit', [DormitoryProfileController::class, 'deleteBusinessPermit']);
     Route::post('/dormitory-profile/bir-registration', [DormitoryProfileController::class, 'uploadBirRegistration'])->name('dormitory-profile.bir-registration');

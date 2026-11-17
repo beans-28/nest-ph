@@ -33,8 +33,9 @@ class InjectBrandTheme
         }
 
         try {
-            $color = DormitoryProfile::current()->brand_color;
-            $style = BrandTheme::styleTag($color);
+            $profile = DormitoryProfile::current();
+            $color = $profile->brand_color;
+            $style = BrandTheme::styleTag($color).BrandTheme::backgroundStyleTag($profile->background_color);
         } catch (\Throwable $e) {
             return $response; // DB down: keep the default colors, never break the page.
         }

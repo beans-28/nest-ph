@@ -116,4 +116,27 @@ class BrandColorTest extends TestCase
         // A normal-depth pick keeps the white-text sidebar.
         $this->assertStringNotContainsString('.sidebar{', BrandTheme::styleTag('#2f5d8c'));
     }
+
+    public function test_owner_can_pick_a_light_background_and_pages_use_it(): void
+    {
+        $owner = $this->owner();
+
+        $this->actingAs($owner)
+            ->postJson('/dormitory-profile/background-color', ['background_color' => '#efe4d3'])
+            ->assertOk();
+
+        $this->assertSame('#efe4d3', DormitoryProfile::current()->background_color);
+        $html = $this->actingAs($owner)->get('/dashboard')->getContent();
+        $this->assertStringContainsString('<style id="brand-background">', $html);
+        $this->assertStringContainsString('--bg-page:#efe4d3', $html);
+    }
+
+    public function test_background_rejects_anything_outside_the_light_presets(): void
+    {
+        foreach (['#000000', '#c98a2b', 'red'] as $bad) {
+            $this->actingAs($this->owner())
+                ->postJson('/dormitory-profile/background-color', ['background_color' => $bad])
+                ->assertStatus(422);
+        }
+    }
 }

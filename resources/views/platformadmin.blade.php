@@ -8,7 +8,8 @@
 <link rel="icon" href="{{ asset('images/nestphgreen.png') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Same look as the dorm admin pages (admin.css + the Inquiries page's
@@ -110,8 +111,7 @@
     </div>
 
     <div class="content">
-      <div class="page-head"><h1>Owner Requests</h1></div>
-      <p class="page-sub">Dormitory owners who asked to use NEST.PH, from the "Request NEST.PH" form on the landing page.</p>
+      <div class="page-head"><h1>Owner Requests <x-info-tip text="Submitted through the &quot;Request NEST.PH&quot; form on the landing page." /></h1></div>
 
       @if (session('status'))
         <div class="flash" role="status">{{ session('status') }}</div>

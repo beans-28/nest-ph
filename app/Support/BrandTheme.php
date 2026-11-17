@@ -30,6 +30,39 @@ class BrandTheme
         'Charcoal' => '#4a4f55',
     ];
 
+    /**
+     * Page background choices. Deliberately only light neutrals: every page
+     * puts dark text straight on the background, so it must stay pale.
+     * '' = keep each page's own default.
+     */
+    public const BACKGROUNDS = [
+        'Default' => '',
+        'White' => '#ffffff',
+        'Linen' => '#faf6f0',
+        'Cream' => '#f6efe2',
+        'Beige' => '#efe4d3',
+        'Sand' => '#e8dcc8',
+        'Soft Grey' => '#f1efec',
+    ];
+
+    /** A <style> block setting the page background, or '' for the default. */
+    public static function backgroundStyleTag(?string $hex): string
+    {
+        if (! is_string($hex) || $hex === '' || ! in_array($hex, self::BACKGROUNDS, true)) {
+            return '';
+        }
+
+        [$h, $s, $l] = self::toHsl($hex);
+        // The homepage's light bands fade from a slightly deeper shade.
+        $deeper = self::fromHsl($h, $s, max(0, $l - 5));
+
+        $css = ':root{--bg-page:'.$hex.';--cream:'.$deeper.';--cream-light:'.$hex.'}'
+            .'html,body{background-color:'.$hex.'!important}'
+            .'.location-section{background:'.$hex.'!important}';
+
+        return '<style id="brand-background">'.$css.'</style>';
+    }
+
     /** CSS variable => lightness (0-100) of the shade it gets. */
     private const SHADES = [
         // Shared admin/tenant names

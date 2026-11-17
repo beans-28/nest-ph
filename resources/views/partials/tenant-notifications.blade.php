@@ -22,26 +22,6 @@
   .notif-bell{ position:relative; border:none; padding:0; }
   .notif-bell .notif-badge{ position:absolute; top:-6px; right:-8px; min-width:12px; height:16px; padding:0 4px; border-radius:8px; background:#c0392b; color:#fff; font-size:10px; font-weight:700; line-height:16px; text-align:center; border:2px solid var(--sage-800); font-variant-numeric:tabular-nums; pointer-events:none; }
   .notif-bell .notif-badge[hidden]{ display:none; }
-  .notif-panel{ position:fixed; top:66px; right:16px; width:min(380px, calc(100vw - 32px)); max-height:min(560px, calc(100vh - 90px)); background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:0 14px 40px rgba(20,40,28,.18); z-index:200; display:none; flex-direction:column; overflow:hidden; }
-  .notif-panel.open{ display:flex; }
-  .notif-head{ display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--border); }
-  .notif-head h2{ margin:0; font-size:15px; font-weight:700; color:var(--text-dark); }
-  .notif-readall{ margin-left:auto; background:none; border:none; color:var(--sage-700); font-size:12.5px; font-weight:600; cursor:pointer; padding:6px 4px; font-family:var(--font-body); }
-  .notif-readall:disabled{ color:var(--text-light); cursor:default; }
-  .notif-list{ overflow-y:auto; margin:0; padding:0; list-style:none; }
-  .notif-item{ display:flex; gap:12px; padding:12px 16px; border-bottom:1px solid #f1eee7; cursor:pointer; text-align:left; width:100%; background:#fff; border-left:none; border-right:none; border-top:none; font-family:var(--font-body); }
-  .notif-item:hover{ background:var(--sage-50); }
-  .notif-item:focus-visible{ outline:2px solid var(--sage-600); outline-offset:-2px; }
-  .notif-item.unread{ background:#f7fbf5; }
-  .notif-dot{ width:8px; height:8px; border-radius:50%; margin-top:6px; flex:none; background:transparent; }
-  .notif-item.unread .notif-dot{ background:var(--sage-600); }
-  .notif-item.urgent.unread .notif-dot{ background:#c0392b; }
-  .notif-text{ flex:1; min-width:0; }
-  .notif-title{ font-size:13px; font-weight:600; color:var(--text-dark); margin:0 0 2px; }
-  .notif-body{ font-size:12.5px; color:var(--text-mid); margin:0 0 4px; line-height:1.45; }
-  .notif-time{ font-size:11px; color:var(--text-light); }
-  .notif-empty{ padding:36px 16px; text-align:center; font-size:13px; color:var(--text-light); }
-
   .bill-popup{ position:fixed; inset:0; background:rgba(20,30,24,.55); z-index:300; display:flex; align-items:center; justify-content:center; padding:16px; }
   .bill-popup[hidden]{ display:none; }
   .bill-popup-box{ background:#fff; border-radius:16px; width:100%; max-width:440px; max-height:calc(100vh - 32px); overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.3); }
@@ -64,18 +44,12 @@
   .bill-popup-actions a:focus-visible, .bill-popup-actions button:focus-visible{ outline:2px solid var(--sage-600); outline-offset:2px; }
 </style>
 
-<button type="button" class="topbar-icon notif-bell" id="notifBell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false" hidden>
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+<button type="button" class="topbar-icon notif-bell" id="notifBell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false" aria-controls="tenantNotifPanel" hidden>
+  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
   <span class="notif-badge" id="notifBadge" hidden>0</span>
 </button>
 
-<section class="notif-panel" id="notifPanel" aria-label="Notifications">
-  <div class="notif-head">
-    <h2>Notifications</h2>
-    <button type="button" class="notif-readall" id="notifReadAll" disabled>Mark all as read</button>
-  </div>
-  <ul class="notif-list" id="notifList"><li class="notif-empty">Loading…</li></ul>
-</section>
+@include('partials.notification-panel', ['prefix' => 'tenant'])
 
 @if($popupBills->isNotEmpty())
   @php($anyOverdue = $popupBills->contains('is_overdue', true))
@@ -117,15 +91,32 @@
 (function(){
   const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
   const bell = document.getElementById('notifBell');
-  const panel = document.getElementById('notifPanel');
-  const list = document.getElementById('notifList');
-  const badge = document.getElementById('notifBadge');
-  const readAll = document.getElementById('notifReadAll');
-  const URGENT = ['bill_overdue', 'payment_rejected', 'account_restricted', 'demand_letter', 'blacklisted'];
-  let items = [];
+  const URGENT = ['bill_overdue', 'bill_grace', 'payment_rejected', 'account_restricted', 'demand_letter', 'blacklisted'];
+  // Notification type -> icon in the shared panel.
+  const kindOf = t => t.startsWith('bill_') || t.startsWith('payment') ? 'bill'
+    : t.includes('penalty') ? 'penalty'
+    : t.startsWith('lease_') ? 'lease'
+    : t.startsWith('ticket_') ? 'ticket'
+    : t.startsWith('account_') || t === 'blacklisted' || t === 'demand_letter' ? 'account'
+    : t.startsWith('deposit') ? 'deposit'
+    : t === 'announcement' ? 'announcement' : 'other';
   let loaded = false;
 
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const panel = NestNotifPanel({
+    prefix: 'tenant',
+    bell,
+    badge: document.getElementById('notifBadge'),
+    badgeMax: 9,
+    onOpen: (retry) => { if(!loaded || retry) load(); },
+    onMarkRead: (keys, all) => {
+      const headers = { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' };
+      if(all){
+        fetch('/my/notifications/read-all', { method: 'POST', headers, keepalive: true }).catch(() => {});
+      } else {
+        keys.forEach(id => fetch(`/my/notifications/${id}/read`, { method: 'PATCH', headers, keepalive: true }).catch(() => {}));
+      }
+    },
+  });
 
   // Put the bell in the top bar, just before the profile icon.
   document.addEventListener('DOMContentLoaded', () => {
@@ -136,84 +127,20 @@
     load();
   });
 
-  function setUnread(n){
-    badge.textContent = n > 9 ? '9+' : String(n);
-    badge.hidden = n === 0;
-    bell.setAttribute('aria-label', n ? `Notifications, ${n} unread` : 'Notifications');
-    readAll.disabled = n === 0;
-  }
-
-  function render(){
-    if(!items.length){
-      list.innerHTML = '<li class="notif-empty">You have no notifications yet.</li>';
-      return;
-    }
-    list.innerHTML = items.map(n => `
-      <li><button type="button" class="notif-item ${n.read ? '' : 'unread'} ${URGENT.includes(n.type) ? 'urgent' : ''}" data-id="${n.id}">
-        <span class="notif-dot" aria-hidden="true"></span>
-        <span class="notif-text">
-          <p class="notif-title">${esc(n.title)}</p>
-          ${n.body ? `<p class="notif-body">${esc(n.body)}</p>` : ''}
-          <span class="notif-time">${esc(n.time_ago)}</span>
-        </span>
-      </button></li>`).join('');
-  }
-
   async function load(){
     try {
       const res = await fetch('/my/notifications', { headers: { 'Accept': 'application/json' } });
       if(!res.ok) throw new Error();
       const data = await res.json();
-      items = data.notifications;
       loaded = true;
-      setUnread(data.unread);
-      render();
+      panel.setItems(data.notifications.map(n => ({
+        key: n.id, kind: kindOf(n.type || ''), urgent: URGENT.includes(n.type), read: n.read,
+        title: n.title, body: n.body, ago: n.time_ago, time: n.created_at, href: n.link || null,
+      })));
     } catch(e){
-      list.innerHTML = '<li class="notif-empty">Notifications could not be loaded. Please refresh the page.</li>';
+      panel.setError('Notifications could not be loaded.');
     }
   }
-
-  function openPanel(){
-    panel.classList.add('open');
-    bell.setAttribute('aria-expanded', 'true');
-    if(!loaded) load();
-  }
-  function closePanel(){
-    panel.classList.remove('open');
-    bell.setAttribute('aria-expanded', 'false');
-  }
-
-  bell.addEventListener('click', (e) => {
-    e.stopPropagation();
-    panel.classList.contains('open') ? closePanel() : openPanel();
-  });
-  document.addEventListener('click', (e) => {
-    if(panel.classList.contains('open') && !panel.contains(e.target)) closePanel();
-  });
-  document.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape' && panel.classList.contains('open')){ closePanel(); bell.focus(); }
-  });
-
-  list.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.notif-item');
-    if(!btn) return;
-    const n = items.find(x => x.id === Number(btn.dataset.id));
-    if(!n) return;
-    if(!n.read){
-      n.read = true;
-      setUnread(items.filter(x => !x.read).length);
-      render();
-      await fetch(`/my/notifications/${n.id}/read`, { method:'PATCH', headers:{ 'X-CSRF-TOKEN': csrf, 'Accept':'application/json' } }).catch(() => {});
-    }
-    if(n.link && n.link !== location.pathname) location.href = n.link;
-  });
-
-  readAll.addEventListener('click', async () => {
-    items.forEach(n => n.read = true);
-    setUnread(0);
-    render();
-    await fetch('/my/notifications/read-all', { method:'POST', headers:{ 'X-CSRF-TOKEN': csrf, 'Accept':'application/json' } }).catch(() => {});
-  });
 
   // ---- Login bill reminder pop-up ----
   const popup = document.getElementById('billPopup');

@@ -7,7 +7,8 @@
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <link rel="stylesheet" href="{{ asset('vendor/pannellum/pannellum.css') }}">
     <script src="{{ asset('vendor/pannellum/pannellum.js') }}"></script>
     <style>
@@ -27,7 +28,7 @@
         html, body { height: 100%; overflow: hidden; }
 
         body {
-            font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             color: var(--ink);
             background: #141714;
             display: flex;

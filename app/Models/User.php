@@ -123,4 +123,12 @@ class User extends Authenticatable
     {
         return $this->role?->role_name === 'platform_admin' ? url('/') : route('home');
     }
+
+    /** Profile picture URL (admins, Settings page), or null to show initials. */
+    public function avatarUrl(): ?string
+    {
+        return $this->avatar_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->avatar_path)
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar_path)
+            : null;
+    }
 }

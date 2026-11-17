@@ -68,10 +68,10 @@ class TicketDeadlinesTest extends TestCase
     {
         $this->ticket([], 7);
 
-        $labels = collect($this->actingAs($this->admin())->getJson('/admin/notifications')->assertOk()->json('items'))
-            ->pluck('label');
+        $texts = collect($this->actingAs($this->admin())->getJson('/admin/notifications')->assertOk()->json('items'))
+            ->pluck('text');
 
-        $this->assertContains('1 ticket nearing its deadline', $labels);
+        $this->assertTrue($texts->contains(fn ($t) => str_contains($t, 'is nearing its deadline')));
     }
 
     public function test_delay_needs_a_reason_and_a_future_date(): void

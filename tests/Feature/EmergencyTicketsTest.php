@@ -133,10 +133,28 @@ class EmergencyTicketsTest extends TestCase
         $this->ticket(); // no one assigned
 
         $res = $this->actingAs($me)->getJson('/admin/notifications')->assertOk();
-        $labels = collect($res->json('items'))->pluck('label');
+        $texts = collect($res->json('items'))->where('kind', 'emergency')->pluck('text');
 
-        $this->assertContains('1 emergency assigned to you', $labels);
-        $this->assertContains('1 emergency with no one assigned', $labels);
+        $this->assertCount(2, $texts);
+        $this->assertTrue($texts->contains(fn ($t) => str_contains($t, 'is assigned to you')));
+        $this->assertTrue($texts->contains(fn ($t) => str_contains($t, 'No one is assigned yet')));
         $this->assertCount(2, $res->json('emergencies'));
+    }
+
+    public function test_bell_items_can_be_marked_read(): void
+    {
+        $me = $this->admin();
+        $this->ticket();
+
+        $key = collect($this->actingAs($me)->getJson('/admin/notifications')->json('items'))->firstWhere('kind', 'emergency')['key'];
+        $this->assertSame(1, $this->actingAs($me)->getJson('/admin/notifications')->json('unread'));
+
+        $this->actingAs($me)->postJson('/admin/notifications/read', ['keys' => [$key]])->assertOk();
+
+        $res = $this->actingAs($me)->getJson('/admin/notifications');
+        $this->assertSame(0, $res->json('unread'));
+        $this->assertTrue(collect($res->json('items'))->firstWhere('key', $key)['read']);
+        // Read state is per admin.
+        $this->assertSame(1, $this->actingAs($this->admin())->getJson('/admin/notifications')->json('unread'));
     }
 }

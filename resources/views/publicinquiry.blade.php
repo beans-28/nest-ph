@@ -8,7 +8,8 @@
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Agbalumo&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <style>
         :root {
             --green-light: #a2d9a4;
@@ -21,7 +22,7 @@
         .page-wrap { overflow-x: hidden; }
 
         body {
-            font-family: 'Roboto', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             color: var(--ink);
             background: linear-gradient(180deg, #567357 0%, #59473f 100%);
             min-height: 100vh;
@@ -108,7 +109,7 @@
             background: linear-gradient(180deg, #567357 0%, #a2d9a4 100%);
             border-radius: 0 80px 80px 0; display: flex; align-items: center; justify-content: center;
         }
-        .brand-mark span { font-family: 'Agbalumo', cursive; font-size: 96px; color: #fff; line-height: 1; }
+        .brand-mark span { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.04em; font-size: 96px; color: #fff; line-height: 1; }
 
         .login-right-wrap { position: relative; padding-top: 16px; display: flex; flex-direction: column; }
         .login-right {

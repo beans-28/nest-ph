@@ -11,25 +11,34 @@ use App\Models\LeaseContract;
 use App\Models\MaintenanceTicket;
 use App\Models\Payment;
 use App\Models\Review;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
- * GET /admin/notifications (v39) — the admin bell. Unlike the tenant panel,
- * these are live counts of work waiting for staff, not stored messages:
- * each item disappears on its own once the work is done, so there's
- * nothing to mark as read.
+ * The admin bell: one notification per piece of waiting work, e.g.
+ * "Juan Dela Cruz sent an application · 2h ago".
+ *
+ * Items are built live from the database, so each one disappears by itself
+ * once the work is done (application approved, proof reviewed, ...). The
+ * only thing stored is which items each admin has already read
+ * (admin_notification_reads), which drives the unread badge and highlight.
  */
 class AdminNotificationController extends Controller
 {
+    /** Most items shown in the panel; the unread badge still counts all. */
+    private const LIMIT = 60;
+
     public function index(Request $request): JsonResponse
     {
+        $user = $request->user()->loadMissing('privileges');
+        $me = $user->id;
+
         // Open emergencies (Critical tickets) that are this admin's job:
         // assigned to them, or assigned to nobody yet. The bell pops these
         // up on screen until someone responds.
-        $user = $request->user()->loadMissing('privileges');
-        $me = $user->id;
-        $emergencies = MaintenanceTicket::with('bed.room', 'assignees:id,name')
+        $emergencies = MaintenanceTicket::with('bed.room', 'assignees:id,name', 'tenant')
             ->where('priority', 'critical')
             ->whereNotIn('status', MaintenanceTicket::CLOSED_STATUSES)
             ->whereNull('responded_at')
@@ -42,111 +51,35 @@ class AdminNotificationController extends Controller
             $emergencies = collect();
         }
 
-        $overdueTickets = MaintenanceTicket::overdueSummary();
-        $overdueSince = now()->subDays(NotifyOverdueApplications::DAYS);
-        $overdueLabel = 'waiting ' . NotifyOverdueApplications::DAYS . '+ days';
-
-        $items = [
-            [
-                'key' => 'emergency_mine', 'urgent' => true, 'link' => '/tickets',
-                'count' => $emergencies->filter(fn ($t) => $t->assignees->isNotEmpty())->count(),
-                'one' => 'emergency assigned to you', 'many' => 'emergencies assigned to you',
-            ],
-            [
-                'key' => 'emergency_unassigned', 'urgent' => true, 'link' => '/tickets',
-                'count' => $emergencies->filter(fn ($t) => $t->assignees->isEmpty())->count(),
-                'one' => 'emergency with no one assigned', 'many' => 'emergencies with no one assigned',
-            ],
-            [
-                'key' => 'proofs', 'urgent' => false, 'link' => '/payments',
-                'count' => Payment::where('status', 'pending')->count(),
-                'one' => 'payment proof to review', 'many' => 'payment proofs to review',
-            ],
-            [
-                'key' => 'applications', 'urgent' => false, 'link' => '/applications',
-                // Only the recent ones; older ones get their own urgent item below.
-                'count' => Application::where('status', 'pending')->where('created_at', '>', $overdueSince)->count(),
-                'one' => 'new application', 'many' => 'new applications',
-            ],
-            [
-                'key' => 'applications_overdue', 'urgent' => true, 'link' => '/applications',
-                'count' => Application::where('status', 'pending')
-                    ->where('created_at', '<=', $overdueSince)
-                    ->count(),
-                'one' => 'application ' . $overdueLabel, 'many' => 'applications ' . $overdueLabel,
-            ],
-            [
-                'key' => 'reservations_expired', 'urgent' => true, 'link' => '/tenant-manager',
-                // Shown for a week after the bed was released (reservations:expire).
-                'count' => BillingStatement::where('reservation_expired_at', '>=', now()->subDays(7))->count(),
-                'one' => 'reservation expired and its bed was released',
-                'many' => 'reservations expired and their beds were released',
-            ],
-            [
-                'key' => 'reservations_expiring', 'urgent' => false, 'link' => '/payments',
-                // Half-paid move-in fees whose one-month reservation ends within 7 days.
-                'count' => BillingStatement::where('type', 'move_in')->where('status', 'partial')
-                    ->whereNull('reservation_expired_at')->get()
-                    ->filter(fn ($b) => $b->reservationDeadline()?->lte(now()->addDays(7)))->count(),
-                'one' => 'half-paid move-in fee due within 7 days',
-                'many' => 'half-paid move-in fees due within 7 days',
-            ],
-            [
-                'key' => 'inquiries', 'urgent' => false, 'link' => '/inquiries',
-                'count' => Inquiry::where('status', 'new')->count(),
-                'one' => 'inquiry waiting for a reply', 'many' => 'inquiries waiting for a reply',
-            ],
-            [
-                'key' => 'tickets_new', 'urgent' => false, 'link' => '/tickets',
-                'count' => MaintenanceTicket::where('status', 'open')->count(),
-                'one' => 'pending maintenance ticket', 'many' => 'pending maintenance tickets',
-            ],
-            [
-                'key' => 'tickets_overdue', 'urgent' => true, 'link' => '/tickets',
-                'count' => $overdueTickets['total'] ?? 0,
-                'one' => 'overdue ticket', 'many' => 'overdue tickets',
-            ],
-            [
-                'key' => 'tickets_due_soon', 'urgent' => true, 'link' => '/tickets',
-                'count' => $overdueTickets['due_soon'] ?? 0,
-                'one' => 'ticket nearing its deadline', 'many' => 'tickets nearing their deadline',
-            ],
-            [
-                'key' => 'delinquent', 'urgent' => true, 'link' => '/delinquency',
-                'count' => BillingStatement::where('status', 'overdue')->distinct('tenant_id')->count('tenant_id'),
-                'one' => 'tenant with an overdue bill', 'many' => 'tenants with overdue bills',
-            ],
-            [
-                'key' => 'reviews', 'urgent' => false, 'link' => '/dormitory-profile',
-                'count' => Review::where('status', 'hidden')->whereNull('moderated_by')->count(),
-                'one' => 'review held by the filter', 'many' => 'reviews held by the filter',
-            ],
-            [
-                'key' => 'leases', 'urgent' => false, 'link' => '/tenant-manager?lease=expiring_soon',
-                'count' => LeaseContract::whereIn('status', ['active', 'expiring_soon'])
-                    ->whereBetween('end_date', [now()->toDateString(), now()->addDays(30)->toDateString()])
-                    ->count(),
-                'one' => 'lease ending within 30 days', 'many' => 'leases ending within 30 days',
-            ],
-        ];
-
-        $items = collect($items)
-            ->filter(fn ($i) => $i['count'] > 0)
+        $items = collect($this->items($emergencies))
             // Hide items for sections this admin has no privilege for.
             ->filter(fn ($i) => EnsureAdminHasPrivilege::canOpen($user, $i['link']))
-            ->sortByDesc('urgent') // overdue work at the top
-            ->map(fn ($i) => [
-                'key' => $i['key'],
-                'urgent' => $i['urgent'],
-                'link' => $i['link'],
-                'count' => $i['count'],
-                'label' => $i['count'] . ' ' . ($i['count'] === 1 ? $i['one'] : $i['many']),
-            ])
+            ->sortByDesc(fn ($i) => $i['time']->getTimestamp())
             ->values();
 
+        $read = DB::table('admin_notification_reads')
+            ->where('user_id', $me)
+            ->whereIn('item_key', $items->pluck('key'))
+            ->pluck('item_key')
+            ->flip();
+
+        $items = $items->map(fn ($i) => [
+            'key' => $i['key'],
+            'kind' => $i['kind'],
+            'urgent' => $i['urgent'],
+            'actor' => $i['actor'],
+            'text' => $i['text'],
+            'link' => $i['link'],
+            'time' => $i['time']->toIso8601String(),
+            'ago' => $i['time']->diffForHumans(null, Carbon::DIFF_RELATIVE_TO_NOW, true),
+            'read' => $read->has($i['key']),
+        ]);
+        $unread = $items->where('read', false)->count();
+
         return response()->json([
-            'total' => $items->sum('count'),
-            'items' => $items,
+            'total' => $unread,
+            'unread' => $unread,
+            'items' => $items->take(self::LIMIT)->values(),
             'emergencies' => $emergencies->map(fn ($t) => [
                 'id' => $t->id,
                 'title' => $t->title,
@@ -157,5 +90,115 @@ class AdminNotificationController extends Controller
                 'filed' => $t->created_at->diffForHumans(),
             ]),
         ]);
+    }
+
+    /** POST /admin/notifications/read  { keys: [...] } — one item, or "mark all". */
+    public function markRead(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'keys' => ['required', 'array', 'max:500'],
+            'keys.*' => ['string', 'max:80'],
+        ]);
+
+        $now = now();
+        DB::table('admin_notification_reads')->insertOrIgnore(
+            collect($data['keys'])->unique()->map(fn ($k) => [
+                'user_id' => $request->user()->id, 'item_key' => $k, 'read_at' => $now,
+            ])->all()
+        );
+
+        // Old read marks are useless once their items are gone; keep the table small.
+        DB::table('admin_notification_reads')->where('read_at', '<', now()->subDays(120))->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    /** Every waiting piece of work, as one notification each. */
+    private function items($emergencies): array
+    {
+        $items = [];
+        $add = function (string $key, string $kind, bool $urgent, ?string $actor, string $text, string $link, $time) use (&$items) {
+            $items[] = [
+                'key' => $key, 'kind' => $kind, 'urgent' => $urgent,
+                'actor' => $actor ? trim($actor) : null, 'text' => $text, 'link' => $link,
+                'time' => $time ? Carbon::parse($time) : now(),
+            ];
+        };
+        $peso = fn ($n) => '₱'.number_format((float) $n, 2);
+        $name = fn ($tenant) => $tenant?->full_name;
+
+        foreach ($emergencies as $t) {
+            $add('emergency:'.$t->id, 'emergency', true, null,
+                'Emergency: "'.$t->title.'"'.($t->bed?->room ? ' in Room '.$t->bed->room->room_no : '')
+                .($t->assignees->isEmpty() ? '. No one is assigned yet.' : ' is assigned to you.'),
+                '/tickets?open='.$t->id, $t->created_at);
+        }
+
+        $overdueSince = now()->subDays(NotifyOverdueApplications::DAYS);
+        foreach (Application::where('status', 'pending')->latest()->get() as $a) {
+            $late = $a->created_at <= $overdueSince;
+            // A new key once it's late, so it shows up as unread again.
+            $add(($late ? 'application_late:' : 'application:').$a->id, 'application', $late, $a->full_name,
+                $late ? 'has been waiting '.NotifyOverdueApplications::DAYS.'+ days for a decision on their application.' : 'sent an application.',
+                '/applications', $a->created_at);
+        }
+
+        foreach (Payment::with('tenant')->where('status', 'pending')->latest()->get() as $p) {
+            $add('payment:'.$p->id, 'payment', false, $name($p->tenant),
+                'uploaded a payment proof of '.$peso($p->amount_paid).'.', '/payments', $p->created_at);
+        }
+
+        foreach (Inquiry::where('status', 'new')->latest()->get() as $q) {
+            $add('inquiry:'.$q->id, 'inquiry', false, $q->full_name, 'sent an inquiry.', '/inquiries', $q->created_at);
+        }
+
+        $active = MaintenanceTicket::with('tenant')->whereNotIn('status', MaintenanceTicket::CLOSED_STATUSES)->get();
+        foreach ($active as $t) {
+            $link = '/tickets?open='.$t->id;
+            if ($t->status === 'open' && ! $emergencies->contains('id', $t->id)) {
+                $add('ticket:'.$t->id, 'ticket', false, $name($t->tenant), 'filed a ticket: "'.$t->title.'".', $link, $t->created_at);
+            }
+            if ($t->isOverdue()) {
+                $add('ticket_overdue:'.$t->id, 'ticket', true, null, 'Ticket "'.$t->title.'" is past its deadline.', $link, $t->currentDeadline()['due'] ?? $t->created_at);
+            } elseif ($t->isDueSoon()) {
+                $add('ticket_due_soon:'.$t->id, 'ticket', true, null, 'Ticket "'.$t->title.'" is nearing its deadline.', $link, $t->updated_at);
+            }
+        }
+
+        foreach (BillingStatement::with('tenant')->where('status', 'overdue')->get() as $b) {
+            $add('bill_overdue:'.$b->id, 'bill', true, $name($b->tenant),
+                'has an overdue bill of '.$peso($b->total_amount).'.', '/delinquency', $b->due_date);
+        }
+
+        // Shown for a week after the bed was released (reservations:expire).
+        foreach (BillingStatement::with('tenant')->where('reservation_expired_at', '>=', now()->subDays(7))->get() as $b) {
+            $add('reservation_expired:'.$b->id, 'reservation', true, $name($b->tenant),
+                'did not finish paying the move-in fee. The reservation expired and the bed was released.', '/tenant-manager', $b->reservation_expired_at);
+        }
+
+        // Half-paid move-in fees whose one-month reservation ends within 7 days.
+        $halfPaid = BillingStatement::with('tenant')->where('type', 'move_in')->where('status', 'partial')
+            ->whereNull('reservation_expired_at')->get();
+        foreach ($halfPaid as $b) {
+            $deadline = $b->reservationDeadline();
+            if ($deadline?->lte(now()->addDays(7))) {
+                $add('reservation_expiring:'.$b->id, 'reservation', false, $name($b->tenant),
+                    'still owes half of the move-in fee. The reservation ends '.$deadline->format('M j').'.', '/payments', $deadline->copy()->subDays(7));
+            }
+        }
+
+        foreach (Review::with('tenant')->where('status', 'hidden')->whereNull('moderated_by')->get() as $r) {
+            $add('review:'.$r->id, 'review', false, $name($r->tenant), 'left a review that the filter held back.', '/dormitory-profile', $r->created_at);
+        }
+
+        $leases = LeaseContract::with('tenant')->whereIn('status', ['active', 'expiring_soon'])
+            ->whereBetween('end_date', [now()->toDateString(), now()->addDays(30)->toDateString()])->get();
+        foreach ($leases as $l) {
+            $end = Carbon::parse($l->end_date);
+            $add('lease_ending:'.$l->id, 'lease', false, $name($l->tenant),
+                "'s lease ends on ".$end->format('M j').'.', '/tenant-manager?lease=expiring_soon', $end->copy()->subDays(30));
+        }
+
+        return $items;
     }
 }
