@@ -226,7 +226,7 @@
             scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.25) transparent;
         }
         .room-thumb {
-            position: relative; flex: 0 0 112px; height: 64px; border-radius: 11px;
+            position: relative; flex: 0 0 140px; height: 64px; border-radius: 11px;
             overflow: hidden; cursor: pointer; scroll-snap-align: start; padding: 0;
             background: #46423e; border: 2px solid transparent; font-family: inherit;
             transition: border-color 0.2s ease, transform 0.2s ease;
@@ -237,10 +237,13 @@
         .room-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.85); }
         .room-thumb::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 35%, rgba(0,0,0,0.7)); }
         .room-thumb .label {
-            position: absolute; left: 8px; bottom: 6px; z-index: 1; color: #fff;
-            font-weight: 700; font-size: 13px; text-align: left; line-height: 1.1;
+            position: absolute; left: 8px; right: 8px; bottom: 6px; z-index: 1; color: #fff;
+            font-weight: 700; font-size: 13px; text-align: left; line-height: 1.15;
         }
-        .room-thumb .label small { display: block; font-size: 11px; font-weight: 500; opacity: 0.85; }
+        .room-thumb .label b, .room-thumb .label small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .room-thumb .label b { font-weight: 700; }
+        .room-thumb .label small { font-size: 11px; font-weight: 500; opacity: 0.9; font-variant-numeric: tabular-nums; }
+        .room-thumb .label small i { font-style: normal; }
         .strip-empty { color: #ddd8d7; font-size: 12px; padding: 12px; }
 
         @keyframes thumbIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -296,12 +299,36 @@
             .dock { width: 100%; }
             .dock.collapsed { width: auto; }
             .dock-toggle { height: 54px; padding: 0 6px; font-size: 11px; }
-            .room-thumb { flex-basis: 92px; height: 54px; }
+            .room-thumb { flex-basis: 104px; height: 54px; }
+            .room-thumb .label { left: 7px; right: 7px; bottom: 5px; font-size: 12.5px; }
+            .room-thumb .label small { font-size: 10.5px; }
+            /* "/bed/mo" is already stated on the card; drop it so the price fits */
+            .room-thumb .label small i { display: none; }
+            .info-eyebrow { font-size: 10px; margin-bottom: 2px; }
+            .info-toggle { top: 8px; right: 8px; width: 30px; height: 30px; }
+            .info-toggle svg { width: 16px; height: 16px; }
+            .info-eyebrow, .info-title { padding-right: 34px; }
+            .info-price { margin-top: 4px; font-size: 12.5px; }
+            .info-price strong { font-size: 16px; }
+            .pricing-tag { display: none; }
             .hint { font-size: 13px; }
         }
-        /* Short screens (e.g. phone turned sideways): keep the card small */
+        /* Short screens (e.g. phone turned sideways): a slim card, name and price only */
         @media (max-height: 520px) {
-            .info-caption, .info-actions { display: none; }
+            .info-caption, .info-actions, .info-eyebrow, .info-updated, .info-meta, .info-size { display: none; }
+            .info-card { top: 8px; left: 8px; width: auto; max-width: min(300px, calc(100% - 76px)); padding: 8px 12px; border-radius: 12px; }
+            .info-toggle { top: 50%; transform: translateY(-50%); width: 28px; height: 28px; right: 6px; }
+            .info-title, .info-price { padding-right: 34px; }
+            .info-title { font-size: 17px; }
+            .info-price { margin-top: 2px; font-size: 12px; }
+            .info-price strong { font-size: 14px; }
+            .info-price-sub { display: none; }
+            .controls { top: 8px; right: 8px; padding: 3px; }
+            .ctrl { width: 34px; height: 34px; }
+            .bottom { padding: 0 8px 8px; gap: 6px; }
+            .dock-toggle { height: 46px; }
+            .room-thumb { height: 46px; }
+            .stage::before { height: 80px; }
         }
     </style>
 </head>
@@ -551,7 +578,7 @@
         roomsScroll.innerHTML = tours.map((room, i) => `
             <button type="button" class="room-thumb" data-room="${room.id}" style="animation-delay:${i * 55}ms" aria-label="View Room ${escapeHtml(room.room_no)} tour">
                 ${room.thumbnail_url ? `<img src="${room.thumbnail_url}" alt="" loading="lazy" decoding="async">` : ''}
-                <span class="label">Room ${escapeHtml(room.room_no)}<small>${[room.capacity ? room.capacity + ' pax' : '', room.pricing_mode === 'per_room' && room.whole_room_rate ? peso(room.whole_room_rate) + '/room/mo' : (room.price_per_bed ? peso(room.price_per_bed) + '/bed/mo' : '')].filter(Boolean).join(' · ')}</small></span>
+                <span class="label"><b>Room ${escapeHtml(room.room_no)}</b><small>${[room.capacity ? room.capacity + ' pax' : '', room.pricing_mode === 'per_room' && room.whole_room_rate ? peso(room.whole_room_rate) + '<i>/room/mo</i>' : (room.price_per_bed ? peso(room.price_per_bed) + '<i>/bed/mo</i>' : '')].filter(Boolean).join(' · ')}</small></span>
             </button>
         `).join('');
 
