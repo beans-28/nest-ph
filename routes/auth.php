@@ -20,8 +20,10 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store'])
-        ->name('login');
+    // No ->name() here: 'login' already belongs to the GET route above, and a
+    // duplicate name breaks `php artisan optimize` (route caching) on deploy.
+    // route('login') gives the same /login URL, so forms posting to it still work.
+    Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
