@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Owner Requests · NEST.PH</title>
 <link rel="icon" href="{{ asset('images/nestphgreen.png') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
@@ -38,7 +38,7 @@
   .lr-name{ font-size:13.5px; font-weight:700; min-width:170px; }
   .lr-owner{ font-size:12.5px; color:var(--text-mid); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .lr-date{ font-size:11.5px; color:var(--text-light); white-space:nowrap; }
-  .chev{ width:14px; height:14px; color:var(--text-light); transition:transform .2s; flex-shrink:0; }
+  .chev{ width:14px; height:14px; color:var(--text-light); transition:transform .2s cubic-bezier(.32,.72,0,1); flex-shrink:0; }
   details[open] .chev{ transform:rotate(180deg); }
 
   .badge{ font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:4px 10px; border-radius:20px; white-space:nowrap; }

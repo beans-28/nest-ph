@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Inquiry · {{ $brandDormName }}</title>
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
     <style>
@@ -25,9 +25,11 @@
         .page-wrap { overflow-x: hidden; }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            background: linear-gradient(180deg, #567357 0%, #59473f 100%);
+            /* Dark charcoal behind the white text. Written as an image (gradient) so the
+               dorm's page-background setting, which only sets the color, can't cover it. */
+            background: linear-gradient(#2b2724, #2b2724);
             min-height: 100vh;
         }
 
@@ -112,7 +114,7 @@
             background: linear-gradient(180deg, #567357 0%, #a2d9a4 100%);
             border-radius: 0 80px 80px 0; display: flex; align-items: center; justify-content: center;
         }
-        .brand-mark span { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.04em; font-size: 96px; color: #fff; line-height: 1; }
+        .brand-mark span { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.04em; font-size: 96px; color: #fff; line-height: 1; }
 
         .login-right-wrap { position: relative; padding-top: 16px; display: flex; flex-direction: column; }
         .login-right {
@@ -121,12 +123,12 @@
             flex: 1;
         }
 
-        .login-right h2 { color: #567357; font-weight: 700; font-size: clamp(22px, 2.6vw, 28px); margin-bottom: 8px; }
+        .login-right h2 { color: #197335; font-weight: 700; font-size: clamp(22px, 2.6vw, 28px); margin-bottom: 8px; }
         .login-right .intro { color: #5f5f5f; font-size: 13.5px; line-height: 1.6; margin-bottom: 26px; max-width: 560px; }
 
         .form-group { margin-bottom: 20px; max-width: 560px; }
         .form-group label {
-            display: block; color: #567357; font-weight: 500; font-size: 13px; margin-bottom: 8px;
+            display: block; color: #197335; font-weight: 500; font-size: 13px; margin-bottom: 8px;
         }
         .form-group label .req { color: #d95117; }
         .form-group input, .form-group select, .form-group textarea {
@@ -135,14 +137,14 @@
             font-family: inherit;
         }
         .form-group textarea { resize: vertical; min-height: 90px; border: 1px solid #a6b69f; border-radius: 6px; padding: 10px; }
-        .form-hint { font-size: 11.5px; color: #5a6b5e; margin-top: 6px; }
+        .form-hint { font-size: 12.5px; color: #5f5853; margin-top: 6px; }
 
         .consent-row {
             display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px;
             color: #4b5f4c; line-height: 1.6; margin: 22px 0 20px; max-width: 560px;
         }
         .consent-row input { margin-top: 3px; accent-color: #567357; width: 16px; height: 16px; flex-shrink: 0; }
-        .consent-row a { color: #567357; font-weight: 700; }
+        .consent-row a { color: #197335; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 
         .btn-login {
             display: block; width: 100%; max-width: 560px; margin: 0 auto; padding: 17px 0;

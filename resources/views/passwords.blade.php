@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Password Help · {{ $brandDormName }}</title>
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
     <style>
@@ -25,9 +25,11 @@
         .page-wrap { overflow-x: hidden; }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            background: linear-gradient(180deg, #567357 0%, #59473f 100%);
+            /* Dark charcoal behind the white text. Written as an image (gradient) so the
+               dorm's page-background setting, which only sets the color, can't cover it. */
+            background: linear-gradient(#2b2724, #2b2724);
             min-height: 100vh;
         }
 
@@ -155,7 +157,7 @@
             justify-content: center;
         }
         .brand-mark span {
-            font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.04em;
+            font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.04em;
             font-size: 96px;
             color: #fff;
             line-height: 1;
@@ -176,7 +178,7 @@
         }
 
         .login-right h2 {
-            color: #567357;
+            color: #197335;
             font-weight: 700;
             font-size: clamp(20px, 2.4vw, 26px);
             margin-bottom: 10px;
@@ -196,7 +198,7 @@
         .form-group { margin-bottom: 22px; max-width: 560px; }
         .form-group label {
             display: block;
-            color: #567357;
+            color: #197335;
             font-weight: 500;
             font-size: 13px;
             margin-bottom: 8px;

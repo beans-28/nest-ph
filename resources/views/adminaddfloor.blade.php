@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Vacancy Monitoring · {{ $brandDormName }}</title>
 <link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
@@ -177,7 +177,7 @@
   .bed-avail-head .ratio b{ font-size:16px; color:#2f7a3d; }
   .bed-avail-head .ratio.none b{ color:#b23b34; }
   .bed-tiles{ display:grid; grid-template-columns:repeat(auto-fill, minmax(70px, 1fr)); gap:6px; }
-  .bed-tile{ display:flex; flex-direction:column; align-items:center; gap:2px; border-radius:7px; padding:8px 4px 7px; cursor:pointer; border:1px solid transparent; line-height:1.2; transition:transform 0.12s cubic-bezier(0.16,1,0.3,1), box-shadow 0.12s ease; }
+  .bed-tile{ display:flex; flex-direction:column; align-items:center; gap:2px; border-radius:7px; padding:8px 4px 7px; cursor:pointer; border:1px solid transparent; line-height:1.2; transition:transform 0.12s cubic-bezier(.32,.72,0,1), box-shadow 0.12s ease; }
   .bed-tile:hover{ transform:translateY(-1px); box-shadow:0 2px 6px rgba(0,0,0,0.10); }
   .bed-tile:focus-visible{ outline:2px solid var(--text-dark); outline-offset:2px; }
   .bed-tile svg{ width:15px; height:15px; margin-bottom:2px; }

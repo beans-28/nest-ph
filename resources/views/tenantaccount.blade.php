@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>My Profile · {{ $brandDormName }}</title>
 <link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
@@ -120,6 +120,42 @@
   .profile-layout{ display:flex; align-items:flex-start; gap:24px; }
   .profile-photo{ display:flex; align-items:center; gap:16px; margin-bottom:22px; }
   .profile-photo .photo{ width:96px; height:96px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid var(--border); background:color-mix(in srgb, var(--green-accent, #2f6f3c) 12%, #fff); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:var(--green-darker, #1f5a2c); }
+  .photo-edit{ position:relative; padding:0; border:0; background:none; border-radius:10px; cursor:pointer; flex-shrink:0; }
+  .photo-edit .photo[hidden]{ display:none; }
+  .photo-edit:focus-visible{ outline:2px solid var(--green-dark); outline-offset:3px; }
+  .photo-edit-badge{
+    position:absolute; right:-6px; bottom:-6px; width:32px; height:32px; border-radius:50%;
+    display:grid; place-items:center; background:var(--green-btn); color:#fff; border:3px solid #fff;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2); transition:transform .16s cubic-bezier(.32,.72,0,1);
+  }
+  .photo-edit-badge svg{ width:15px; height:15px; }
+  .photo-edit:hover .photo-edit-badge{ transform:scale(1.08); }
+  .photo-edit:active .photo-edit-badge{ transform:scale(0.95); }
+  .link-btn{ background:none; border:0; padding:0; font:inherit; color:var(--green-accent); font-weight:700; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+
+  /* Crop window */
+  .crop-dialog{ border:0; border-radius:18px; padding:0; width:min(420px, calc(100vw - 24px)); box-shadow:0 24px 60px rgba(0,0,0,0.35); }
+  .crop-dialog::backdrop{ background:rgba(20,18,16,0.55); }
+  .crop-inner{ padding:20px 22px 22px; }
+  .crop-inner h2{ font-size:17px; font-weight:700; margin:0 0 4px; color:var(--text-dark); }
+  .crop-inner p{ font-size:12.5px; color:var(--text-mid); margin:0 0 16px; line-height:1.5; }
+  .crop-stage{
+    position:relative; width:100%; aspect-ratio:1; border-radius:12px; overflow:hidden; background:#1c1a18;
+    touch-action:none; cursor:grab; user-select:none;
+  }
+  .crop-stage:active{ cursor:grabbing; }
+  .crop-stage img{ position:absolute; top:0; left:0; max-width:none; transform-origin:0 0; pointer-events:none; }
+  .crop-stage::after{ content:''; position:absolute; inset:0; box-shadow:inset 0 0 0 2px rgba(255,255,255,0.85); border-radius:12px; pointer-events:none; }
+  .crop-zoom{ display:flex; align-items:center; gap:10px; margin-top:14px; }
+  .crop-zoom svg{ width:16px; height:16px; color:var(--text-mid); flex-shrink:0; }
+  .crop-zoom input{ flex:1; accent-color:var(--green-btn); }
+  .crop-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; }
+  .crop-actions button{ border-radius:8px; padding:10px 18px; font:inherit; font-size:13.5px; font-weight:700; cursor:pointer; }
+  .crop-cancel{ background:#fff; border:1px solid var(--border); color:var(--text-dark); }
+  .crop-save{ background:var(--green-btn); border:1px solid var(--green-btn); color:#fff; }
+  .crop-save:disabled{ opacity:.6; cursor:wait; }
+  .crop-error{ color:#a8403a; font-size:12.5px; margin:10px 0 0; min-height:1em; }
+
   .profile-photo .name{ font-size:16px; font-weight:700; }
   .profile-photo .hint{ font-size:12px; color:var(--text-light, #6b7479); margin-top:4px; line-height:1.5; }
   .profile-layout > .settings-card{ flex:1 1 640px; }
@@ -190,7 +226,7 @@
       <div class="tab-panel active" id="profilePanel" role="tabpanel" aria-labelledby="profileTab">
 
         <div class="request-edit-banner">
-          <p>This information is view-only. <strong>Spotted something wrong, or need it updated?</strong> Submit a ticket and an admin will make the change for you.</p>
+          <p>You can change your picture yourself. The rest is view-only. <strong>Spotted something wrong, or need it updated?</strong> Submit a ticket and an admin will make the change for you.</p>
           <a href="{{ route('tenant.tickets') }}" class="request-edit-btn">Submit a Ticket</a>
         </div>
 
@@ -204,18 +240,20 @@
         <div class="settings-card">
 
           <div class="profile-photo">
-            @if($tenant?->id_photo_url)
-              <img class="photo" src="{{ $tenant->id_photo_url }}" alt="Your 2x2 ID picture">
-            @else
-              <div class="photo" aria-hidden="true">{{ $tenant?->initials ?? '?' }}</div>
-            @endif
+            {{-- Click the picture to choose and crop a new one --}}
+            <button type="button" class="photo-edit" id="photoEditBtn" aria-label="Change your profile picture">
+              <img class="photo" id="profilePhotoImg" src="{{ $tenant?->id_photo_url }}" alt="Your profile picture" @if(!$tenant?->id_photo_url) hidden @endif>
+              <span class="photo" id="profilePhotoInitials" aria-hidden="true" @if($tenant?->id_photo_url) hidden @endif>{{ $tenant?->initials ?? '?' }}</span>
+              <span class="photo-edit-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
+            </button>
+            <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" hidden>
             <div>
               <div class="name">{{ $tenant->full_name ?? 'Tenant' }}</div>
-              <div class="hint">
+              <div class="hint" id="photoHint">
                 @if($tenant?->id_photo_url)
-                  Your 2x2 ID picture is your profile picture.
+                  This is your 2x2 ID picture. <button type="button" class="link-btn" id="photoChangeLink">Change picture</button>
                 @else
-                  No 2x2 ID picture yet. <a href="{{ route('tenant.tickets') }}">Submit a ticket</a> to have an admin add one.
+                  No picture yet. <button type="button" class="link-btn" id="photoChangeLink">Add your 2x2 ID picture</button>
                 @endif
               </div>
             </div>
@@ -594,6 +632,144 @@
 })();
 </script>
 
+{{-- Profile picture crop window --}}
+<dialog class="crop-dialog" id="cropDialog" aria-labelledby="cropTitle">
+  <div class="crop-inner">
+    <h2 id="cropTitle">Crop your picture</h2>
+    <p>Drag to position your face in the square, and zoom if needed. A clear, front-facing photo works best, like a 2x2 ID picture.</p>
+    <div class="crop-stage" id="cropStage"><img id="cropImg" alt=""></div>
+    <div class="crop-zoom">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M8 11h6M20 20l-4.5-4.5"/></svg>
+      <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" aria-label="Zoom">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M8 11h6M11 8v6M20 20l-4.5-4.5"/></svg>
+    </div>
+    <p class="crop-error" id="cropError" role="alert"></p>
+    <div class="crop-actions">
+      <button type="button" class="crop-cancel" id="cropCancel">Cancel</button>
+      <button type="button" class="crop-save" id="cropSave">Save picture</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+// Profile picture: pick a file, crop it to a square in the browser, upload a 600x600 JPEG.
+(function () {
+  const input = document.getElementById('photoInput');
+  const dialog = document.getElementById('cropDialog');
+  const stage = document.getElementById('cropStage');
+  const img = document.getElementById('cropImg');
+  const zoom = document.getElementById('cropZoom');
+  const err = document.getElementById('cropError');
+  const saveBtn = document.getElementById('cropSave');
+  if (!input || !dialog) return;
+
+  let natW = 0, natH = 0, base = 1, scale = 1, x = 0, y = 0, objectUrl = null;
+  const V = () => stage.clientWidth;
+
+  function clamp() {
+    const v = V(), w = natW * scale, h = natH * scale;
+    x = Math.min(0, Math.max(v - w, x));
+    y = Math.min(0, Math.max(v - h, y));
+  }
+  function draw() {
+    clamp();
+    img.style.width = (natW * scale) + 'px';
+    img.style.height = (natH * scale) + 'px';
+    img.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+  }
+  function setZoom(z, cx, cy) {
+    const v = V();
+    cx = cx ?? v / 2; cy = cy ?? v / 2;
+    const old = scale;
+    scale = base * z;
+    // keep the point under the cursor (or the center) in place
+    x = cx - (cx - x) * (scale / old);
+    y = cy - (cy - y) * (scale / old);
+    draw();
+  }
+
+  function open() { input.value = ''; input.click(); }
+  document.getElementById('photoEditBtn').addEventListener('click', open);
+  document.getElementById('photoChangeLink')?.addEventListener('click', open);
+
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { alert('Please choose a JPG, PNG or WebP picture.'); return; }
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      natW = img.naturalWidth; natH = img.naturalHeight;
+      err.textContent = '';
+      dialog.showModal();
+      base = V() / Math.min(natW, natH);  // smallest size that fills the square
+      scale = base; zoom.value = 1;
+      x = (V() - natW * scale) / 2; y = (V() - natH * scale) / 2;
+      draw();
+    };
+    img.src = objectUrl;
+  });
+
+  // Drag to move (mouse, touch, pen)
+  let drag = null;
+  stage.addEventListener('pointerdown', e => { drag = { px: e.clientX, py: e.clientY, x, y }; stage.setPointerCapture(e.pointerId); });
+  stage.addEventListener('pointermove', e => { if (!drag) return; x = drag.x + e.clientX - drag.px; y = drag.y + e.clientY - drag.py; draw(); });
+  stage.addEventListener('pointerup', () => { drag = null; });
+  stage.addEventListener('pointercancel', () => { drag = null; });
+  // Zoom: slider, or mouse wheel over the picture
+  zoom.addEventListener('input', () => setZoom(Number(zoom.value)));
+  stage.addEventListener('wheel', e => {
+    e.preventDefault();
+    const r = stage.getBoundingClientRect();
+    const z = Math.min(3, Math.max(1, Number(zoom.value) - e.deltaY * 0.002));
+    zoom.value = z; setZoom(z, e.clientX - r.left, e.clientY - r.top);
+  }, { passive: false });
+  // Keyboard: arrow keys move the picture
+  stage.tabIndex = 0;
+  stage.setAttribute('aria-label', 'Picture position. Use arrow keys to move.');
+  stage.addEventListener('keydown', e => {
+    const step = 10, map = { ArrowLeft: [step, 0], ArrowRight: [-step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] };
+    if (!map[e.key]) return;
+    e.preventDefault(); x += map[e.key][0]; y += map[e.key][1]; draw();
+  });
+
+  document.getElementById('cropCancel').addEventListener('click', () => dialog.close());
+
+  saveBtn.addEventListener('click', () => {
+    const OUT = 600, src = V() / scale;
+    const canvas = document.createElement('canvas');
+    canvas.width = OUT; canvas.height = OUT;
+    canvas.getContext('2d').drawImage(img, -x / scale, -y / scale, src, src, 0, 0, OUT, OUT);
+    saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; err.textContent = '';
+    canvas.toBlob(async blob => {
+      const fd = new FormData();
+      fd.append('photo', blob, 'profile.jpg');
+      try {
+        const res = await fetch('{{ route('tenant.account.photo') }}', {
+          method: 'POST', body: fd,
+          headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(body.message || 'Could not save your picture. Please try again.');
+        const url = body.url + '?t=' + Date.now();
+        const photo = document.getElementById('profilePhotoImg');
+        photo.src = url; photo.hidden = false;
+        document.getElementById('profilePhotoInitials').hidden = true;
+        // Top-bar avatar too, if it shows a picture
+        const avatar = document.querySelector('.topbar a.topbar-icon');
+        if (avatar) {
+          avatar.style.padding = '0'; avatar.style.overflow = 'hidden';
+          avatar.innerHTML = '<img src="' + url + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;">';
+        }
+        dialog.close();
+      } catch (e) {
+        err.textContent = e.message;
+      }
+      saveBtn.disabled = false; saveBtn.textContent = 'Save picture';
+    }, 'image/jpeg', 0.9);
+  });
+})();
+</script>
 @include('partials.photo-lightbox')
 </body>
 </html>

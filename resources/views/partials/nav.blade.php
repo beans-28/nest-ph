@@ -9,7 +9,7 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     .app-topbar .left,
     .app-topbar .right {

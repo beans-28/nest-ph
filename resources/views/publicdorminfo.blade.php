@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css"><style>        /* Comfortable reading width for long house rules */
+        .listing-rules li { max-width: 60ch; }
+    </style>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dorm Info · {{ $brandDormName }}</title>
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
     <style>
@@ -26,9 +28,11 @@
         .page-wrap { overflow-x: hidden; }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            background: linear-gradient(180deg, #567357 0%, #59473f 100%);
+            /* Dark charcoal behind the white text. Written as an image (gradient) so the
+               dorm's page-background setting, which only sets the color, can't cover it. */
+            background: linear-gradient(#2b2724, #2b2724);
             min-height: 100vh;
         }
 
@@ -143,7 +147,7 @@
         }
 
         .empty-state { text-align: center; padding: 40px 20px; color: #4b5f4c; }
-        .empty-state svg { width: 48px; height: 48px; margin-bottom: 14px; color: #8a9690; }
+        .empty-state svg { width: 48px; height: 48px; margin-bottom: 14px; color: #7a726c; }
         .empty-state p { font-size: 14px; max-width: 420px; margin: 0 auto; line-height: 1.6; }
 
         @media (max-width: 1024px) { .topnav { padding: 14px 24px; flex-wrap: wrap; } }
@@ -192,7 +196,7 @@
         .review-item:last-child{ border-bottom:none; padding-bottom:0; }
         .review-item-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }
         .review-item-name{ font-weight:700; font-size:13px; color:#292420; }
-        .review-item-date{ font-size:11.5px; color:#8a9690; }
+        .review-item-date{ font-size:11.5px; color:#7a726c; }
         .review-item-stars{ color:#f5b301; font-size:13px; margin-bottom:6px; letter-spacing:1px; }
         .review-item-comment{ font-size:13px; color:#33393c; line-height:1.7; }
         .review-item-photos{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
@@ -202,7 +206,7 @@
         @media (max-width: 640px) {
             .reviews-summary{ flex-direction:column; align-items:center; text-align:center; }
         }
-    </style>
+        </style>
 </head>
 <body>
 
@@ -373,5 +377,6 @@
     </script>
 
 @include('partials.photo-lightbox')
+@include('partials.contact-fab')
 </body>
 </html>

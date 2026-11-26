@@ -38,6 +38,7 @@ class DormitoryProfileController extends Controller
             'profile' => $profile,
             'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
             'heroPhotos' => $this->heroPhotoList($profile),
+            'heroPanoramaUrl' => $profile->heroPanoramaUrl(),
             'businessPermitName' => $profile->business_permit_path ? basename($profile->business_permit_path) : null,
             'businessPermitExt' => $profile->business_permit_path ? strtoupper(pathinfo($profile->business_permit_path, PATHINFO_EXTENSION)) : null,
             'businessPermitImageUrl' => $this->isImageFile($profile->business_permit_path)
@@ -182,6 +183,66 @@ class DormitoryProfileController extends Controller
             'message' => 'Homepage photo removed.',
             'photos' => $this->heroPhotoList($profile),
         ]);
+    }
+
+    /** "Where We Are" homepage section: map pin, directions note, show/hide. */
+    public function updateLocation(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'map_location' => ['nullable', 'string', 'max:255'],
+            'location_note' => ['nullable', 'string', 'max:300'],
+            'show_location_map' => ['required', 'boolean'],
+        ]);
+
+        $profile = DormitoryProfile::current();
+        $profile->fill($data)->save();
+
+        return response()->json(['message' => 'Location saved.']);
+    }
+
+    /**
+     * Homepage 360° photo (e.g. the lobby). Replaces the slideshow on the
+     * homepage while set. Must be a full 360 (2:1) photo, like the VR tours.
+     */
+    public function uploadHeroPanorama(Request $request): JsonResponse
+    {
+        $request->validate([
+            'panorama' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:20480'], // 20MB, same as VR tour photos
+        ]);
+
+        [$w, $h] = @getimagesize($request->file('panorama')->getRealPath()) ?: [0, 0];
+        if (! $h || abs($w / $h - 2) > 0.05) {
+            return response()->json([
+                'message' => 'This doesn\'t look like a 360° photo. It should be twice as wide as it is tall (2:1), like the ones from a 360 camera.',
+            ], 422);
+        }
+
+        $profile = DormitoryProfile::current();
+        if (! $profile->exists) {
+            $profile->save();
+        }
+
+        $old = $profile->hero_panorama_path;
+        $profile->update(['hero_panorama_path' => DormitoryProfile::storeHeroPanorama($request->file('panorama')->get())]);
+        if ($old) {
+            Storage::disk('public')->delete($old);
+        }
+
+        return response()->json([
+            'message' => '360° photo saved. Your homepage now shows it instead of the slideshow.',
+            'url' => $profile->heroPanoramaUrl(),
+        ]);
+    }
+
+    public function deleteHeroPanorama(): JsonResponse
+    {
+        $profile = DormitoryProfile::current();
+        if ($profile->hero_panorama_path) {
+            Storage::disk('public')->delete($profile->hero_panorama_path);
+            $profile->update(['hero_panorama_path' => null]);
+        }
+
+        return response()->json(['message' => '360° photo removed. Your homepage shows the slideshow again.']);
     }
 
     private function heroPhotoList(DormitoryProfile $profile): array

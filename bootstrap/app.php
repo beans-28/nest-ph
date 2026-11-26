@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [\App\Http\Middleware\InjectBrandTheme::class]);
         // Hover prefetches (public/js/smooth-nav.js) must not use up one-time session messages.
         $middleware->web(append: [\App\Http\Middleware\KeepSessionOnPrefetch::class]);
+        // Back button after logout must not show the previous person's pages.
+        $middleware->web(append: [\App\Http\Middleware\NoStoreWhenLoggedIn::class]);
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'platform' => \App\Http\Middleware\EnsureUserIsPlatformAdmin::class,

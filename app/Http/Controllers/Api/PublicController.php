@@ -50,6 +50,10 @@ class PublicController extends Controller
             'address' => $profile->address,
             'coverPhotoUrl' => $profile->logo_path ? Storage::disk('public')->url($profile->logo_path) : null,
             'heroPhotoUrls' => $profile->heroPhotoUrls(),
+            'heroPanoramaUrl' => $profile->heroPanoramaUrl(),
+            'mapQuery' => $profile->mapQuery(),
+            'locationNote' => $profile->location_note,
+            'showLocationMap' => $profile->show_location_map ?? true,
             'isBirVerified' => $profile->isBirVerified(),
             'birRegistrationImageUrl' => $this->isImageFile($profile->bir_registration_path)
                 ? Storage::disk('public')->url($profile->bir_registration_path)

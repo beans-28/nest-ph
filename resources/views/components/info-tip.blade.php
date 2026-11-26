@@ -13,12 +13,12 @@
 @php($tipId = 'tip-'.\Illuminate\Support\Str::random(8))
 @once
 <style>
-  .info-tip{ position:relative; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; margin-left:6px; padding:0; vertical-align:middle; border:1.5px solid currentColor; border-radius:50%; background:transparent; color:var(--text-mid, #5b6b60); font-family:var(--font-body, 'Inter', system-ui, sans-serif); font-size:11px; font-weight:700; font-style:normal; line-height:1; letter-spacing:0; text-transform:none; cursor:help; flex-shrink:0; }
+  .info-tip{ position:relative; display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; margin-left:6px; padding:0; vertical-align:middle; border:1.5px solid currentColor; border-radius:50%; background:transparent; color:var(--text-mid, #5b6b60); font-family:var(--font-body, 'Plus Jakarta Sans', system-ui, sans-serif); font-size:11px; font-weight:700; font-style:normal; line-height:1; letter-spacing:0; text-transform:none; cursor:help; flex-shrink:0; }
   /* Bigger invisible tap area (about 34px) around the small icon. */
   .info-tip::after{ content:''; position:absolute; inset:-8px; }
   .info-tip:hover, .info-tip:focus-visible, .info-tip.open{ color:var(--text-dark, #243026); }
   .info-tip:focus-visible{ outline:2px solid var(--green-accent, #2f6f3c); outline-offset:2px; }
-  .info-tip-bubble{ position:absolute; top:calc(100% + 8px); left:-8px; z-index:60; display:none; width:max-content; max-width:min(280px, calc(100vw - 32px)); padding:9px 12px; border-radius:8px; background:#2b2a28; color:#fff; font-family:var(--font-body, 'Inter', system-ui, sans-serif); font-size:12.5px; font-weight:400; font-style:normal; line-height:1.5; letter-spacing:normal; text-transform:none; text-align:left; white-space:normal; cursor:auto; box-shadow:0 6px 18px rgba(0,0,0,.18); }
+  .info-tip-bubble{ position:absolute; top:calc(100% + 8px); left:-8px; z-index:60; display:none; width:max-content; max-width:min(280px, calc(100vw - 32px)); padding:9px 12px; border-radius:8px; background:#2b2a28; color:#fff; font-family:var(--font-body, 'Plus Jakarta Sans', system-ui, sans-serif); font-size:12.5px; font-weight:400; font-style:normal; line-height:1.5; letter-spacing:normal; text-transform:none; text-align:left; white-space:normal; cursor:auto; box-shadow:0 6px 18px rgba(0,0,0,.18); }
   .info-tip-bubble::before{ content:''; position:absolute; bottom:100%; left:var(--arrow-x, 14px); border:6px solid transparent; border-bottom-color:#2b2a28; }
   .info-tip:hover .info-tip-bubble, .info-tip:focus-visible .info-tip-bubble, .info-tip.open .info-tip-bubble{ display:block; }
   .info-tip.is-dismissed .info-tip-bubble{ display:none; }

@@ -1,0 +1,91 @@
+/* ==========================================================================
+   NEST.PH shared motion — Apple-style.
+   Things don't just fade: they move, scale and come into focus, then SETTLE
+   with a soft spring. Exits are quicker than entrances.
+   Reduced motion: opacity only, nothing moves.
+   ========================================================================== */
+:root{
+  /* iOS sheet curve: fast start, long gentle settle. */
+  --ease-out: cubic-bezier(.32,.72,0,1);
+  /* Gentle spring (~3% overshoot) for things that "land". */
+  --spring: linear(0, .06 3%, .22 7%, .45 12%, .68 18%, .85 25%, .95 32%, 1.01 40%, 1.03 48%, 1.02 60%, 1.005 75%, 1);
+  --dur-exit: 200ms;
+  --dur-fast: 260ms;
+  --dur: 380ms;
+  --dur-slow: 480ms;
+}
+
+/* ---------- Page to page: old page eases back, new page rises into focus ---------- */
+@view-transition{ navigation:auto; }
+@keyframes nm-page-out{ to{ opacity:0; transform:scale(.985); } }
+@keyframes nm-page-in{ from{ opacity:0; transform:translateY(10px) scale(.99); filter:blur(4px); } }
+::view-transition-old(root){ animation: nm-page-out var(--dur-exit) var(--ease-out) both; }
+::view-transition-new(root){ animation: nm-page-in var(--dur) var(--ease-out) both; }
+
+/* ---------- Modals: backdrop dims, box springs up into place; closes smoothly too ---------- */
+.modal-overlay, .review-modal-overlay{
+  opacity:0; pointer-events:none;
+  transition: opacity var(--dur-exit) var(--ease-out), display var(--dur-exit) allow-discrete, overlay var(--dur-exit) allow-discrete;
+}
+.modal-overlay.open, .review-modal-overlay.open{
+  opacity:1; pointer-events:auto;
+  transition: opacity var(--dur-fast) var(--ease-out), display var(--dur-fast) allow-discrete, overlay var(--dur-fast) allow-discrete;
+}
+.modal-overlay .modal-box, .review-modal-overlay > *{
+  transform: translateY(12px) scale(.95);
+  transition: transform var(--dur-exit) var(--ease-out);
+}
+.modal-overlay.open .modal-box, .review-modal-overlay.open > *{
+  transform:none;
+  transition: transform var(--dur) var(--spring);
+}
+@starting-style{
+  .modal-overlay.open, .review-modal-overlay.open{ opacity:0; }
+  .modal-overlay.open .modal-box, .review-modal-overlay.open > *{ transform: translateY(12px) scale(.95); }
+}
+
+/* ---------- Bell + profile menus: grow out of their button (top-right) ---------- */
+.notif-panel, .pm-panel{
+  transform-origin: top right;
+  opacity:0; transform: scale(.94) translateY(-6px); pointer-events:none;
+  transition: opacity var(--dur-exit) var(--ease-out), transform var(--dur-exit) var(--ease-out), display var(--dur-exit) allow-discrete;
+}
+.notif-panel.open, .pm-panel.open{
+  opacity:1; transform:none; pointer-events:auto;
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur) var(--spring), display var(--dur) allow-discrete;
+}
+@starting-style{
+  .notif-panel.open, .pm-panel.open{ opacity:0; transform: scale(.94) translateY(-6px); }
+}
+
+/* ---------- Tab content: slides up and comes into focus ---------- */
+@keyframes nm-rise{ from{ opacity:0; transform:translateY(8px); filter:blur(3px); } }
+.tab-panel.active, .view.active{ animation: nm-rise var(--dur) var(--ease-out); }
+
+/* Image viewer: zooms in from slightly small. */
+@keyframes nm-zoom{ from{ opacity:0; transform:scale(.96); } }
+.img-viewer.open{ animation: nm-zoom var(--dur) var(--spring); }
+
+/* ---------- Form errors: drop in and settle ---------- */
+@keyframes nm-error{ from{ opacity:0; transform:translateY(-6px); } }
+.modal-error.visible, .review-modal-error.visible, .export-error.visible,
+.login-error.visible, .field-error.visible, .form-error.visible{
+  animation: nm-error var(--dur-fast) var(--spring);
+}
+
+/* ---------- Press feedback ---------- */
+/* `scale` (not `transform`) so it never fights existing transforms. */
+button:not(:disabled):active, .btn:not(:disabled):active{ scale: .97; }
+
+/* ---------- Reduced motion: keep opacity, remove all movement/scale/blur ---------- */
+@media (prefers-reduced-motion: reduce){
+  @keyframes nm-fade{ from{ opacity:0; } }
+  ::view-transition-old(root){ animation: none; }
+  ::view-transition-new(root){ animation: nm-fade var(--dur-fast) ease-out both; }
+  .modal-overlay .modal-box, .review-modal-overlay > *,
+  .notif-panel, .pm-panel{ transform:none !important; }
+  .tab-panel.active, .view.active, .img-viewer.open,
+  .modal-error.visible, .review-modal-error.visible, .export-error.visible,
+  .login-error.visible, .field-error.visible, .form-error.visible{ animation-name: nm-fade; }
+  button:not(:disabled):active, .btn:not(:disabled):active{ scale: none; }
+}

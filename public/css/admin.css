@@ -24,7 +24,7 @@
   --brand-tint:#e6f2e8; /* pale brand color for hovers / icon chips */
   --status-good:#2f6f3c; /* "occupied" / "paid" green. Fixed: the dorm's site color never changes it. */
   --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e5e5;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 }
 *{box-sizing:border-box;}
 html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
@@ -129,12 +129,12 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
     position:fixed; top:0; left:0; bottom:0; z-index:200;
     width:min(280px, 84vw); height:100%; height:100dvh;
     transform:translateX(-100%); visibility:hidden;
-    transition:transform .24s cubic-bezier(.2,.8,.2,1), visibility 0s linear .24s;
+    transition:transform .24s cubic-bezier(.32,.72,0,1), visibility 0s linear .24s;
     box-shadow:none;
   }
   .sidebar.open{
     transform:none; visibility:visible;
-    transition:transform .24s cubic-bezier(.2,.8,.2,1), visibility 0s;
+    transition:transform .24s cubic-bezier(.32,.72,0,1), visibility 0s;
     box-shadow:8px 0 28px rgba(0,0,0,.25);
   }
   /* The drawer always shows full labels, even if desktop was collapsed. */
@@ -163,7 +163,7 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
   .main .page-head h1{ font-size:18px; }
 }
 @media (max-width: 860px) and (prefers-reduced-motion: reduce){
-  .sidebar, .sidebar.open, .sidebar-backdrop, .sidebar-backdrop.show{ transition:none; }
+  .sidebar, .sidebar.open{ transition:none; }
 }
 
 @media (max-width: 640px){

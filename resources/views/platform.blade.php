@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>NEST.PH · Dormitory Management System</title>
     <link rel="icon" href="{{ asset('images/nestphgreen.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
     {{-- Same tokens, nav, hero, section and footer styles as welcome.blade.php
@@ -29,7 +29,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
         @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; color: var(--ink); background: #fff; }
+        body { font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif; color: var(--ink); background: #fff; }
         section[id] { scroll-margin-top: 80px; }
         .page-wrap { overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }
@@ -73,92 +73,110 @@
         .btn-outline-green { background: transparent; border-color: var(--green-darker); color: var(--green-darker); }
         .btn-green:hover { background: #48614a; border-color: #48614a; }
         .btn-outline-green:hover { background: rgba(25,115,53,0.08); }
-        .btn-lg { height: 46px; padding: 0 22px; font-size: 15px; }
+        .btn-lg { height: 48px; padding: 0 24px; font-size: 15px; }
         .btn[disabled] { opacity: .6; cursor: wait; }
+        /* Page buttons match the rounded cards (top bar keeps its own). */
+        .page-wrap .btn { border-radius: 10px; font-weight: 600; transition: background-color .2s ease, color .2s ease, transform .2s cubic-bezier(.32,.72,0,1); }
+        .page-wrap .btn:active { transform: translateY(1px); }
+        .page-wrap .btn-green:hover { background: var(--green-darker); border-color: var(--green-darker); }
+        .page-wrap .btn-outline-green:hover { background: color-mix(in srgb, var(--green-dark) 9%, transparent); }
+        ::selection { background: color-mix(in srgb, var(--green-dark) 25%, #fff); color: var(--ink); }
+        .section-title { font-size: clamp(24px, 2.8vw, 32px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; text-wrap: balance; }
 
         .hero {
             background: linear-gradient(90deg, var(--cream), var(--cream-light));
-            padding: clamp(32px, 6vw, 56px) clamp(20px, 6vw, 64px);
-            display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: center;
-            box-shadow: 0 4px 2px rgba(0,0,0,0.15);
+            padding: clamp(40px, 7vw, 88px) clamp(20px, 6vw, 64px);
+            display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 5vw, 72px); align-items: center;
         }
-        .hero-text h1 { font-size: clamp(24px, 3.2vw, 36px); font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
-        .hero-text p { font-size: 15px; line-height: 1.6; margin-bottom: 24px; max-width: 540px; }
+        .hero-text h1 { font-size: clamp(30px, 4.2vw, 52px); font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 20px; text-wrap: balance; }
+        .hero-text p { font-size: 16px; line-height: 1.65; margin-bottom: 32px; max-width: 34em; color: #4a423d; }
         .hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
         /* Minimal: just the big green NEST.PH logo, no box */
         .hero-logo { display: flex; align-items: center; justify-content: center; }
         .hero-logo img { width: min(100%, 340px); height: auto; }
 
-        .eyebrow { font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--green-darker); margin-bottom: 8px; }
 
-        /* "Choose a dormitory": green leaf band, like the homepage stats bar */
-        .stats-bar {
-            background: linear-gradient(90deg, var(--green-dark), var(--green-light));
-            padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px); text-align: center;
+        /* Dormitory picker inside the hero: each dorm is one big button. */
+        .dorm-picker { max-width: 520px; scroll-margin-top: 96px; }
+        .hero-text { min-width: 0; }
+        .hero-text .dorm-picker-label { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+        .dorm-list { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+        @media (max-width: 640px) {
+            .dorm-pick { gap: 12px; padding-right: 14px; }
+            .dorm-pick-thumb { width: 60px; height: 60px; }
+            .dorm-pick .dorm-pick-addr { white-space: normal; }
         }
-        .stats-bar .eyebrow { color: #fff; }
-        /* White text here: ink on the dark end of this gradient was only ~3:1 */
-        .stats-bar h2 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; margin-bottom: 8px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
-        .stats-bar .sub { font-size: 14px; margin-bottom: 24px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.25); }
-        .dorm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 440px)); justify-content: center; gap: 24px; max-width: 900px; margin: 0 auto; text-align: left; }
-        .dorm-card { background: #fff; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-        /* No photo yet (or it failed to load): the branded leaf placeholder shows through */
-        .dorm-photo { aspect-ratio: 16 / 9; position: relative; overflow: hidden; background: linear-gradient(135deg, var(--green-darker), var(--green-dark)); }
-        .dorm-photo .bg-texture { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: multiply; opacity: 0.5; }
-        .dorm-photo-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #fff; font-size: 13px; font-weight: 500; }
-        .dorm-photo-empty img { width: 56px; height: auto; opacity: 0.9; }
-        .dorm-photo > .dorm-photo-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
-        .dorm-body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .dorm-body h3 { font-size: 18px; font-weight: 700; }
-        .dorm-body .addr { font-size: 13.5px; color: var(--ink-alt); }
-        .dorm-body p { font-size: 13.5px; line-height: 1.55; }
-        .dorm-badge { align-self: flex-start; font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--green-darker); background: #e8f4e9; padding: 4px 10px; border-radius: 999px; }
-        .dorm-body .btn { margin-top: auto; align-self: flex-start; }
-        .owner-strip {
-            max-width: 900px; margin: 24px auto 0; padding: 16px 20px; border-radius: 4px;
-            background: rgba(255,255,255,0.92); box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-            display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; text-align: left;
+        .dorm-pick {
+            display: flex; align-items: center; gap: 16px; padding: 12px 18px 12px 12px;
+            background: #fff; border: 1px solid color-mix(in srgb, var(--green-dark) 18%, #e5e0dc); border-radius: 16px;
+            box-shadow: 0 1px 2px rgba(41,36,32,0.06), 0 12px 28px -18px rgba(41,36,32,0.4);
+            transition: border-color .2s ease, box-shadow .25s ease, transform .25s cubic-bezier(.32,.72,0,1);
         }
-        .owner-strip p { font-size: 14px; line-height: 1.5; color: var(--ink); }
-        .owner-strip strong { display: block; font-size: 15px; }
+        .dorm-pick:hover { border-color: var(--green-dark); transform: translateY(-2px); box-shadow: 0 1px 2px rgba(41,36,32,0.06), 0 18px 34px -18px rgba(41,36,32,0.45); }
+        .dorm-pick:focus-visible { outline: 3px solid var(--green-dark); outline-offset: 3px; }
+        .dorm-pick-thumb {
+            flex-shrink: 0; width: 72px; height: 72px; border-radius: 12px; overflow: hidden;
+            background: linear-gradient(135deg, var(--green-darker), var(--green-dark)) center / cover;
+        }
+        .dorm-pick-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .dorm-pick-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .dorm-pick-text strong { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+        .dorm-pick-addr { font-size: 13.5px; color: #6b625c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dorm-pick-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--green-darker); margin-top: 4px; }
+        .dorm-pick-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #00a83a; }
+        .dorm-pick-arrow { flex-shrink: 0; width: 22px; height: 22px; color: var(--green-dark); transition: transform .25s cubic-bezier(.32,.72,0,1); }
+        .dorm-pick:hover .dorm-pick-arrow { transform: translateX(3px); }
 
         /* "About NEST.PH": same as the homepage's dark green feature section */
-        .about-section { background: var(--green-dark); padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px); }
-        .about-header { text-align: center; max-width: 720px; margin: 0 auto 32px; }
-        .about-header .eyebrow { color: rgba(255,255,255,0.85); }
-        .about-header h2 { color: #fff; font-size: clamp(19px, 2.4vw, 24px); font-weight: 700; }
-        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 44px; max-width: 860px; margin: 0 auto; }
-        .feature { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; color: #fff; }
-        .feature-icon { width: 48px; height: 48px; color: #fff; }
+        .about-section {
+            background: color-mix(in srgb, var(--green-dark) 8%, #fff);
+            border-top: 1px solid color-mix(in srgb, var(--green-dark) 15%, transparent);
+            padding: clamp(48px, 7vw, 88px) clamp(20px, 6vw, 64px);
+        }
+        .about-header { text-align: center; max-width: 720px; margin: 0 auto 44px; }
+        .about-header .sub { font-size: 16px; color: #5b524c; margin-top: 10px; }
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; max-width: 1000px; margin: 0 auto; }
+        .feature {
+            display: flex; align-items: flex-start; gap: 18px; text-align: left; padding: 26px 0;
+            border-top: 1px solid color-mix(in srgb, var(--green-dark) 18%, #e5e0dc);
+        }
+        .feature-icon {
+            flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px; padding: 11px;
+            color: var(--green-dark); background: #fff;
+            box-shadow: 0 1px 2px rgba(41,36,32,0.08), 0 6px 14px -8px rgba(41,36,32,0.3);
+        }
         .feature-icon svg { width: 100%; height: 100%; }
-        .feature p { font-size: 13.5px; line-height: 1.55; }
+        .feature p { font-size: 14.5px; line-height: 1.65; color: #4a423d; }
+        .feature strong { font-weight: 700; color: var(--ink); display: block; margin-bottom: 6px; font-size: 16px; letter-spacing: -0.01em; }
 
         /* "For dormitory owners": cream band, like the homepage's "Why Pick Us" */
         .why-section {
             background: linear-gradient(90deg, var(--cream), var(--cream-light));
-            padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px);
-            box-shadow: 0 4px 2px rgba(0,0,0,0.15);
+            padding: clamp(48px, 7vw, 88px) clamp(20px, 6vw, 64px);
         }
-        .why-head { text-align: center; max-width: 740px; margin: 0 auto 28px; }
-        .why-head h2 { font-size: clamp(20px, 2.6vw, 26px); font-weight: 700; margin-bottom: 14px; }
-        .why-head p { font-size: 14.5px; line-height: 1.6; }
-        .steps { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 900px; margin: 0 auto 32px; }
-        .steps li { counter-increment: step; text-align: center; font-size: 13.5px; line-height: 1.5; color: var(--ink-alt); }
+        .why-head { text-align: center; max-width: 740px; margin: 0 auto 40px; }
+        .why-head h2 { margin-bottom: 14px; }
+        .why-head p { font-size: 16px; line-height: 1.65; color: #4a423d; }
+        .steps { list-style: none; counter-reset: step; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; max-width: 960px; margin: 0 auto 40px; }
+        .steps li { counter-increment: step; text-align: center; font-size: 14px; line-height: 1.55; color: #5b524c; }
         .steps li::before {
             content: counter(step); display: flex; align-items: center; justify-content: center;
-            width: 36px; height: 36px; margin: 0 auto 10px; border-radius: 50%; background: var(--green-dark); color: #fff; font-weight: 700;
+            width: 40px; height: 40px; margin: 0 auto 12px; border-radius: 50%; background: var(--green-dark); color: #fff; font-weight: 700;
+            box-shadow: 0 0 0 6px color-mix(in srgb, var(--green-dark) 12%, transparent);
         }
-        .steps strong { display: block; color: var(--ink); font-size: 14.5px; margin-bottom: 2px; }
+        .steps strong { display: block; color: var(--ink); font-size: 15.5px; margin-bottom: 4px; }
 
         form.request {
-            max-width: 860px; margin: 0 auto; background: #fff; border-radius: 4px; padding: clamp(20px, 4vw, 32px);
-            display: grid; grid-template-columns: 1fr 1fr; gap: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 860px; margin: 0 auto; background: #fff; border-radius: 18px; padding: clamp(22px, 4vw, 40px);
+            display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+            box-shadow: 0 1px 2px rgba(41,36,32,0.06), 0 18px 40px -22px rgba(41,36,32,0.35);
         }
         .field { display: flex; flex-direction: column; gap: 6px; }
         .field.full { grid-column: 1 / -1; }
         .field label { font-weight: 500; font-size: 13.5px; }
         .req-star { color: #b42318; }
-        .field input, .field textarea { font: inherit; font-size: 14px; padding: 10px 12px; border: 1px solid var(--gray-border); border-radius: 4px; width: 100%; background: #fff; }
+        .field input, .field textarea { font: inherit; font-size: 15px; padding: 11px 13px; border: 1px solid var(--gray-border); border-radius: 10px; width: 100%; background: #fff; transition: border-color .2s ease, box-shadow .2s ease; }
+        .field input:focus, .field textarea:focus { outline: none; border-color: var(--green-dark); box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-dark) 20%, transparent); }
         .field textarea { min-height: 110px; resize: vertical; }
         .consent { grid-column: 1 / -1; display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
         .consent input { margin-top: 3px; accent-color: var(--green-darker); }
@@ -185,8 +203,8 @@
         .footer-bottom { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.12); font-size: 12px; }
 
         @media (max-width: 1024px) {
-            .topnav, .hero, .stats-bar, .why-section, .about-section, footer { padding-left: 28px; padding-right: 28px; }
-            .hero { grid-template-columns: 1fr; }
+            .topnav, .hero, .why-section, .about-section, footer { padding-left: 28px; padding-right: 28px; }
+            .hero { grid-template-columns: minmax(0, 1fr); }
             /* Stacked: logo goes above the text and shrinks, so the dorm list isn't pushed far down */
             .hero-logo { order: -1; justify-content: flex-start; }
             .hero-logo img { width: 120px; }
@@ -196,9 +214,9 @@
             .topnav { flex-wrap: wrap; }
         }
         @media (max-width: 640px) {
-            .topnav, .hero, .stats-bar, .why-section, .about-section, footer { padding-left: 18px; padding-right: 18px; }
-            .hero-text h1 { font-size: 24px; }
-            .dorm-grid, form.request { grid-template-columns: 1fr; }
+            .topnav, .hero, .why-section, .about-section, footer { padding-left: 18px; padding-right: 18px; }
+            .hero-text h1 { font-size: 30px; }
+            form.request { grid-template-columns: 1fr; }
             .footer-grid { grid-template-columns: 1fr; gap: 28px; }
             .footer-bottom { flex-direction: column; align-items: flex-start; }
         }
@@ -210,12 +228,30 @@
     <div class="page-wrap">
     <section class="hero">
         <div class="hero-text">
-            <div class="eyebrow">Dormitory Management System</div>
             <h1>Welcome to NEST.PH!</h1>
             <p>NEST.PH is a web app for dormitory living and management. Students find rooms, take virtual tours and apply online, while dormitory owners handle tenants, contracts, billing and maintenance in one place.</p>
-            <div class="hero-buttons">
-                <a href="#dormitories" class="btn btn-green btn-lg">Find a Dormitory</a>
-                <a href="#for-owners" class="btn btn-outline-green btn-lg">I Own a Dormitory</a>
+            {{-- The dormitory list IS the main action: one button per dorm,
+                 right here, instead of a "Find" button that scrolls to a
+                 second "Choose" section (feedback: it said the same thing twice). --}}
+            <div class="dorm-picker" id="dormitories">
+                <p class="dorm-picker-label" id="dormPickerLabel">Choose a dormitory</p>
+                <ul class="dorm-list" aria-labelledby="dormPickerLabel">
+                    <li>
+                        <a href="{{ route('home') }}" class="dorm-pick">
+                            <span class="dorm-pick-thumb">
+                                @if ($dormPhotoUrl)
+                                    <img src="{{ $dormPhotoUrl }}" alt="" onerror="this.remove()">
+                                @endif
+                            </span>
+                            <span class="dorm-pick-text">
+                                <strong>{{ $dormName }}</strong>
+                                @if ($dormAddress)<span class="dorm-pick-addr">{{ $dormAddress }}</span>@endif
+                                <span class="dorm-pick-status">Now accepting tenants</span>
+                            </span>
+                            <svg class="dorm-pick-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
         <div class="hero-logo">
@@ -223,69 +259,34 @@
         </div>
     </section>
 
-    <section class="stats-bar textured" id="dormitories">
-        <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="" loading="lazy" decoding="async">
-        <div class="eyebrow">Choose a Dormitory</div>
-        <h2>Dormitories on NEST.PH</h2>
-        <p class="sub">Pick a dormitory to browse its rooms, take a 360&deg; virtual tour, and apply online!</p>
-        <div class="dorm-grid">
-            <article class="dorm-card">
-                <div class="dorm-photo">
-                    <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="" loading="lazy">
-                    <div class="dorm-photo-empty" aria-hidden="true">
-                        <img src="{{ asset('images/nestph.png') }}" alt="">
-                        Photos coming soon
-                    </div>
-                    @if ($dormPhotoUrl)
-                        {{-- If the photo fails to load, remove it so the placeholder shows instead. --}}
-                        <img src="{{ $dormPhotoUrl }}" alt="{{ $dormName }}" class="dorm-photo-img" loading="lazy" onerror="this.remove()">
-                    @endif
-                </div>
-                <div class="dorm-body">
-                    <span class="dorm-badge">Now accepting tenants</span>
-                    <h3>{{ $dormName }}</h3>
-                    @if ($dormAddress)<p class="addr">{{ $dormAddress }}</p>@endif
-                    @if ($dormDescription)<p>{{ \Illuminate\Support\Str::limit($dormDescription, 140) }}</p>@endif
-                    <a href="{{ route('home') }}" class="btn btn-green">Visit Dormitory</a>
-                </div>
-            </article>
-        </div>
-        <div class="owner-strip">
-            <p><strong>Own a dormitory?</strong>Bring it onto NEST.PH and manage tenants, billing and maintenance the same way.</p>
-            <a href="#for-owners" class="btn btn-green">Request NEST.PH</a>
-        </div>
-    </section>
-
-    <section class="about-section textured" id="about">
-        <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="" loading="lazy" decoding="async">
+    <section class="about-section" id="about">
         <div class="about-header">
-            <div class="eyebrow">A smarter web app for dormitory living and management</div>
-            <h2>About NEST.PH</h2>
+            <h2 class="section-title">About NEST.PH</h2>
+            <p class="sub">A smarter web app for dormitory living and management.</p>
         </div>
         <div class="feature-grid">
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="8" width="20" height="9" rx="4"/><circle cx="8" cy="12.5" r="2"/><circle cx="16" cy="12.5" r="2"/><path d="M12 8V5a3 3 0 00-3-3H7"/></svg></div>
-                <p><strong>360&deg; VR Room Viewing:</strong> Each dormitory can show its real rooms and common areas in immersive 360&deg;, so students see the space before they commit.</p>
+                <p><strong>360&deg; VR Room Viewing</strong>Each dormitory can show its real rooms and common areas in immersive 360&deg;, so students see the space before they commit.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><path d="M12 8v4M12 15h.01"/></svg></div>
-                <p><strong>Automatic Payment Reminders:</strong> Tenants get reminders before and after their due date, and follow-up notices go out in clear steps, following each dormitory's own policies.</p>
+                <p><strong>Automatic Payment Reminders</strong>Tenants get reminders before and after their due date, and follow-up notices go out in clear steps, following each dormitory's own policies.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg></div>
-                <p><strong>Online Applications &amp; Tenant Portal:</strong> Students apply online, and tenants check bills, upload proof of payment and track their history without going to the admin office.</p>
+                <p><strong>Online Applications &amp; Tenant Portal</strong>Students apply online, and tenants check bills, upload proof of payment and track their history without going to the admin office.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-                <p><strong>Digital Maintenance Requests:</strong> Tenants submit maintenance tickets online and track them, while admins assign, prioritize and resolve them on time.</p>
+                <p><strong>Digital Maintenance Requests</strong>Tenants submit maintenance tickets online and track them, while admins assign, prioritize and resolve them on time.</p>
             </div>
         </div>
     </section>
 
     <section class="why-section" id="for-owners">
         <div class="why-head">
-            <div class="eyebrow">For Dormitory Owners</div>
-            <h2>Request NEST.PH for Your Dormitory</h2>
+            <h2 class="section-title">Request NEST.PH for Your Dormitory</h2>
             <p>Tell us about your dormitory and the NEST.PH team will get in touch. Here's how it works:</p>
         </div>
         <ol class="steps">

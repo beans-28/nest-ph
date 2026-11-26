@@ -55,6 +55,11 @@
     if (e.key === 'Escape' && sidebar.classList.contains('open')) setOpen(false);
   });
 
+  // Back/Forward can restore this page exactly as it was left (the
+  // browser's back-forward cache). Picking a link from the open drawer
+  // would otherwise bring the page back with the drawer still open.
+  window.addEventListener('pageshow', function (e) { if (e.persisted) setOpen(false); });
+
   // Rotating a tablet or resizing past 860px: drop back to the desktop layout.
   function onChange() { if (!MOBILE.matches) setOpen(false); }
   if (MOBILE.addEventListener) MOBILE.addEventListener('change', onChange);

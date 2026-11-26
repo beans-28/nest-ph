@@ -21,9 +21,11 @@
 
     .page-wrap { overflow-x: hidden; }
     body {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         color: var(--ink);
-        background: linear-gradient(180deg, #567357 0%, #59473f 100%);
+        /* Dark charcoal behind the white text. Written as an image (gradient) so the
+               dorm's page-background setting, which only sets the color, can't cover it. */
+            background: linear-gradient(#2b2724, #2b2724);
         min-height: 100vh;
     }
 
@@ -101,7 +103,7 @@
         background: linear-gradient(180deg, #567357 0%, #a2d9a4 100%);
         border-radius: 0 80px 80px 0; display: flex; align-items: center; justify-content: center;
     }
-    .brand-mark span { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.04em; font-size: 96px; color: #fff; line-height: 1; }
+    .brand-mark span { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.04em; font-size: 96px; color: #fff; line-height: 1; }
 
     .login-right-wrap { position: relative; padding-top: 16px; display: flex; flex-direction: column; min-width: 0; }
     .login-right {

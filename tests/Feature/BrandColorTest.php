@@ -148,8 +148,8 @@ class BrandColorTest extends TestCase
         // Page background and card buttons are brand colors: swapped.
         $this->assertStringNotContainsString('#4e7454', $out);
         $this->assertStringNotContainsString('#1d4f27', $out);
-        // The vacant-bed dot means "vacant": unchanged.
-        $this->assertStringContainsString('#00d444', $out);
+        // The "available bed" green means "vacant": unchanged.
+        $this->assertStringContainsString('--st-open: #146c35', $out);
     }
 
     public function test_reset_links_show_only_when_a_color_is_set(): void

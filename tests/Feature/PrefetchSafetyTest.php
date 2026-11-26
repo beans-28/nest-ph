@@ -33,12 +33,20 @@ class PrefetchSafetyTest extends TestCase
         $this->assertSame('Saved.', session('status'));
     }
 
+    public function test_logged_in_pages_are_not_kept_for_the_back_button(): void
+    {
+        $this->actingAs($this->owner())->get('/dashboard')->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private');
+    }
+
     public function test_every_page_opts_in_to_the_fade_before_anything_else_in_head(): void
     {
         $html = $this->actingAs($this->owner())->get('/dashboard')->assertOk()->getContent();
         $head = substr($html, 0, strpos($html, '<link'));
 
         $this->assertStringContainsString('@view-transition{navigation:auto}', $head);
-        $this->assertStringContainsString('prefers-reduced-motion:reduce', $head);
+        // Reduced-motion users keep the crossfade (opacity only, no movement).
+        $this->assertStringNotContainsString('navigation:none', $head);
+        $this->assertStringContainsString('/css/motion.css', $html);
     }
 }

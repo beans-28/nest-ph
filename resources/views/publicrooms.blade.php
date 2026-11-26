@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Available Rooms · {{ $brandDormName }}</title>
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
     <style>
@@ -26,11 +26,10 @@
         .page-wrap { overflow-x: hidden; }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            background:
-                linear-gradient(160deg, #4e7454 15%, #3b4a3e 85%),
-                linear-gradient(100deg, #4e7454 0%, #92db9f 100%);
+            /* Light page: the brand color is an accent, not the whole page. */
+            background: var(--bg-page, #f7f5f2);
             min-height: 100vh;
         }
 
@@ -84,79 +83,84 @@
         .btn-outline-white { background: transparent; color: #fff; }
 
         /* ===== Header banner ===== */
+        /* Bed status colors are fixed on purpose: they carry meaning, so they
+           don't follow the dorm's brand color (hex values kept out of
+           BrandTheme::LITERALS). Open beds are the only strong color. */
+        .page-wrap {
+            --st-open: #146c35; --st-open-ink: #fff;
+            --st-res-bg: #dcc2ee; --st-res-ink: #5a2577; --st-res-line: #a678c6;
+            --st-occ-bg: #ebe8e5; --st-occ-ink: #6f6863;
+            --st-mnt-a: #fbf1d2; --st-mnt-b: #f2e1a1; --st-mnt-ink: #7d6200;
+            --surface: var(--bg-page, #f7f5f2);
+        }
         .rooms-header {
-            background: linear-gradient(90deg, var(--cream), var(--cream-light));
-            padding: clamp(28px, 5vw, 40px) clamp(20px, 6vw, 64px) clamp(32px, 5vw, 44px);
-            box-shadow: 0 4px 4px rgba(0,0,0,0.15), inset 0 4px 4px rgba(0,0,0,0.1);
+            background: var(--surface);
+            padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px) 8px;
             position: relative;
         }
         .back-button {
             background: none; border: none; color: var(--green-darker); font-size: 26px;
             cursor: pointer; line-height: 1; padding: 0; margin-bottom: 16px;
         }
-        .rooms-header-text { text-align: center; }
+        .rooms-header-text { text-align: center; max-width: 1200px; margin: 0 auto; }
         .rooms-header h1 {
-            font-weight: 700; font-size: clamp(22px, 3vw, 30px); color: #1f272a;
-            letter-spacing: 0.01em; margin-bottom: 18px;
+            font-weight: 800; font-size: clamp(26px, 3.4vw, 38px); color: #292420;
+            letter-spacing: -0.02em; margin-bottom: 8px;
         }
-        .legend { display: flex; justify-content: center; gap: 28px; flex-wrap: wrap; }
-        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; color: #1f272a; letter-spacing: 0.03em; }
-        .legend-dot { width: 13px; height: 13px; border-radius: 50%; }
-        .legend-dot.available { background: radial-gradient(circle, #ffeeef 0%, #00d444 100%); }
-        .legend-dot.reserved { background: radial-gradient(circle, #ffeeef 0%, #a165b3 100%); }
-        .legend-dot.occupied { background: radial-gradient(circle, #ffeeef 0%, #e24149 100%); }
-        .legend-dot.maintenance { background: radial-gradient(circle, #ffeeef 0%, #d4c130 100%); }
+        .rooms-summary { font-size: 16px; color: #5b524c; margin-bottom: 22px; font-variant-numeric: tabular-nums; }
+        .rooms-summary strong { color: var(--st-open); font-weight: 700; }
+        .rooms-toolbar { display: flex; justify-content: center; align-items: center; gap: 14px 28px; flex-wrap: wrap; }
+        /* Legend: same tiles as the beds, so it reads as a key, not decoration */
+        .legend { display: flex; justify-content: center; gap: 8px 20px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #3a332f; }
+        .legend-swatch { width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(41,36,32,0.14); }
+        /* Filter: All rooms / Rooms with open beds */
+        .room-filter { display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px; background: #fff; border: 1px solid #e6e1dc; }
+        .room-filter button {
+            border: 0; background: transparent; font: inherit; font-size: 13.5px; font-weight: 600; color: #6b625c;
+            padding: 7px 16px; border-radius: 999px; cursor: pointer; transition: background-color .2s ease, color .2s ease;
+        }
+        .room-filter button[aria-pressed="true"] { background: #292420; color: #fff; }
+        .room-filter button:focus-visible { outline: 2px solid #292420; outline-offset: 2px; }
 
         /* ===== Room/bed status grid ===== */
-        .status-section {
-            background: linear-gradient(8deg, #605a58 -20%, rgba(37,26,22,0.85) 85%);
-            padding: clamp(24px, 4vw, 40px) clamp(16px, 4vw, 40px);
-        }
-        .status-grid { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+        .status-section { background: var(--surface); padding: 24px clamp(16px, 4vw, 40px) clamp(32px, 5vw, 56px); }
+        .status-grid { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
         .floor-group-title {
             display: flex; align-items: center; gap: 14px; margin-bottom: 14px;
-            color: #f2f4f8; font-weight: 700; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase;
+            color: #292420; font-weight: 700; font-size: 18px; letter-spacing: -0.01em;
         }
-        .floor-group-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.2); }
-        .floor-rooms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .floor-group-title .floor-open { font-size: 13.5px; font-weight: 600; color: #6b625c; }
+        .floor-group-title::after { content: ''; flex: 1; height: 1px; background: #e6e1dc; }
+        .floor-rooms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
         .status-card {
-            background: #ddd8d7; border-radius: 12px; padding: 16px 18px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            display: flex; flex-direction: column;
+            background: #fff; border-radius: 16px; padding: 16px 18px 18px;
+            border: 1px solid #ebe6e1;
+            box-shadow: 0 1px 2px rgba(41,36,32,0.05), 0 8px 20px -14px rgba(41,36,32,0.3);
         }
-        .status-card-head {
-            display: flex; justify-content: space-between; align-items: center;
-            font-weight: 700; font-size: 16px; color: #0b151d;
-            padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.12);
+        .status-card.has-open { border-color: color-mix(in srgb, var(--st-open) 35%, #ebe6e1); }
+        .status-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 14px; }
+        .status-card-name { font-weight: 700; font-size: 17px; color: #292420; line-height: 1.25; }
+        .status-card-type { display: block; font-weight: 500; font-size: 13px; color: #7a716b; margin-top: 2px; }
+        .open-count {
+            flex-shrink: 0; font-weight: 700; font-size: 12.5px; padding: 5px 11px; border-radius: 999px;
+            background: var(--st-open); color: var(--st-open-ink); font-variant-numeric: tabular-nums;
         }
-        .status-card-head .open-count {
-            font-weight: 700; font-size: 11px; letter-spacing: 0.03em; padding: 4px 10px; border-radius: 999px;
-            background: #cfe9d2; color: #197335;
+        .open-count.full { background: var(--st-occ-bg); color: #7a716b; }
+        /* Each bed is a numbered tile colored by status */
+        .bed-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; list-style: none; padding: 0; margin: 0; }
+        .bed-tile {
+            height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+            font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums;
         }
-        .status-card-head .open-count.full { background: #f1d0d2; color: #a3262d; }
-        /* Beds sit in two columns, and every card reserves room for the
-           biggest room's bed count (--bed-rows, set in JS) so all cards
-           are the same size. */
-        .bed-list {
-            display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px;
-            grid-auto-rows: 24px; align-content: start;
-            min-height: calc(var(--bed-rows, 1) * 24px);
-        }
-        .bed-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #0b151d; }
-        .bed-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-        .bed-dot.vacant { background: radial-gradient(circle, #ffeeef 0%, #00d444 100%); }
-        .bed-dot.occupied { background: radial-gradient(circle, #ffeeef 0%, #e24149 100%); }
-        .bed-dot.reserved { background: radial-gradient(circle, #ffeeef 0%, #a165b3 100%); }
-        .bed-dot.maintenance { background: radial-gradient(circle, #ffeeef 0%, #d4c130 100%); }
-        .bed-label { font-weight: 700; min-width: 22px; }
-        .bed-status { color: #4c5c6b; text-transform: capitalize; }
-        /* Taken beds recede so the available ones are what the eye finds first. */
-        .bed-row.occupied { color: #5d6a75; }
-        .bed-row.occupied .bed-label { font-weight: 500; }
-        .bed-row.vacant .bed-status { color: #197335; font-weight: 700; }
-        .status-card-head .open-count, .bed-label { font-variant-numeric: tabular-nums; }
+        .st-vacant { background: var(--st-open); color: var(--st-open-ink); }
+        .st-reserved { background: var(--st-res-bg); color: var(--st-res-ink); box-shadow: inset 0 0 0 1px var(--st-res-line); }
+        .st-occupied { background: var(--st-occ-bg); color: var(--st-occ-ink); font-weight: 600; }
+        .st-maintenance { background: repeating-linear-gradient(135deg, var(--st-mnt-a) 0 6px, var(--st-mnt-b) 6px 12px); color: var(--st-mnt-ink); }
+        .status-grid.only-open .status-card:not(.has-open) { display: none; }
+        .status-grid.only-open section:not(:has(.has-open)) { display: none; }
         ::selection { background: #a2d9a4; color: #292420; }
-        .empty-note { color: #eeeded; font-size: 13px; text-align: center; padding: 20px; grid-column: 1 / -1; }
+        .empty-note { color: #6b625c; font-size: 14px; text-align: center; padding: 24px; grid-column: 1 / -1; }
 
         /* ===== VR Tour CTA ===== */
         .vr-cta-wrap { display: flex; justify-content: center; padding: clamp(22px, 3vw, 32px) 20px; }
@@ -212,15 +216,6 @@
             .lb-prev, .lb-next { top: auto; bottom: 8px; transform: none; }
         }
 
-        .listing-favorite {
-            position: absolute; top: 12px; right: 12px; width: 30px; height: 30px;
-            border-radius: 50%; background: rgba(0,0,0,0.25); display: flex; align-items: center;
-            justify-content: center; cursor: pointer; transition: background 0.15s;
-            border: none; padding: 0;
-        }
-        .listing-favorite:hover { background: rgba(0,0,0,0.4); }
-        .listing-favorite svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; }
-        .listing-favorite.active svg { fill: #e24149; stroke: #e24149; }
         .listing-body { padding: 14px 16px 16px; }
         .listing-type { color: #292420; font-weight: 500; font-size: 14px; margin-bottom: 2px; }
         .listing-price { color: #355e3d; font-weight: 700; font-size: 18px; margin-bottom: 2px; font-variant-numeric: tabular-nums; }
@@ -228,7 +223,7 @@
         .listing-pricing-note { font-size: 12px; color: #5c5c5c; margin-bottom: 4px; }
         .listing-price-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px; }
         .listing-price-row .listing-price { margin-bottom: 0; }
-        .pricing-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; line-height: 1.3; }
+        .pricing-tag { font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; line-height: 1.3; }
         .pricing-tag.per-bed { background: #e3efe3; color: #2d5a35; }
         .pricing-tag.per-room { background: #355e3d; color: #fff; }
         .listing-size { font-size: 13px; color: #292420; margin-bottom: 8px; }
@@ -265,6 +260,61 @@
             text-decoration: none;
         }
         .banner-footer-spacer { height: clamp(24px, 4vw, 40px); }
+
+        /* ===== Room details (listing cards), light version ===== */
+        .listing-head { max-width: 1200px; margin: 0 auto; padding: clamp(40px, 6vw, 64px) 0 22px; border-top: 1px solid #e6e1dc; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+        /* Default: only rooms with open beds; "All rooms" shows the rest. */
+        .listing-grid.only-open .listing-card.is-full { display: none; }
+        .listing-head h2 { font-size: clamp(24px, 2.8vw, 32px); font-weight: 800; letter-spacing: -0.02em; color: #292420; margin-bottom: 6px; }
+        .listing-head p { font-size: 16px; color: #5b524c; }
+        .listing-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); max-width: 1200px; gap: 20px; }
+        .listing-card {
+            background: #fff; border-radius: 18px; border: 1px solid #ebe6e1; display: flex; flex-direction: column;
+            box-shadow: 0 1px 2px rgba(41,36,32,0.05), 0 10px 24px -16px rgba(41,36,32,0.35);
+        }
+        .listing-media { position: relative; }
+        .listing-photo { background: color-mix(in srgb, var(--green-dark) 8%, #f1eeea); }
+        .listing-photo.empty { display: flex; align-items: center; justify-content: center; color: #6b625c; font-size: 13.5px; font-weight: 600; }
+        .listing-open {
+            position: absolute; top: 12px; left: 12px; z-index: 2; padding: 5px 11px; border-radius: 999px;
+            font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+            background: var(--st-open); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .listing-open.full { background: rgba(255,255,255,0.92); color: #6b625c; }
+        .listing-tour {
+            position: absolute; right: 12px; bottom: 12px; z-index: 2; display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 12px; border-radius: 999px; background: rgba(22,21,20,0.72); color: #fff;
+            font-size: 12.5px; font-weight: 600; text-decoration: none; backdrop-filter: blur(6px);
+            transition: background-color .2s ease;
+        }
+        .listing-tour:hover { background: rgba(22,21,20,0.88); }
+        .listing-tour svg { width: 15px; height: 15px; }
+        .listing-body { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
+        .listing-room-label { font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none; color: #7a716b; margin-bottom: 2px; }
+        .listing-type { font-size: 17px; font-weight: 700; color: #292420; margin-bottom: 8px; letter-spacing: -0.01em; }
+        .listing-price { color: #292420; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+        .listing-unit { color: #7a716b; font-size: 13px; font-weight: 500; letter-spacing: 0; margin-left: 2px; }
+        .pricing-tag.per-bed { background: #f1eeea; color: #5b524c; }
+        .pricing-tag.per-room { background: #292420; color: #fff; }
+        .listing-size { color: #5b524c; font-size: 14px; margin: 4px 0 12px; }
+        .listing-amenities { gap: 6px; margin-bottom: 16px; }
+        .listing-amenities span {
+            font-size: 12.5px; font-weight: 500; letter-spacing: 0; text-transform: none; color: #4a423d;
+            padding: 4px 10px; border-radius: 999px; background: #f4f1ee;
+        }
+        .listing-buttons { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .listing-buttons a {
+            display: inline-flex; align-items: center; justify-content: center; height: 42px; padding: 0 12px;
+            border-radius: 10px; font-size: 14px; font-weight: 600; letter-spacing: 0; text-transform: none;
+            transition: background-color .2s ease, border-color .2s ease;
+        }
+        .listing-buttons a.btn-green { background: var(--green-dark); color: #fff; border: 1px solid var(--green-dark); }
+        .listing-buttons a.btn-green:hover { background: var(--green-darker); border-color: var(--green-darker); }
+        .listing-buttons a.lc-ghost { background: #fff; color: #292420; border: 1px solid #ddd6cf; }
+        .listing-buttons a.lc-ghost:hover { border-color: #292420; }
+        .no-rooms { color: #6b625c; }
+        .tour-banner { border-radius: 22px; box-shadow: 0 1px 2px rgba(41,36,32,0.05), 0 18px 40px -22px rgba(41,36,32,0.45); }
+        .tour-banner .btn-nav { border-radius: 10px; letter-spacing: 0; font-size: 15px; padding: 13px 30px; }
 
         @media (max-width: 1024px) {
             .floor-rooms { grid-template-columns: repeat(2, 1fr); }
@@ -315,11 +365,18 @@
             <button class="back-button" type="button" aria-label="Go back" onclick="window.location.href='{{ route('home') }}'">←</button>
             <div class="rooms-header-text">
                 <h1>Available Rooms</h1>
-                <div class="legend">
-                    <div class="legend-item"><span class="legend-dot available"></span> Available</div>
-                    <div class="legend-item"><span class="legend-dot reserved"></span> Reserved</div>
-                    <div class="legend-item"><span class="legend-dot occupied"></span> Occupied</div>
-                    <div class="legend-item"><span class="legend-dot maintenance"></span> Maintenance</div>
+                <p class="rooms-summary" id="roomsSummary">&nbsp;</p>
+                <div class="rooms-toolbar">
+                    <div class="legend" aria-label="Bed status key">
+                        <div class="legend-item"><span class="legend-swatch st-vacant"></span> Available</div>
+                        <div class="legend-item"><span class="legend-swatch st-reserved"></span> Reserved</div>
+                        <div class="legend-item"><span class="legend-swatch st-occupied"></span> Occupied</div>
+                        <div class="legend-item"><span class="legend-swatch st-maintenance"></span> Maintenance</div>
+                    </div>
+                    <div class="room-filter" id="statusFilter" role="group" aria-label="Show rooms">
+                        <button type="button" data-filter="open" aria-pressed="true">With open beds</button>
+                        <button type="button" data-filter="all" aria-pressed="false">All rooms</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -330,11 +387,17 @@
             </div>
         </div>
 
-        <div class="vr-cta-wrap">
-            <a href="{{ route('public.vr') }}" class="vr-cta">VR Room Tour</a>
-        </div>
-
         <div class="listing-section">
+            <div class="listing-head">
+                <div>
+                    <h2>Room details</h2>
+                    <p>Prices, room sizes and what's included. Tap a photo to see more, or take the 360° tour.</p>
+                </div>
+                <div class="room-filter" id="listingFilter" role="group" aria-label="Show room details for">
+                    <button type="button" data-filter="open" aria-pressed="true">With open beds</button>
+                    <button type="button" data-filter="all" aria-pressed="false">All rooms</button>
+                </div>
+            </div>
             <div class="listing-grid" id="listingGrid" aria-live="polite">
                 <div class="no-rooms">Loading listings…</div>
             </div>
@@ -379,9 +442,18 @@
 
             // Rooms arrive already sorted Floor 1 → 5 (see the fetch below).
             const sorted = rooms;
+            const openOf = room => room.beds.filter(b => b.status === 'vacant').length;
 
-            const maxBeds = Math.max(1, ...sorted.map(r => r.beds.length));
-            grid.style.setProperty('--bed-rows', Math.ceil(maxBeds / 2));
+            // One-line summary above the key
+            const openBeds = sorted.reduce((n, r) => n + openOf(r), 0);
+            const openRooms = sorted.filter(r => openOf(r) > 0).length;
+            const plural = (n, w) => n + ' ' + w + (n === 1 ? '' : 's');
+            document.getElementById('roomsSummary').innerHTML = openBeds > 0
+                ? `<strong>${plural(openBeds, 'bed')} open</strong> in ${plural(openRooms, 'room')}`
+                : 'No beds are open right now. Check back soon, or send an inquiry.';
+            // Default to rooms with open beds; if none are open, show every room.
+            setStatusFilter(openBeds > 0 ? 'open' : 'all');
+            document.getElementById('statusFilter').hidden = openBeds === 0;
 
             const floors = [];
             sorted.forEach(room => {
@@ -394,33 +466,47 @@
             });
 
             const cardHtml = room => {
-                const open = room.beds.filter(b => b.status === 'vacant').length;
+                const open = openOf(room);
+                const tiles = room.beds.map(bed => {
+                    const status = STATUS_LABELS[bed.status] || bed.status;
+                    // "Bed 3" -> "3" on the tile; the full name is in the label.
+                    const num = String(bed.label).replace(/^bed\s*/i, '');
+                    return `<li class="bed-tile st-${escapeHtml(bed.status)}" title="${escapeHtml(bed.label)}: ${status}" aria-label="${escapeHtml(bed.label)}: ${status}">${escapeHtml(num)}</li>`;
+                }).join('');
                 return `
-                    <div class="status-card">
+                    <article class="status-card ${open > 0 ? 'has-open' : ''}">
                         <div class="status-card-head">
-                            <span>Room ${escapeHtml(room.room_no)}</span>
-                            <span class="open-count ${open === 0 ? 'full' : ''}">${open === 0 ? 'Full' : `${open} of ${room.beds.length} available`}</span>
+                            <h3 class="status-card-name">Room ${escapeHtml(room.room_no)}${room.room_type ? `<span class="status-card-type">${escapeHtml(room.room_type)}</span>` : ''}</h3>
+                            <span class="open-count ${open === 0 ? 'full' : ''}">${open === 0 ? 'Full' : `${open} of ${room.beds.length} open`}</span>
                         </div>
-                        <div class="bed-list">
-                            ${room.beds.map(bed => `
-                                <div class="bed-row ${bed.status}">
-                                    <span class="bed-dot ${bed.status}"></span>
-                                    <span class="bed-label">${escapeHtml(bed.label)}</span>
-                                    <span class="bed-status">${STATUS_LABELS[bed.status] || bed.status}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
+                        <ul class="bed-tiles" aria-label="Beds in Room ${escapeHtml(room.room_no)}">${tiles}</ul>
+                    </article>
                 `;
             };
 
-            grid.innerHTML = floors.map(group => `
+            grid.innerHTML = floors.map(group => {
+                const floorOpen = group.rooms.reduce((n, r) => n + openOf(r), 0);
+                return `
                 <section>
-                    <h2 class="floor-group-title">${escapeHtml(group.label || 'Other')}</h2>
+                    <h2 class="floor-group-title">${escapeHtml(group.label || 'Other')} <span class="floor-open">${floorOpen > 0 ? plural(floorOpen, 'bed') + ' open' : 'Full'}</span></h2>
                     <div class="floor-rooms">${group.rooms.map(cardHtml).join('')}</div>
-                </section>
-            `).join('');
+                </section>`;
+            }).join('');
         }
+
+        // Bed-status filter (top): starts on "With open beds"
+        function setStatusFilter(mode) {
+            document.querySelectorAll('#statusFilter button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === mode)));
+            document.getElementById('statusGrid').classList.toggle('only-open', mode === 'open');
+        }
+        document.querySelectorAll('#statusFilter button').forEach(btn => btn.addEventListener('click', () => setStatusFilter(btn.dataset.filter)));
+
+        // Room details filter: starts on "With open beds"
+        function setListingFilter(mode) {
+            document.querySelectorAll('#listingFilter button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === mode)));
+            document.getElementById('listingGrid').classList.toggle('only-open', mode === 'open');
+        }
+        document.querySelectorAll('#listingFilter button').forEach(btn => btn.addEventListener('click', () => setListingFilter(btn.dataset.filter)));
 
         function formatPrice(rate) {
             const number = parseFloat(rate);
@@ -442,8 +528,9 @@
                     : 'Room';
 
                 const amenitiesHtml = (room.amenities || [])
-                    .map(a => `<span>• ${escapeHtml(a)}</span>`)
+                    .map(a => `<span>${escapeHtml(a)}</span>`)
                     .join('');
+                const open = Number(room.available_beds) || 0;
 
                 // Regular listing photos open in the viewer; a room with only a
                 // 360 panorama keeps it as a plain (non-clickable) thumbnail.
@@ -455,18 +542,20 @@
                        </button>`
                     : room.photo_url
                         ? `<img src="${room.photo_url}" class="listing-photo" alt="Room ${escapeHtml(room.room_no)}" loading="lazy" decoding="async">`
-                        : `<div class="listing-photo"></div>`;
+                        : `<div class="listing-photo empty">No photos yet</div>`;
 
+                // Tour button only when the room actually has a public tour.
                 const tourButton = room.has_vr_tour
-                    ? `<a href="{{ route('public.vr') }}">Start Tour</a>`
-                    : `<a href="{{ route('public.vr') }}" class="disabled">Start Tour</a>`;
+                    ? `<a href="{{ route('public.vr') }}" class="listing-tour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><ellipse cx="12" cy="12" rx="10" ry="4"/><path d="M12 2v20"/></svg>360° tour</a>`
+                    : '';
 
                 return `
-                    <div class="listing-card">
+                    <div class="listing-card ${open === 0 ? 'is-full' : ''}">
+                        <div class="listing-media">
                         ${photoHtml}
-                        <button type="button" class="listing-favorite" aria-pressed="false" aria-label="Save Room ${escapeHtml(room.room_no)} to favorites" onclick="this.classList.toggle('active'); this.setAttribute('aria-pressed', this.classList.contains('active'))">
-                            <svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-9.5-9C1 8.5 2.5 5 6 5c2 0 3.5 1.2 4 2.2C10.5 6.2 12 5 14 5c3.5 0 5 3.5 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
-                        </button>
+                        <span class="listing-open ${open === 0 ? 'full' : ''}">${open === 0 ? 'Full' : (open === 1 ? '1 bed open' : open + ' beds open')}</span>
+                        ${tourButton}
+                        </div>
                         <div class="listing-body">
                             <div class="listing-room-label">Room ${escapeHtml(room.room_no)}</div>
                             <div class="listing-type">${typeLabel}</div>
@@ -479,14 +568,18 @@
                             ${room.area_sqm ? `<div class="listing-size">Room size: <strong>${Number(room.area_sqm)} m²</strong></div>` : ''}
                             <div class="listing-amenities">${amenitiesHtml}</div>
                             <div class="listing-buttons">
-                                ${tourButton}
-                                <a href="{{ route('public.apply') }}">Apply</a>
-                                <a href="{{ route('public.inquiry') }}?room_id=${room.id}&room_type=${encodeURIComponent(room.room_type || '')}">Inquiry</a>
+                                <a href="{{ route('public.apply') }}" class="btn-green">Apply</a>
+                                <a href="{{ route('public.inquiry') }}?room_id=${room.id}&room_type=${encodeURIComponent(room.room_type || '')}" class="lc-ghost">Inquire</a>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
+
+            // Default to rooms with open beds; if none are open, show everything.
+            const anyOpen = rooms.some(r => Number(r.available_beds) > 0);
+            setListingFilter(anyOpen ? 'open' : 'all');
+            document.getElementById('listingFilter').hidden = !anyOpen;
 
             grid.querySelectorAll('[data-gallery]').forEach(btn => {
                 const room = rooms.find(r => r.id === Number(btn.dataset.gallery));
@@ -593,5 +686,6 @@
         });
     </script>
 
+@include('partials.contact-fab')
 </body>
 </html>

@@ -46,7 +46,7 @@
     .plb-nav { top: auto; bottom: 16px; transform: none; }
   }
   @keyframes plb-in { from { opacity: 0; } to { opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .plb[open] { animation: none; } .plb-img { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { .plb-img { transition: opacity .2s ease; } }
 </style>
 
 <script>

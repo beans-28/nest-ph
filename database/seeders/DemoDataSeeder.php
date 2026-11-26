@@ -40,7 +40,7 @@ use Illuminate\Support\Str;
  *     (PurezaStationSeeder).
  * Current tenants have their own signed copies of Pureza's three documents.
  *
- * Kept: the owner account, rooms with VR tours (as rooms 101 and 102),
+ * Kept: the owner account, rooms (VR tours on rooms 206, 302, 400, 403),
  * amenities. Everything else is rebuilt.
  *
  * Run with:  php artisan db:seed --class=DemoDataSeeder
@@ -108,7 +108,8 @@ class DemoDataSeeder extends Seeder
     private const DOCUMENTS_EFFECTIVE = '2026-09-30';
 
     /** Beds left empty on purpose so the dorm isn't 100% full (vacant beds to apply for). */
-    private const LEAVE_VACANT = ['101-4', '102-4', '105-1', '204-5', '204-6', '303-11', '303-12', '402-13', '402-14', '402-15', '402-16',
+    // 206-10, 302-16, 400-16, 403-10: the VR tour rooms need a vacant bed for their tour to show on the public site.
+    private const LEAVE_VACANT = ['206-10', '302-16', '400-16', '403-10', '105-1', '204-5', '204-6', '303-11', '303-12', '402-13', '402-14', '402-15', '402-16',
         '501-12', '501-13', '501-14'];
 
     /** Beds held by the pending applications (seedPendingApplications). */
@@ -412,8 +413,8 @@ class DemoDataSeeder extends Seeder
             ['pricing_mode' => 'per_room', 'monthly_rate' => 9000, 'min_capacity' => 2, 'max_capacity' => 2, 'has_aircon' => true, 'sort_order' => 6]
         );
         $roomSpecs = [
-            ['101', 1, ['Room with AC, 4 persons', $g], 4, $fourAc, 'Bright 4-person room beside the study hall'],
-            ['102', 1, ['Room with AC, 4 persons', $g], 4, $fourAc, 'Quiet 4-person room with a computer corner'],
+            ['101', 1, ['Room with AC, 4 persons', $g], 4, $fourAc, null],
+            ['102', 1, ['Room with AC, 4 persons', $g], 4, $fourAc, null],
             ['103', 1, ['Room with AC, 4 persons', $g], 4, $fourAc, null],
             ['104', 1, ['Solo fan room', $g], 1, $fan, null],
             ['105', 1, ['Solo fan room', $g], 1, $fan, null],
@@ -422,13 +423,16 @@ class DemoDataSeeder extends Seeder
             ['203', 2, ['Room with AC, 4 persons', $up], 4, $fourAc, null],
             ['204', 2, ['Room with AC, 6 persons', $up], 6, $bigAc, null],
             ['205', 2, ['Private room with AC, 2 persons', $up], 2, $fourAc, null],
+            ['206', 2, ['Room with AC, 10–16 persons', $up], 10, $bigAc, 'Spacious 10-person room with double-deck beds'],
             ['301', 3, ['Room with AC, 6 persons', $up], 6, $bigAc, null],
-            ['302', 3, ['Room with AC, 4 persons', $up], 4, $fourAc, null],
+            ['302', 3, ['Room with AC, 10–16 persons', $up], 16, $bigAc, 'Large 16-person room with double-deck beds'],
             ['303', 3, ['Room with AC, 10–16 persons', $up], 12, $bigAc, null],
             ['304', 3, ['Room with AC, 4 persons', $up], 4, $fourAc, null],
             ['305', 3, ['Private room with AC, 2 persons', $up], 2, $fourAc, null],
+            ['400', 4, ['Room with AC, 10–16 persons', $up], 16, $bigAc, 'Large 16-person room with double-deck beds'],
             ['401', 4, ['Room with AC, 6 persons', $up], 6, $bigAc, null],
             ['402', 4, ['Room with AC, 10–16 persons', $up], 16, $bigAc, null],
+            ['403', 4, ['Room with AC, 10–16 persons', $up], 10, $bigAc, '10-person room with double-deck beds'],
             ['501', 5, ['Room with AC, 10–16 persons', $up], 14, $bigAc, null],
             ['502', 5, ['Room with AC, 4 persons', $up], 4, $fourAc, null],
         ];
@@ -1379,7 +1383,7 @@ class DemoDataSeeder extends Seeder
             'Bianca', 'Danica', 'Francine', 'Hazel', 'Janelle', 'Lianne', 'Nina', 'Pia', 'Queenie', 'Sofia', 'Vanessa',
             'Ysabel', 'Alyssa', 'Clarisse', 'Ella', 'Gwen', 'Irish', 'Kyla', 'Mika', 'Rica'];
         $pool = [];
-        for ($i = 0; $i < 400 && count($pool) < 150; $i++) {
+        for ($i = 0; $i < 600 && count($pool) < 200; $i++) {
             $first = $firstNames[mt_rand(0, count($firstNames) - 1)];
             $last = $lastNames[mt_rand(0, count($lastNames) - 1)];
             $email = $this->emailFor($first, $last);
@@ -2200,15 +2204,13 @@ class DemoDataSeeder extends Seeder
     }
 
     /**
-     * Walkthrough Part 1: Rooms 101 and 102 have the VR tours (photos from
-     * seedDemoPhotos). The public VR page only lists rooms with a vacant
-     * bed, so 101-4 and 102-4 are left empty (LEAVE_VACANT). Room 101 has no
-     * arrows between its scenes so Vince can add one live in step 1.4;
-     * Room 102's two scenes are already linked.
+     * Rooms 206, 302, 400 and 403 have the VR tours (Pureza's real photos,
+     * from seedDemoPhotos). The public VR page only lists rooms with a vacant
+     * bed, so one bed in each is left empty (LEAVE_VACANT).
      */
     private function prepareVrDemo(): void
     {
-        $tourRooms = [$this->rooms['101']->id, $this->rooms['102']->id];
+        $tourRooms = DB::table('vr_scenes')->distinct()->pluck('room_id')->all();
 
         DB::table('rooms')->whereNotIn('id', $tourRooms)->update(['vr_visibility' => 'draft']);
         DB::table('rooms')->whereIn('id', $tourRooms)->update(['vr_visibility' => 'public']);
@@ -2237,14 +2239,18 @@ class DemoDataSeeder extends Seeder
         DB::table('vr_scenes')->delete();
 
         $scenes = [
-            ['101', 'Living Room', 'Room 101 Starting point Living Room.jpg', 'vr-scenes/demo/room-101-living-room.jpg'],
-            ['101', 'Kitchen', 'Room 101 Starting Point Kitchen.jpg', 'vr-scenes/demo/room-101-kitchen.jpg'],
-            ['102', 'Living Room', 'Room 102 Living Room.jpg', 'vr-scenes/demo/room-102-living-room.jpg'],
-            ['102', 'Bedroom', 'Room 102 Bedroom.jpg', 'vr-scenes/demo/room-102-bedroom.jpg'],
+            ['206', 'View 1', 'Room 206 10 Pax.jpg', 'vr-scenes/demo/room-206-view-1.jpg'],
+            ['206', 'View 2', 'Room 206 10 pax part 2.jpg', 'vr-scenes/demo/room-206-view-2.jpg'],
+            ['302', 'View 1', 'Room 302 (16 pax).jpg', 'vr-scenes/demo/room-302-view-1.jpg'],
+            ['302', 'View 2', 'Room 302 part 2 (16 pax).jpg', 'vr-scenes/demo/room-302-view-2.jpg'],
+            ['400', 'Main View', 'Room 400 16 pax.jpg', 'vr-scenes/demo/room-400-main-view.jpg'],
+            ['403', 'View 1', 'Room 403 10 pax.jpg', 'vr-scenes/demo/room-403-view-1.jpg'],
+            ['403', 'View 2', 'Room 403 10 pax part 2.jpg', 'vr-scenes/demo/room-403-view-2.jpg'],
         ];
         $filler = app(PanoramaFillService::class);
-        $made = ['101' => [], '102' => []];
+        $made = [];
         foreach ($scenes as [$no, $title, $file, $to]) {
+            $made[$no] ??= [];
             $scene = VrScene::create([
                 'room_id' => $this->rooms[$no]->id,
                 'title' => $title,
@@ -2252,21 +2258,36 @@ class DemoDataSeeder extends Seeder
                 'photo_updated_at' => now(),
                 'is_default' => $made[$no] === [],
                 'sort_order' => count($made[$no]),
-                // All four are full 360° panoramas (2:1 photos).
+                // All are full 360° panoramas (8192x4096, 2:1 photos).
                 'haov' => 360, 'vaov' => 180, 'v_offset' => 0, 'is_partial' => false,
             ]);
             $filler->fill($scene); // a smaller copy for phones, like a normal upload
             $made[$no][] = $scene;
         }
 
-        // Room 102: arrows both ways between the Living Room and the Bedroom.
-        [$living, $bedroom] = $made['102'];
-        DB::table('vr_hotspots')->insert([
-            ['vr_scene_id' => $living->id, 'target_scene_id' => $bedroom->id, 'pitch' => -5, 'yaw' => 0, 'label' => 'Go to Bedroom', 'created_at' => now(), 'updated_at' => now()],
-            ['vr_scene_id' => $bedroom->id, 'target_scene_id' => $living->id, 'pitch' => -5, 'yaw' => 180, 'label' => 'Go to Living Room', 'created_at' => now(), 'updated_at' => now()],
-        ]);
-        DB::table('rooms')->where('id', $this->rooms['101']->id)->update(['vr_caption' => '4-person room with its own living room and kitchen']);
-        DB::table('rooms')->where('id', $this->rooms['102']->id)->update(['vr_caption' => 'Quiet 4-person room with a living room']);
+        // Arrows between scenes, placed by hand in the admin VR editor and copied
+        // here so every reset keeps them: [room, from scene #, to scene #, pitch, yaw].
+        // pitch = up/down (negative = below eye level), yaw = left/right (0 = straight ahead).
+        // Room 400 has one scene, so no arrows.
+        $arrows = [
+            ['206', 0, 1, -3.69, -65.48],
+            ['206', 1, 0, -1.41, -79.27],
+            ['302', 0, 1, -13.46, 168.65],
+            ['302', 1, 0, -13.16, 60.00],
+            ['403', 0, 1, -7.27, 161.35],
+            ['403', 1, 0, -4.77, -176.28],
+        ];
+        foreach ($arrows as [$no, $from, $to, $pitch, $yaw]) {
+            DB::table('vr_hotspots')->insert([
+                'vr_scene_id' => $made[$no][$from]->id,
+                'target_scene_id' => $made[$no][$to]->id,
+                'pitch' => $pitch,
+                'yaw' => $yaw,
+                'label' => 'Go to ' . $made[$no][$to]->title,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
 
         // Room listing photos: one for the 4-person rooms, one for the 10–16 person rooms.
         DB::table('room_photos')->delete();
@@ -2306,6 +2327,22 @@ class DemoDataSeeder extends Seeder
 
         // Dummy BIR Certificate of Registration for the Legitimacy Documents section.
         DormitoryProfile::current()->update(['bir_registration_path' => $copy('BIR.png', 'dormitory-profile/demo-bir-registration.png')]);
+
+        // Homepage 360° photo: Pureza's lobby (shown instead of the slideshow).
+        $profile = DormitoryProfile::current();
+        if ($profile->hero_panorama_path) {
+            $disk->delete($profile->hero_panorama_path);
+        }
+        $profile->update(['hero_panorama_path' => DormitoryProfile::storeHeroPanorama(
+            File::get(database_path('seeders/demo-assets/lobby.jpg'))
+        )]);
+
+        // "Where We Are" homepage map: pinned by name + address (no custom pin).
+        $profile->update([
+            'map_location' => null,
+            'location_note' => 'A short walk from PUP and LRT-2 Pureza Station. Drop by for a visit, or take the virtual tour first.',
+            'show_location_map' => true,
+        ]);
     }
 
     /* ------------------------------------------------------------------ */

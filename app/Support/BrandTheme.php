@@ -124,7 +124,8 @@ class BrandTheme
         if ($p['light']) {
             [$h, $s, $l] = [$p['h'], $p['s'], $p['l']];
             $top = strtolower($hex); // exactly what the owner picked
-            $bottom = self::fromHsl($h, $s, max(5, $l - 12));
+            // Only slightly deeper: a big drop turns gold/orange into brown.
+            $bottom = self::fromHsl($h, $s, max(5, $l - 6));
             $ink = '#292420';
             $css .= '.sidebar{background:linear-gradient(180deg,'.$top.' 0%,'.$bottom.' 100%)!important;color:'.$ink.'!important}'
                 .'.sidebar .nav-item,.sidebar .nav-item:hover,.sidebar .nav-item.active,.sidebar-section-label,.sidebar-logo,.sidebar a{color:'.$ink.'!important}'
@@ -132,7 +133,18 @@ class BrandTheme
                 .'.sidebar .nav-item:hover{background:rgba(0,0,0,.06)!important}'
                 .'.sidebar-footer .nav-item{background:rgba(0,0,0,.12)!important}'
                 .'.sidebar-logo,.sidebar-footer{border-color:rgba(0,0,0,.12)!important}'
-                .'.topbar,.topnav{background:linear-gradient(90deg,'.$bottom.','.$top.')!important}'
+                .'.topbar{background:'.$top.'!important}'
+                // Public top bar: one flat color, exactly the pick.
+                .'.topnav{background:'.$top.'!important}'
+                // Public page buttons match the top bar (picked color, dark
+                // text) instead of a darkened brown version of it, so the
+                // page shows one gold, not gold plus brown.
+                .'.page-wrap .btn-green,.btn-login,.btn-nav.primary{background:'.$top.'!important;border-color:'.$top.'!important;color:'.$ink.'!important}'
+                .'.page-wrap .btn-green:hover,.btn-login:hover:not(:disabled),.btn-nav.primary:hover{background:'.$bottom.'!important;border-color:'.$bottom.'!important}'
+                .'.btn-login .spinner{border-color:rgba(0,0,0,.2)!important;border-top-color:'.$ink.'!important}'
+                // Outline buttons: dark text (the darkened pick was only ~3:1 on
+                // the light page), border in the picked color.
+                .'.page-wrap .btn-outline-green{color:'.$ink.'!important;border-color:'.$bottom.'!important}'
                 .'.topbar .hamburger span{background:'.$ink.'!important}'
                 .'.topbar-icon{background:rgba(255,255,255,.6)!important;color:'.$ink.'!important}'
                 .'.topnav .logo,.topnav .logo:hover,.topnav .menu a,.topnav .btn-outline-white,.topnav .nav-toggle{color:'.$ink.'!important;border-color:'.$ink.'!important}'

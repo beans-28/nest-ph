@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $brandDormName }} · Malayo sa bahay, pero at home.</title>
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    @if($heroPanoramaUrl)
+        <link rel="stylesheet" href="{{ asset('vendor/pannellum/pannellum.css') }}">
+        <script src="{{ asset('vendor/pannellum/pannellum.js') }}" defer></script>
+    @endif
     <style>
         :root {
             --green-light: #a2d9a4;
@@ -22,10 +26,16 @@
             --cream: #dcd8d7;
             --cream-light: #f2f4f8;
             --gray-border: #c1c7cd;
+            /* The whole palette: the page background, ONE light tint of the dorm's
+               color for alternating bands, and the dorm's color as accent. No
+               gradients, no extra greys, so any color the dorm picks stays calm. */
+            --surface: var(--bg-page, #fff);
+            --surface-alt: color-mix(in srgb, var(--green-dark) 7%, var(--surface));
+            --hairline: color-mix(in srgb, var(--green-dark) 14%, transparent);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
             background: #fff;
         }
@@ -113,24 +123,36 @@
         .btn-outline-white { background: transparent; color: #fff; }
         .btn-green { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
         .btn-outline-green { background: transparent; border-color: var(--green-dark); color: var(--green-dark); }
-        .btn-lg { height: 46px; padding: 0 22px; font-size: 15px; }
+        .btn-lg { height: 48px; padding: 0 24px; font-size: 15px; }
+        /* Page buttons match the rounded photo, cards and map (top bar keeps its own). */
+        .page-wrap .btn { border-radius: 10px; font-weight: 600; transition: background-color .2s ease, color .2s ease, transform .2s cubic-bezier(.32,.72,0,1); }
+        .page-wrap .btn:active { transform: translateY(1px); }
+        .page-wrap .btn-green:hover { background: var(--green-darker); border-color: var(--green-darker); }
+        .page-wrap .btn-outline-green:hover { background: color-mix(in srgb, var(--green-dark) 9%, transparent); }
+        ::selection { background: color-mix(in srgb, var(--green-dark) 25%, #fff); color: var(--ink); }
+
+        /* One heading size for every section below the hero. */
+        .section-title { font-size: clamp(24px, 2.8vw, 32px); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; text-wrap: balance; }
 
         .hero {
-            background: linear-gradient(90deg, var(--cream), var(--cream-light));
-            padding: clamp(32px, 6vw, 56px) clamp(20px, 6vw, 64px);
+            background: var(--surface-alt);
+            /* Content stays within ~1240px on very wide screens */
+            padding: clamp(40px, 7vw, 88px) max(clamp(20px, 6vw, 64px), calc((100% - 1240px) / 2));
             display: grid;
-            grid-template-columns: 1.1fr 1fr;
-            gap: 32px;
+            grid-template-columns: 1fr 1.1fr;
+            gap: clamp(32px, 5vw, 72px);
             align-items: center;
-            box-shadow: 0 4px 2px rgba(0,0,0,0.15);
         }
-        .hero-text h1 { font-size: clamp(24px, 3.2vw, 36px); font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
-        .hero-text p { font-size: 15px; line-height: 1.6; margin-bottom: 24px; max-width: 540px; }
+        .hero-text h1 { font-size: clamp(30px, 4.2vw, 52px); font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 20px; text-wrap: balance; }
+        .hero-text p { font-size: 16px; line-height: 1.65; margin-bottom: 32px; max-width: 34em; color: #4a423d; }
         .hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
         .hero-image {
-            width: 100%; max-width: 460px; margin-left: auto; aspect-ratio: 4 / 3; border-radius: 4px; overflow: hidden;
-            box-shadow: inset 0 4px 4px rgba(0,0,0,0.25);
-            background: linear-gradient(135deg, #e7e5e5, #818080);
+            width: 100%; max-width: 620px; margin-left: auto; aspect-ratio: 4 / 3; border-radius: 14px; overflow: hidden;
+            /* Gallery-style frame: a thin outline in the site color floating
+               just outside the photo (follows the dorm's color), plus a soft shadow. */
+            outline: 2px solid var(--green-dark); outline-offset: 10px;
+            box-shadow: 0 18px 40px -12px rgba(41,36,32,0.45);
+            background: var(--surface-alt);
         }
         .hero-image { position: relative; }
         .hero-image img { width: 100%; height: 100%; object-fit: cover; }
@@ -155,55 +177,110 @@
         }
         .hero-pause svg { width: 14px; height: 14px; }
         @media (prefers-reduced-motion: reduce) { .hero-slide { transition: none; } }
-
-        .stats-bar {
-            background: linear-gradient(90deg, var(--green-dark), var(--green-light));
-            padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px); text-align: center;
+        /* Homepage 360° photo (replaces the slideshow when the dorm uploads one) */
+        .hero-pano { position: absolute; inset: 0; cursor: grab; }
+        .hero-pano:active { cursor: grabbing; }
+        .hero-pano-badge {
+            position: absolute; left: 10px; bottom: 10px; z-index: 2; pointer-events: none;
+            display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px;
+            background: rgba(0,0,0,0.6); color: #fff; font-size: 12px; font-weight: 500;
         }
-        .stats-bar h2 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 700; margin-bottom: 8px; }
-        .stats-bar .sub { font-size: 14px; margin-bottom: 24px; }
-        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 900px; margin: 0 auto; }
-        .stat-card { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .stat-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: var(--ink-alt); }
+        .hero-pano-badge svg { width: 14px; height: 14px; }
+        @media (max-width: 480px) { .pano-badge-long { display: none; } }
+        .hero-pano-controls { position: absolute; right: 10px; bottom: 10px; z-index: 2; display: flex; gap: 8px; }
+        .hero-pano-controls button {
+            width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+            background: rgba(255,255,255,0.9); color: #292420; box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .hero-pano-controls button:hover { background: #fff; }
+        .hero-pano-controls button:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+        .hero-pano-controls svg { width: 18px; height: 18px; }
+        /* Full screen: the real Fullscreen API where the browser has it, or this
+           fixed overlay as a fallback (iPhone Safari can't full-screen a box). */
+        .hero-image:fullscreen { max-width: none; border-radius: 0; outline: none; aspect-ratio: auto; }
+        .hero-image.is-fullscreen {
+            position: fixed; inset: 0; z-index: 9999; max-width: none; margin: 0;
+            border-radius: 0; outline: none; aspect-ratio: auto;
+        }
+        .hero-image:fullscreen .hero-pano-controls, .hero-image.is-fullscreen .hero-pano-controls { right: 18px; bottom: 18px; }
+
+        /* Brand color is used as an ACCENT (icons, headings, buttons) on clean
+           light surfaces, never as a big dark wash: dark shades of gold,
+           orange or yellow turn brown, so whole sections in them look muddy. */
+        .stats-bar {
+            background: var(--surface);
+            padding: clamp(48px, 7vw, 80px) clamp(20px, 6vw, 64px); text-align: center;
+        }
+        .stats-bar h2 { margin-bottom: 10px; }
+        .stats-bar .sub { font-size: 16px; margin-bottom: 36px; color: #5b524c; }
+        /* One panel split by hairlines, not four separate cards. */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(4, 1fr); max-width: 1000px; margin: 0 auto;
+            background: #fff; border-radius: 18px; overflow: hidden;
+            box-shadow: 0 1px 2px rgba(41,36,32,0.06), 0 18px 40px -22px rgba(41,36,32,0.35);
+        }
+        .stat-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 28px 16px; }
+        .stat-card + .stat-card { border-left: 1px solid color-mix(in srgb, var(--green-dark) 12%, #ece7e3); }
+        .stat-icon {
+            width: 48px; height: 48px; border-radius: 50%; padding: 12px; margin-bottom: 6px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--green-dark); background: color-mix(in srgb, var(--green-dark) 12%, #fff);
+        }
         .stat-icon svg { width: 100%; height: 100%; }
-                .stat-value { font-size: 17px; font-weight: 700; color: var(--ink-alt); min-height: 42px; display: flex; align-items: center; justify-content: center; line-height: 1.2; text-align: center; }
-        .stat-label { font-size: 12.5px; color: var(--ink-alt); }
+        .stat-value { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); min-height: 32px; display: flex; align-items: center; justify-content: center; line-height: 1.2; text-align: center; font-variant-numeric: tabular-nums; }
+        .stat-label { font-size: 13px; color: #6b625c; }
 
         .why-section {
-            background: linear-gradient(90deg, var(--cream), var(--cream-light));
-            padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px); text-align: center;
-            box-shadow: 0 4px 2px rgba(0,0,0,0.15);
+            background: var(--surface-alt);
+            padding: clamp(48px, 7vw, 88px) clamp(20px, 6vw, 64px); text-align: center;
         }
-        .eyebrow {
-            font-size: 12.5px; font-weight: 700; letter-spacing: 0.06em;
-            text-transform: uppercase; color: var(--green-darker); margin-bottom: 8px;
-        }
-        .why-section h2 { font-size: clamp(20px, 2.6vw, 26px); font-weight: 700; margin-bottom: 14px; }
-        .why-section p { font-size: 14.5px; max-width: 740px; margin: 0 auto; line-height: 1.6; }
+        .why-section h2 { margin-bottom: 16px; }
+        .why-section p { font-size: 16px; max-width: 62ch; margin: 0 auto; line-height: 1.7; color: #4a423d; text-wrap: pretty; }
 
-        .location-section { background: #fff; padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px); }
-        .location-inner { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 28px; align-items: center; }
-        .location-text h2 { font-size: clamp(19px, 2.4vw, 24px); font-weight: 700; margin-bottom: 10px; }
-        .location-text p { font-size: 14px; line-height: 1.6; margin-bottom: 8px; }
-        .location-text .location-address { font-weight: 600; }
-        .location-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
-        .location-map { position: relative; width: 100%; aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; border: 1px solid var(--gray-border); background: var(--cream-light); }
+        .spot-section { background: var(--surface); border-top: 1px solid var(--hairline); padding: clamp(48px, 7vw, 88px) clamp(20px, 6vw, 64px); }
+        .spot-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(32px, 5vw, 72px); align-items: start; }
+        .spot-intro { position: sticky; top: 112px; }
+        .spot-intro h2 { margin-bottom: 14px; }
+        .spot-intro p { font-size: 16px; line-height: 1.65; color: #4a423d; margin-bottom: 26px; max-width: 34em; }
+        @media (max-width: 860px) {
+            .spot-inner { grid-template-columns: minmax(0, 1fr); }
+            .spot-intro { position: static; }
+        }
+
+        .location-section { background: var(--surface); padding: clamp(48px, 7vw, 88px) clamp(20px, 6vw, 64px); }
+        .location-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr); gap: clamp(28px, 4vw, 56px); align-items: center; }
+        .location-text h2 { margin-bottom: 14px; }
+        .location-text p { font-size: 15px; line-height: 1.65; margin-bottom: 10px; color: #4a423d; }
+        .location-text .location-address { font-weight: 600; color: var(--ink); }
+        .location-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+        .location-map { position: relative; width: 100%; aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--green-dark) 15%, #e5e0dc); background: var(--surface-alt); box-shadow: 0 1px 2px rgba(41,36,32,0.06), 0 14px 32px -16px rgba(41,36,32,0.3); }
         .location-map iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
         @media (max-width: 760px) {
             .location-inner { grid-template-columns: 1fr; }
             .location-map { aspect-ratio: 4 / 3; }
         }
-        .about-section { background: var(--green-dark); padding: clamp(28px, 5vw, 44px) clamp(20px, 6vw, 64px); }
-        .about-header { text-align: center; max-width: 720px; margin: 0 auto 32px; }
-        .about-header .eyebrow { color: rgba(255,255,255,0.85); }
-        .about-header h2 { color: #fff; font-size: clamp(19px, 2.4vw, 24px); font-weight: 700; }
+        .about-section {
+            background: var(--surface-alt);
+            padding: clamp(48px, 7vw, 88px) clamp(20px, 6vw, 64px);
+        }
+        .about-header { text-align: center; max-width: 720px; margin: 0 auto 44px; }
+        .about-header .sub { font-size: 16px; color: #5b524c; margin-top: 10px; }
 
-        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 44px; max-width: 860px; margin: 0 auto; }
-        .feature { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; color: #fff; }
-        .feature-icon { width: 48px; height: 48px; color: #fff; }
+        /* A 2x2 list divided by hairlines, not a grid of boxed cards. */
+        .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; max-width: 1000px; margin: 0 auto; }
+        .feature {
+            display: flex; align-items: flex-start; gap: 18px; text-align: left; padding: 26px 0;
+            border-top: 1px solid color-mix(in srgb, var(--green-dark) 18%, #e5e0dc);
+        }
+        .feature-icon {
+            flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px; padding: 11px;
+            color: var(--green-dark); background: #fff;
+            box-shadow: 0 1px 2px rgba(41,36,32,0.08), 0 6px 14px -8px rgba(41,36,32,0.3);
+        }
         .feature-icon svg { width: 100%; height: 100%; }
-        .feature p { font-size: 13.5px; line-height: 1.55; }
-        .feature strong { font-weight: 700; }
+        .feature p { font-size: 14.5px; line-height: 1.65; color: #4a423d; }
+        .feature strong { font-weight: 700; color: var(--ink); display: block; margin-bottom: 6px; font-size: 16px; letter-spacing: -0.01em; }
 
         .about-actions { display: flex; justify-content: center; gap: 14px; margin-top: 28px; flex-wrap: wrap; }
         .about-footnote {
@@ -236,13 +313,16 @@
             .hero { grid-template-columns: 1fr; }
             .hero-image { max-width: 100%; margin-left: 0; }
             .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .stat-card:nth-child(3) { border-left: none; }
+            .stat-card:nth-child(n+3) { border-top: 1px solid color-mix(in srgb, var(--green-dark) 12%, #ece7e3); }
             .feature-grid { grid-template-columns: 1fr; }
             .footer-grid { grid-template-columns: 1fr 1fr; }
             .topnav { flex-wrap: wrap; }
         }
         @media (max-width: 640px) {
             .topnav, .hero, .stats-bar, .why-section, .about-section, footer { padding-left: 18px; padding-right: 18px; }
-            .hero-text h1 { font-size: 24px; }
+            .hero-text h1 { font-size: 30px; }
+            .hero-image { outline-offset: 6px; }
             .stats-row { grid-template-columns: 1fr 1fr; }
             .footer-grid { grid-template-columns: 1fr; gap: 28px; }
             .footer-bottom { flex-direction: column; align-items: flex-start; }
@@ -257,8 +337,8 @@
             .topnav .buttons { flex: none; justify-content: center; flex-wrap: wrap; row-gap: 10px; }
 
         }
-        .about-contact-note{ text-align: center; margin-top: 32px; font-size: 13px; color: rgba(255,255,255,0.85); }
-        .about-contact-note a{ color: #fff; font-weight: 600; text-decoration: underline; }
+        .about-contact-note{ text-align: center; margin-top: 28px; font-size: 13px; color: #5b524c; }
+        .about-contact-note a{ color: var(--green-darker); font-weight: 600; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -276,6 +356,20 @@
                 <a href="{{ route('public.vr') }}" class="btn btn-outline-green btn-lg">VR Tour</a>
             </div>
         </div>
+        @if($heroPanoramaUrl)
+        <div class="hero-image" id="heroPanoFrame">
+            <div class="hero-pano-controls">
+                <button type="button" id="panoZoomOut" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg></button>
+                <button type="button" id="panoZoomIn" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></button>
+                <button type="button" id="panoFullscreen" aria-label="View full screen" title="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+            </div>
+            <div class="hero-pano" id="heroPano" role="img" aria-label="360° view of {{ $dormName }}. Drag to look around."></div>
+            <div class="hero-pano-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="4"/><path d="M12 2v20"/></svg>
+                360°<span class="pano-badge-long"> · Drag to look around</span>
+            </div>
+        </div>
+        @else
         <div class="hero-image" id="heroCarousel" @if(count($heroPhotoUrls) > 1) role="region" aria-roledescription="carousel" aria-label="Photos of {{ $dormName }}" @endif>
             @foreach($heroPhotoUrls as $i => $url)
                 <img src="{{ $url }}" alt="{{ $i === 0 ? $dormName : '' }}" class="hero-slide {{ $i === 0 ? 'active' : '' }}" @if($i > 0) loading="lazy" aria-hidden="true" @endif>
@@ -291,11 +385,11 @@
                 </div>
             @endif
         </div>
+        @endif
     </section>
 
-    <section class="stats-bar textured">
-        <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="" loading="lazy" decoding="async">
-        <h2>Find your room at {{ $dormName ?? 'NEST.PH' }}</h2>
+    <section class="stats-bar">
+        <h2 class="section-title">Find your room at {{ $dormName ?? 'NEST.PH' }}</h2>
         <p class="sub">Browse available beds, take a 360&deg; virtual tour, and apply online!</p>
         <div class="stats-row">
             <div class="stat-card">
@@ -321,22 +415,31 @@
         </div>
     </section>
 
+    <section class="spot-section" id="how-to-apply" aria-labelledby="spotTitle">
+        <div class="spot-inner">
+            <div class="spot-intro">
+                <h2 id="spotTitle" class="section-title">How to Secure Your Spot</h2>
+                <p>From your application to move-in day, here is everything that happens and what you need to do at each step.</p>
+                <a href="{{ route('public.apply') }}" class="btn btn-green btn-lg">Apply Now</a>
+            </div>
+            <div class="spot-list">
+                @include('partials.secure-spot-steps', ['current' => 0])
+            </div>
+        </div>
+    </section>
+
     <section class="why-section">
-        <div class="eyebrow">You Are in Good Company</div>
-        <h2>Why Pick Us?</h2>
+                <h2 class="section-title">Why Pick Us?</h2>
         <p>Located right at the doorstep of Manila's academic hubs, Pureza Station Dormitory gives students a secure, comfortable, and accessible place to stay. Our management platform, NEST.PH, covers everything from your first virtual room viewing to your everyday tenant needs, so you can focus on school instead of paperwork.</p>
     </section>
 
-    @php
-        $mapQuery = $address ? $brandDormName . ', ' . $address : $brandDormName . ', Sta. Mesa, Manila';
-    @endphp
+    @if($showLocationMap && $mapQuery)
     <section class="location-section" id="location" aria-labelledby="locationTitle">
         <div class="location-inner">
             <div class="location-text">
-                <div class="eyebrow">Find Us</div>
-                <h2 id="locationTitle">Where We Are</h2>
+                <h2 id="locationTitle" class="section-title">Where We Are</h2>
                 @if($address)<p class="location-address">{{ $address }}</p>@endif
-                <p>A short walk from PUP and LRT-2 Pureza Station. Drop by for a visit, or take the virtual tour first.</p>
+                @if($locationNote)<p>{{ $locationNote }}</p>@endif
                 <div class="location-actions">
                     <a class="btn btn-green" href="https://www.google.com/maps/dir/?api=1&amp;destination={{ urlencode($mapQuery) }}" target="_blank" rel="noopener">Get Directions</a>
                     <a class="btn btn-outline-green" href="https://www.google.com/maps/search/?api=1&amp;query={{ urlencode($mapQuery) }}" target="_blank" rel="noopener">Open in Google Maps</a>
@@ -347,30 +450,30 @@
             </div>
         </div>
     </section>
+    @endif
 
-    <section class="about-section textured">
-        <img src="{{ asset('images/leaf-texture-1.png') }}" class="bg-texture" alt="" loading="lazy" decoding="async">
+    <section class="about-section">
         <div class="about-header">
-            <div class="eyebrow">Powered by NEST.PH, a smarter web app for dormitory living and management</div>
-            <h2>About NEST.PH</h2>
+            <h2 class="section-title">About NEST.PH</h2>
+            <p class="sub">Powered by NEST.PH, a smarter web app for dormitory living and management.</p>
         </div>
 
         <div class="feature-grid">
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="8" width="20" height="9" rx="4"/><circle cx="8" cy="12.5" r="2"/><circle cx="16" cy="12.5" r="2"/><path d="M12 8V5a3 3 0 00-3-3H7"/></svg></div>
-                <p><strong>360&deg; VR Room Viewing:</strong> Walk through real rooms and common areas in immersive 360&deg; from any device. See the actual space, layout, and lighting before you commit, with no guesswork and no wasted trips.</p>
+                <p><strong>360&deg; VR Room Viewing</strong>Walk through real rooms and common areas in immersive 360&deg; from any device. See the actual space, layout, and lighting before you commit, with no guesswork and no wasted trips.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/><path d="M12 8v4M12 15h.01"/></svg></div>
-                <p><strong>Smart Delinquency Escalation:</strong> Automated reminders and a clear, staged notice process keep accounts on track, giving tenants fair warning and dorm owners a system that runs itself instead of chasing payments by hand.</p>
+                <p><strong>Smart Delinquency Escalation</strong>Automated reminders and a clear, staged notice process keep accounts on track, giving tenants fair warning and dorm owners a system that runs itself instead of chasing payments by hand.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/></svg></div>
-                <p><strong>Online Tenant Portal:</strong> Manage your stay entirely online. Check your billing statements, upload proof of payment, and track your payment history without lining up at the admin office.</p>
+                <p><strong>Online Tenant Portal</strong>Manage your stay entirely online. Check your billing statements, upload proof of payment, and track your payment history without lining up at the admin office.</p>
             </div>
             <div class="feature">
                 <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-                <p><strong>Digital Maintenance Requests:</strong> Got a leaking faucet or a busted lightbulb? Submit a maintenance ticket directly through the NEST.PH portal and track its resolution status in real-time.</p>
+                <p><strong>Digital Maintenance Requests</strong>Got a leaking faucet or a busted lightbulb? Submit a maintenance ticket directly through the NEST.PH portal and track its resolution status in real-time.</p>
             </div>
         </div>
 
@@ -417,6 +520,65 @@
     </div>
     </div>
 
+    @if($heroPanoramaUrl)
+    <script>
+        // Homepage 360° photo. Turns slowly on its own (unless the visitor
+        // prefers reduced motion) and stops once they drag it. Scroll-wheel
+        // zoom is off so scrolling over the photo still scrolls the page.
+        // Zoom with the + / - buttons (or pinch on phones). Full screen covers
+        // the whole box, buttons included; there the scroll wheel zooms too.
+        window.addEventListener('DOMContentLoaded', function () {
+            const viewer = pannellum.viewer('heroPano', {
+                type: 'equirectangular',
+                panorama: @json($heroPanoramaUrl),
+                autoLoad: true,
+                showControls: false,
+                mouseZoom: false,
+                hfov: 100, minHfov: 40, maxHfov: 120,
+                autoRotate: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : -2,
+            });
+            const frame = document.getElementById('heroPanoFrame');
+            const fsBtn = document.getElementById('panoFullscreen');
+            const ENTER = fsBtn.innerHTML;
+            const EXIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
+
+            const zoom = step => { viewer.stopAutoRotate(); viewer.setHfov(viewer.getHfov() + step); };
+            document.getElementById('panoZoomIn').addEventListener('click', () => zoom(-15));
+            document.getElementById('panoZoomOut').addEventListener('click', () => zoom(15));
+
+            const isFull = () => document.fullscreenElement === frame || frame.classList.contains('is-fullscreen');
+            function onFullChange() {
+                const full = isFull();
+                fsBtn.innerHTML = full ? EXIT : ENTER;
+                fsBtn.setAttribute('aria-label', full ? 'Exit full screen' : 'View full screen');
+                fsBtn.title = full ? 'Exit full screen' : 'Full screen';
+                document.body.style.overflow = frame.classList.contains('is-fullscreen') ? 'hidden' : '';
+                setTimeout(() => viewer.resize(), 50);
+            }
+            fsBtn.addEventListener('click', () => {
+                if (isFull()) {
+                    if (document.fullscreenElement) document.exitFullscreen(); else frame.classList.remove('is-fullscreen');
+                } else if (frame.requestFullscreen) {
+                    frame.requestFullscreen().catch(() => frame.classList.add('is-fullscreen')).finally(onFullChange);
+                    return;
+                } else {
+                    frame.classList.add('is-fullscreen');
+                }
+                onFullChange();
+            });
+            document.addEventListener('fullscreenchange', onFullChange);
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && frame.classList.contains('is-fullscreen')) { frame.classList.remove('is-fullscreen'); onFullChange(); }
+            });
+            // Scroll-wheel zoom only in full screen, so on the page it still scrolls.
+            frame.addEventListener('wheel', e => {
+                if (!isFull()) return;
+                e.preventDefault();
+                zoom(e.deltaY > 0 ? 5 : -5);
+            }, { passive: false });
+        });
+    </script>
+    @endif
     <script>
         // Hero slideshow: only runs with 2+ photos. Auto-advances every 5s
         // unless the visitor prefers reduced motion; pauses on hover, on
@@ -472,5 +634,6 @@
         });
     </script>
 
+@include('partials.contact-fab')
 </body>
 </html>

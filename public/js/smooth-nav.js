@@ -13,6 +13,20 @@
   Never prefetched: downloads/PDFs/exports, logout, API calls, other sites,
   links that open a new tab, and the page you're already on.
 */
+// Back/Forward can restore a page exactly as it was left (the browser's
+// back-forward cache). Close the bell and profile menus so a link picked
+// from an open menu doesn't bring the page back with that menu still open.
+window.addEventListener('pageshow', function (e) {
+  if (!e.persisted) return;
+  document.querySelectorAll('.notif-panel.open, .admin-notif-panel.open, .pm-panel.open').forEach(function (p) {
+    p.classList.remove('open');
+  });
+  document.querySelectorAll('[aria-expanded="true"]:not(#hamburgerBtn)').forEach(function (b) {
+    if (b.closest('.notif-panel, .pm-panel, .sidebar')) return;
+    if (/notif|bell|profile|pm-/i.test(b.id + ' ' + b.className)) b.setAttribute('aria-expanded', 'false');
+  });
+});
+
 (function () {
   if (!(window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules'))) return;
   if (navigator.connection && (navigator.connection.saveData || /2g/.test(navigator.connection.effectiveType || ''))) return;

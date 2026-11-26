@@ -274,6 +274,9 @@ Route::middleware(['auth', 'admin', 'admin.access'])->group(function () {
     Route::post('/dormitory-profile/cover-photo', [DormitoryProfileController::class, 'uploadCoverPhoto'])->name('dormitory-profile.cover-photo');
     Route::post('/dormitory-profile/hero-photos', [DormitoryProfileController::class, 'uploadHeroPhoto'])->name('dormitory-profile.hero-photos');
     Route::delete('/dormitory-profile/hero-photos/{name}', [DormitoryProfileController::class, 'deleteHeroPhoto'])->where('name', '[A-Za-z0-9._-]+');
+    Route::post('/dormitory-profile/hero-panorama', [DormitoryProfileController::class, 'uploadHeroPanorama'])->name('dormitory-profile.hero-panorama');
+    Route::delete('/dormitory-profile/hero-panorama', [DormitoryProfileController::class, 'deleteHeroPanorama']);
+    Route::post('/dormitory-profile/location', [DormitoryProfileController::class, 'updateLocation'])->name('dormitory-profile.location');
     Route::post('/dormitory-profile/brand-logo', [DormitoryProfileController::class, 'uploadBrandLogo'])->name('dormitory-profile.brand-logo');
     Route::post('/dormitory-profile/brand-color', [DormitoryProfileController::class, 'updateBrandColor'])->name('dormitory-profile.brand-color');
     Route::post('/dormitory-profile/background-color', [DormitoryProfileController::class, 'updateBackgroundColor'])->name('dormitory-profile.background-color');
@@ -410,6 +413,23 @@ Route::middleware(['auth', 'tenant', 'movein.check', 'moveout.check', 'delinquen
                 : null,
         ]);
     })->name('tenant.account');
+
+    // Tenant changes their own profile picture (their 2x2 ID picture). The
+    // page crops it to a square before upload. The old file is kept on
+    // purpose: the original application may still point at the same file.
+    Route::post('/account/photo', function (Illuminate\Http\Request $request) {
+        $tenant = $request->attributes->get('tenant') ?? $request->user()->tenant;
+        $request->validate([
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+        ], [
+            'photo.max' => 'The picture is too large. Please use one under 5 MB.',
+            'photo.image' => 'Please choose a picture (JPG, PNG or WebP).',
+        ]);
+
+        $tenant->update(['id_photo_path' => $request->file('photo')->store('id-photos', 'public')]);
+
+        return response()->json(['message' => 'Profile picture updated.', 'url' => $tenant->fresh()->id_photo_url]);
+    })->name('tenant.account.photo');
 
     // The tenant's own notarized contract (private file). Only the lease
     // that belongs to this tenant can be opened.

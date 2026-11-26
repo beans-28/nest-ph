@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Apply for Occupancy · {{ $brandDormName }}</title>
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
     <style>
@@ -25,9 +25,11 @@
         .page-wrap { overflow-x: hidden; }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            background: linear-gradient(180deg, #567357 0%, #59473f 100%);
+            /* Dark charcoal behind the white text. Written as an image (gradient) so the
+               dorm's page-background setting, which only sets the color, can't cover it. */
+            background: linear-gradient(#2b2724, #2b2724);
             min-height: 100vh;
         }
 
@@ -112,7 +114,7 @@
             background: linear-gradient(180deg, #567357 0%, #a2d9a4 100%);
             border-radius: 0 70px 70px 0; display: flex; align-items: center; justify-content: center;
         }
-        .brand-mark span { font-family: 'Inter', sans-serif; font-weight: 800; letter-spacing: -0.04em; font-size: 84px; color: #fff; line-height: 1; }
+        .brand-mark span { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; letter-spacing: -0.04em; font-size: 84px; color: #fff; line-height: 1; }
 
         .apply-right-wrap { position: relative; padding-top: 16px; display: flex; flex-direction: column; }
         .apply-right {
@@ -122,8 +124,8 @@
         }
 
         .apply-title {
-            color: #44ad65; font-weight: 900; font-size: clamp(17px, 1.8vw, 21px);
-            letter-spacing: 0.02em; text-transform: uppercase; margin-bottom: 20px;
+            color: #197335; font-weight: 900; font-size: clamp(17px, 1.8vw, 21px);
+            letter-spacing: 0.02em; text-transform: uppercase; margin: 0 0 20px;
         }
 
         /* Step indicator */
@@ -138,7 +140,7 @@
         .step-dot-wrap { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; flex: 1; }
         .step-dot { width: 17px; height: 17px; border-radius: 50%; background: #44ad65; border: 2px solid #44ad65; }
         .step-dot.current { background: #fff; }
-        .step-label { font-size: 9.5px; font-weight: 700; color: #194e19; text-transform: uppercase; letter-spacing: 0.02em; text-align: center; }
+        .step-label { font-size: 11px; font-weight: 700; color: #194e19; text-transform: uppercase; letter-spacing: 0.02em; text-align: center; }
         .step-divider { height: 1px; background: #d8dde3; margin: 0 0 22px; }
 
         /* Steps */
@@ -183,7 +185,7 @@
         }
         .field input[type="date"]::-webkit-date-and-time-value { text-align: left; }
         .field textarea { resize: vertical; min-height: 70px; }
-        .field-hint { font-size: 11.5px; color: #5b6b60; line-height: 1.4; }
+        .field-hint { font-size: 12px; color: #5f5853; line-height: 1.4; }
         .contract-resign-note { margin-top: 10px; font-size: 12.5px; color: #8a4b0f; background: #fdf3e6; border: 1px solid #f1d6b3; border-radius: 8px; padding: 10px 12px; }
         .field input:focus, .field select:focus, .field textarea:focus {
             outline: none; border-color: #567357;
@@ -210,7 +212,7 @@
         .id-photo-row .file-drop { flex: 1; }
         .id-photo-preview { width: 96px; height: 96px; flex-shrink: 0; border-radius: 8px; border: 1px dashed #c1c7cd; background: #f2f4f8 center/cover no-repeat; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #9aa5ac; text-align: center; }
         .id-photo-preview.has-photo { border-style: solid; color: transparent; }
-        .field-hint { font-size: 12px; color: #6b7479; margin: 0; }
+        .field-hint { font-size: 12px; color: #5f5853; margin: 0; }
         .file-drop-icons { display: flex; gap: 10px; color: #9aa5ac; }
         .file-drop-icons svg { width: 16px; height: 16px; }
 
@@ -277,7 +279,7 @@
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px 24px; }
         .summary-item { display: flex; flex-direction: column; gap: 4px; }
         .summary-item .label {
-            font-size: 10px; color: #5b6b60; text-transform: uppercase;
+            font-size: 11px; color: #5f5853; text-transform: uppercase;
             letter-spacing: 0.04em; font-weight: 700;
         }
         .summary-item .value { font-size: 13.5px; color: #292420; font-weight: 500; word-break: break-word; }
@@ -293,6 +295,30 @@
         .success-badge { width: 72px; height: 72px; margin: 0 auto 20px; display: block; }
         #step-5 h2 { color: #567357; font-weight: 900; font-size: clamp(22px, 2.6vw, 30px); margin-bottom: 14px; }
         #step-5 p { color: #5c6660; font-size: 14px; line-height: 1.6; max-width: 480px; margin: 0 auto 26px; }
+        #step-5 .spot-steps p { margin: 4px 0 0; max-width: none; }
+        #step-5 .spot-steps .spot-note { margin-top: 8px; }
+        .success-next { max-width: 520px; margin: 0 auto 28px; padding: 22px 24px; background: #fff; border-radius: 18px; text-align: left; box-shadow: 0 1px 2px rgba(41,36,32,0.06), 0 12px 28px -18px rgba(41,36,32,0.35); }
+        .success-next-title { font-size: 16px; font-weight: 700; color: var(--ink); margin-bottom: 16px; }
+
+        /* "How to secure your spot" card in the left column */
+        /* See-through panel that belongs to the dark column, not a white box on top of it */
+        .spot-guide {
+            margin-top: 28px; max-width: 360px; border-radius: 20px;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
+            backdrop-filter: blur(8px);
+        }
+        .spot-guide summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 16px 18px; border-radius: 20px; }
+        .spot-guide summary::-webkit-details-marker { display: none; }
+        .spot-guide summary:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+        .spot-guide-title { font-size: 16px; font-weight: 700; color: #fff; }
+        .spot-guide-sub { grid-row: 2; font-size: 13px; color: rgba(255,255,255,0.7); }
+        .spot-guide-chev { grid-row: 1 / 3; grid-column: 2; align-self: center; width: 20px; height: 20px; color: #fff; transition: transform .25s cubic-bezier(.32,.72,0,1); }
+        .spot-guide[open] .spot-guide-chev { transform: rotate(180deg); }
+        .spot-guide-body { padding: 0 10px 16px; }
+        .spot-guide-body .spot-mini-note, .spot-guide-body .spot-mini-more { margin-left: 8px; margin-right: 8px; }
+        /* After submitting, the success screen shows its own "What happens next". */
+        .apply-grid:has(#step-5.active) .spot-guide { display: none; }
+        @media (max-width: 1024px) { .spot-guide { max-width: none; margin-top: 20px; } }
 
         @media (max-width: 1024px) {
             .apply-grid { grid-template-columns: 1fr; padding: 20px 24px 32px; }
@@ -428,7 +454,7 @@
         }
         .signature-pad-hint {
             position: absolute; bottom: 8px; left: 12px; right: 12px; border-top: 1px solid #eceff0;
-            font-size: 10.5px; color: #b6bcb9; pointer-events: none;
+            font-size: 12px; color: #8d8680; pointer-events: none;
         }
         .signature-pad-actions { display: flex; justify-content: flex-end; margin-top: 8px; }
         .signature-clear-btn {
@@ -481,12 +507,26 @@
             <div class="apply-left-content">
                 <img src="{{ asset('images/nestph.png') }}" alt="NEST.PH" class="brand-mark" width="72" height="68">
                 <h1>Malayo sa bahay,<span class="accent">pero at home.</span></h1>
+
+                {{-- Onboarding guide beside the form: what happens after applying. --}}
+                <details class="spot-guide" id="spotGuide" open>
+                    <summary>
+                        <span class="spot-guide-title">How to secure your spot</span>
+                        <span class="spot-guide-sub">5 steps from applying to moving in</span>
+                        <svg class="spot-guide-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+                    </summary>
+                    <div class="spot-guide-body">
+                        @include('partials.secure-spot-steps', ['current' => 1, 'compact' => true])
+                    </div>
+                </details>
+                {{-- Phones/tablets: the guide sits ABOVE the form, so start it folded. --}}
+                <script>if (window.matchMedia('(max-width: 1024px)').matches) document.getElementById('spotGuide').removeAttribute('open');</script>
             </div>
         </div>
 
         <div class="apply-right-wrap">
             <div class="apply-right">
-                <div class="apply-title">Apply for Occupancy</div>
+                <h2 class="apply-title">Apply for Occupancy</h2>
 
                 <div class="step-track" id="stepTrack">
                     <div class="step-dot-wrap"><div class="step-dot current" data-dot="1"></div><span class="step-label">Personal<br>Information</span></div>
@@ -832,6 +872,10 @@
                     <h2>Application Successful</h2>
                     <p id="successAppNumber" style="display:none; font-weight:700; color:#194e19; margin-bottom:6px;"></p>
                     <p>Please wait for the administrator's review and approval. Kindly check your email inbox regularly for updates regarding your application status. If you don't see our emails, check your <strong>Spam</strong> folder and mark them as "Not spam".</p>
+                    <div class="success-next">
+                        <h3 class="success-next-title">What happens next</h3>
+                        @include('partials.secure-spot-steps', ['current' => 2])
+                    </div>
                     <a href="{{ route('home') }}" class="btn-nav primary" style="display:inline-flex;">BACK TO HOME</a>
                 </div>
 

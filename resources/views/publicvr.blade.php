@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VR Room Viewing · {{ $brandDormName }}</title>
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
     <link rel="stylesheet" href="{{ asset('vendor/pannellum/pannellum.css') }}">
@@ -21,7 +21,7 @@
             --green-darker: #197335;
             --ink: #292420;
             --mint: #92db9f;
-            --glass: rgba(20, 24, 21, 0.62);
+            --glass: rgba(22, 21, 20, 0.62);
             --glass-text: #f3f1ec;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,9 +31,9 @@
         html, body { height: 100%; overflow: hidden; }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            background: #141714;
+            background: #161514;
             display: flex;
             flex-direction: column;
         }
@@ -88,7 +88,7 @@
            The panorama fills everything below the nav. All other UI floats
            on top of it as small see-through panels, so the room itself is
            the page instead of a box squeezed between bars. */
-        .stage { position: relative; flex: 1; min-height: 0; background: #141714; overflow: hidden; }
+        .stage { position: relative; flex: 1; min-height: 0; background: #161514; overflow: hidden; }
         .stage:fullscreen { width: 100vw; height: 100vh; }
         #panorama { position: absolute; inset: 0; }
 
@@ -97,8 +97,8 @@
         .stage::before, .stage::after {
             content: ''; position: absolute; left: 0; right: 0; z-index: 2; pointer-events: none;
         }
-        .stage::before { top: 0; height: 140px; background: linear-gradient(rgba(10,12,10,0.5), transparent); }
-        .stage::after { bottom: 0; height: 190px; background: linear-gradient(transparent, rgba(10,12,10,0.55)); }
+        .stage::before { top: 0; height: 140px; background: linear-gradient(rgba(12,11,10,0.5), transparent); }
+        .stage::after { bottom: 0; height: 190px; background: linear-gradient(transparent, rgba(12,11,10,0.55)); }
 
         .glass {
             background: var(--glass);
@@ -117,6 +117,18 @@
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
         .info-card.is-hidden { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+        /* Fold button: collapsed shows only the room name and price. */
+        .info-toggle {
+            position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%;
+            border: 0; background: rgba(255,255,255,0.1); color: var(--glass-text); cursor: pointer;
+            display: grid; place-items: center; transition: background-color .2s ease;
+        }
+        .info-toggle:hover { background: rgba(255,255,255,0.18); }
+        .info-toggle:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
+        .info-toggle svg { width: 18px; height: 18px; transition: transform .25s cubic-bezier(.32,.72,0,1); }
+        .info-card.is-collapsed .info-toggle svg { transform: rotate(180deg); }
+        .info-card.is-collapsed .info-more { display: none; }
+        .info-eyebrow, .info-title { padding-right: 40px; }
         .info-eyebrow {
             font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
             color: var(--mint); margin-bottom: 4px;
@@ -129,7 +141,7 @@
         .info-price-sub { flex-basis: 100%; font-size: 12.5px; }
         .info-size { margin-top: 4px; font-size: 14px; color: rgba(243,241,236,0.82); }
         .info-size strong { color: #fff; font-weight: 600; }
-        .pricing-tag { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; line-height: 1.3; }
+        .pricing-tag { font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; line-height: 1.3; }
         .pricing-tag.per-bed { background: color-mix(in srgb, var(--green-light, #a2d9a4) 18%, transparent); color: #a2d9a4; border: 1px solid color-mix(in srgb, var(--green-light, #a2d9a4) 45%, transparent); }
         .pricing-tag.per-room { background: #a2d9a4; color: #1b3a1f; }
         .info-caption {
@@ -192,7 +204,7 @@
             cursor: pointer; white-space: nowrap; transition: background 0.2s ease, color 0.2s ease;
         }
         .spot:hover { background: rgba(255,255,255,0.1); color: #fff; }
-        .spot.active { background: #fff; color: #1b221c; font-weight: 700; }
+        .spot.active { background: #fff; color: #1d1b19; font-weight: 700; }
 
         .dock { border-radius: 18px; padding: 8px; max-width: 100%; display: flex; align-items: center; gap: 8px; }
         .dock-toggle {
@@ -216,7 +228,7 @@
         .room-thumb {
             position: relative; flex: 0 0 112px; height: 64px; border-radius: 11px;
             overflow: hidden; cursor: pointer; scroll-snap-align: start; padding: 0;
-            background: #3f4a3f; border: 2px solid transparent; font-family: inherit;
+            background: #46423e; border: 2px solid transparent; font-family: inherit;
             transition: border-color 0.2s ease, transform 0.2s ease;
             animation: thumbIn 0.4s ease backwards;
         }
@@ -228,7 +240,7 @@
             position: absolute; left: 8px; bottom: 6px; z-index: 1; color: #fff;
             font-weight: 700; font-size: 13px; text-align: left; line-height: 1.1;
         }
-        .room-thumb .label small { display: block; font-size: 10px; font-weight: 500; opacity: 0.85; }
+        .room-thumb .label small { display: block; font-size: 11px; font-weight: 500; opacity: 0.85; }
         .strip-empty { color: #ddd8d7; font-size: 12px; padding: 12px; }
 
         @keyframes thumbIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -239,8 +251,8 @@
         }
 
         /* Pannellum's own pieces, restyled to match */
-        .pnlm-container { background: #141714 !important; font-family: inherit !important; }
-        .pnlm-load-box { border-radius: 14px !important; background: rgba(20,24,21,0.8) !important; }
+        .pnlm-container { background: #161514 !important; font-family: inherit !important; }
+        .pnlm-load-box { border-radius: 14px !important; background: rgba(22,21,20,0.8) !important; }
         .pnlm-hotspot-base.pnlm-scene {
             width: 46px; height: 46px; border-radius: 50%; background: color-mix(in srgb, var(--green-darker, #197335) 88%, transparent);
             border: 2px solid #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.4); cursor: pointer;
@@ -257,10 +269,10 @@
         }
         .pnlm-hotspot-base.pnlm-scene:hover { background: var(--green-darker); }
         .pnlm-tooltip span {
-            background: rgba(20,24,21,0.88) !important; border-radius: 8px !important;
+            background: rgba(22,21,20,0.88) !important; border-radius: 8px !important;
             font-size: 13px !important; padding: 6px 10px !important;
         }
-        .pnlm-tooltip span::after { border-color: rgba(20,24,21,0.88) transparent transparent transparent !important; }
+        .pnlm-tooltip span::after { border-color: rgba(22,21,20,0.88) transparent transparent transparent !important; }
         @keyframes pulse { from { transform: scale(1); opacity: 0.9; } to { transform: scale(1.6); opacity: 0; } }
 
         @media (prefers-reduced-motion: reduce) {
@@ -283,7 +295,7 @@
             .bottom { padding: 0 12px 12px; }
             .dock { width: 100%; }
             .dock.collapsed { width: auto; }
-            .dock-toggle { height: 54px; padding: 0 6px; font-size: 10px; }
+            .dock-toggle { height: 54px; padding: 0 6px; font-size: 11px; }
             .room-thumb { flex-basis: 92px; height: 54px; }
             .hint { font-size: 13px; }
         }
@@ -302,16 +314,21 @@
         <div class="viewer-message" id="viewerMessage" aria-live="polite">Loading virtual tours…</div>
 
         <section class="overlay glass info-card is-hidden" id="infoCard" aria-live="polite">
+            <button type="button" class="info-toggle" id="infoToggle" aria-expanded="true" aria-controls="infoMore" aria-label="Hide room details" title="Hide room details">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>
+            </button>
             <div class="info-eyebrow" id="infoEyebrow"></div>
             <h1 class="info-title" id="infoTitle">Virtual Tour</h1>
-            <p class="info-meta" id="infoMeta"></p>
             <p class="info-price" id="infoPrice"></p>
+            <div class="info-more" id="infoMore">
+            <p class="info-meta" id="infoMeta"></p>
             <p class="info-size" id="infoSize"></p>
             <p class="info-caption" id="infoCaption"></p>
             <p class="info-updated" id="infoUpdated"></p>
             <div class="info-actions">
                 <a href="{{ route('public.apply') }}" class="primary">Apply now</a>
                 <a href="{{ route('public.inquiry') }}" class="ghost">Inquire</a>
+            </div>
             </div>
         </section>
 
@@ -341,7 +358,7 @@
             <div class="glass dock" id="dock">
                 <button type="button" class="dock-toggle" id="dockToggle" aria-expanded="true" aria-controls="roomsScroll">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-                    Available<br>rooms
+                    Available <br>rooms
                 </button>
                 <div class="rooms-scroll" id="roomsScroll" aria-live="polite">
                     <div class="strip-empty">Loading…</div>
@@ -363,6 +380,19 @@
     const panoramaEl = $('panorama');
     const messageEl = $('viewerMessage');
     const roomsScroll = $('roomsScroll');
+
+    // Room details fold: starts folded on phones so the card doesn't cover
+    // the view; the visitor's choice is kept when switching rooms.
+    function setInfoCollapsed(collapsed) {
+        $('infoCard').classList.toggle('is-collapsed', collapsed);
+        const btn = $('infoToggle');
+        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        const label = collapsed ? 'Show room details' : 'Hide room details';
+        btn.setAttribute('aria-label', label);
+        btn.title = label;
+    }
+    setInfoCollapsed(window.matchMedia('(max-width: 640px)').matches);
+    $('infoToggle').addEventListener('click', () => setInfoCollapsed(!$('infoCard').classList.contains('is-collapsed')));
 
     function showMessage(text) {
         panoramaEl.style.display = 'none';

@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Admin Login · {{ $brandDormName }}</title>
     <link rel="icon" href="{{ $brandFaviconUrl }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
     <style>
@@ -25,9 +25,11 @@
         .page-wrap { overflow-x: hidden; }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
             color: var(--ink);
-            background: linear-gradient(180deg, #567357 0%, #59473f 100%);
+            /* Dark charcoal behind the white text. Written as an image (gradient) so the
+               dorm's page-background setting, which only sets the color, can't cover it. */
+            background: linear-gradient(#2b2724, #2b2724);
             min-height: 100vh;
         }
 
@@ -166,32 +168,41 @@
             flex: 1;
         }
 
+        /* Tenant / Admin switch: the selected side is filled with the brand
+           color (white text); the other is see-through with muted text, so
+           which one you're on is obvious at a glance. */
         .tab-header {
             position: absolute;
             top: 0;
             left: 32px;
             display: inline-flex;
+            gap: 4px;
+            padding: 5px;
             border-radius: 999px;
-            overflow: hidden;
+            background: #fff;
             box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         }
         .tab-header a {
             display: flex;
             align-items: center;
             gap: 6px;
-            padding: 13px 26px;
+            padding: 9px 22px;
+            border-radius: 999px;
             font-weight: 700;
             font-size: 14px;
             letter-spacing: 0.02em;
             text-decoration: none;
-            color: #425542;
-            background: #d8dcd8;
+            color: #6b6560;
+            background: transparent;
+            transition: background-color .2s ease, color .2s ease;
         }
-        .tab-header a.active { background: #eeeded; color: #194e19; }
+        .tab-header a:hover { color: #292420; background: rgba(0,0,0,0.05); }
+        .tab-header a.active { background: #197335; color: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.18); }
+        .tab-header a.active:hover { background: #197335; color: #fff; }
         .tab-header a svg { width: 16px; height: 16px; }
 
         .login-right h2 {
-            color: #567357;
+            color: #197335;
             font-weight: 700;
             font-size: clamp(20px, 2.4vw, 26px);
             margin-bottom: 24px;
@@ -201,7 +212,7 @@
         .form-group { margin-bottom: 22px; max-width: 560px; }
         .form-group label {
             display: block;
-            color: #567357;
+            color: #197335;
             font-weight: 500;
             font-size: 13px;
             margin-bottom: 8px;
@@ -258,7 +269,7 @@
             font-size: 13px;
             color: #292420;
         }
-        .help-text a { color: #567357; text-decoration: none; }
+        .help-text a { color: #197335; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
         .help-text.secondary { font-weight: 400; color: #4b5f4c; margin-top: 8px; }
 
         @media (max-width: 1024px) {

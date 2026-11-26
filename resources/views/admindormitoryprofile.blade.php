@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
     {{-- Page-switch fade opt-in: must be inline and first in <head> or Chrome decides before it sees it (see typography.css). --}}
-    <style>@view-transition{navigation:auto}@media (prefers-reduced-motion:reduce){@view-transition{navigation:none}}</style>
+    <style>@view-transition{navigation:auto}</style><link rel="stylesheet" href="/css/motion.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Dormitory Profile · {{ $brandDormName }}</title>
 <link rel="icon" href="{{ $brandFaviconUrl }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
@@ -25,8 +25,8 @@
     --blue:#33629e; --blue-bg:#e3ecf7;
     --orange:#c9962f; --orange-bg:#f6ecd6;
     --bg-page:#f0f0f0; --card-bg:#ffffff;
-    --text-dark:#243026; --text-mid:#5b6b60; --text-light:#8a9690; --border:#e5e5e5;
-    --font-body:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    --text-dark:#292420; --text-mid:#5f5853; --text-light:#7a726c; --border:#e5e5e5;
+    --font-body:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
      public/css/admin.css (linked above). The rules below are kept because
@@ -116,6 +116,14 @@
   .hero-add:disabled{ cursor:progress; opacity:0.7; }
   .hero-add{ aspect-ratio:4/3; border-radius:8px; border:1.5px dashed var(--border); background:#fff; color:var(--text-light); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:12px; }
   .hero-add svg{ width:22px; height:22px; }
+  .pano-thumb{ aspect-ratio:2/1; border-radius:8px; overflow:hidden; background:#e5e5e5; }
+  .pano-thumb[hidden], .pano-empty[hidden], .pano-actions .btn[hidden]{ display:none; }
+  .pano-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .pano-empty{ font-size:13px; color:var(--text-light); margin:0; }
+  .pano-actions{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .loc-show{ display:flex; align-items:center; gap:8px; font-size:14px; margin-bottom:14px; cursor:pointer; }
+  .loc-preview{ aspect-ratio:16/9; max-height:320px; width:100%; border-radius:8px; overflow:hidden; background:#e5e5e5; margin-top:4px; }
+  .loc-preview iframe{ width:100%; height:100%; border:0; display:block; }
   .cover-actions{ position:absolute; bottom:14px; left:14px; right:14px; display:flex; gap:10px; flex-wrap:wrap; }
 
   .btn{ font-size:12.5px; font-weight:600; padding:10px 18px; border-radius:7px; border:1px solid var(--border); background:#fff; color:var(--text-mid); cursor:pointer; font-family:var(--font-body); display:inline-flex; align-items:center; gap:7px; }
@@ -384,6 +392,20 @@
             <input type="file" id="heroPhotoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
           </div>
 
+          {{-- Homepage 360° Photo --}}
+          <div class="card">
+            <h2>Homepage 360° Photo <x-info-tip text="Optional. A 360° photo (e.g. your lobby) that visitors can drag to look around. While set, the homepage shows it instead of the slideshow. Use a full 360 photo, twice as wide as it is tall." /></h2>
+            <div class="pano-thumb" id="panoThumb" @if(!$heroPanoramaUrl) hidden @endif>
+              <img id="panoImg" src="{{ $heroPanoramaUrl }}" alt="Homepage 360° photo">
+            </div>
+            <p class="pano-empty" id="panoEmpty" @if($heroPanoramaUrl) hidden @endif>No 360° photo. The homepage shows the slideshow.</p>
+            <div class="pano-actions">
+              <button type="button" class="btn" id="panoUploadBtn">{{ $heroPanoramaUrl ? 'Replace 360° Photo' : 'Upload 360° Photo' }}</button>
+              <button type="button" class="btn" id="panoRemoveBtn" @if(!$heroPanoramaUrl) hidden @endif>Remove</button>
+            </div>
+            <input type="file" id="panoInput" accept=".jpg,.jpeg,.png" style="display:none;">
+          </div>
+
           {{-- Dorm Logo (dual branding: dorm = PIC, NEST.PH = PIP) --}}
           <div class="card">
             <h2>Dorm Logo <x-info-tip text="Appears in the sidebar, login page, browser tab, emails and PDFs." /></h2>
@@ -505,6 +527,32 @@
             <div class="form-actions">
               <button type="button" class="btn" id="cancelBtn">Cancel</button>
               <button type="button" class="btn primary" id="saveProfileBtn">Save Changes</button>
+            </div>
+          </div>
+
+          {{-- Location Map ("Where We Are" on the homepage) --}}
+          <div class="card">
+            <h2>Location Map <x-info-tip text="The “Where We Are” map on your homepage, with Get Directions and Open in Google Maps buttons." /></h2>
+
+            <label class="loc-show"><input type="checkbox" id="locShow" @checked($profile->show_location_map ?? true)> Show the map on my homepage</label>
+
+            <div class="field-row full">
+              <div class="field">
+                <label for="locPin">Map Pin <x-info-tip text="Leave empty to use your dormitory name and address. If the pin lands in the wrong spot, type your place's name as it appears on Google Maps, or paste its coordinates: in Google Maps, right-click your building and click the numbers at the top (e.g. 14.6005, 121.0115)." /></label>
+                <input type="text" id="locPin" maxlength="255" value="{{ $profile->map_location }}" placeholder="{{ trim($profile->dorm_name . ', ' . $profile->address, ', ') }}">
+              </div>
+            </div>
+            <div class="field-row full">
+              <div class="field">
+                <label for="locNote">How to Get Here <x-info-tip text="Shown beside the map, e.g. nearby schools, train stations or landmarks." /></label>
+                <textarea id="locNote" maxlength="300" rows="2" placeholder="e.g. A short walk from PUP and LRT-2 Pureza Station.">{{ $profile->location_note }}</textarea>
+              </div>
+            </div>
+
+            <div class="loc-preview"><iframe id="locPreview" title="Map preview" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+
+            <div class="form-actions">
+              <button type="button" class="btn primary" id="saveLocationBtn">Save Location</button>
             </div>
           </div>
 
@@ -1132,6 +1180,80 @@
       if(add){ add.disabled = false; add.querySelector('span').textContent = 'Add photo'; }
     }
     this.value = '';
+  });
+
+  // ===== Location Map =====
+  // Live preview: empty pin = dorm name + address, same as the homepage.
+  function locQuery(){
+    const pin = $('locPin').value.trim();
+    if(pin) return pin;
+    return [$('dormName').value.trim(), $('address').value.trim()].filter(Boolean).join(', ');
+  }
+  let locTimer = null, locShown = '';
+  function refreshLocPreview(){
+    const q = locQuery();
+    if(q === locShown) return;
+    locShown = q;
+    $('locPreview').src = 'https://www.google.com/maps?q=' + encodeURIComponent(q) + '&z=17&output=embed';
+  }
+  refreshLocPreview();
+  ['locPin', 'dormName', 'address'].forEach(id => $(id).addEventListener('input', () => {
+    clearTimeout(locTimer);
+    locTimer = setTimeout(refreshLocPreview, 700);
+  }));
+  $('saveLocationBtn').addEventListener('click', async function(){
+    this.disabled = true;
+    try {
+      const body = await api('{{ route('dormitory-profile.location') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          map_location: $('locPin').value.trim() || null,
+          location_note: $('locNote').value.trim() || null,
+          show_location_map: $('locShow').checked,
+        }),
+      });
+      toast(body.message);
+    } catch(e){ toast(e.message, true); }
+    this.disabled = false;
+  });
+
+  // ===== Homepage 360° Photo =====
+  function showPano(url){
+    $('panoThumb').hidden = !url;
+    $('panoEmpty').hidden = !!url;
+    $('panoRemoveBtn').hidden = !url;
+    $('panoUploadBtn').textContent = url ? 'Replace 360° Photo' : 'Upload 360° Photo';
+    if(url) $('panoImg').src = url;
+  }
+  $('panoUploadBtn').addEventListener('click', () => $('panoInput').click());
+  $('panoInput').addEventListener('change', async function(){
+    const file = this.files[0];
+    if(!file) return;
+    const btn = $('panoUploadBtn');
+    btn.disabled = true; btn.textContent = 'Uploading…';
+    const fd = new FormData();
+    fd.append('panorama', file);
+    try {
+      const body = await api('{{ route('dormitory-profile.hero-panorama') }}', { method: 'POST', body: fd });
+      showPano(body.url);
+      toast(body.message);
+    } catch(e){
+      toast(e.message, true);
+      showPano($('panoThumb').hidden ? null : $('panoImg').src);
+    }
+    btn.disabled = false;
+    this.value = '';
+  });
+  $('panoRemoveBtn').addEventListener('click', async function(){
+    if(!confirm('Remove the 360° photo? The homepage will show the slideshow again.')) return;
+    this.disabled = true;
+    try {
+      const body = await api('{{ route('dormitory-profile.hero-panorama') }}', { method: 'DELETE' });
+      showPano(null);
+      toast(body.message);
+    } catch(e){ toast(e.message, true); }
+    this.disabled = false;
   });
 
   // ===== Dorm Logo =====

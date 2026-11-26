@@ -101,12 +101,10 @@
     }
 </style>
 
-<nav class="topnav textured" aria-label="Main">
-    <img src="{{ asset('images/leaf-texture-2.png') }}" class="bg-texture" alt="">
+<nav class="topnav" aria-label="Main">
     @if(!empty($platformNav))
     <div class="menu" id="publicNavMenu">
         <a href="{{ route('platform') }}" aria-current="page">HOME</a>
-        <a href="#dormitories">DORMITORIES</a>
         <a href="#about">ABOUT NEST.PH</a>
         <a href="#for-owners" class="pill">FOR DORM OWNERS</a>
     </div>
@@ -180,11 +178,13 @@
 @if(!empty($platformNav))
 <script>
 // The platform page is one long page, so the underline follows the section being read.
-(function () {
+// Runs after the page has loaded: this nav sits at the top of <body>, so the
+// sections below it don't exist yet when this script is first read.
+document.addEventListener('DOMContentLoaded', function () {
     var links = Array.prototype.slice.call(document.querySelectorAll('#publicNavMenu a'));
     var sections = links.map(function (a) {
         var hash = a.getAttribute('href');
-        return hash.charAt(0) === '#' ? document.querySelector(hash) : null;
+        return hash && hash.charAt(0) === '#' ? document.querySelector(hash) : null;
     });
     var nav = document.querySelector('.topnav');
     var ticking = false;
@@ -205,6 +205,6 @@
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
     update();
-})();
+});
 </script>
 @endif

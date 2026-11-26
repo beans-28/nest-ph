@@ -35,8 +35,8 @@
   --status-vacant-bg:var(--sage-100); --paid-bg:var(--sage-100); --paid-text:var(--sage-700);
   --logout-bg:rgba(0,0,0,0.22); --logout-bg-hover:rgba(0,0,0,0.32);
   --bg-page:var(--cream); --card-bg:#ffffff;
-  --text-dark:#26302a; --text-mid:#5e675f; --text-light:#8b938a; --border:#e7e2d8;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --text-dark:#292420; --text-mid:#5f5853; --text-light:#7a726c; --border:#e7e2d8;
+  --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 }
 *{box-sizing:border-box;}
 html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--bg-page); color:var(--text-dark); }
@@ -113,11 +113,10 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
 .main{ flex:1; display:flex; flex-direction:column; min-width:0; }
 .topbar{
   display:flex; align-items:center; gap:16px;
-  /* Same deep green + leaf texture as the public site's nav, so the portal
+  /* Same deep green as the public site's nav, so the portal
      reads as the same brand instead of a washed-out translucent strip. */
   background:
     linear-gradient(100deg, color-mix(in srgb, var(--sage-600) 95%, transparent) 0%, color-mix(in srgb, var(--sage-600) 92%, transparent) 100%),
-    url('../images/leaf-texture-2.png') center/cover,
     var(--sage-600);
   padding:12px 28px; min-height:64px;
   box-shadow:0 1px 0 rgba(0,0,0,0.12), 0 4px 14px rgba(0,0,0,0.10);
@@ -141,7 +140,6 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
 .blacklist-page{ min-height:100vh; display:flex; flex-direction:column; background:linear-gradient(160deg, var(--green-sidebar-top) 0%, #2a221d 60%, var(--green-sidebar-bottom) 100%); }
 .blacklist-topbar{ display:flex; align-items:center; padding:16px 28px; background:
     linear-gradient(100deg, color-mix(in srgb, var(--sage-600) 95%, transparent) 0%, color-mix(in srgb, var(--sage-600) 92%, transparent) 100%),
-    url('../images/leaf-texture-2.png') center/cover,
     var(--sage-600); box-shadow:0 1px 0 rgba(0,0,0,0.12), 0 4px 14px rgba(0,0,0,0.10); }
 .blacklist-topbar .topbar-username{ margin-left:auto; }
 .blacklist-body{ flex:1; display:flex; align-items:center; justify-content:center; padding:60px 24px; }
@@ -164,12 +162,12 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
     position:fixed; top:0; left:0; bottom:0; z-index:200;
     width:min(280px, 84vw); height:100%; height:100dvh;
     transform:translateX(-100%); visibility:hidden;
-    transition:transform .24s cubic-bezier(.2,.8,.2,1), visibility 0s linear .24s;
+    transition:transform .24s cubic-bezier(.32,.72,0,1), visibility 0s linear .24s;
     box-shadow:none;
   }
   .sidebar.open{
     transform:none; visibility:visible;
-    transition:transform .24s cubic-bezier(.2,.8,.2,1), visibility 0s;
+    transition:transform .24s cubic-bezier(.32,.72,0,1), visibility 0s;
     box-shadow:8px 0 28px rgba(0,0,0,.3);
   }
   .sidebar.collapsed .sidebar-logo{ justify-content:flex-start; padding:0 20px 18px 20px; }
@@ -192,7 +190,7 @@ html,body{ margin:0; padding:0; font-family:var(--font-body); background:var(--b
   .main > .content{ padding:18px 16px 40px 16px; max-width:none; }
 }
 @media (max-width: 860px) and (prefers-reduced-motion: reduce){
-  .sidebar, .sidebar.open, .sidebar-backdrop, .sidebar-backdrop.show{ transition:none; }
+  .sidebar, .sidebar.open{ transition:none; }
 }
 
 /* ===== Page header (shared across tenant pages). The `.main` prefix wins

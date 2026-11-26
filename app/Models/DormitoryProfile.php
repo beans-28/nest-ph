@@ -16,6 +16,10 @@ class DormitoryProfile extends Model
         'contact_email',
         'logo_path',
         'hero_photo_paths',
+        'hero_panorama_path',
+        'map_location',
+        'location_note',
+        'show_location_map',
         'brand_logo_path',
         'brand_color',
         'background_color',
@@ -105,6 +109,7 @@ class DormitoryProfile extends Model
 
     protected $casts = [
         'hero_photo_paths' => 'array',
+        'show_location_map' => 'boolean',
         'rent_due_day' => 'integer',
         'grace_period_days' => 'integer',
         'late_penalty_percent' => 'float',
@@ -189,5 +194,51 @@ class DormitoryProfile extends Model
             fn ($p) => \Illuminate\Support\Facades\Storage::disk('public')->url($p),
             array_slice($paths, 0, self::MAX_HERO_PHOTOS)
         ));
+    }
+
+    /**
+     * What the homepage map searches for: the admin's own map pin if set,
+     * otherwise the dorm name + address (the name helps Google find the
+     * exact building).
+     */
+    public function mapQuery(): string
+    {
+        if (filled($this->map_location)) {
+            return $this->map_location;
+        }
+
+        return trim($this->dorm_name . ($this->address ? ', ' . $this->address : ''), ', ');
+    }
+
+    /** Homepage 360° photo, shown instead of the slideshow when set. */
+    public function heroPanoramaUrl(): ?string
+    {
+        return $this->hero_panorama_path
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->hero_panorama_path)
+            : null;
+    }
+
+    /**
+     * Saves a 360° photo for the homepage, shrunk to at most 4096 px wide.
+     * Phone 360s are often 8192 px, which is slow to load on mobile data
+     * and much sharper than a homepage box needs. Returns the stored path.
+     */
+    public static function storeHeroPanorama(string $bytes): string
+    {
+        $path = 'dormitory-profile/hero/panorama-' . \Illuminate\Support\Str::random(12) . '.jpg';
+        $image = @imagecreatefromstring($bytes);
+
+        if ($image && imagesx($image) > 4096) {
+            $image = imagescale($image, 4096, (int) round(4096 * imagesy($image) / imagesx($image)), IMG_BICUBIC_FIXED);
+        }
+        if ($image) {
+            ob_start();
+            imagejpeg($image, null, 85);
+            $bytes = ob_get_clean();
+        }
+
+        \Illuminate\Support\Facades\Storage::disk('public')->put($path, $bytes);
+
+        return $path;
     }
 }
