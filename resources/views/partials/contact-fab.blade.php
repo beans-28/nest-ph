@@ -9,7 +9,9 @@
     $fabPhone = preg_replace('/[^0-9+]/', '', (string) $fabProfile->contact_number);
 @endphp
 <style>
-    .contact-fab { position: fixed; right: clamp(14px, 3vw, 28px); bottom: clamp(14px, 3vw, 28px); z-index: 1500; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+    .contact-fab { position: fixed; right: clamp(14px, 3vw, 28px); bottom: clamp(14px, 3vw, 28px); z-index: 1500; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; pointer-events: none; }
+    /* The wrapper is as wide as the hidden menu, so let taps pass through it; only the button (and the menu once open) catch taps. */
+    .contact-fab-btn, .contact-fab.is-open .contact-fab-menu { pointer-events: auto; }
     .contact-fab-btn {
         display: inline-flex; align-items: center; gap: 8px; height: 50px; padding: 0 20px 0 16px; border: 0; border-radius: 999px;
         background: #292420; color: #fff; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer;

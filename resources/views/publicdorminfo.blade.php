@@ -124,6 +124,19 @@
             width: 100%; height: 82vh; min-height: 480px; border: none; display: block;
         }
 
+        /* Phones can't show a PDF inside the page (the box comes out blank or untappable),
+           so on phones we swap the embedded viewer for a big "open" card instead. */
+        .doc-open { display: none; align-items: center; gap: 14px; padding: 20px; text-decoration: none; color: #292420; }
+        .doc-open-ico { flex-shrink: 0; width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: #f4f1ee; color: #194e19; }
+        .doc-open-ico svg { width: 24px; height: 24px; }
+        .doc-open strong { display: block; font-size: 15.5px; }
+        .doc-open small { display: block; font-size: 13px; color: #6b625c; margin-top: 2px; }
+        .doc-open-go { margin-left: auto; width: 20px; height: 20px; color: #6b625c; flex-shrink: 0; }
+        @media (max-width: 768px), (hover: none) and (pointer: coarse) {
+            .doc-frame { display: none; }
+            .doc-open { display: flex; }
+        }
+
         /* Fallback content when no PDF has been uploaded yet */
         .fallback {
             background: #eeeded; border-radius: 16px; padding: clamp(28px, 5vw, 48px);
@@ -322,6 +335,11 @@
                  the browser's native PDF viewer gives zoom, scroll, search, and print for free. --}}
             <div class="doc-card">
                 <iframe src="{{ $policiesFileUrl }}" class="doc-frame" title="Dormitory policies document"></iframe>
+                <a href="{{ $policiesFileUrl }}" target="_blank" rel="noopener" class="doc-open">
+                    <span class="doc-open-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg></span>
+                    <span><strong>Rules and Regulations</strong><small>Tap to open the PDF</small></span>
+                    <svg class="doc-open-go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+                </a>
             </div>
         @else
             {{-- No PDF uploaded yet — fall back to the seeded text content so
