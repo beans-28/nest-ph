@@ -49,9 +49,9 @@
   .occupancy-note{ font-size:11.5px; color:var(--text-light); margin-top:-6px; margin-bottom:16px; }
 
   .stats-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:14px; margin-bottom:20px; }
-  .stat-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+  .stat-card{ background:var(--card-bg); border:1px solid var(--border); border-radius:12px; padding:16px 18px; min-width:0; }
   .stat-label{ font-size:11px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); font-weight:600; margin-bottom:6px; }
-  .stat-value{ font-size:22px; font-weight:700; }
+  .stat-value{ font-size:clamp(17px, 1.5vw, 22px); font-weight:700; overflow-wrap:anywhere; }
 
   table.report-table{ width:100%; border-collapse:collapse; background:var(--card-bg); border:1px solid var(--border); border-radius:12px; overflow:hidden; }
   table.report-table th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:0.4px; color:var(--text-light); padding:10px 14px; border-bottom:1px solid var(--border); background:#f8f8f8; }
@@ -114,7 +114,7 @@
   .field .hint{ font-size:12px; color:var(--text-mid); line-height:1.4; }
   .inline-check{ display:inline-flex !important; align-items:center; gap:7px; font-size:12.5px !important; text-transform:none !important; letter-spacing:0 !important; color:var(--text-dark) !important; font-weight:500 !important; cursor:pointer; }
   .inline-check.strong{ font-weight:600 !important; }
-  .inline-check input{ width:16px; height:16px; accent-color:var(--green-btn); margin:0; }
+  .inline-check input, .expense-grid .field .inline-check input{ width:16px !important; min-height:0 !important; flex:none; height:16px; accent-color:var(--green-btn); margin:0; }
   .current-receipt{ display:flex; align-items:center; gap:14px; font-size:12.5px; margin-top:2px; }
   .current-receipt a{ color:var(--green-btn); font-weight:600; }
   .repeat-box{ background:#f7f7f7; border:1px solid #e6e6e6; border-radius:10px; padding:12px 14px; gap:6px; }
@@ -326,7 +326,7 @@
               </div>
             </div>
             <div class="field span-all repeat-box" id="repeatBox">
-              <label class="inline-check strong"><input type="checkbox" id="exRepeat"> Repeat this expense automatically</label> <x-info-tip text="For regular costs like salaries. Each one is recorded on its due date." />
+              <div style="display:flex; align-items:center; gap:6px;"><label class="inline-check strong"><input type="checkbox" id="exRepeat"> Repeat this expense automatically</label> <x-info-tip text="For regular costs like salaries. Each one is recorded on its due date." /></div>
               <div class="field" id="frequencyField" hidden>
                 <label for="exFrequency">How often</label>
                 <select id="exFrequency">

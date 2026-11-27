@@ -256,6 +256,12 @@
         .location-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
         .location-map { position: relative; width: 100%; aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--green-dark) 15%, #e5e0dc); background: var(--surface-alt); box-shadow: 0 1px 2px rgba(41,36,32,0.06), 0 14px 32px -16px rgba(41,36,32,0.3); }
         .location-map iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+        /* On phones the map grabs your finger while you scroll past it. This see-through
+           cover sits on top of it on touch screens; tap once to use the map. */
+        .map-shield { display: none; position: absolute; inset: 0; z-index: 1; border: 0; padding: 0; background: transparent; cursor: pointer; font: inherit; -webkit-tap-highlight-color: transparent; }
+        .map-shield span { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); white-space: nowrap; padding: 8px 14px; border-radius: 999px; background: rgba(41,36,32,0.85); color: #fff; font-size: 13px; font-weight: 600; }
+        @media (hover: none) and (pointer: coarse) { .map-shield { display: block; } }
+        .location-map.map-active .map-shield { display: none; }
         @media (max-width: 760px) {
             .location-inner { grid-template-columns: 1fr; }
             .location-map { aspect-ratio: 4 / 3; }
@@ -447,6 +453,17 @@
             </div>
             <div class="location-map">
                 <iframe src="https://www.google.com/maps?q={{ urlencode($mapQuery) }}&amp;z=17&amp;output=embed" title="Map showing the location of {{ $brandDormName }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+                <button type="button" class="map-shield" aria-label="Tap to use the map"><span>Tap to use the map</span></button>
+                <script>
+                (function () {
+                    var box = document.currentScript.parentNode;
+                    box.querySelector('.map-shield').addEventListener('click', function () { box.classList.add('map-active'); });
+                    // Put the cover back once the map scrolls off screen, so it can't grab the next scroll.
+                    if ('IntersectionObserver' in window) new IntersectionObserver(function (e) {
+                        if (!e[0].isIntersecting) box.classList.remove('map-active');
+                    }).observe(box);
+                })();
+                </script>
             </div>
         </div>
     </section>
