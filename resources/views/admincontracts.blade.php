@@ -155,6 +155,7 @@
   .toast.error{ background:var(--status-occupied); }
   .toast.visible{ display:block; }
 </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 <div class="app">

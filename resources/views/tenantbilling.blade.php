@@ -286,6 +286,7 @@
     .secure-bar .help{ margin-left:0; text-align:left; }
   }
 </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 
@@ -1078,7 +1079,9 @@
   document.getElementById('dropzone').addEventListener('dragover', (e) => e.preventDefault());
   document.getElementById('dropzone').addEventListener('drop', (e) => {
     e.preventDefault();
-    if(e.dataTransfer.files.length){ setSelectedFile(e.dataTransfer.files[0]); }
+    const dropped = e.dataTransfer.files[0];
+    if(window.NestHeic && NestHeic.routeDrop(dropped, fileInput)) return; // iPhone photo: convert first
+    if(dropped){ setSelectedFile(dropped); }
   });
   fileInput.addEventListener('change', () => {
     if(fileInput.files.length) setSelectedFile(fileInput.files[0]);

@@ -344,6 +344,7 @@
   .policy-checks input, .inline-check input{ accent-color:var(--green-accent); width:16px; height:16px; }
   .form-actions a.btn{ text-decoration:none; }
 </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 <div class="app">

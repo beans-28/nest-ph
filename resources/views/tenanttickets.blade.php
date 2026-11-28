@@ -160,6 +160,7 @@
 </style>
 @include('partials.role-tag-style')
 @include('partials.ticket-style')
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 <div class="app">

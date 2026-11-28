@@ -209,6 +209,7 @@
   .chart-legend span.dash::before{ height:0; border-top:2px dashed var(--swatch); background:none; width:14px; vertical-align:3px; }
   .chart-legend span.dot::before{ height:0; border-top:2px dotted var(--swatch); background:none; width:14px; vertical-align:3px; }
 </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 <div class="app">

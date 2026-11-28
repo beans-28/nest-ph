@@ -105,6 +105,7 @@
             .fld-row .fld { margin-bottom: 16px; }
         }
     </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 
@@ -291,6 +292,7 @@
         dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('dragover'); });
     });
     dropzone.addEventListener('drop', function (e) {
+        if (window.NestHeic && NestHeic.routeDrop(e.dataTransfer.files[0], fileInput)) return; // iPhone photo: convert first
         if (e.dataTransfer.files[0]) {
             fileInput.files = e.dataTransfer.files;
             showFile(e.dataTransfer.files[0]);

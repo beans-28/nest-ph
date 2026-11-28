@@ -193,6 +193,7 @@
     .request-edit-banner{ flex-direction:column; align-items:flex-start; }
   }
 </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 <div class="app">

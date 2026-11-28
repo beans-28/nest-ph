@@ -496,6 +496,7 @@
         img.brand-mark { width: 72px; height: auto; margin: 0 0 28px; background: none; border-radius: 0; }
         @media (min-width: 641px) { img.brand-mark { display: block; } }
 </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 

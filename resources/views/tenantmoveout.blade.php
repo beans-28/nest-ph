@@ -137,6 +137,7 @@
     .review-modal-actions button{ width:100%; padding:13px; }
   }
 </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 

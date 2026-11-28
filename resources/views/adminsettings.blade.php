@@ -46,6 +46,7 @@
   .btn-ghost[hidden]{ display:none; }
   .btn-ghost:focus-visible{ outline:2px solid var(--green-accent); outline-offset:2px; }
 </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 <div class="app">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ImageShrinker;
 use App\Models\Room;
 use App\Models\VrHotspot;
 use App\Models\VrScene;
@@ -43,7 +44,7 @@ class VrTourController extends Controller
 
         $scene = $room->vrScenes()->create([
             'title' => $data['title'],
-            'panorama_path' => $file->store('vr-scenes', 'public'),
+            'panorama_path' => ImageShrinker::store($file, 'vr-scenes', 4096, 85),
             'photo_updated_at' => now(),
             'is_default' => $isFirst,
             'sort_order' => ($room->vrScenes()->max('sort_order') ?? -1) + 1,
@@ -139,7 +140,7 @@ class VrTourController extends Controller
         $oldPath = $scene->panorama_path;
 
         $scene->update([
-            'panorama_path' => $file->store('vr-scenes', 'public'),
+            'panorama_path' => ImageShrinker::store($file, 'vr-scenes', 4096, 85),
             'photo_updated_at' => now(),
             'haov' => $fov['haov'],
             'vaov' => $fov['vaov'],

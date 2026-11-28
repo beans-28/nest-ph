@@ -254,6 +254,7 @@
     table{ min-width:720px; }
   }
 </style>
+    <script src="{{ asset('js/heic-convert.js') }}" defer></script>
 </head>
 <body>
 <div class="app">

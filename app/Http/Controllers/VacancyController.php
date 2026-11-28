@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\ImageShrinker;
 use App\Models\Bed;
 use App\Models\Floor;
 use App\Models\Room;
@@ -99,7 +100,7 @@ class VacancyController extends Controller
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $index => $photo) {
                 $room->photos()->create([
-                    'path' => $photo->store('room-photos', 'public'),
+                    'path' => ImageShrinker::store($photo, 'room-photos', 1920),
                     'sort_order' => $index,
                 ]);
             }
@@ -209,7 +210,7 @@ class VacancyController extends Controller
 
             foreach ($request->file('photos') as $index => $photo) {
                 $room->photos()->create([
-                    'path' => $photo->store('room-photos', 'public'),
+                    'path' => ImageShrinker::store($photo, 'room-photos', 1920),
                     'sort_order' => $nextSortOrder + $index,
                 ]);
             }
@@ -295,7 +296,7 @@ class VacancyController extends Controller
 
         foreach ($request->file('photos') as $index => $photo) {
             $room->photos()->create([
-                'path' => $photo->store('room-photos', 'public'),
+                'path' => ImageShrinker::store($photo, 'room-photos', 1920),
                 'sort_order' => $nextSortOrder + $index,
             ]);
         }
