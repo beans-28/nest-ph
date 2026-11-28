@@ -489,11 +489,11 @@
   }
 
   function renderPagination(totalPages){
-    let html = `<button class="page-btn" id="prevPage" ${page === 1 ? 'disabled' : ''}>&lsaquo;</button>`;
+    let html = `<button class="page-btn" id="prevPage" ${page === 1 ? 'disabled' : ''} aria-label="Previous page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>`;
     for(let i = 1; i <= totalPages; i++){
       html += `<button class="page-btn ${i === page ? 'active' : ''}" data-page="${i}">${i}</button>`;
     }
-    html += `<button class="page-btn" id="nextPage" ${page === totalPages ? 'disabled' : ''}>&rsaquo;</button>`;
+    html += `<button class="page-btn" id="nextPage" ${page === totalPages ? 'disabled' : ''} aria-label="Next page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>`;
     $('pagination').innerHTML = html;
 
     $('pagination').querySelectorAll('[data-page]').forEach(btn => {

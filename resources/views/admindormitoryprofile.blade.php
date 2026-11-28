@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/paginate.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -1759,18 +1760,19 @@
   }
 
   function rows() { return Array.from(card.querySelectorAll('.rv-row')); }
+  const reviewPager = NestPager.create({ after: document.getElementById('rvList'), label: 'reviews', onChange: () => applyFilters() });
 
   function applyFilters() {
     const q = document.getElementById('rvSearch').value.trim().toLowerCase();
     const rating = document.getElementById('rvRating').value;
-    let shown = 0;
-    rows().forEach(row => {
-      const ok = (currentFilter === 'all' || row.dataset.status === currentFilter)
+    const matches = rows().filter(row =>
+      (currentFilter === 'all' || row.dataset.status === currentFilter)
         && (!rating || row.dataset.rating === rating)
-        && (!q || row.dataset.search.includes(q));
-      row.style.display = ok ? '' : 'none';
-      if (ok) shown++;
-    });
+        && (!q || row.dataset.search.includes(q)));
+    // Only this page's reviews are shown; the pager handles the rest.
+    const onPage = new Set(reviewPager.slice(matches, [currentFilter, rating, q].join('|')));
+    rows().forEach(row => { row.style.display = onPage.has(row) ? '' : 'none'; });
+    const shown = matches.length;
     const empty = document.getElementById('rvEmpty');
     empty.textContent = rows().length ? 'No reviews match this view.' : 'No reviews yet.';
     empty.style.display = shown ? 'none' : 'block';

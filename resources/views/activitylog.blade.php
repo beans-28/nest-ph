@@ -107,9 +107,9 @@
 
         <div class="pagination">
           @if($activities->onFirstPage())
-            <span class="page-disabled">&laquo;</span>
+            <span class="page-disabled" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></span>
           @else
-            <a class="page-link" href="{{ $activities->previousPageUrl() }}">&laquo;</a>
+            <a class="page-link" href="{{ $activities->previousPageUrl() }}" aria-label="Previous page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></a>
           @endif
 
           @for($p = 1; $p <= $activities->lastPage(); $p++)
@@ -121,9 +121,9 @@
           @endfor
 
           @if($activities->hasMorePages())
-            <a class="page-link" href="{{ $activities->nextPageUrl() }}">&raquo;</a>
+            <a class="page-link" href="{{ $activities->nextPageUrl() }}" aria-label="Next page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></a>
           @else
-            <span class="page-disabled">&raquo;</span>
+            <span class="page-disabled" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></span>
           @endif
         </div>
       @endif

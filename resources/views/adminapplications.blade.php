@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/paginate.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -229,8 +230,10 @@
     });
   }
 
+  const appPager = NestPager.create({ after: $('appGrid'), pageSize: 12, label: 'applications', onChange: () => renderGrid() });
+
   function renderGrid(){
-    const list = visible();
+    const list = appPager.slice(visible(), filter + '|' + search);
 
     if(list.length === 0){
       $('appGrid').innerHTML = '<div class="empty">No applications match this view.</div>';

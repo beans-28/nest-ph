@@ -73,7 +73,7 @@
 
   .pagination-row{ display:flex; justify-content:space-between; align-items:center; padding:14px 18px; font-size:12.5px; color:var(--text-mid); }
   .pagination{ display:flex; gap:6px; }
-  .pagination button{ border:1px solid var(--border); background:#fff; border-radius:6px; width:28px; height:28px; cursor:pointer; font-size:12px; }
+  .pagination button{ display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--border); background:#fff; border-radius:6px; width:28px; height:28px; cursor:pointer; font-size:12px; }
   .pagination button.active{ background:var(--green-btn); border-color:var(--green-btn); color:#fff; }
   .pagination button:disabled{ opacity:0.4; cursor:default; }
 
@@ -689,11 +689,11 @@
     const shownEnd = Math.min(page * PAGE_SIZE, total);
     $('tableSummary').textContent = total === 0 ? 'No results' : `Showing ${shownStart}-${shownEnd} of ${total}`;
 
-    let html = `<button ${page === 1 ? 'disabled' : ''} data-page="${page - 1}">‹</button>`;
+    let html = `<button ${page === 1 ? 'disabled' : ''} data-page="${page - 1}" aria-label="Previous page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>`;
     for(let p = 1; p <= totalPages; p++){
       html += `<button class="${p === page ? 'active' : ''}" data-page="${p}">${p}</button>`;
     }
-    html += `<button ${page === totalPages ? 'disabled' : ''} data-page="${page + 1}">›</button>`;
+    html += `<button ${page === totalPages ? 'disabled' : ''} data-page="${page + 1}" aria-label="Next page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>`;
     $('pagination').innerHTML = html;
     $('pagination').querySelectorAll('[data-page]').forEach(b => {
       b.addEventListener('click', () => { page = Number(b.dataset.page); renderTable(); });

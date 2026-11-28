@@ -84,8 +84,8 @@
   .empty-row td{ text-align:center; color:var(--text-light); font-style:italic; padding:34px; }
 
   .pagination-row{ display:flex; align-items:center; gap:8px; padding:16px 20px; }
-  .pagination-row .info{ font-size:12.5px; color:var(--text-light); margin-right:auto; }
-  .page-btn{ width:34px; height:34px; border-radius:8px; border:1px solid var(--border); background:#fff; color:var(--text-mid); font-size:12.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .pagination-row .info{ font-size:12px; color:var(--text-light); margin-right:auto; }
+  .page-btn{ width:32px; height:32px; border-radius:8px; border:1px solid var(--border); background:#fff; color:var(--text-mid); font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .page-btn.active{ background:var(--green-btn); border-color:var(--green-btn); color:#fff; }
   .page-btn:disabled{ opacity:.4; cursor:not-allowed; }
 
@@ -429,9 +429,9 @@
 
     $('paginationRow').innerHTML = `
       <span class="info">Showing ${shownStart} to ${shownEnd} of ${total} results</span>
-      <button class="page-btn" id="prevPageBtn" ${page <= 1 ? 'disabled' : ''}>&lsaquo;</button>
+      <button class="page-btn" id="prevPageBtn" ${page <= 1 ? 'disabled' : ''} aria-label="Previous page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
       ${pageBtns}
-      <button class="page-btn" id="nextPageBtn" ${page >= totalPages ? 'disabled' : ''}>&rsaquo;</button>
+      <button class="page-btn" id="nextPageBtn" ${page >= totalPages ? 'disabled' : ''} aria-label="Next page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
     `;
 
     $('paginationRow').querySelectorAll('[data-page]').forEach(btn => {

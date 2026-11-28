@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/paginate.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -208,8 +209,10 @@
     });
   }
 
+  const inquiryPager = NestPager.create({ after: $('listPanel'), pageSize: 15, label: 'inquiries', onChange: () => renderList() });
+
   function renderList(){
-    const list = visible();
+    const list = inquiryPager.slice(visible(), filter + '|' + search);
 
     if(list.length === 0){
       $('listPanel').innerHTML = '<div class="empty">No inquiries match this view.</div>';

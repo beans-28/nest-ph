@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/paginate.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -678,8 +679,10 @@
     });
   }
 
+  const pendingPager = NestPager.create({ after: $('tableBody').closest('table'), label: 'payments', onChange: () => renderTable() });
+
   function renderTable(){
-    const list = visible();
+    const list = pendingPager.slice(visible(), methodFilter + '|' + search);
 
     if(list.length === 0){
       $('tableBody').innerHTML = '<tr class="empty-row"><td colspan="9">No pending payments right now.</td></tr>';
@@ -939,9 +942,9 @@
 
     $('overviewPaginationRow').innerHTML = `
       <span class="info">Showing ${shownStart} to ${shownEnd} of ${total} results</span>
-      <button class="page-btn" id="ovPrevBtn" ${overviewPage <= 1 ? 'disabled' : ''}>&lsaquo;</button>
+      <button class="page-btn" id="ovPrevBtn" ${overviewPage <= 1 ? 'disabled' : ''} aria-label="Previous page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
       ${pageBtns}
-      <button class="page-btn" id="ovNextBtn" ${overviewPage >= totalPages ? 'disabled' : ''}>&rsaquo;</button>
+      <button class="page-btn" id="ovNextBtn" ${overviewPage >= totalPages ? 'disabled' : ''} aria-label="Next page"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg></button>
     `;
 
     $('overviewPaginationRow').querySelectorAll('[data-ov-page]').forEach(btn => {
@@ -1216,8 +1219,10 @@
     });
   }
 
+  const penaltyPager = NestPager.create({ after: $('penaltiesTableBody').closest('table'), label: 'penalties', onChange: () => renderPenaltiesTable() });
+
   function renderPenaltiesTable(){
-    const list = penaltiesVisible();
+    const list = penaltyPager.slice(penaltiesVisible(), [penaltyTypeFilter, penaltyStatusFilter, penaltySearch].join('|'));
 
     if(list.length === 0){
       $('penaltiesTableBody').innerHTML = '<tr class="empty-row"><td colspan="8">No penalties found.</td></tr>';
