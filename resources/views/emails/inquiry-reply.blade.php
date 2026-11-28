@@ -15,7 +15,7 @@
                 <p style="margin:0 0 8px;font-size:12px;color:#7a7a7a;text-transform:uppercase;letter-spacing:0.04em;">Your original message</p>
                 <p style="margin:0 0 20px;font-size:13px;color:#6b6b6b;line-height:1.6;white-space:pre-line;">{{ $inquiry->message ?: '(No message provided)' }}</p>
 
-                <p style="color:#8a9690;font-size:12px;margin:0;">
+                <p style="color:#647069;font-size:12px;margin:0;">
                     Have a follow-up question? Just reply to this email or reach out through our contact page.
                 </p>
             </td>

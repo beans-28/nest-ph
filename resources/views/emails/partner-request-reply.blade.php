@@ -23,7 +23,7 @@
                     <p style="margin:0 0 20px;font-size:13px;color:#6b6b6b;line-height:1.6;white-space:pre-line;">{{ $partnerRequest->message }}</p>
                 @endif
 
-                <p style="color:#8a9690;font-size:12px;margin:0;">
+                <p style="color:#647069;font-size:12px;margin:0;">
                     Have a question? Just reply to this email.
                 </p>
             </td>

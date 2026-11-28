@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and content
@@ -153,7 +154,7 @@
       </div>
 
       <div class="filters-row">
-        <input type="text" class="search-input" id="searchInput" placeholder="Search tenant, room or title">
+        <input type="text" class="search-input" id="searchInput" aria-label="Search tickets" placeholder="Search tenant, room or title">
         <select id="categoryFilter" aria-label="Category">
           <option value="">All Categories</option>
           @foreach($categories as $key => $label)

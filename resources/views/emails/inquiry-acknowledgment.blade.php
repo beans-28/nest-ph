@@ -15,7 +15,7 @@
                     <p style="margin:0 0 8px;font-size:12px;color:#7a7a7a;text-transform:uppercase;letter-spacing:0.04em;">Your message</p>
                     <p style="margin:0;font-size:14px;color:#292420;line-height:1.6;white-space:pre-line;">{{ $inquiry->message ?: '(No message provided)' }}</p>
                 </div>
-                <p style="color:#8a9690;font-size:12px;margin:0;">
+                <p style="color:#647069;font-size:12px;margin:0;">
                     If you didn't submit this inquiry, you can safely ignore this email.
                 </p>
             </td>

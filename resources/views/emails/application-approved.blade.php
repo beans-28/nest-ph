@@ -36,7 +36,7 @@
                     </p>
                 @endif
 
-                <p style="color:#8a9690;font-size:12px;margin:0;">
+                <p style="color:#647069;font-size:12px;margin:0;">
                     For your security, please change your password after logging in for the first time.
                 </p>
             </td>

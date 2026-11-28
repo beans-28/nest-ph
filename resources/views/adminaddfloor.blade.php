@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar/search, and
@@ -758,7 +759,7 @@
       row.className = 'bed-status-row';
       row.innerHTML = `
         <span class="bed-index">Bed ${i}</span>
-        <select data-bed-index="${i}">
+        <select data-bed-index="${i}" aria-label="Bed ${i} status">
           <option value="vacant" ${preset === 'vacant' ? 'selected' : ''}>Vacant</option>
           <option value="reserved" ${preset === 'reserved' ? 'selected' : ''}>Reserved</option>
           <option value="occupied" ${preset === 'occupied' ? 'selected' : ''}>Occupied</option>

@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
     <script src="{{ asset('js/paginate.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
@@ -367,7 +368,7 @@ You can find our rooms, rates, virtual tour and house rules on our website: then
             <button type="button" class="tpl-chip ${key === suggested ? 'active' : ''}" data-tpl="${key}">${t.label}</button>
           `).join('')}
         </div>
-        <textarea id="replyText" placeholder="Type your reply...">${suggested ? esc(fillTemplate(suggested, i)) : ''}</textarea>
+        <textarea id="replyText" aria-label="Reply message" placeholder="Type your reply...">${suggested ? esc(fillTemplate(suggested, i)) : ''}</textarea>
         <button class="btn primary" id="sendReplyBtn" style="width:100%;">Send Reply</button>
       </div>`;
   }

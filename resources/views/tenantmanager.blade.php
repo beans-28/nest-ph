@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -277,15 +278,15 @@
       <p class="page-sub" id="pageSub">{{ $totalCount }} Tenants</p>
 
       <div class="filters-row">
-        <input type="text" class="search-input" id="searchInput" placeholder="Search Name or Room No...">
-        <select id="statusFilter">
+        <input type="text" class="search-input" id="searchInput" aria-label="Search tenants" placeholder="Search Name or Room No...">
+        <select id="statusFilter" aria-label="Filter by status">
           <option value="">All Statuses</option>
           <option value="active">Active</option>
           <option value="delinquent">Delinquent</option>
           <option value="pending_move_in_payment">Pending Move-In</option>
           <option value="inactive">Inactive</option>
         </select>
-        <select id="tenantTypeFilter">
+        <select id="tenantTypeFilter" aria-label="Filter by tenant type">
           <option value="">All Tenant Types</option>
           <option value="student">Student</option>
           <option value="working_student">Working Student</option>
@@ -298,7 +299,7 @@
           <option value="expired" data-label="Lease expired">Lease expired ({{ $leaseCounts['expired'] ?? 0 }})</option>
           <option value="notarized_review" data-label="Notarized copy to review">Notarized copy to review ({{ $leaseCounts['notarized_review'] ?? 0 }})</option>
         </select>
-        <select id="sortFilter">
+        <select id="sortFilter" aria-label="Sort by">
           <option value="date_started_desc">Sort: Latest Date Started</option>
           <option value="date_started_asc">Sort: Oldest Date Started</option>
           <option value="name_asc">Sort: Name (A to Z)</option>

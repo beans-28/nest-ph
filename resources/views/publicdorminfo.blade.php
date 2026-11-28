@@ -14,6 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
     <style>
         :root {
             --green-light: #a2d9a4;
@@ -160,7 +161,7 @@
         }
 
         .empty-state { text-align: center; padding: 40px 20px; color: #4b5f4c; }
-        .empty-state svg { width: 48px; height: 48px; margin-bottom: 14px; color: #7a726c; }
+        .empty-state svg { width: 48px; height: 48px; margin-bottom: 14px; color: #6f6863; }
         .empty-state p { font-size: 14px; max-width: 420px; margin: 0 auto; line-height: 1.6; }
 
         @media (max-width: 1024px) { .topnav { padding: 14px 24px; flex-wrap: wrap; } }
@@ -209,7 +210,7 @@
         .review-item:last-child{ border-bottom:none; padding-bottom:0; }
         .review-item-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px; }
         .review-item-name{ font-weight:700; font-size:13px; color:#292420; }
-        .review-item-date{ font-size:11.5px; color:#7a726c; }
+        .review-item-date{ font-size:11.5px; color:#6f6863; }
         .review-item-stars{ color:#f5b301; font-size:13px; margin-bottom:6px; letter-spacing:1px; }
         .review-item-comment{ font-size:13px; color:#33393c; line-height:1.7; }
         .review-item-photos{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }

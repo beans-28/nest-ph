@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and focus styles
@@ -252,7 +253,7 @@
         <label>Photos (optional)</label>
         <div class="photo-grid" id="photoGrid"></div>
         <div class="photo-hint" id="photoHint">Up to {{ $maxAttachments }} photos, 5MB max each.</div>
-        <input type="file" id="photoInput" accept=".jpg,.jpeg,.png,.webp" multiple style="display:none;">
+        <input type="file" id="photoInput" aria-label="Attach photos" accept=".jpg,.jpeg,.png,.webp" multiple style="display:none;">
       </div>
 
       <div class="modal-actions">
@@ -395,7 +396,7 @@
           `).join('')}
         </div>
         <div class="reply-row">
-          <input type="text" placeholder="Add a reply..." data-reply-input="${t.id}">
+          <input type="text" placeholder="Add a reply..." aria-label="Reply to this ticket" data-reply-input="${t.id}">
           <button data-reply-submit="${t.id}">Submit</button>
         </div>
       </div>

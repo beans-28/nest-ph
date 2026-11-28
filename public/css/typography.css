@@ -58,3 +58,20 @@ table, .amt, .amount, .stat-value, .stat-num, .kpi-value, .money{ font-variant-n
   ::view-transition-new(app-topbar):only-child,
   ::view-transition-new(public-topnav):only-child { animation: nm-fade 260ms ease-out both; }
 }
+
+/* ---------- Accessibility: always-visible keyboard focus on form fields ----------
+   Many pages hide the browser's focus outline on inputs and only tint the
+   border, which is too faint to see. This one rule guarantees a clear green
+   ring on every text box, dropdown and text area across the whole site.
+   Only for keyboard users (html.kbd-nav is set by js/a11y-dialogs.js), so
+   tapping a field on a phone doesn't draw a second ring. */
+html.kbd-nav :is(input, select, textarea):not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="hidden"]):focus-visible {
+  outline: 2px solid var(--green-darker, #197335) !important;
+  outline-offset: 2px;
+}
+/* Fallback for links/buttons with no focus style. :where() keeps it weak, so
+   any page that already has its own focus style still wins. */
+:where(a, button, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--green-darker, #197335);
+  outline-offset: 2px;
+}

@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   .settings-grid{ display:grid; gap:20px; max-width:640px; }
@@ -85,7 +86,7 @@
                 <button type="button" class="btn-ghost danger" id="avatarRemove" @if(! $avatarUrl) hidden @endif>Remove</button>
               </div>
               <span class="saved-msg" id="avatarMsg" role="status" aria-live="polite"></span>
-              <input type="file" id="avatarInput" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden>
+              <input type="file" id="avatarInput" aria-label="Upload profile picture" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden>
             </div>
           </div>
           <form id="profileForm" novalidate>

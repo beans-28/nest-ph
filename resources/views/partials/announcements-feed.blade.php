@@ -13,7 +13,7 @@
 
   @if($isAnnounceAdmin)
     <div class="announce-composer">
-      <textarea id="announceComposerInput" placeholder="Post an announcement to all tenants..." maxlength="5000"></textarea>
+      <textarea id="announceComposerInput" aria-label="Announcement message" placeholder="Post an announcement to all tenants..." maxlength="5000"></textarea>
       <button class="announce-btn" id="announcePostBtn">Post</button>
     </div>
   @endif
@@ -52,7 +52,7 @@
 
   .announce-more{ display:block; width:100%; margin-top:12px; }
   .announce-feed.collapsed .announce-post:nth-child(n+3){ display:none; }
-  .announce-empty{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:28px 0; color:var(--text-light, #8a9690); font-size:12.5px; }
+  .announce-empty{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:28px 0; color:var(--text-light, #647069); font-size:12.5px; }
   .announce-empty svg{ width:26px; height:26px; opacity:0.5; }
 
   .announce-post{ border:1px solid var(--border, #e2e6e2); border-radius:12px; padding:16px 18px; margin-bottom:12px; transition:box-shadow .15s; }
@@ -64,14 +64,14 @@
   .announce-post-name{ font-weight:700; font-size:13px; color:var(--text-dark, #243026); display:flex; align-items:center; flex-wrap:wrap; gap:4px 6px; }
   .announce-post-name .role-tag{ flex-shrink:0; margin-left:0; }
   .announce-restrict-btn{ flex-shrink:0; }
-  .announce-post-time{ font-size:11px; color:var(--text-light, #8a9690); margin-top:1px; }
+  .announce-post-time{ font-size:11px; color:var(--text-light, #647069); margin-top:1px; }
   .announce-post-body{ font-size:13.5px; color:var(--text-dark, #243026); line-height:1.6; margin-bottom:10px; white-space:pre-wrap; padding-left:46px; }
 
   /* Social-app action bar: a thin divider, small muted count above it,
      then a plain icon+label row (no border/pill) with just a soft hover
      background — reads as an action, not a form control. */
   .announce-count-row{ padding-left:46px; margin-bottom:6px; }
-  .announce-count-link{ background:none; border:none; padding:0; font-size:11.5px; color:var(--text-light, #8a9690); cursor:pointer; }
+  .announce-count-link{ background:none; border:none; padding:0; font-size:11.5px; color:var(--text-light, #647069); cursor:pointer; }
   .announce-count-link:hover{ text-decoration:underline; }
   .announce-restricted-tag{ font-size:10px; font-weight:700; color:var(--status-maintenance, #c9962f); background:var(--status-maintenance-bg, #f6ecd6); text-transform:uppercase; letter-spacing:0.3px; padding:4px 10px; border-radius:20px; margin-left:8px; }
 
@@ -86,13 +86,13 @@
   .announce-comment-body{ flex:1; background:#f8f8f8; border-radius:10px; padding:9px 12px; }
   .announce-comment-name{ font-weight:600; font-size:12px; color:var(--text-dark, #243026); }
   .announce-comment-text{ font-size:12.5px; color:var(--text-dark, #243026); margin-top:2px; }
-  .announce-comment-time{ font-size:10.5px; color:var(--text-light, #8a9690); margin-top:3px; }
+  .announce-comment-time{ font-size:10.5px; color:var(--text-light, #647069); margin-top:3px; }
 
   .announce-comment-composer{ display:flex; gap:8px; margin-top:6px; }
   .announce-comment-composer input{ flex:1; border:1px solid var(--border, #e2e6e2); border-radius:20px; padding:9px 14px; font-size:12.5px; font-family:inherit; }
   .announce-comment-composer input:focus{ outline:none; border-color:var(--green-accent, #2f6f3c); }
   .announce-send-comment{ border-radius:20px; padding:9px 16px; }
-  .announce-comment-disabled-note{ font-size:12px; color:var(--text-light, #8a9690); font-style:italic; }
+  .announce-comment-disabled-note{ font-size:12px; color:var(--text-light, #647069); font-style:italic; }
 
   .announce-toast{ position:fixed; bottom:24px; right:24px; background:var(--text-dark, #243026); color:#fff; padding:10px 18px; border-radius:8px; font-size:12.5px; z-index:999; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.15); }
   .announce-toast.error{ background:var(--status-occupied, #d9564f); }
@@ -211,7 +211,7 @@
     }
     return `
       <div class="announce-comment-composer">
-        <input type="text" placeholder="Write a comment..." maxlength="2000" class="announce-comment-input" data-id="${announcementId}">
+        <input type="text" placeholder="Write a comment..." aria-label="Write a comment" maxlength="2000" class="announce-comment-input" data-id="${announcementId}">
         <button class="announce-btn announce-send-comment" data-id="${announcementId}">Send</button>
       </div>
     `;

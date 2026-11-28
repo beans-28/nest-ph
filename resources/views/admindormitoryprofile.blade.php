@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
     <script src="{{ asset('js/paginate.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
@@ -26,7 +27,7 @@
     --blue:#33629e; --blue-bg:#e3ecf7;
     --orange:#c9962f; --orange-bg:#f6ecd6;
     --bg-page:#f0f0f0; --card-bg:#ffffff;
-    --text-dark:#292420; --text-mid:#5f5853; --text-light:#7a726c; --border:#e5e5e5;
+    --text-dark:#292420; --text-mid:#5f5853; --text-light:#6f6863; --border:#e5e5e5;
     --font-body:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -384,14 +385,14 @@
                 <button type="button" class="btn" id="changeCoverBtn">Change Cover Photo</button>
               </div>
             </div>
-            <input type="file" id="coverPhotoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
+            <input type="file" id="coverPhotoInput" aria-label="Upload cover photo" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
           </div>
 
           {{-- Homepage Slideshow --}}
           <div class="card">
             <h2>Homepage Slideshow <x-info-tip text="Cover photo first, then up to 4 more, every 5 seconds. Landscape (4:3) fits best." /></h2>
             <div class="hero-grid" id="heroGrid"></div>
-            <input type="file" id="heroPhotoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
+            <input type="file" id="heroPhotoInput" aria-label="Upload homepage photo" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
           </div>
 
           {{-- Homepage 360° Photo --}}
@@ -405,7 +406,7 @@
               <button type="button" class="btn" id="panoUploadBtn">{{ $heroPanoramaUrl ? 'Replace 360° Photo' : 'Upload 360° Photo' }}</button>
               <button type="button" class="btn" id="panoRemoveBtn" @if(!$heroPanoramaUrl) hidden @endif>Remove</button>
             </div>
-            <input type="file" id="panoInput" accept=".jpg,.jpeg,.png" style="display:none;">
+            <input type="file" id="panoInput" aria-label="Upload 360° photo" accept=".jpg,.jpeg,.png" style="display:none;">
           </div>
 
           {{-- Dorm Logo (dual branding: dorm = PIC, NEST.PH = PIP) --}}
@@ -434,7 +435,7 @@
                 </div>
               </div>
             </div>
-            <input type="file" id="brandLogoInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
+            <input type="file" id="brandLogoInput" aria-label="Upload logo" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
 
             {{-- Site Color: the whole site's palette is built from this one color (App\Support\BrandTheme). --}}
             @php $currentColor = $profile->brand_color ?: \App\Support\BrandTheme::DEFAULT; @endphp
@@ -781,7 +782,7 @@
                   <a class="btn sm" href="{{ route('dormitory-profile.documents', $docKey) }}" target="_blank" rel="noopener">View</a>
                   <button type="button" class="btn sm" data-role="upload">{{ $uploadedDocuments[$docKey] ? 'Replace PDF' : 'Upload PDF' }}</button>
                   <button type="button" class="btn sm" data-role="remove" style="{{ $uploadedDocuments[$docKey] ? '' : 'display:none' }}">Use generated</button>
-                  <input type="file" accept="application/pdf" hidden data-role="input">
+                  <input type="file" accept="application/pdf" hidden data-role="input" aria-label="Upload PDF">
                 </div>
               </div>
             @endforeach
@@ -964,8 +965,8 @@
               </div>
 
             </div>
-            <input type="file" id="businessPermitInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
-            <input type="file" id="birRegistrationInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+            <input type="file" id="businessPermitInput" aria-label="Upload business permit" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+            <input type="file" id="birRegistrationInput" aria-label="Upload BIR registration" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
           </div>
 
         </div>
@@ -1910,7 +1911,7 @@
             <span class="pm-hint">JPG, PNG or WEBP, up to 5MB.</span>
           </div>
         </div>
-        <input type="file" id="pmQrInput" accept="image/jpeg,image/png,image/webp" hidden>
+        <input type="file" id="pmQrInput" aria-label="Upload payment QR code" accept="image/jpeg,image/png,image/webp" hidden>
       </div>
     </div>
     <div class="field">

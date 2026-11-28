@@ -57,7 +57,8 @@
                     var id = el.id;
                     widgets[id] = window.turnstile.render(el, {
                         sitekey: SITE_KEY,
-                        size: 'flexible',
+                        size: 'normal',     // compact 300px box; fits every phone
+                        theme: 'light',     // match our light pages even if the device is in dark mode
                         retry: 'auto',
                         'refresh-expired': 'auto',
                         callback: function (t) { tokens[id] = t; help(id, null); },

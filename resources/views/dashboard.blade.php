@@ -13,12 +13,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <style>
   :root{
     --green-dark:#3f6b4a; --green-darker:#345a3e;
     --green-sidebar-top:#33513c; --green-sidebar-bottom:#223a29;
     --bg-page:#f5f5f5; --card-bg:#ffffff;
-    --text-dark:#1f2a22; --text-mid:#5f5853; --text-light:#7a726c; --border:#e8e8e8;
+    --text-dark:#1f2a22; --text-mid:#5f5853; --text-light:#6f6863; --border:#e8e8e8;
     --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
   }
   *{box-sizing:border-box;}

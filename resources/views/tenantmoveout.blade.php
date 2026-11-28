@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 {{-- Shared tenant palette (forest-green scale, cream background) and topbar --}}
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
@@ -253,7 +254,7 @@
         <div class="photo-picker" id="photoPicker" aria-labelledby="photoLabel">
           <button type="button" class="photo-add" id="addPhotoBtn" aria-label="Add a photo">+</button>
         </div>
-        <input type="file" id="reviewPhotoInput" accept="image/jpeg,image/png,image/webp" multiple hidden>
+        <input type="file" id="reviewPhotoInput" aria-label="Add photos to your review" accept="image/jpeg,image/png,image/webp" multiple hidden>
         <p class="photo-hint">Up to 3 photos, JPG, PNG or WEBP, 5 MB each.</p>
 
         <div class="review-modal-actions">

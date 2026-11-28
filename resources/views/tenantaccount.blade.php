@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar, topbar, and focus styles
@@ -247,7 +248,7 @@
               <span class="photo" id="profilePhotoInitials" aria-hidden="true" @if($tenant?->id_photo_url) hidden @endif>{{ $tenant?->initials ?? '?' }}</span>
               <span class="photo-edit-badge" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span>
             </button>
-            <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" hidden>
+            <input type="file" id="photoInput" aria-label="Upload profile picture" accept="image/jpeg,image/png,image/webp" hidden>
             <div>
               <div class="name">{{ $tenant->full_name ?? 'Tenant' }}</div>
               <div class="hint" id="photoHint">

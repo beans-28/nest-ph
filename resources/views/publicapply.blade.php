@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
     <script src="{{ asset('js/details-anim.js') }}" defer></script>
     <style>
         :root {
@@ -382,7 +383,7 @@
             padding: 16px 22px; border-bottom: 1px solid #e5e9e4;
         }
         .contract-modal-head h3 { margin: 0; font-size: 15.5px; color: #194e19; }
-        .contract-modal-close { background: none; border: none; font-size: 22px; color: #8a9690; cursor: pointer; line-height: 1; }
+        .contract-modal-close { background: none; border: none; font-size: 22px; color: #647069; cursor: pointer; line-height: 1; }
         .contract-modal-body { padding: 18px 22px; overflow-y: auto; flex: 1; }
 
         .contract-preview-frame {
@@ -612,7 +613,7 @@
                             <input type="tel" id="contact_number" placeholder="09-" required>
                             <div class="otp-row">
                                 <button type="button" class="otp-btn" id="otpSendBtn" onclick="sendOtp()">Send code</button>
-                                <input type="text" id="otp_code" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code" hidden>
+                                <input type="text" id="otp_code" aria-label="6-digit verification code" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code" hidden>
                                 <button type="button" class="otp-btn" id="otpVerifyBtn" onclick="verifyOtp()" hidden>Verify</button>
                             </div>
                             @include('partials.turnstile', ['id' => 'otpTurnstile'])

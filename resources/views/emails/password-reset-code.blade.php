@@ -16,7 +16,7 @@
                         {{ $code }}
                     </span>
                 </div>
-                <p style="color:#8a9690;font-size:12px;margin:0;">
+                <p style="color:#647069;font-size:12px;margin:0;">
                     If you didn't request this, you can safely ignore this email.
                 </p>
             </td>

@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
   :root{
@@ -24,7 +25,7 @@
     --purple:#7a4fc9; --purple-bg:#e9defa;
     --blue:#33629e; --blue-bg:#e3ecf7;
     --bg-page:#f0f0f0; --card-bg:#ffffff;
-    --text-dark:#292420; --text-mid:#5f5853; --text-light:#7a726c; --border:#e5e5e5;
+    --text-dark:#292420; --text-mid:#5f5853; --text-light:#6f6863; --border:#e5e5e5;
     --font-body:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -178,8 +179,8 @@
       </div>
 
       <div class="filters-row">
-        <input type="text" class="search-input" id="adminSearchInput" placeholder="Search name or email">
-        <select id="statusFilter">
+        <input type="text" class="search-input" id="adminSearchInput" aria-label="Search admins" placeholder="Search name or email">
+        <select id="statusFilter" aria-label="Filter by status">
           <option value="">All Statuses</option>
           <option value="active">Active</option>
           <option value="inactive">Inactive</option>

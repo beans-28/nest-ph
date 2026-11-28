@@ -18,7 +18,7 @@
                     <p style="margin:0;font-size:22px;font-weight:700;color:#567357;">#{{ $application->id }}</p>
                 </div>
 
-                <p style="color:#8a9690;font-size:12px;margin:0;">
+                <p style="color:#647069;font-size:12px;margin:0;">
                     Please keep this number for your records. If you didn't submit this application, you can safely
                     ignore this email.
                 </p>

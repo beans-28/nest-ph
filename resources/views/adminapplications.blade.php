@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
     <script src="{{ asset('js/paginate.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
@@ -24,7 +25,7 @@
     --status-maintenance:#c9962f; --status-maintenance-bg:#f6ecd6;
     --purple:#7a4fc9; --purple-bg:#e9defa;
     --bg-page:#f0f0f0; --card-bg:#ffffff;
-    --text-dark:#292420; --text-mid:#5f5853; --text-light:#7a726c; --border:#e5e5e5;
+    --text-dark:#292420; --text-mid:#5f5853; --text-light:#6f6863; --border:#e5e5e5;
     --font-body:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Shared sidebar/topbar/content-header/reset styles now live in
@@ -130,7 +131,7 @@
       </div>
 
       <div class="filters" id="filters" role="tablist" aria-label="Filter applications">
-        <input type="text" class="search-input" id="searchInput" placeholder="Search applicant or room">
+        <input type="text" class="search-input" id="searchInput" aria-label="Search applications" placeholder="Search applicant or room">
         <button type="button" class="filter-chip active" role="tab" aria-selected="true" data-filter="pending">Pending Review</button>
         <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="approved">Approved</button>
         <button type="button" class="filter-chip" role="tab" aria-selected="false" data-filter="rejected">Rejected</button>

@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('css/tenant.css') }}">
 <style>
   /* Shared color variables, page reset, sidebar (normal + restricted-lock),
@@ -525,7 +526,7 @@
               <button class="choose-file-btn" type="button" id="chooseFileBtn">Choose File</button>
               <div class="dropzone-hint">JPG, PNG, PDF up to 10 mb</div>
             </div>
-            <input type="file" id="proofFileInput" accept="image/jpeg,image/png,application/pdf" style="display:none">
+            <input type="file" id="proofFileInput" aria-label="Upload proof of payment" accept="image/jpeg,image/png,application/pdf" style="display:none">
             <div class="uploaded-file-label">Uploaded file</div>
             <div class="uploaded-file-row" id="uploadedFileRow">
               <div class="uploaded-file-icon">FILE</div>

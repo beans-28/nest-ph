@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
     <script src="{{ asset('js/paginate.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
 <style>
@@ -26,7 +27,7 @@
     --blue:#33629e; --blue-bg:#e3ecf7;
     --orange:#c9962f; --orange-bg:#f6ecd6;
     --bg-page:#f0f0f0; --card-bg:#ffffff;
-    --text-dark:#292420; --text-mid:#5f5853; --text-light:#7a726c; --border:#e5e5e5;
+    --text-dark:#292420; --text-mid:#5f5853; --text-light:#6f6863; --border:#e5e5e5;
     --font-body:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
   }
   /* Page-specific overrides of shared topbar/content-header rules from admin.css:
@@ -253,11 +254,11 @@
 
       <div id="overviewTab" data-tab-content="overview">
         <div class="filters-row">
-          <input type="text" class="search-input" id="overviewSearchInput" placeholder="Search Tenants or Rooms...">
-          <select id="overviewRoomTypeFilter">
+          <input type="text" class="search-input" id="overviewSearchInput" aria-label="Search billing statements" placeholder="Search Tenants or Rooms...">
+          <select id="overviewRoomTypeFilter" aria-label="Filter by room type">
             <option value="">All Room Types</option>
           </select>
-          <select id="overviewStatusFilter">
+          <select id="overviewStatusFilter" aria-label="Filter by status">
             <option value="">All Status</option>
             <option value="unpaid">Unpaid</option>
             <option value="partial">Partial</option>
@@ -290,8 +291,8 @@
 
       <div id="pendingTab" data-tab-content="pending" style="display:none;">
         <div class="filters-row">
-          <input type="text" class="search-input" id="searchInput" placeholder="Search Tenants or Rooms...">
-          <select id="methodFilter">
+          <input type="text" class="search-input" id="searchInput" aria-label="Search pending payments" placeholder="Search Tenants or Rooms...">
+          <select id="methodFilter" aria-label="Filter by payment method">
             <option value="">All Payment Methods</option>
             <option value="gcash">GCash</option>
             <option value="bank_transfer">Bank Transfer</option>
@@ -321,14 +322,14 @@
 
       <div id="penaltiesTab" data-tab-content="penalties" style="display:none;">
         <div class="filters-row">
-          <input type="text" class="search-input" id="penaltySearchInput" placeholder="Search Tenants...">
-          <select id="penaltyTypeFilter">
+          <input type="text" class="search-input" id="penaltySearchInput" aria-label="Search penalties" placeholder="Search Tenants...">
+          <select id="penaltyTypeFilter" aria-label="Filter by penalty type">
             <option value="">All Types</option>
             <option value="damage">Damage</option>
             <option value="manual">Manual</option>
             <option value="late_payment">Late payment</option>
           </select>
-          <select id="penaltyStatusFilter">
+          <select id="penaltyStatusFilter" aria-label="Filter by penalty status">
             <option value="">All Status</option>
             <option value="active">Active</option>
             <option value="waived">Waived</option>
@@ -806,7 +807,7 @@
         </div>
 
         <div class="action-box" id="rejectBox">
-          <textarea id="rejectReason" placeholder="Explain why this payment proof is being rejected..."></textarea>
+          <textarea id="rejectReason" aria-label="Reason for rejecting this payment" placeholder="Explain why this payment proof is being rejected..."></textarea>
           <div class="action-actions">
             <button class="btn warn" id="confirmRejectBtn">Confirm Rejection</button>
             <button class="btn" id="cancelRejectBtn">Cancel</button>

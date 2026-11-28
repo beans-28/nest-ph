@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/typography.css') }}">
     <script src="{{ asset('js/smooth-nav.js') }}" defer></script>
+    <script src="{{ asset('js/a11y-dialogs.js') }}" defer></script>
 <link rel="stylesheet" href="{{ asset('vendor/pannellum/pannellum.css') }}">
 <script src="{{ asset('vendor/pannellum/pannellum.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
@@ -223,7 +224,7 @@
           </div>
           <div class="step-body">
             <div class="lp-grid" id="listingPhotoGrid"></div>
-            <input type="file" id="listingPhotoInput" accept="image/jpeg,image/png,image/webp" multiple hidden>
+            <input type="file" id="listingPhotoInput" aria-label="Upload listing photo" accept="image/jpeg,image/png,image/webp" multiple hidden>
           </div>
         </div>
 
@@ -303,7 +304,7 @@
                     <label style="font-size:11.5px;font-weight:600;color:var(--text-mid);">How far did you turn?</label>
                     <span class="sweep-val" id="sweepValue" style="margin-left:auto;"></span>
                   </div>
-                  <input type="range" id="sweepSlider" min="30" max="360" step="5">
+                  <input type="range" id="sweepSlider" aria-label="Photo coverage in degrees" min="30" max="360" step="5">
                   <button class="vr-btn primary sm" id="saveSweepBtn" type="button">Save Coverage</button>
                 </div>
               </div>
@@ -333,7 +334,7 @@
                 <div class="scene-tools">
                   <button class="vr-btn sm" id="setDefaultBtn" type="button">Set as start</button>
                   <button class="vr-btn sm" id="replaceSceneBtn" type="button">Replace photo</button>
-                  <input type="file" id="replaceScenePhoto" accept="image/jpeg,image/png" hidden>
+                  <input type="file" id="replaceScenePhoto" aria-label="Replace scene photo" accept="image/jpeg,image/png" hidden>
                   <button class="vr-btn warn sm" id="deleteSceneBtn" type="button">Delete photo</button>
                 </div>
               </div>
